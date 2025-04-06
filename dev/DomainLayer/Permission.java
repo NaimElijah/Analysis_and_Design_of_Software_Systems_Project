@@ -1,4 +1,4 @@
-package employee.domain;
+package DomainLayer;
 
 public class Permission {
     private long id;

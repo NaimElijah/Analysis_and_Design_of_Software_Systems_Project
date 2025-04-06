@@ -1,6 +1,6 @@
-package employee.domain;
+package DomainLayer;
 
-import employee.domain.enums.ShiftType;
+import DomainLayer.enums.ShiftType;
 
 import java.time.LocalDate;
 import java.util.List;

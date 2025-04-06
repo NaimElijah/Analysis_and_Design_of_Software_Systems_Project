@@ -1,13 +1,13 @@
-package employee.domain;
+package DomainLayer;
 
-import java.util.List;
+import java.util.Set;
 
 public class Role {
     private long id;
     private String name;
-    private List<Permission> permissions; // maybe Set will be a better option..
+    private Set<Permission> permissions; // maybe Set will be a better option..
 
-    public Role(long id, String name, List<Permission> permissions) {
+    public Role(long id, String name, Set<Permission> permissions) {
         this.id = id;
         this.name = name;
         this.permissions = permissions;
@@ -29,11 +29,11 @@ public class Role {
         this.name = name;
     }
 
-    public List<Permission> getPermissions() {
+    public Set<Permission> getPermissions() {
         return permissions;
     }
 
-    public void setPermissions(List<Permission> permissions) {
+    public void setPermissions(Set<Permission> permissions) {
         this.permissions = permissions;
     }
 }

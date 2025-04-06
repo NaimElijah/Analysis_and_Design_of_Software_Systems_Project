@@ -1,8 +1,7 @@
-package employee.domain;
+package DomainLayer;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.Set;
 
 public class Employee {
     private long employeeId;
@@ -11,14 +10,14 @@ public class Employee {
     private String lastName;
     private long salary;
     private TermsOfEmployment termsOfEmployment;
-    private List<Role> roles;
+    private Set<Role> roles;
     private LocalDate startOfEmployment;
     private boolean isActive;
     private LocalDate creationDate;
     private LocalDate updateDate;
 
 
-    public Employee(long employeeId, long israeliId, String firstName, String lastName, long salary, TermsOfEmployment termsOfEmployment, List<Role> roles, LocalDate startOfEmployment, boolean isActive, LocalDate creationDate, LocalDate updateDate) {
+    public Employee(long employeeId, long israeliId, String firstName, String lastName, long salary, TermsOfEmployment termsOfEmployment, Set<Role> roles, LocalDate startOfEmployment, boolean isActive, LocalDate creationDate, LocalDate updateDate) {
         this.employeeId = employeeId;
         IsraeliId = israeliId;
         this.firstName = firstName;
@@ -80,11 +79,11 @@ public class Employee {
         this.termsOfEmployment = termsOfEmployment;
     }
 
-    public List<Role> getRoles() {
+    public Set<Role> getRoles() {
         return roles;
     }
 
-    public void setRoles(List<Role> roles) {
+    public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
 
