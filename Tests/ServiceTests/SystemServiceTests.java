@@ -1,13 +1,13 @@
 package ServiceTests;
 
-import Service_Layer.TransportService;
+import ServiceLayer.SystemService;
 import org.junit.jupiter.api.Test;
 
-class TransportServiceTests {
+class SystemServiceTests {
 
     @org.junit.jupiter.api.BeforeEach
     void setUp() {
-        TransportService TF = new TransportService();
+        SystemService TF = new SystemService();
 
     }
 

@@ -1,4 +1,4 @@
-package Domain_Layer;
+package DomainLayer;
 
 import com.sun.jdi.connect.Transport;
 
