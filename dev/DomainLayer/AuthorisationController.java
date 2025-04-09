@@ -1,16 +1,22 @@
 package DomainLayer;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class AuthorisationController {
 
-    private final Set<Role> roles; // Set of all roles
+    private final Map<String, HashSet<String>> roles; // Set of all roles
     private final Set<String> permissions; // Set of all permissions
 
-    public AuthorisationController(Set<Role> roles, Set<String> permissions) {
-        this.roles = new HashSet<>(roles);
+    public AuthorisationController(Map<String, HashSet<String>> roles, Set<String> permissions) {
+        this.roles = new HashMap<>(roles);
         this.permissions = new HashSet<>(permissions);
+    }
+
+    public boolean isRoleExists(String role) {
+        return roles.containsKey(role);
     }
 
     /**
@@ -21,9 +27,9 @@ public class AuthorisationController {
      * @return true if the employee has the permission, false otherwise
      */
     public boolean HasPermission(Employee employee, String permissionRequired) {
-        boolean has = employee.getRoles().stream()
-                .flatMap(role -> role.getPermissions().stream())
-                .anyMatch(permission -> permission.equals(permissionRequired));
+        boolean has = employee.getRoles()
+                .stream()
+                .anyMatch(role -> roles.get(role).contains(permissionRequired));
         if (!has) {
             return false; // TODO: throw new UnauthorizedPermission("Employee does not have permission: " + permissionRequired);
         }
@@ -37,8 +43,8 @@ public class AuthorisationController {
      * @param roleRequired - The role to check for
      * @return true if the employee has the role, false otherwise
      */
-    boolean HasRole(Employee employee, Role roleRequired) {
-        return employee.getRoles().stream().anyMatch(role -> role.getName().equals(roleRequired.getName()));
+    boolean HasRole(Employee employee, String roleRequired) {
+        return employee.getRoles().stream().anyMatch(role -> role.equals(roleRequired));
     }
 
     /**
@@ -48,7 +54,7 @@ public class AuthorisationController {
      * @param role     - The role to add
      * @return true if the role was added successfully, false if the role already exists
      */
-    boolean AddRole(Employee employee, Role role) {
+    boolean AddRole(Employee employee, String role) {
         if (employee.getRoles().contains(role)) {
             return false; // Role already exists
         }
@@ -63,7 +69,7 @@ public class AuthorisationController {
      * @param roleRequired - The role to remove
      * @return true if the role was removed successfully, false if the role does not exist
      */
-    public boolean removeRole(Employee employee, Role roleRequired) {
+    public boolean removeRole(Employee employee, String roleRequired) {
         if (!employee.getRoles().contains(roleRequired)) {
             return false; // Role does not exist
         }
@@ -78,36 +84,26 @@ public class AuthorisationController {
      * @param permission - The permission to add
      * @return true if the permission was added successfully, false if the permission already exists
      */
-    public boolean addPermissionToRole(Role role, String permission) {
-        if (role.getPermissions().contains(permission)) {
+    public boolean addPermissionToRole(String role, String permission) {
+        if (roles.get(role).contains(permission)) {
             return false; // Permission already exists
         }
-        role.getPermissions().add(permission);
+        roles.get(role).add(permission);
         return true;
-    }
-
-    public boolean addPermissionToRoleByName(String roleName, String permissionName) {
-        Role role = getRoleByName(roleName);
-
-        if (role == null || permissionName == null) {
-            return false; // Role does not exist
-        }
-        return addPermissionToRole(role, permissionName);
     }
 
     /**
      * Removes a permission from the role's permissions.
      *
-     * @param role       - The role to remove the permission from
-     * @param permission - The permission to remove
+     * @param roleName       - The role to remove the permission from
+     * @param permissionName - The permission to remove
      * @return true if the permission was removed successfully, false if the permission does not exist
      */
     public boolean removePermissionFromRole(String roleName, String permissionName) {
-        Role role = getRoleByName(roleName);
-        if (!role.getPermissions().contains(permissionName)) {
+        if (!roles.get(roleName).contains(permissionName)) {
             return false; // Permission does not exist
         }
-        role.getPermissions().remove(permissionName);
+        roles.get(roleName).remove(permissionName);
         return true;
     }
 
@@ -119,26 +115,25 @@ public class AuthorisationController {
      * @return true if the role was created successfully, false if the role already exists
      */
     public boolean createRole(long doneBy, String roleName, Set<String> permissions) {
-        String PERMISSION_REQUIRED = "CREATE_ROLE"; // Permission required to create a role
+        // Permission check is in the Service layer
 
-        if (roles.stream().anyMatch(role -> role.getName().equals(roleName))) {
+        // Validate input
+        if (roles.containsKey(roleName)) {
             return false; // Role already exists
         }
-        Role newRole = new Role(roles.size() + 1, roleName, permissions);
-        roles.add(newRole);
+        roles.put(roleName.trim(), new HashSet<>(permissions));
         return true;
     }
 
     /**
      * Deletes a role from the system.
      *
-     * @param role - The role to delete
+     * @param roleToDelete - The role to delete
      * @return true if the role was deleted successfully, false if the role does not exist
      */
-    boolean deleteRole(String role) {
-        Role roleToDelete = getRoleByName(role);
+    boolean deleteRole(String roleToDelete) {
 
-        if (!roles.contains(roleToDelete)) {
+        if (!roles.containsKey(roleToDelete)) {
             return false; // Role does not exist
         }
         roles.remove(roleToDelete);
@@ -156,6 +151,7 @@ public class AuthorisationController {
         if (permissions.stream().anyMatch(permission -> permission.equals(permissionName))) {
             return false; // Permission already exists
         }
+        permissionName.trim();
         permissions.add(permissionName);
         return true;
     }
@@ -174,16 +170,25 @@ public class AuthorisationController {
         return true;
     }
 
-    /**
-     * Retrieves a role by its name.
-     *
-     * @param roleName - The name of the role to search for
-     * @return The role if found, null otherwise
-     */
-    public Role getRoleByName(String roleName) {
-        return roles.stream()
-                .filter(role -> role.getName().equals(roleName))
-                .findFirst()
-                .orElse(null); // Return null if role not found
+    public Map<String,String[]> getAllRoles() {
+        Map<String,String[]> rolesMap = new HashMap<>();
+        for (Map.Entry<String, HashSet<String>> entry : roles.entrySet()) {
+            String roleName = entry.getKey();
+            String[] permissionsArray = entry.getValue().toArray(new String[0]);
+            rolesMap.put(roleName, permissionsArray);
+        }
+        return rolesMap;
+    }
+
+    public Set<String> getAllPermissions() {
+        return new HashSet<>(permissions);
+    }
+
+    public Map<String, HashSet<String>> getRoleDetails(String roleName) {
+        Map<String, HashSet<String>> roleDetails = new HashMap<>();
+        if (roles.containsKey(roleName)) {
+            roleDetails.put(roleName, roles.get(roleName));
+        }
+        return roleDetails;
     }
 }

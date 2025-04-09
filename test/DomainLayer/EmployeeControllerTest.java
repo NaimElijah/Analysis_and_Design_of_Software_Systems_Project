@@ -14,27 +14,35 @@ class EmployeeControllerTest {
     AuthorisationController authorisationController;
     EmployeeController employeeController;
 
+    // Permissions
     final String CREATE_EMPLOYEE = "CREATE_EMPLOYEE";
     final String ADD_EMPLOYEE = "ADD_EMPLOYEE";
     final String UPDATE_EMPLOYEE = "UPDATE_EMPLOYEE";
-    final String CASHIER = "CASHIER";
-    Role admin;
-    Role cashier;
+    final String DELETE_EMPLOYEE = "DELETE_EMPLOYEE";
+    final String CASHIER_PERMISSION = "CASHIER";
+
+    // Roles
+    final String ADMIN = "ADMIN";
+    final String CASHIER_ROLE = "CASHIER";
+
+    // Controller Attributes
     Set<String> permissions;
-    Set<Role> roles;
+    Map<String, HashSet<String>> roles;
+
+    // Employees
     Employee shira;
     Employee cochava;
 
     @BeforeEach
     void setUp() {
-        admin = new Role(0,"ADMIN", Set.of(CREATE_EMPLOYEE, ADD_EMPLOYEE, UPDATE_EMPLOYEE));
-        cashier = new Role(1,"CASHIER", Set.of(CASHIER));
 
-        permissions = Set.of(CREATE_EMPLOYEE, ADD_EMPLOYEE, UPDATE_EMPLOYEE);
-        roles = Set.of(admin, cashier);
-
-        shira = new Employee(0,0,"Shira", "Shtinboch", 10000, null, Set.of(admin), LocalDate.now().minusYears(5),true, LocalDate.now().minusYears(5), LocalDate.now());
-        cochava = new Employee(1,1,"Cochava", "Shavit", 10000, null, Set.of(cashier), LocalDate.now().minusYears(5),true, LocalDate.now().minusYears(5), LocalDate.now());
+        permissions = Set.of(CREATE_EMPLOYEE, ADD_EMPLOYEE, UPDATE_EMPLOYEE, DELETE_EMPLOYEE);
+        roles = Map.of(
+                ADMIN, new HashSet<>(Set.of(CREATE_EMPLOYEE, ADD_EMPLOYEE, UPDATE_EMPLOYEE, DELETE_EMPLOYEE)),
+                CASHIER_ROLE, new HashSet<>(Set.of(CASHIER_PERMISSION))
+        );
+        shira = new Employee(123456789,"Shira", "Shtinboch", 10000, null, Set.of(ADMIN), LocalDate.now().minusYears(5),true, LocalDate.now().minusYears(5), LocalDate.now());
+        cochava = new Employee(123456788,"Cochava", "Shavit", 10000, null, Set.of(CASHIER_ROLE), LocalDate.now().minusYears(5),true, LocalDate.now().minusYears(5), LocalDate.now());
 
         authorisationController = new AuthorisationController(roles, permissions);
         Set<Employee> employees = new HashSet<>();
@@ -58,7 +66,7 @@ class EmployeeControllerTest {
     @Test
     void createEmployee() {
         // Test for creating a new employee
-        Set<Role> roles = Set.of(cashier);
+        Set<String> roles = Set.of(CASHIER_ROLE);
         LocalDate startOfEmployment = LocalDate.now();
         Map<String, Object> terms = Map.of("Days Off", 5000, "Contract Type", "Full Time");
 
@@ -79,7 +87,7 @@ class EmployeeControllerTest {
     @Test
     void updateEmployee() {
         // Test for updating an existing employee
-        Set<Role> roles = Set.of(cashier);
+        Set<String> roles = Set.of(CASHIER_ROLE);
         Map<String, Object> terms = Map.of("Days Off", 5000, "Contract Type", "Full Time");
         boolean result = employeeController.updateEmployee(shira.getIsraeliId(), shira.getIsraeliId(), "Shira", "Shtinboch", 12000, terms, true);
         assertTrue(result);
@@ -142,7 +150,7 @@ class EmployeeControllerTest {
 
         // Test for invalid input
         assertThrows(RuntimeException.class, () -> {
-            employeeController.addRoleToEmployee(shira.getEmployeeId(),cochava.getIsraeliId(), "cashier");
+            employeeController.addRoleToEmployee(shira.getIsraeliId(),cochava.getIsraeliId(), "cashier");
         });
     }
 
