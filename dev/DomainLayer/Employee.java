@@ -3,25 +3,22 @@ package DomainLayer;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 public class Employee {
-    private long employeeId;
     private long IsraeliId;
     private String firstName;
     private String lastName;
     private long salary;
     private Map<String, Object> termsOfEmployment;
-    private Set<Role> roles;
+    private Set<String> roles;
     private LocalDate startOfEmployment;
     private boolean isActive;
     private LocalDate creationDate;
     private LocalDate updateDate;
 
 
-    public Employee(long employeeId, long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, Set<Role> roles, LocalDate startOfEmployment, boolean isActive, LocalDate creationDate, LocalDate updateDate) {
-        this.employeeId = employeeId;
+    public Employee( long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, Set<String> roles, LocalDate startOfEmployment, boolean isActive, LocalDate creationDate, LocalDate updateDate) {
         IsraeliId = israeliId;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -32,14 +29,6 @@ public class Employee {
         this.isActive = isActive;
         this.creationDate = creationDate; //??
         this.updateDate = updateDate; //??
-    }
-
-    public long getEmployeeId() {
-        return employeeId;
-    }
-
-    public void setEmployeeId(long employeeId) {
-        this.employeeId = employeeId;
     }
 
     public long getIsraeliId() {
@@ -82,11 +71,11 @@ public class Employee {
         this.termsOfEmployment = termsOfEmployment;
     }
 
-    public Set<Role> getRoles() {
+    public Set<String> getRoles() {
         return roles;
     }
 
-    public void setRoles(Set<Role> roles) {
+    public void setRoles(Set<String> roles) {
         this.roles = roles;
     }
 

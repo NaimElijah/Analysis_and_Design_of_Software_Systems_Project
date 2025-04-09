@@ -11,8 +11,8 @@ public class Shift {
     private long id;
     private ShiftType shiftType;
     private LocalDate shiftDate;
-    private Map<Role,Integer> rolesRequired;
-    private Map<Role, List<Employee>> assignedEmployees;
+    private Map<String,Integer> rolesRequired;
+    private Map<String, List<Employee>> assignedEmployees;
     private boolean isAssignedShitManager;
     private boolean isOpen;
     private LocalDate createDate;

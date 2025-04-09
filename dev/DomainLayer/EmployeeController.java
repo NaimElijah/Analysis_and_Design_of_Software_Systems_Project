@@ -1,6 +1,7 @@
 package DomainLayer;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -36,14 +37,16 @@ public class EmployeeController {
      * @param startOfEmployment
      * @return True if the employee was created successfully, false if the employee already exists
      */
-    public boolean createEmployee(long doneBy ,long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, Set<Role> roles, LocalDate startOfEmployment) {
+    public boolean createEmployee(long doneBy ,long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, Set<String> roles, LocalDate startOfEmployment) {
         // Permission handling
         String PERMISSION_REQUIRED = "CREATE_EMPLOYEE";
+        if (!isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
+            throw new RuntimeException("User does not have permission to deactivate employee"); // User does not have permission
+        }
         Employee doneByEmployee = getEmployeeByIsraeliId(doneBy);
         if (doneByEmployee == null) {
             throw new RuntimeException("Employee not found");
         }
-
         // Check if employee already exists
         if (employees.stream().anyMatch(e -> e.getIsraeliId() == israeliId)) {
             throw new RuntimeException("Employee already exists"); // Employee already exists
@@ -62,9 +65,14 @@ public class EmployeeController {
         if (startOfEmployment == null) {
             throw new RuntimeException("Start of employment date is required"); // Start of employment date is required
         }
-
+        if (String.valueOf(israeliId).length() != 9) {
+            throw new RuntimeException("Not Valid Israeli ID number"); // Israeli ID must be 9 digits
+        }
+//        if (roles == null || roles.isEmpty()) { // Not sure if this is needed
+//            throw new RuntimeException("Roles are required"); // Roles are required
+//        }
         // Create new employee
-        Employee newEmployee = new Employee(employees.size()+1, israeliId, firstName, lastName, salary, termsOfEmployment, roles, startOfEmployment, true, LocalDate.now(), LocalDate.now());
+        Employee newEmployee = new Employee(israeliId, firstName, lastName, salary, termsOfEmployment, roles, startOfEmployment, true, LocalDate.now(), LocalDate.now());
         employees.add(newEmployee);
         return true;
     }
@@ -84,6 +92,9 @@ public class EmployeeController {
     public boolean updateEmployee(long doneBy, long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, boolean active) {
         // // Permission handling
         String PERMISSION_REQUIRED = "UPDATE_EMPLOYEE";
+        if (!isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
+            throw new RuntimeException("User does not have permission to deactivate employee"); // User does not have permission
+        }
         Employee doneByEmployee = getEmployeeByIsraeliId(doneBy);
         if (doneByEmployee == null) {
             throw new RuntimeException("Employee not found");
@@ -110,6 +121,9 @@ public class EmployeeController {
         if (termsOfEmployment == null) {
             throw new RuntimeException("Terms of employment are required"); // Terms of employment are required
         }
+        if (String.valueOf(israeliId).length() != 9) {
+            throw new RuntimeException("Not Valid Israeli ID number"); // Israeli ID must be 9 digits
+        }
 
         // Update employee details
         employee.setFirstName(firstName);
@@ -131,6 +145,9 @@ public class EmployeeController {
     public boolean deleteEmployee(long doneBy, long israeliId) {
         // Check if the user has permission to delete an employee
         String PERMISSION_REQUIRED = "DELETE_EMPLOYEE"; // Permission required to delete an employee
+        if (!isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
+            throw new RuntimeException("User does not have permission to deactivate employee"); // User does not have permission
+        }
 
         // Check if employee exists
         Employee employee = employees.stream().filter(e -> e.getIsraeliId() == israeliId).findFirst().orElse(null);
@@ -156,20 +173,18 @@ public class EmployeeController {
         }
 
         // Check if employee has the required permission
-        return employee.getRoles().stream()
-                .flatMap(role -> role.getPermissions().stream())
-                .anyMatch(perm -> perm.equals(permission)); // Permission not found
+        return authorisationController.HasPermission(employee, permission);
     }
 
     public boolean addRoleToEmployee(long doneBy, long israeliId, String roleName) {
         // Permission handling
-        String PERMISSION_REQUIRED = "ADD_ROLE_TO_EMPLOYEE";
+        String PERMISSION_REQUIRED = "ROLE_PERMISSION";
+        if (!isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
+            throw new RuntimeException("User does not have permission to add role to employee"); // User does not have permission
+        }
         Employee doneByEmployee = getEmployeeByIsraeliId(doneBy);
         if (doneByEmployee == null) {
             throw new RuntimeException("Employee not found");
-        }
-        if (!isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
-            throw new RuntimeException("User does not have permission to add role to employee"); // User does not have permission
         }
 
         // Check if employee exists
@@ -178,28 +193,27 @@ public class EmployeeController {
             throw new RuntimeException("Employee not found"); // Employee not found
         }
         // Check if role exists
-        Role role = authorisationController.getRoleByName(roleName);
-        if (role == null) {
+        if (!authorisationController.isRoleExists(roleName)) {
             throw new RuntimeException("Role not found"); // Role not found
         }
         // Check if employee already has the role
-        if (employee.getRoles().stream().anyMatch(r -> r.getName().equals(roleName))) {
+        if (employee.getRoles().stream().anyMatch(r -> r.equals(roleName))) {
             throw new RuntimeException("Employee already has this role"); // Employee already has this role
         }
 
         // add role to employee
-        employee.getRoles().add(role);
+        employee.getRoles().add(roleName);
         return true;
     }
     public boolean removeRoleFromEmployee(long doneBy, long israeliId, String roleName) {
         // Permission handling
-        String PERMISSION_REQUIRED = "REMOVE_ROLE_FROM_EMPLOYEE";
+        String PERMISSION_REQUIRED = "ROLE_PERMISSION";
+        if (!isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
+            throw new RuntimeException("User does not have permission to add role to employee"); // User does not have permission
+        }
         Employee doneByEmployee = getEmployeeByIsraeliId(doneBy);
         if (doneByEmployee == null) {
             throw new RuntimeException("Employee not found");
-        }
-        if (!isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
-            throw new RuntimeException("User does not have permission to remove role from employee"); // User does not have permission
         }
 
         // Check if employee exists
@@ -208,13 +222,41 @@ public class EmployeeController {
             throw new RuntimeException("Employee not found"); // Employee not found
         }
         // Check if role exists
-        Role role = authorisationController.getRoleByName(roleName);
-        if (role == null) {
+        if (!authorisationController.isRoleExists(roleName)) {
             throw new RuntimeException("Role not found"); // Role not found
         }
 
         // remove role from employee
-        employee.getRoles().remove(role);
+        employee.getRoles().remove(roleName);
         return true;
+    }
+
+    public boolean deactivateEmployee(long doneBy, long israeliId) {
+        // Permission handling
+        String PERMISSION_REQUIRED = "EDIT_EMPLOYEE";
+        if (!isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
+            throw new RuntimeException("User does not have permission to add role to employee"); // User does not have permission
+        }
+        Employee doneByEmployee = getEmployeeByIsraeliId(doneBy);
+        if (doneByEmployee == null) {
+            throw new RuntimeException("Employee not found");
+        }
+        // Check if employee exists
+        Employee employee = employees.stream().filter(e -> e.getIsraeliId() == israeliId).findFirst().orElse(null);
+        if (employee == null) {
+            throw new RuntimeException("Employee not found"); // Employee not found
+        }
+
+        // deactivate employee
+        employee.setActive(false);
+        return true;
+    }
+
+    public Map<Long, Employee> getAllEmployees() {
+        Map<Long, Employee> employeesMap = new HashMap<Long, Employee>();
+        for (Employee employee : employees) {
+            employeesMap.put(employee.getIsraeliId(), employee);
+        }
+        return employeesMap;
     }
 }
