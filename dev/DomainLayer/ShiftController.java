@@ -86,6 +86,7 @@ public class ShiftController {
      * @return true if the shift was removed successfully, false otherwise
      */
     public boolean removeShift(long shiftId) {
+        String PERMISSION_REQUIRED = "REMOVE_SHIFT";
         Shift shiftToRemove = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
         if (shiftToRemove == null) {
             throw new RuntimeException("Shift does not exist");
@@ -108,6 +109,7 @@ public class ShiftController {
      * @return true if the shift was updated successfully, false otherwise
      */
     public boolean updateShift(long shiftId, ShiftType shiftType, LocalDate date, Map<Role, Integer> rolesRequired, Map<Role, Set<Employee>> assignedEmployees, boolean isAssignedShiftManager, boolean isOpen, LocalDate updateDate) {
+        String PERMISSION_REQUIRED = "UPDATE_SHIFT";
         Shift shiftToUpdate = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
         if (shiftToUpdate == null) {
             throw new RuntimeException("Shift does not exist");
@@ -129,6 +131,7 @@ public class ShiftController {
      * @return the shift if it exists, null otherwise
      */
     public Shift getShiftByID(long shiftId) {
+        String PERMISSION_REQUIRED = "GET_SHIFT";
         return shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
     }
 
@@ -138,6 +141,7 @@ public class ShiftController {
      * @return all shifts
      */
     public Set<Shift> getAllShifts() {
+        String PERMISSION_REQUIRED = "GET_SHIFT";
         return shifts;
     }
 
@@ -148,6 +152,7 @@ public class ShiftController {
      * @return all shifts for the date
      */
     public Set<Shift> getShiftsByDate(LocalDate date) {
+        String PERMISSION_REQUIRED = "GET_SHIFT";
         return shifts.stream().filter(shift -> shift.getShiftDate().equals(date)).collect(Collectors.toSet());
     }
 
@@ -158,6 +163,7 @@ public class ShiftController {
      * @return all shifts for the employee
      */
     public Set<Shift> getShiftsByEmployee(Employee employee) {
+        String PERMISSION_REQUIRED = "GET_SHIFT";
         return shifts.stream().filter(shift -> shift.getAssignedEmployees().values().stream().anyMatch(employees -> employees.contains(employee))).collect(Collectors.toSet());
     }
 
@@ -169,6 +175,7 @@ public class ShiftController {
      * @return the shift if it exists, null otherwise
      */
     public Shift getshift(LocalDate date, ShiftType shiftType) {
+        String PERMISSION_REQUIRED = "GET_SHIFT";
         return shifts.stream().filter(shift -> shift.getShiftDate().equals(date) && shift.getShiftType().equals(shiftType)).findFirst().orElse(null);
     }
 
@@ -180,6 +187,7 @@ public class ShiftController {
      * @return true if the roles were updated successfully, false otherwise
      */
     public boolean updateRolesRequired(long shiftId, Map<Role, Integer> rolesRequired) {
+        String PERMISSION_REQUIRED = "UPDATE_SHIFT";
         Shift shiftToUpdate = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
         if (shiftToUpdate == null) {
             throw new RuntimeException("Shift does not exist");
@@ -197,6 +205,7 @@ public class ShiftController {
      * @return true if the assigned employees were updated successfully, false otherwise
      */
     public boolean updateAssignedEmployees(long shiftId, Map<Role, Set<Employee>> assignedEmployees) {
+        String PERMISSION_REQUIRED = "UPDATE_SHIFT";
         Shift shiftToUpdate = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
         if (shiftToUpdate == null) {
             throw new RuntimeException("Shift does not exist");
@@ -214,6 +223,7 @@ public class ShiftController {
      * @return true if the shift manager was updated successfully, false otherwise
      */
     public boolean updateShiftManager(long shiftId, boolean isAssignedShiftManager) {
+        String PERMISSION_REQUIRED = "UPDATE_SHIFT";
         Shift shiftToUpdate = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
         if (shiftToUpdate == null) {
             throw new RuntimeException("Shift does not exist");
@@ -231,6 +241,7 @@ public class ShiftController {
      * @return true if the open status was updated successfully, false otherwise
      */
     public boolean updateOpenStatus(long shiftId, boolean isOpen) {
+        String PERMISSION_REQUIRED = "UPDATE_SHIFT";
         Shift shiftToUpdate = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
         if (shiftToUpdate == null) {
             throw new RuntimeException("Shift does not exist");
@@ -248,6 +259,7 @@ public class ShiftController {
      * @return true id the set was updated successfully
      */
     public boolean updateShiftAvailableEmployees(long shiftId, Set<Employee> employees) {
+        String PERMISSION_REQUIRED = "UPDATE_SHIFT";
         Shift shiftToUpdate = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
         if (shiftToUpdate == null) {
             throw new RuntimeException("Shift does not exist");
@@ -265,6 +277,7 @@ public class ShiftController {
      * @return true if added successfully
      */
     public boolean addAvailableEmployee(long shiftId, Employee employee) {
+        String PERMISSION_REQUIRED = "UPDATE_SHIFT";
         Shift shiftToUpdate = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
         if (shiftToUpdate == null) {
             throw new RuntimeException("Shift does not exist");
@@ -281,6 +294,7 @@ public class ShiftController {
      * @return true if removed successfully
      */
     public boolean removeAvailableEmployee(long shiftId, Employee employee) {
+        String PERMISSION_REQUIRED = "UPDATE_SHIFT";
         Shift shiftToUpdate = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
         if (shiftToUpdate == null) {
             throw new RuntimeException("Shift does not exist");
@@ -299,6 +313,7 @@ public class ShiftController {
      * @throws RuntimeException if the shift does not exist
      */
     public boolean addAssignedEmployee(long shiftId, Role role, Employee employee) {
+        String PERMISSION_REQUIRED = "UPDATE_SHIFT";
         Shift shiftToUpdate = shifts.stream()
                 .filter(shift -> shift.getId() == shiftId)
                 .findFirst()
@@ -322,6 +337,7 @@ public class ShiftController {
      * @throws RuntimeException if the shift does not exist
      */
     public boolean removeAssignedEmployee(long shiftId, Role role, Employee employee) {
+        String PERMISSION_REQUIRED = "UPDATE_SHIFT";
         Shift shiftToUpdate = shifts.stream()
                 .filter(shift -> shift.getId() == shiftId)
                 .findFirst()
@@ -346,6 +362,7 @@ public class ShiftController {
      * @throws RuntimeException if the shift does not exist
      */
     public boolean addRoleRequired(long shiftId, Role role, Integer roleRequired) {
+        String PERMISSION_REQUIRED = "UPDATE_SHIFT";
         Shift shiftToUpdate = shifts.stream()
                 .filter(shift -> shift.getId() == shiftId)
                 .findFirst()
@@ -368,6 +385,7 @@ public class ShiftController {
      * @throws RuntimeException if the shift does not exist
      */
     public boolean removeRoleRequired(long shiftId, Role role) {
+        String PERMISSION_REQUIRED = "UPDATE_SHIFT";
         Shift shiftToUpdate = shifts.stream()
                 .filter(shift -> shift.getId() == shiftId)
                 .findFirst()
