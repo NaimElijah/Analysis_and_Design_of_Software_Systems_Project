@@ -1,6 +1,6 @@
 package DomainTests;
 
-import DomainLayer.TransportFacade;
+import DomainLayer.Facades.TransportFacade;
 import org.junit.jupiter.api.Test;
 
 class TransportFacadeTests {
