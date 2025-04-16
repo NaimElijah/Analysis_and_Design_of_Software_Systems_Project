@@ -6,7 +6,7 @@ import ServiceLayer.SiteService;
 import ServiceLayer.TruckService;
 
 import java.util.Scanner;
-//TODO:   set up jackson for the project and import it.            <<<<-------------------------------
+import com.fasterxml.jackson.*;
 
 public class TransportSystemController {
     private TruckService sys;
