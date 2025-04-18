@@ -15,13 +15,10 @@ public class Employee {
 
     public int getId() {return id;}
     public void setId(int id) {this.id = id;}
-
     public String getFname() {return fname;}
     public void setFname(String fname) {this.fname = fname;}
-
     public String getLname() {return lname;}
     public void setLname(String lname) {this.lname = lname;}
-
     public int getPermissions() {return permissions;}
     public void setPermissions(int permissions) {this.permissions = permissions;}
 

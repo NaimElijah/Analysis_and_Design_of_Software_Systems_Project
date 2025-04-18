@@ -1,19 +1,22 @@
 package DomainLayer.SiteSubModule;
 
 public class Site {
-    private int area;
     private Address address;
+    private String cName;
+    private long cNumber;
 
-    public Site(int area, Address address) {
-        this.area = area;
+    public Site(Address address, String cName, long cNumber) {
         this.address = address;
+        this.cName = cName;
+        this.cNumber = cNumber;
     }
 
-    public int getArea() {return area;}
-    public void setArea(int area) {this.area = area;}
-
-    public Address getAddress() {return address;}
     public void setAddress(Address address) {this.address = address;}
+    public void setcName(String cName) {this.cName = cName;}
+    public void setcNumber(long cNumber) {this.cNumber = cNumber;}
+    public Address getAddress() {return address;}
+    public String getcName() {return cName;}
+    public long getcNumber() {return cNumber;}
 
     @Override
     public String toString() {

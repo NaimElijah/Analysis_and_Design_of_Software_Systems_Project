@@ -11,7 +11,6 @@ public class Address {
 
     public int getArea() {return area;}
     public void setArea(int area) {this.area = area;}
-
     public String getAddress() {return address;}
     public void setAddress(String address) {this.address = address;}
 
