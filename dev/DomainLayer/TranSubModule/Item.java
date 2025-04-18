@@ -17,6 +17,7 @@ public class Item {
         this.condition = true;
     }
 
+
     public String getName() {return name;}
     public void setName(String name) {this.name = name;}
 
@@ -25,7 +26,6 @@ public class Item {
 
     public Boolean getCondition() {return condition;}
     public void setCondition(Boolean condition) {this.condition = condition;}
-    private void switchCond(){condition = !condition;}
 
     @Override
     public String toString() {
