@@ -20,6 +20,8 @@ public class Site {
 
     @Override
     public String toString() {
-        return "";                           //TODO     <<------------------------
+        String res = "";
+        res += "Address: " + address + ", Contact Name: " + cName + ", Contact Number: " + cNumber + ".\n";
+        return res;
     }
 }

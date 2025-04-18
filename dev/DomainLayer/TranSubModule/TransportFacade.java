@@ -89,8 +89,12 @@ public class TransportFacade {
         return "";  //TODO
     }
 
-    private String showAllTransports(){
-        return "";
+    public String showAllTransports(){
+        String resOfAllTransports = "";
+        for (TransportDoc t : transports.values()){
+            resOfAllTransports += t.toString() + "\n";
+        }
+        return resOfAllTransports;
     }
 
 

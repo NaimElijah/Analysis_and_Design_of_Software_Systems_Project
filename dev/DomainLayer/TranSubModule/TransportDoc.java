@@ -88,8 +88,12 @@ public class TransportDoc {
         //TODO
     }
 
-    private String checkTransportValidity(TransportDoc transport){
+    private String checkTransportValidity(TransportDoc transport){    // throws different exceptions according to case
         return "";   //TODO
+    }
+
+    private int calculateTransportWeight(){
+        return 0;  //TODO
     }
 
     @Override

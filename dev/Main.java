@@ -2,11 +2,8 @@ import DomainLayer.EmpSubModule.EmployeeFacade;
 import DomainLayer.SiteSubModule.SiteFacade;
 import DomainLayer.TranSubModule.TransportFacade;
 import DomainLayer.TruSubModule.TruckFacade;
-import PresentationLayer.TransportSystemController;
-import ServiceLayer.EmployeeService;
-import ServiceLayer.TransportService;
-import ServiceLayer.SiteService;
-import ServiceLayer.TruckService;
+import PresentationLayer.MainTranSysController;
+import ServiceLayer.*;
 
 public class Main {
    public static void main(String[] args) {
@@ -21,9 +18,11 @@ public class Main {
       EmployeeService es = new EmployeeService(eff);
       SiteService site_s = new SiteService(sf);
 
-      TransportSystemController tsc = new TransportSystemController(tru_s, tran_s, site_s, es);
+      StartUpStateService start = new StartUpStateService(tran_s, tru_s, es, site_s);
 
-      tsc.transportModuleStartup();      //         <<<-----------------------   starts the whole system/program
+      MainTranSysController mtsc = new MainTranSysController(tru_s, tran_s, site_s, es, start);
+
+      mtsc.transportModuleStartup();      ///         <<<-----------------------   starts the whole Transport Module System
 
    }
 }
