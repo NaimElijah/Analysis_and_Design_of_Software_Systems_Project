@@ -1,4 +1,4 @@
-package DomainLayer.Objects;
+package DomainLayer.EmpSubModule;
 
 public class Employee {
     private int id;

@@ -1,7 +1,7 @@
-import DomainLayer.Facades.EmployeeFacade;
-import DomainLayer.Facades.SiteFacade;
-import DomainLayer.Facades.TransportFacade;
-import DomainLayer.Facades.TruckFacade;
+import DomainLayer.EmpSubModule.EmployeeFacade;
+import DomainLayer.SiteSubModule.SiteFacade;
+import DomainLayer.TranSubModule.TransportFacade;
+import DomainLayer.TruSubModule.TruckFacade;
 import PresentationLayer.TransportSystemController;
 import ServiceLayer.EmployeeService;
 import ServiceLayer.TransportService;

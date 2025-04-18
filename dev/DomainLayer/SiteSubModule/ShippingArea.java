@@ -1,4 +1,4 @@
-package DomainLayer.Objects;
+package DomainLayer.SiteSubModule;
 
 public class ShippingArea {
     private int area_number;

@@ -1,6 +1,6 @@
 package ServiceTests;
 
-import DomainLayer.Facades.TransportFacade;
+import DomainLayer.TranSubModule.TransportFacade;
 import ServiceLayer.TruckService;
 import org.junit.jupiter.api.Test;
 

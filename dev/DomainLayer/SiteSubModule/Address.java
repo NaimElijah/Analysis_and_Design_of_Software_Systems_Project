@@ -1,10 +1,10 @@
-package DomainLayer.Objects;
+package DomainLayer.SiteSubModule;
 
-public class Site {
+public class Address {
     private int area;
-    private Address address;
+    private String address;
 
-    public Site(int area, Address address) {
+    public Address(int area, String address) {
         this.area = area;
         this.address = address;
     }
@@ -12,8 +12,8 @@ public class Site {
     public int getArea() {return area;}
     public void setArea(int area) {this.area = area;}
 
-    public Address getAddress() {return address;}
-    public void setAddress(Address address) {this.address = address;}
+    public String getAddress() {return address;}
+    public void setAddress(String address) {this.address = address;}
 
     @Override
     public String toString() {

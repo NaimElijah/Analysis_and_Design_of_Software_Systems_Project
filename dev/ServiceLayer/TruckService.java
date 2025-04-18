@@ -1,7 +1,6 @@
 package ServiceLayer;
 
-import DomainLayer.Facades.TruckFacade;
-import com.fasterxml.jackson.*;
+import DomainLayer.TruSubModule.TruckFacade;
 
 public class TruckService {
     private TruckFacade tru_f;

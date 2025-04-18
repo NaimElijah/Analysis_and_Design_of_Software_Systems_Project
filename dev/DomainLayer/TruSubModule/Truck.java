@@ -1,4 +1,4 @@
-package DomainLayer.Objects;
+package DomainLayer.TruSubModule;
 
 public class Truck {
     private int truck_num;

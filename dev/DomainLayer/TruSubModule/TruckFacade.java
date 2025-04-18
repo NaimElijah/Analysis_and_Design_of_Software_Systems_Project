@@ -1,7 +1,5 @@
-package DomainLayer.Facades;
+package DomainLayer.TruSubModule;
 
-import com.fasterxml.jackson.*;
-import DomainLayer.Objects.Truck;
 import java.util.HashMap;
 
 public class TruckFacade {

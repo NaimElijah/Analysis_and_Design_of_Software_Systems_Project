@@ -1,4 +1,4 @@
-package DomainLayer.Objects;
+package DomainLayer.TranSubModule;
 
 public class Item {
     private String name;

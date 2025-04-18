@@ -1,4 +1,4 @@
-package DomainLayer.Objects;
+package DomainLayer.EmpSubModule;
 
 import java.util.ArrayList;
 

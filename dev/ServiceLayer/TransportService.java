@@ -1,7 +1,6 @@
 package ServiceLayer;
 
-import DomainLayer.Facades.TransportFacade;
-import com.fasterxml.jackson.*;
+import DomainLayer.TranSubModule.TransportFacade;
 
 public class TransportService {
     private TransportFacade tran_f;
