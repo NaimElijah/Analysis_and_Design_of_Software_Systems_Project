@@ -23,9 +23,9 @@ public class EmployeeService {
     }
     public void  setPermissions(int empid, int permieeionsNum){}
     public void addEmployee(int empid, String fname, String lname, int permieeionsNum){}
-    public void addDriver(int empid, String fname, String lname, int permieeionsNum, ArrayList<String>){}
-    public void addLicense(int empid, String Licrnse){}
-    public void removeLicense(int empid, String Licrnse){}
+    public void addDriver(int empid, String fname, String lname, int permieeionsNum, ArrayList<String> licenses){}
+    public void addLicense(int empid, String License){}
+    public void removeLicense(int empid, String License){}
     public String employeeToString(){
         //todo
         return "";
