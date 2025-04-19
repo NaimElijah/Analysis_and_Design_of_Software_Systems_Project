@@ -6,13 +6,13 @@ import ServiceLayer.TransportService;
 import java.util.Scanner;
 
 public class DriController {
-    private TransportService as;
-    private EmployeeService es;
+    private TransportService tran_s;
+    private EmployeeService emp_s;
     private Scanner scanner;
 
-    public DriController(TransportService as, EmployeeService es, Scanner sc) {
-        this.as = as;
-        this.es = es;
+    public DriController(TransportService trs, EmployeeService es, Scanner sc) {
+        this.tran_s = trs;
+        this.emp_s = es;
         this.scanner = sc;
     }
 

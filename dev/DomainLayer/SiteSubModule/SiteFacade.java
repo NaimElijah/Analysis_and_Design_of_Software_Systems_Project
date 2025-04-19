@@ -3,21 +3,17 @@ package DomainLayer.SiteSubModule;
 import javax.management.AttributeNotFoundException;
 import javax.management.openmbean.KeyAlreadyExistsException;
 import javax.naming.ContextNotEmptyException;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class SiteFacade {
     private HashMap<Integer, ShippingArea> shippingAreas;
-//    private ArrayList<Site> no_Area_sites;  ///  Sites with area_num = -1 here, ArrayList so address Strings won't clash
+
     public SiteFacade() {
         shippingAreas = new HashMap<Integer, ShippingArea>();
-//        no_Area_sites = new ArrayList<Site>();   //   in the case their Shipping Area is deleted // if this is needed, ASK ABOUT THIS
     }
 
     public HashMap<Integer, ShippingArea> getShippingAreas() {return shippingAreas;}
     public void setShippingAreas(HashMap<Integer, ShippingArea> shippingAreas) {this.shippingAreas = shippingAreas;}
-//    public ArrayList<Site> getNo_Area_sites() {return no_Area_sites;}
-//    public void setNo_Area_sites(ArrayList<Site> no_Area_sites) {this.no_Area_sites = no_Area_sites;}
 
     public void addShippingArea(int areaNum, String areaName) throws KeyAlreadyExistsException {
         if (!shippingAreas.containsKey(areaNum)) {
@@ -27,49 +23,51 @@ public class SiteFacade {
         }
     }
 
-
-    public void deleteShippingArea(int areaNum) throws AttributeNotFoundException, ContextNotEmptyException {       //TODO:  ASK if we can even delete a shipping area if there a sites in there or maybe we can
+    public void deleteShippingArea(int areaNum) throws AttributeNotFoundException, ContextNotEmptyException {
         if(!shippingAreas.containsKey(areaNum)){
             throw new AttributeNotFoundException("Can't delete a Shipping Area that Doesn't exist.\n");
         } else if (!shippingAreas.get(areaNum).getSites().isEmpty()) {
             throw new ContextNotEmptyException("Can't Delete a shipping area that has Sites in it.\n");
         }
         shippingAreas.remove(areaNum);  ///  regular removal if everything is GOODA
-
-        //TODO: delete later what was before:
-//        if (shippingAreas.containsKey(areaNum)) {
-//            ShippingArea shippingArea = shippingAreas.get(areaNum);   ///  this is for if we can't delete the sites inside that area
-//            for (Site site : shippingArea.getSites().values()) {   ///  this is for if we can't delete the sites inside that area
-//                site.setAddress(new Address(-1, site.getAddress().getAddress())); ///  set area number to -1 so indicates that no area   ///  this is for if we can't delete the sites inside that area
-//                no_Area_sites.add(site);
-//            }   ///  this is for if we can't delete the sites inside that area
-//            shippingAreas.remove(areaNum);   ///   <<<-----------------------  this is the main thing
-//        }
-
     }
-
 
     public void setShippingAreaNum(int oldAreaNum, int newAreaNum) throws ClassNotFoundException {
         if (shippingAreas.containsKey(newAreaNum)) {
-            throw new KeyAlreadyExistsException("Shipping Area Number already exists");   //TODO: catch in upper layer
-        }
-        if (!shippingAreas.containsKey(oldAreaNum)) {
-            throw new ClassNotFoundException("Shipping Area Number does not exist");   //TODO: catch in upper layer
-        }else{
-            //TODO            <<<----------------------------------   FINISH this function and then MOVE TO THE TOP DOWN APPROACH FROM THE PRESENTATION  <<----------------
+            throw new KeyAlreadyExistsException("New Shipping Area Number already exists");   //TODO: catch in upper layer
+        } else if (!shippingAreas.containsKey(oldAreaNum)) {
+            throw new ClassNotFoundException("Old Shipping Area Number does not exist");   //TODO: catch in upper layer
+        }else{  //  now changing the area's number
+            for (String site_address_string : shippingAreas.get(oldAreaNum).getSites().keySet()) {
+                shippingAreas.get(oldAreaNum).getSites().get(site_address_string).getAddress().setArea(newAreaNum);
+            }
+            ShippingArea temp = shippingAreas.get(oldAreaNum);
+            shippingAreas.put(newAreaNum, temp);
+            shippingAreas.remove(oldAreaNum);
+            shippingAreas.get(newAreaNum).setArea_number(newAreaNum);
         }
     }
 
-    public void setShippingAreaName(int areaName, String newAreaName){}
 
-    public void addSite(int areaName , String address, String cName, int cNumber){}
+    public void setShippingAreaName(int areaName, String newAreaName){
+        //TODO
+    }
 
-    public void deleteSite(String address){}
+    public void addSiteTOArea(int areaNum, String address, String cName, int cNumber){
+        //TODO
+    }
 
-    public void setSiteAddress(int areaNum, String oldAddress, String newAddress){}
+    public void deleteSiteFromArea(String address){
+        //TODO
+    }
 
-    public void setSiteAreaNum(int oldAreaNum, int newAreaNum, String address){}
+    public void setSiteAddress(int areaNum, String oldAddress, String newAddress){
+        //TODO
+    }
 
+    public void setSiteAreaNum(int oldAreaNum, int newAreaNum, String address){
+        //TODO
+    }
 
     public String showAllSites(){
         String res = "All Sites:\n";
@@ -78,4 +76,15 @@ public class SiteFacade {
         }
         return res;
     }
+
+    public String showAllShippingAreas(){
+        String res = "All Shipping Areas:\n";
+        for (ShippingArea shippingArea : shippingAreas.values()) {
+            res += shippingArea.toString();
+        }
+        res += "\n";
+        return res;
+    }
+
+
 }

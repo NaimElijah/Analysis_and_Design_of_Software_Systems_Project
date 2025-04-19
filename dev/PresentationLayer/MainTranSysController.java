@@ -11,11 +11,11 @@ public class MainTranSysController {
     StartUpController startUpCont;
     private Scanner scanner;
 
-    public MainTranSysController(TruckService sys, TransportService as, SiteService ms, EmployeeService es, StartUpStateService starUpStService) {
+    public MainTranSysController(TruckService ts, TransportService trs, SiteService sis, EmployeeService es, StartUpStateService starUpStService) {
         this.scanner = new Scanner(System.in);
-        this.drCont = new DriController(as, es, this.scanner);
-        this.sysAdCont = new SysAdController(as, es, this.scanner);
-        this.tranManCont = new TranManController(sys, as, ms, es, this.scanner);
+        this.drCont = new DriController(trs, es, this.scanner);
+        this.sysAdCont = new SysAdController(trs, es, this.scanner);
+        this.tranManCont = new TranManController(ts, trs, sis, es, this.scanner);
         this.startUpCont = new StartUpController(starUpStService, this.scanner);
     }
 

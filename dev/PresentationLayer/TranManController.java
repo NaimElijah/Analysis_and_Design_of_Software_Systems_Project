@@ -7,17 +7,17 @@ import ServiceLayer.TruckService;
 import java.util.Scanner;
 
 public class TranManController {
-    private TruckService sys;
-    private TransportService as;
-    private SiteService ms;
-    private EmployeeService es;
+    private TruckService tru_ser;
+    private TransportService tra_ser;
+    private SiteService site_ser;
+    private EmployeeService emp_ser;
     private Scanner scanner;
 
-    public TranManController(TruckService sys, TransportService as, SiteService ms, EmployeeService es, Scanner sc) {
-        this.sys = sys;
-        this.as = as;
-        this.ms = ms;
-        this.es = es;
+    public TranManController(TruckService ts, TransportService trs, SiteService sis, EmployeeService es, Scanner sc) {
+        this.tru_ser = ts;
+        this.tra_ser = trs;
+        this.site_ser = sis;
+        this.emp_ser = es;
         this.scanner = sc;
     }
 
@@ -103,7 +103,7 @@ public class TranManController {
     //////////////////////          HELPER FUNCTIONS FOR THE Transports Options Menu
 
     private void showAllTransports(){
-        System.out.println(as.showAllTransports());
+        System.out.println(tra_ser.showAllTransports());
         transportManagerMainMenu();
     }
 
@@ -167,7 +167,7 @@ public class TranManController {
         System.out.println("   --------    Shipping Areas Options Menu    -------\n");
         System.out.println("(1)  View All Shipping Areas");
         System.out.println("(2)  Add a Shipping Area");
-        System.out.println("(3)  Edit a Shipping Area's Details");  //TODO: I just copied to here the relavent Features for the Menu here
+        System.out.println("(3)  Edit a Shipping Area's Details");
         System.out.println("(4)  Delete a Shipping Area");
         System.out.println("(5)  Back to Transport Manager Main Menu");
         System.out.println();
@@ -195,19 +195,31 @@ public class TranManController {
     //////////////////////          HELPER FUNCTIONS FOR THE Shipping Areas Options Menu
 
     private void viewAllShippingAreas(){
-        //TODO
+        System.out.println("   --------    Showing All Shipping Areas    --------\n");
+        System.out.println(site_ser.showAllShippingAreas());
+        System.out.println();
+        shippingAreasOptionsMenu();
     }
 
     private void addaShippingArea(){
-        //TODO     <<<------------------------------------------
-    }
-
-    private void editaShippingAreasDetails(){
+        System.out.println("   --------    Adding a Shipping Area    -------\n");
         //TODO
+        System.out.println();
+        shippingAreasOptionsMenu();
     }
 
     private void deleteaShippingArea(){
+        System.out.println("   --------    Deleting a Shipping Area    -------\n");
         //TODO
+        System.out.println();
+        shippingAreasOptionsMenu();
+    }
+
+    private void editaShippingAreasDetails(){
+        System.out.println("   --------    Editing a Shipping Area Menu    -------\n");
+        //TODO
+        System.out.println();
+        shippingAreasOptionsMenu();
     }
 
 
@@ -231,7 +243,7 @@ public class TranManController {
         System.out.println("   --------    Sites Options Menu    -------\n");
         System.out.println("(1)  View All Sites");
         System.out.println("(2)  Add a Site");
-        System.out.println("(3)  Edit a Site's Details");  //TODO: I just copied to here the relavent Features for the Menu here
+        System.out.println("(3)  Edit a Site's Details");
         System.out.println("(4)  Delete a Site");
         System.out.println("(5)  Back to Transport Manager Main Menu");
         System.out.println();
@@ -258,19 +270,31 @@ public class TranManController {
     //////////////////////          HELPER FUNCTIONS FOR THE Sites Options Menu
 
     private void viewAllSites(){
-        //TODO
+        System.out.println("   --------    Showing All Sites    --------\n");
+        System.out.println(site_ser.showAllSites());
+        System.out.println();
+        sitesOptionsMenu();
     }
 
     private void addaSite(){
+        System.out.println("   --------    Adding a Site    -------\n");
         //TODO
-    }
-
-    private void editaSitesDetails(){
-        //TODO
+        System.out.println();
+        sitesOptionsMenu();
     }
 
     private void deleteaSite(){
+        System.out.println("   --------    Deleting a Site    -------\n");
         //TODO
+        System.out.println();
+        sitesOptionsMenu();
+    }
+
+    private void editaSitesDetails(){
+        System.out.println("   --------    Editing a Site Menu    -------\n");
+        //TODO
+        System.out.println();
+        sitesOptionsMenu();
     }
 
 

@@ -6,13 +6,13 @@ import ServiceLayer.TransportService;
 import java.util.Scanner;
 
 public class SysAdController {
-    private TransportService as;
-    private EmployeeService es;
+    private TransportService tra_s;
+    private EmployeeService emp_s;
     private Scanner scanner;
 
-    public SysAdController(TransportService as, EmployeeService es, Scanner sc) {
-        this.as = as;
-        this.es = es;
+    public SysAdController(TransportService ts, EmployeeService es, Scanner sc) {
+        this.tra_s = ts;
+        this.emp_s = es;
         this.scanner = sc;
     }
 

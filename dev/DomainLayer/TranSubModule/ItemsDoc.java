@@ -27,19 +27,19 @@ public class ItemsDoc {
     public void setItems(HashMap<Item, Integer> items) {this.items = items;}
 
 
-    private void addItem(String itemName, int amount, boolean cond) {
+    public void addItem(String itemName, int amount, boolean cond) {
         //TODO
     }
 
-    private void removeItem(String itemName, int amount, boolean cond) {
+    public void removeItem(String itemName, int amount, boolean cond) {
         //TODO
     }
 
-    private void removeBadItem(String ItemName, int amount, Site s, boolean cond){
+    public void removeBadItem(String ItemName, int amount, Site s, boolean cond){
         //TODO
     }
 
-    private void setItemCond(String ItemName, int amount, boolean cond){
+    public void setItemCond(String ItemName, int amount, boolean cond){
         //TODO
     }
 

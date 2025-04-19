@@ -9,24 +9,23 @@ public class TruckService {
         this.tru_f = ttff;
     }
 
-    private String showTrucks(){
+    public String showTrucks(){
         return "";
         //TODO
     }
 
-    private void addTruck(int num, String model, int net_wei, int max_carry, char License){
+    public void addTruck(int num, String model, int net_wei, int max_carry, char License){
         //TODO
     }
 
-    private void removeTruck(int num){
+    public void removeTruck(int num){
         //TODO
     }
 
-    private String truckToString(int num){
+    public String truckToString(int num){
         return "";
         //TODO
     }
 
 
-    //TODO more if needed
 }

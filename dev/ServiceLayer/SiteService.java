@@ -10,12 +10,7 @@ public class SiteService {
         this.sf = ssff;
     }
 
-    private String showSites(){
-        return "";
-        //TODO
-    }
-
-    private String addShippingArea(int areaNum, String areaName){
+    public String addShippingArea(int areaNum, String areaName){
         try {
             sf.addShippingArea(areaNum, areaName);
         }catch (KeyAlreadyExistsException e){
@@ -27,42 +22,62 @@ public class SiteService {
     }
 
 
-    private void deleteShippingArea(int areaNum){
+    public void deleteShippingArea(int areaNum){
         //TODO
     }
 
-    private void setShippingAreaNum(int OldareaNum, int NewAreaNum){
+    public void setShippingAreaNum(int OldareaNum, int NewAreaNum){
         //TODO
     }
 
-    private void setShippingAreaName(int areaNum, String NewareaName){
+    public void setShippingAreaName(int areaNum, String NewareaName){
         //TODO
     }
 
-    private void addSite(int areaNum, String address, String cont_name, int Cont_Num){
+    public void addSite(int areaNum, String address, String cont_name, int Cont_Num){
         //TODO
     }
 
-    private void deleteSite(int areaNum, String address){
+    public void deleteSite(int areaNum, String address){
         //TODO
     }
 
-    private void setSiteAddress(int areaNum, String Oldaddress, String NewAddress){
+    public void setSiteAddress(int areaNum, String Oldaddress, String NewAddress){
         //TODO
     }
 
-    private void setSiteAreaNum(int OldareaNum, int NewAreaNum, String address){
+    public void setSiteAreaNum(int OldareaNum, int NewAreaNum, String address){
         //TODO
     }
 
-    private void shippingAreaToString(int areaNum){
-        //TODO
+    public String showAllSites(){
+        String res = "";
+        try {
+            res = sf.showAllSites();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return res;
     }
 
-    private String SiteToString(int areaNum, String address){
-        return "";
-        //TODO
+    public String showAllShippingAreas(){
+        String res = "";
+        try {
+            res = sf.showAllShippingAreas();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return res;
     }
 
-    //TODO if something more is needed
+//    public void shippingAreaToString(int areaNum){
+//        //TODO
+//    }
+
+//    public String SiteToString(int areaNum, String address){
+//        return "";
+//        //TODO
+//    }
+
+
 }
