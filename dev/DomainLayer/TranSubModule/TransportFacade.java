@@ -12,14 +12,17 @@ import java.util.HashMap;
 import java.util.PrimitiveIterator;
 
 public class TransportFacade {
+    public enum tranStatus {Queued, InProgress, Completed, Canceled, Delayed}
     private HashMap<Integer, TransportDoc> transports;
     private int transportsAmount;
     private HashMap<Integer, ItemsDoc> itemsDocs;
+    private ArrayList<TransportDoc> queuedTransports;    ///TODO:  <<-------------------------    implement this
 
     public TransportFacade() {
         this.transports = new HashMap<Integer, TransportDoc>();
         this.transportsAmount = transportsAmount;
         this.itemsDocs = new HashMap<Integer, ItemsDoc>();
+        this.queuedTransports = new ArrayList<TransportDoc>();    ///TODO:  <<-------------------------    implement this
     }
 
     public HashMap<Integer, TransportDoc> getTransports() {return transports;}
@@ -53,6 +56,10 @@ public class TransportFacade {
     public String checkTransportValidity(TransportDoc transport){
         return "";  //TODO
     }
+
+
+    //TODO   <<<-----------------------------------------------  ADD OPTION FOR TRANSPORT SITES ORDER EDITION, THE ORDER IS THE ARRAYLIST's ORDER    <<<-------------------------
+
 
     public void addTransportProblem(int TransportID, String problem){
         //TODO

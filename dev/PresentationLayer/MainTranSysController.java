@@ -31,7 +31,7 @@ public class MainTranSysController {
         System.out.println("(1)  System Admin");
         System.out.println("(2)  Transport Manager");
         System.out.println("(3)  Transport Driver");
-        System.out.println("\n(4)  Exit The System");
+        System.out.println("(4)  Exit The System");
         System.out.println();
 
         String choice = scanner.nextLine();

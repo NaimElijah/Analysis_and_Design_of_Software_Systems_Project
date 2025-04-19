@@ -10,11 +10,16 @@ public class TruckService {
     }
 
     public String showTrucks(){
-        return "";
-        //TODO
+        String res = "";
+        try {
+            res = tru_f.showAllTrucks();
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        return res;
     }
 
-    public void addTruck(int num, String model, int net_wei, int max_carry, char License){
+    public void addTruck(int num, String model, int net_wei, int max_carry, String License){
         //TODO
     }
 
@@ -22,7 +27,7 @@ public class TruckService {
         //TODO
     }
 
-    public String truckToString(int num){
+    public String truckToString(int num){   //TODO : seems like this function is not needed
         return "";
         //TODO
     }

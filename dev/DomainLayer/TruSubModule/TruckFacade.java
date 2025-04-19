@@ -1,5 +1,6 @@
 package DomainLayer.TruSubModule;
 
+import DomainLayer.EmpSubModule.EmployeeFacade;
 import java.util.HashMap;
 
 public class TruckFacade {
