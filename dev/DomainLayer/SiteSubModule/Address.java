@@ -16,6 +16,8 @@ public class Address {
 
     @Override
     public String toString() {
-        return "";                           //TODO     <<------------------------
+        String res = "";
+        res += "Area #: " + area + ", Address: " + address + ".";
+        return res;
     }
 }

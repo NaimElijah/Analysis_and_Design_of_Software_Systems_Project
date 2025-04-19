@@ -21,7 +21,7 @@ public class Site {
     @Override
     public String toString() {
         String res = "";
-        res += "Address: " + address + ", Contact Name: " + cName + ", Contact Number: " + cNumber + ".\n";
+        res += "Address: (" + address.toString() + "), Contact Name: " + cName + ", Contact Number: " + cNumber + ".";
         return res;
     }
 }

@@ -1,6 +1,7 @@
 package ServiceLayer;
 
 import DomainLayer.SiteSubModule.SiteFacade;
+import javax.management.openmbean.KeyAlreadyExistsException;
 
 public class SiteService {
     private SiteFacade sf;
@@ -14,9 +15,17 @@ public class SiteService {
         //TODO
     }
 
-    private void addShippingArea(int areaNum, String areaName){
-        //TODO
+    private String addShippingArea(int areaNum, String areaName){
+        try {
+            sf.addShippingArea(areaNum, areaName);
+        }catch (KeyAlreadyExistsException e){
+            return "KeyAlreadyExistsException";   // serialize this
+        } catch (Exception e) {
+            e.printStackTrace();  // or do nothing in this line
+        }
+        return "";  //  if All Good
     }
+
 
     private void deleteShippingArea(int areaNum){
         //TODO
