@@ -14,6 +14,7 @@ public class Truck {
         this.net_weight = net_weight;
         this.max_carry_weight = max_carry_weight;
         this.valid_license = valid_license;
+        this.isFree = true;  //  free initially
     }
 
     public void setTruck_num(int truck_num) {this.truck_num = truck_num;}
@@ -30,7 +31,9 @@ public class Truck {
     public boolean isFree() {return isFree;}
 
     public String toString(){
-        return "";                 //TODO    <<-------------------
+        String res = "";
+        res += "Truck Num: " + truck_num + ", Model: " + model + ", Net Weight: " + net_weight + ", Max Carry Weight: " + max_carry_weight + ", Valid License: " + valid_license + ", Availability: " + (isFree ? "Free" : "Occupied");
+        return res;
     }
 
 }

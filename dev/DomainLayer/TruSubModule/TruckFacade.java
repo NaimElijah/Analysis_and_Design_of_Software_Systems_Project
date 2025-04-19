@@ -9,15 +9,15 @@ public class TruckFacade {
         trucksWareHouse = new HashMap<>();
     }
 
-    public String showTrucks(){
-        //todo
-        return "";
-    }
-
     public void addTruck(int num, String model, int max_weight, int max_carry, String license) {}
     public void removeTruck(int num) {}
-    public String truckToString(int num){
-        //todo
-        return "";
+
+    public String showAllTrucks(){
+        String res = "Trucks Warehouse Capacity:\n";
+        for (Truck truck : trucksWareHouse.values()) {
+            res += truck.toString() + "\n";
+        }
+        return res;
     }
+
 }

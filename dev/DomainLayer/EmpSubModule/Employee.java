@@ -20,14 +20,13 @@ public class Employee {
     public void setFname(String fname) {this.fname = fname;}
     public String getLname() {return lname;}
     public void setLname(String lname) {this.lname = lname;}
-    public int getPermissions() {return permissions_rank;}
-    public void setPermissions(int permissions) {this.permissions_rank = permissions;}
-
+    public int getPermissions_rank() {return permissions_rank;}
+    public void setPermissions_rank(int permissions_rank) {this.permissions_rank = permissions_rank;}
 
     @Override
     public String toString() {
-        String res = "Employee Details:  ";
-        res += "ID: " + id + ", First Name: " + fname + ", Last Name: " + lname + ", Permissions Rank: " + permissions_rank;
-        return res;                          //TODO       <<-------------------
+        String res = "";
+        res += "Employee ID: " + id + ", First Name: " + fname + ", Last Name: " + lname + ", Permissions Rank: " + permissions_rank;
+        return res;
     }
 }
