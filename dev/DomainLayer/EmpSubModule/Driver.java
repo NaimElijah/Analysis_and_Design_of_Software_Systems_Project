@@ -23,6 +23,15 @@ public class Driver extends Employee{
 
     @Override
     public String toString() {
-        return "";                                  //TODO       <<-------------------
+        String res = super.toString();  // the regular Employee toString containing base info.
+        res += "\nEmployee Driving Licenses: ";
+        for(int i = 0; i<licenses.size(); i++){
+            res += licenses.get(i);
+            if(i < licenses.size()-1){
+                res += ", ";
+            }
+        }
+        res += ".";
+        return res;
     }
 }
