@@ -10,17 +10,17 @@ import java.util.Set;
 
 public class Shift {
     private long id;
-    private ShiftType shiftType;
+    private String shiftType;
     private LocalDate shiftDate;
-    private Map<Role,Integer> rolesRequired;
-    private Map<Role, Set<Employee>> assignedEmployees;
+    private Map<String,Integer> rolesRequired;
+    private Map<String, Set<Employee>> assignedEmployees;
     private Set<Employee> AvailableEmployees;
     private boolean isAssignedShitManager;
     private boolean isOpen;
     private LocalDate createDate;
     private LocalDate updateDate;
 
-    public Shift(long id, ShiftType shiftType, LocalDate shiftDate, Map<Role, Integer> rolesRequired, Map<Role, Set<Employee>> assignedEmployees, Set<Employee> AvailableEmployees, boolean isAssignedShitManager, boolean isOpen, LocalDate updateDate) {
+    public Shift(long id, String shiftType, LocalDate shiftDate, Map<String, Integer> roleRequired, Map<String, Set<Employee>> assignedEmployees, Set<Employee> AvailableEmployees, boolean isAssignedShitManager, boolean isOpen, LocalDate updateDate) {
         this.id = id;
         this.shiftType = shiftType;
         this.shiftDate = shiftDate;
@@ -37,15 +37,14 @@ public class Shift {
         return id;
     }
 
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public ShiftType getShiftType() {
+    public String getShiftType() {
         return shiftType;
     }
 
-    public void setShiftType(ShiftType shiftType) {
+    public void setShiftType(String shiftType) {
+        if (!"MORNING".equals(shiftType) && !"EVENING".equals(shiftType)) {
+            throw new IllegalArgumentException("Shift type must be either MORNING or EVENING");
+        }
         this.shiftType = shiftType;
     }
 
@@ -57,19 +56,19 @@ public class Shift {
         this.shiftDate = shiftDate;
     }
 
-    public Map<Role, Integer> getRolesRequired() {
+    public Map<String, Integer> getRolesRequired() {
         return rolesRequired;
     }
 
-    public void setRolesRequired(Map<Role, Integer> rolesRequired) {
+    public void setRolesRequired(Map<String, Integer> rolesRequired) {
         this.rolesRequired = rolesRequired;
     }
 
-    public Map<Role, Set<Employee>> getAssignedEmployees() {
+    public Map<String, Set<Employee>> getAssignedEmployees() {
         return assignedEmployees;
     }
 
-    public void setAssignedEmployees(Map<Role, Set<Employee>> assignedEmployees) {
+    public void setAssignedEmployees(Map<String, Set<Employee>> assignedEmployees) {
         this.assignedEmployees = assignedEmployees;
     }
 
@@ -81,7 +80,7 @@ public class Shift {
         AvailableEmployees = availableEmployees;
     }
 
-    public boolean isAssignedShitManager() {
+    public boolean isAssignedShiftManager() {
         return isAssignedShitManager;
     }
 

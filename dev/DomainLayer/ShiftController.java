@@ -31,10 +31,16 @@ public class ShiftController {
      * @param updateDate             the date of the last update
      * @return true if the shift was created successfully, false otherwise
      */
-    public boolean createShift(ShiftType shiftType, LocalDate date, Map<Role, Integer> rolesRequired, Map<Role, Set<Employee>> assignedEmployees, Set<Employee> availableEmployees, boolean isAssignedShiftManager, boolean isOpen, LocalDate updateDate) {
+    public boolean createShift(String shiftType, LocalDate date, Map<String, Integer> rolesRequired, Map<String, Set<Employee>> assignedEmployees, Set<Employee> availableEmployees, boolean isAssignedShiftManager, boolean isOpen, LocalDate updateDate) {
         String PERMISSION_REQUIRED = "CREATE_SHIFT";
         if (shifts.stream().anyMatch(s -> s.getShiftDate().equals(date) && s.getShiftType().equals(shiftType))) {
             throw new RuntimeException("Shift already exists");
+        }
+        if (shiftType == null || date == null || rolesRequired == null || assignedEmployees == null) {
+            throw new IllegalArgumentException("Shift type, date, roles required, and assigned employees cannot be null");
+        }
+        if (date.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Date cannot be in the past");
         }
         Shift newShift = new Shift(shiftIdCounter, shiftType, date, rolesRequired, assignedEmployees, availableEmployees, isAssignedShiftManager, isOpen, updateDate);
         shiftIdCounter++;
@@ -44,31 +50,41 @@ public class ShiftController {
     /**
      * add shifts for the next week to the system
      *
-     * @param Date              date of the shift
+     * @param StartDate              date of the shift
      * @param rolesRequired     number of employees of each role required for the shift
-     * @param assignedEmployees employees assigned to the shift
      * @return true if the shift was created successfully, false otherwise
      */
-    public boolean createWeeklyShifts(LocalDate Date, Map<Role, Integer> rolesRequired, Map<Role, Set<Employee>> assignedEmployees) {
+    public boolean createWeeklyShifts(LocalDate StartDate, Map<String, Integer> rolesRequired) {
         String PERMISSION_REQUIRED = "CREATE_SHIFT";
+        if (StartDate == null || rolesRequired == null) {
+            throw new IllegalArgumentException("Start date and roles required cannot be null");
+        }
+        if (StartDate.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Start date cannot be in the past");
+        }
+        if (rolesRequired.isEmpty()) {
+            throw new IllegalArgumentException("Roles required cannot be empty");
+        }
         Shift newShift = null;
         for (int i = 0; i < 7; i++) {
             for (int j = 0; j < 2; j++) {
                 Set<Employee> availableEmployees = new HashSet<>();   //TODO check if this the right way to implement
-                LocalDate date = Date.plusDays(i);
+                LocalDate date = StartDate.plusDays(i);
                 if (j == 0) {
                     if (!(date.getDayOfWeek() == DayOfWeek.SATURDAY)) {
                         if (shifts.stream().anyMatch(s -> s.getShiftDate().equals(date) && s.getShiftType().equals(ShiftType.MORNING))) {
                             throw new RuntimeException("Shift already exists");
                         }
-                        newShift = new Shift(shiftIdCounter, ShiftType.MORNING, date, rolesRequired, assignedEmployees, availableEmployees, false, false, LocalDate.now());
+                        Map<String, Set<Employee>> assignedEmployees = new HashMap<>();
+                        newShift = new Shift(shiftIdCounter, "MORNING", date, rolesRequired, assignedEmployees, availableEmployees, false, false, LocalDate.now());
                     }
                 } else {
                     if (!(date.getDayOfWeek() == DayOfWeek.FRIDAY)) {
                         if (shifts.stream().anyMatch(s -> s.getShiftDate().equals(date) && s.getShiftType().equals(ShiftType.EVENING))) {
                             throw new RuntimeException("Shift already exists");
                         }
-                        newShift = new Shift(shiftIdCounter, ShiftType.EVENING, date, rolesRequired, assignedEmployees, availableEmployees, false, false, LocalDate.now());
+                        Map<String, Set<Employee>> assignedEmployees = new HashMap<>();
+                        newShift = new Shift(shiftIdCounter, "EVENING", date, rolesRequired, assignedEmployees, availableEmployees, false, false, LocalDate.now());
                     }
                 }
                 shiftIdCounter++;
@@ -87,6 +103,9 @@ public class ShiftController {
      */
     public boolean removeShift(long shiftId) {
         String PERMISSION_REQUIRED = "REMOVE_SHIFT";
+        if (shiftId <= 0) {
+            throw new IllegalArgumentException("Shift ID must be a positive number");
+        }
         Shift shiftToRemove = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
         if (shiftToRemove == null) {
             throw new RuntimeException("Shift does not exist");
@@ -108,8 +127,44 @@ public class ShiftController {
      * @param updateDate             the date of the last update
      * @return true if the shift was updated successfully, false otherwise
      */
-    public boolean updateShift(long shiftId, ShiftType shiftType, LocalDate date, Map<Role, Integer> rolesRequired, Map<Role, Set<Employee>> assignedEmployees, boolean isAssignedShiftManager, boolean isOpen, LocalDate updateDate) {
+    public boolean updateShift(long shiftId, String shiftType, LocalDate date, Map<String, Integer> rolesRequired, Map<String, Set<Employee>> assignedEmployees, boolean isAssignedShiftManager, boolean isOpen, LocalDate updateDate) {
         String PERMISSION_REQUIRED = "UPDATE_SHIFT";
+        if (shiftId <= 0) {
+            throw new IllegalArgumentException("Shift ID must be a positive number");
+        }
+        if (shiftType == null || date == null || rolesRequired == null || assignedEmployees == null) {
+            throw new IllegalArgumentException("Shift type, date, roles required, and assigned employees cannot be null");
+        }
+        if (date.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Date cannot be in the past");
+        }
+        if (rolesRequired.isEmpty()) {
+            throw new IllegalArgumentException("Roles required cannot be empty");
+        }
+        if (assignedEmployees.isEmpty()) {
+            throw new IllegalArgumentException("Assigned employees cannot be empty");
+        }
+        if (updateDate == null) {
+            throw new IllegalArgumentException("Update date cannot be null");
+        }
+        if (updateDate.isBefore(date)) {
+            throw new IllegalArgumentException("Update date cannot be before the shift date");
+        }
+        if (updateDate.isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("Update date cannot be in the future");
+        }
+        if (isAssignedShiftManager && !assignedEmployees.containsKey("Shift Manager")) {
+            throw new IllegalArgumentException("Shift manager must be assigned if isAssignedShiftManager is true");
+        }
+        if (isOpen && assignedEmployees.isEmpty()) {
+            throw new IllegalArgumentException("At least one employee must be assigned if isOpen is true");
+        }
+        if (isOpen && rolesRequired.isEmpty()) {
+            throw new IllegalArgumentException("At least one role must be required if isOpen is true");
+        }
+        if (isAssignedShiftManager && rolesRequired.isEmpty()) {
+            throw new IllegalArgumentException("At least one role must be required if isAssignedShiftManager is true");
+        }
         Shift shiftToUpdate = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
         if (shiftToUpdate == null) {
             throw new RuntimeException("Shift does not exist");
@@ -132,6 +187,9 @@ public class ShiftController {
      */
     public Shift getShiftByID(long shiftId) {
         String PERMISSION_REQUIRED = "GET_SHIFT";
+        if (shiftId <= 0) {
+            throw new IllegalArgumentException("Shift ID must be a positive number");
+        }
         return shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
     }
 
@@ -142,6 +200,9 @@ public class ShiftController {
      */
     public Set<Shift> getAllShifts() {
         String PERMISSION_REQUIRED = "GET_SHIFT";
+        if (shifts.isEmpty()) {
+            throw new RuntimeException("No shifts found");
+        }
         return shifts;
     }
 
@@ -153,6 +214,9 @@ public class ShiftController {
      */
     public Set<Shift> getShiftsByDate(LocalDate date) {
         String PERMISSION_REQUIRED = "GET_SHIFT";
+        if (date == null) {
+            throw new IllegalArgumentException("Date cannot be null");
+        }
         return shifts.stream().filter(shift -> shift.getShiftDate().equals(date)).collect(Collectors.toSet());
     }
 
@@ -164,6 +228,9 @@ public class ShiftController {
      */
     public Set<Shift> getShiftsByEmployee(Employee employee) {
         String PERMISSION_REQUIRED = "GET_SHIFT";
+        if (employee == null) {
+            throw new IllegalArgumentException("Employee cannot be null");
+        }
         return shifts.stream().filter(shift -> shift.getAssignedEmployees().values().stream().anyMatch(employees -> employees.contains(employee))).collect(Collectors.toSet());
     }
 
@@ -174,8 +241,11 @@ public class ShiftController {
      * @param shiftType morning or evening
      * @return the shift if it exists, null otherwise
      */
-    public Shift getshift(LocalDate date, ShiftType shiftType) {
+    public Shift getshift(LocalDate date, String shiftType) {
         String PERMISSION_REQUIRED = "GET_SHIFT";
+        if (date == null || shiftType == null) {
+            throw new IllegalArgumentException("Date and shift type cannot be null");
+        }
         return shifts.stream().filter(shift -> shift.getShiftDate().equals(date) && shift.getShiftType().equals(shiftType)).findFirst().orElse(null);
     }
 
@@ -186,8 +256,14 @@ public class ShiftController {
      * @param rolesRequired number of employees of each role required for the shift
      * @return true if the roles were updated successfully, false otherwise
      */
-    public boolean updateRolesRequired(long shiftId, Map<Role, Integer> rolesRequired) {
+    public boolean updateRolesRequired(long shiftId, Map<String, Integer> rolesRequired) {
         String PERMISSION_REQUIRED = "UPDATE_SHIFT";
+        if (rolesRequired == null) {
+            throw new IllegalArgumentException("Roles required cannot be null");
+        }
+        if (shiftId <= 0) {
+            throw new IllegalArgumentException("Shift ID must be a positive number");
+        }
         Shift shiftToUpdate = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
         if (shiftToUpdate == null) {
             throw new RuntimeException("Shift does not exist");
@@ -204,8 +280,14 @@ public class ShiftController {
      * @param assignedEmployees employees assigned to the shift
      * @return true if the assigned employees were updated successfully, false otherwise
      */
-    public boolean updateAssignedEmployees(long shiftId, Map<Role, Set<Employee>> assignedEmployees) {
+    public boolean updateAssignedEmployees(long shiftId, Map<String, Set<Employee>> assignedEmployees) {
         String PERMISSION_REQUIRED = "UPDATE_SHIFT";
+        if (assignedEmployees == null) {
+            throw new IllegalArgumentException("Assigned employees cannot be null");
+        }
+        if (shiftId <= 0) {
+            throw new IllegalArgumentException("Shift ID must be a positive number");
+        }
         Shift shiftToUpdate = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
         if (shiftToUpdate == null) {
             throw new RuntimeException("Shift does not exist");
@@ -224,6 +306,9 @@ public class ShiftController {
      */
     public boolean updateShiftManager(long shiftId, boolean isAssignedShiftManager) {
         String PERMISSION_REQUIRED = "UPDATE_SHIFT";
+        if (shiftId <= 0) {
+            throw new IllegalArgumentException("Shift ID must be a positive number");
+        }
         Shift shiftToUpdate = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
         if (shiftToUpdate == null) {
             throw new RuntimeException("Shift does not exist");
@@ -242,6 +327,9 @@ public class ShiftController {
      */
     public boolean updateOpenStatus(long shiftId, boolean isOpen) {
         String PERMISSION_REQUIRED = "UPDATE_SHIFT";
+        if (shiftId <= 0) {
+            throw new IllegalArgumentException("Shift ID must be a positive number");
+        }
         Shift shiftToUpdate = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
         if (shiftToUpdate == null) {
             throw new RuntimeException("Shift does not exist");
@@ -264,6 +352,12 @@ public class ShiftController {
         if (shiftToUpdate == null) {
             throw new RuntimeException("Shift does not exist");
         }
+        if (employees == null) {
+            throw new IllegalArgumentException("Employees set cannot be null");
+        }
+        if (shiftId <= 0) {
+            throw new IllegalArgumentException("Shift ID must be a positive number");
+        }
         shiftToUpdate.setAvailableEmployees(employees);
         shiftToUpdate.setUpdateDate(LocalDate.now());
         return true;
@@ -282,7 +376,29 @@ public class ShiftController {
         if (shiftToUpdate == null) {
             throw new RuntimeException("Shift does not exist");
         }
+        if (employee == null) {
+            throw new IllegalArgumentException("Employee cannot be null");
+        }
+        if (shiftId <= 0) {
+            throw new IllegalArgumentException("Shift ID must be a positive number");
+        }
+        if (shiftToUpdate.getAssignedEmployees().values().stream().anyMatch(employees -> employees.contains(employee))) {
+            throw new IllegalArgumentException("Employee is already assigned to a role in the shift");
+        }
+        if (shiftToUpdate.getAvailableEmployees() != null && shiftToUpdate.getAvailableEmployees().contains(employee)) {
+            throw new IllegalArgumentException("Employee already exists in available employees");
+        }
+        if (shiftToUpdate.getRolesRequired().values().stream().anyMatch(role -> role <= shiftToUpdate.getAssignedEmployees().values().stream().flatMap(Set::stream).count())) {
+            throw new IllegalArgumentException("No more employees required for this role in the shift");
+        }
+        if (shiftToUpdate.getAvailableEmployees() == null) {
+            throw new IllegalArgumentException("Available employees set is null");
+        }
+        if (shiftToUpdate.getAvailableEmployees().contains(employee)) {
+            throw new IllegalArgumentException("Employee already exists in available employees");
+        }
         Set<Employee> AvailableEmployees = shiftToUpdate.getAvailableEmployees();
+        shiftToUpdate.setUpdateDate(LocalDate.now());
         return AvailableEmployees.add(employee);
     }
 
@@ -299,7 +415,20 @@ public class ShiftController {
         if (shiftToUpdate == null) {
             throw new RuntimeException("Shift does not exist");
         }
+        if (employee == null) {
+            throw new IllegalArgumentException("Employee cannot be null");
+        }
+        if (shiftId <= 0) {
+            throw new IllegalArgumentException("Shift ID must be a positive number");
+        }
+        if (!shiftToUpdate.getAvailableEmployees().contains(employee)) {
+            throw new IllegalArgumentException("Employee not found in available employees");
+        }
+        if (shiftToUpdate.getAssignedEmployees().values().stream().anyMatch(employees -> employees.contains(employee))) {
+            throw new IllegalArgumentException("Employee is already assigned to a role in the shift");
+        }
         Set<Employee> AvailableEmployees = shiftToUpdate.getAvailableEmployees();
+        shiftToUpdate.setUpdateDate(LocalDate.now());
         return AvailableEmployees.remove(employee);
     }
 
@@ -312,8 +441,17 @@ public class ShiftController {
      * @return true if the employee was added (i.e., was not already assigned), false otherwise
      * @throws RuntimeException if the shift does not exist
      */
-    public boolean addAssignedEmployee(long shiftId, Role role, Employee employee) {
+    public boolean addAssignedEmployee(long shiftId, String role, Employee employee) {
         String PERMISSION_REQUIRED = "UPDATE_SHIFT";
+        if (employee == null) {
+            throw new IllegalArgumentException("Employee cannot be null");
+        }
+        if (role == null || role.isEmpty()) {
+            throw new IllegalArgumentException("Role cannot be null or empty");
+        }
+        if (shiftId <= 0) {
+            throw new IllegalArgumentException("Shift ID must be a positive number");
+        }
         Shift shiftToUpdate = shifts.stream()
                 .filter(shift -> shift.getId() == shiftId)
                 .findFirst()
@@ -322,8 +460,20 @@ public class ShiftController {
         if (shiftToUpdate == null) {
             throw new RuntimeException("Shift does not exist");
         }
-
-        Map<Role, Set<Employee>> availableEmployees = shiftToUpdate.getAssignedEmployees();
+        if (!shiftToUpdate.getRolesRequired().containsKey(role)) {
+            throw new IllegalArgumentException("Role not found in shift");
+        }
+        if (shiftToUpdate.getAssignedEmployees().get(role) != null && shiftToUpdate.getAssignedEmployees().get(role).contains(employee)) {
+            throw new IllegalArgumentException("Employee already assigned to this role in the shift");
+        }
+        if (shiftToUpdate.getAvailableEmployees() != null && !(shiftToUpdate.getAvailableEmployees().contains(employee))) {
+            throw new IllegalArgumentException("Employee is not available for this shift");
+        }
+        if (shiftToUpdate.getRolesRequired().get(role) <= shiftToUpdate.getAssignedEmployees().get(role).size()) {
+            throw new IllegalArgumentException("No more employees required for this role in the shift");
+        }
+        Map<String, Set<Employee>> availableEmployees = shiftToUpdate.getAssignedEmployees();
+        shiftToUpdate.setUpdateDate(LocalDate.now());
         return availableEmployees.computeIfAbsent(role, k -> new HashSet<>()).add(employee);
     }
 
@@ -336,7 +486,7 @@ public class ShiftController {
      * @return true if the employee was removed, false if they were not assigned
      * @throws RuntimeException if the shift does not exist
      */
-    public boolean removeAssignedEmployee(long shiftId, Role role, Employee employee) {
+    public boolean removeAssignedEmployee(long shiftId, String role, Employee employee) {
         String PERMISSION_REQUIRED = "UPDATE_SHIFT";
         Shift shiftToUpdate = shifts.stream()
                 .filter(shift -> shift.getId() == shiftId)
@@ -346,8 +496,23 @@ public class ShiftController {
         if (shiftToUpdate == null) {
             throw new RuntimeException("Shift does not exist");
         }
-
-        Map<Role, Set<Employee>> availableEmployees = shiftToUpdate.getAssignedEmployees();
+        if (employee == null) {
+            throw new IllegalArgumentException("Employee cannot be null");
+        }
+        if (role == null || role.isEmpty()) {
+            throw new IllegalArgumentException("Role cannot be null or empty");
+        }
+        if (shiftId <= 0) {
+            throw new IllegalArgumentException("Shift ID must be a positive number");
+        }
+        if (!shiftToUpdate.getRolesRequired().containsKey(role)) {
+            throw new IllegalArgumentException("Role not found in shift");
+        }
+        if (!shiftToUpdate.getAssignedEmployees().get(role).contains(employee)) {
+            throw new IllegalArgumentException("Employee not assigned to this role in the shift");
+        }
+        Map<String, Set<Employee>> availableEmployees = shiftToUpdate.getAssignedEmployees();
+        shiftToUpdate.setUpdateDate(LocalDate.now());
         return availableEmployees.computeIfAbsent(role, k -> new HashSet<>()).remove(employee);
     }
 
@@ -361,7 +526,7 @@ public class ShiftController {
      * @return true if the role was added (was not already defined), false otherwise
      * @throws RuntimeException if the shift does not exist
      */
-    public boolean addRoleRequired(long shiftId, Role role, Integer roleRequired) {
+    public boolean addRoleRequired(long shiftId, String role, Integer roleRequired) {
         String PERMISSION_REQUIRED = "UPDATE_SHIFT";
         Shift shiftToUpdate = shifts.stream()
                 .filter(shift -> shift.getId() == shiftId)
@@ -371,8 +536,20 @@ public class ShiftController {
         if (shiftToUpdate == null) {
             throw new RuntimeException("Shift does not exist");
         }
-
-        Map<Role, Integer> requiredRoles = shiftToUpdate.getRolesRequired();
+        if (role == null || role.isEmpty()) {
+            throw new IllegalArgumentException("Role cannot be null or empty");
+        }
+        if (shiftId <= 0) {
+            throw new IllegalArgumentException("Shift ID must be a positive number");
+        }
+        if (shiftToUpdate == null) {
+            throw new IllegalArgumentException("Shift not found");
+        }
+        if (shiftToUpdate.getRolesRequired().containsKey(role)) {
+            throw new IllegalArgumentException("Role already exists in the shift");
+        }
+        Map<String, Integer> requiredRoles = shiftToUpdate.getRolesRequired();
+        shiftToUpdate.setUpdateDate(LocalDate.now());
         return requiredRoles.putIfAbsent(role, roleRequired) == null;
     }
 
@@ -384,7 +561,7 @@ public class ShiftController {
      * @return true if the role was removed, false if it was not present
      * @throws RuntimeException if the shift does not exist
      */
-    public boolean removeRoleRequired(long shiftId, Role role) {
+    public boolean removeRoleRequired(long shiftId, String role) {
         String PERMISSION_REQUIRED = "UPDATE_SHIFT";
         Shift shiftToUpdate = shifts.stream()
                 .filter(shift -> shift.getId() == shiftId)
@@ -394,8 +571,20 @@ public class ShiftController {
         if (shiftToUpdate == null) {
             throw new RuntimeException("Shift does not exist");
         }
-
-        Map<Role, Integer> requiredRoles = shiftToUpdate.getRolesRequired();
+        if (role == null || role.isEmpty()) {
+            throw new IllegalArgumentException("Role cannot be null or empty");
+        }
+        if (shiftId <= 0) {
+            throw new IllegalArgumentException("Shift ID must be a positive number");
+        }
+        if (!shiftToUpdate.getRolesRequired().containsKey(role)) {
+            throw new IllegalArgumentException("Role not found in the shift");
+        }
+        if (shiftToUpdate.getAssignedEmployees().containsKey(role) && !shiftToUpdate.getAssignedEmployees().get(role).isEmpty()) {
+            throw new IllegalArgumentException("Cannot remove role that has assigned employees");
+        }
+        Map<String, Integer> requiredRoles = shiftToUpdate.getRolesRequired();
+        shiftToUpdate.setUpdateDate(LocalDate.now());
         return requiredRoles.remove(role) != null;
     }
 
