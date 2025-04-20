@@ -19,10 +19,8 @@ public class ItemsDoc {
 
     public int getItemDoc_num() {return itemDoc_num;}
     public void setItemDoc_num(int itemDoc_num) {this.itemDoc_num = itemDoc_num;}
-
     public Site getDest_site() {return dest_site;}
     public void setDest_site(Site dest_site) {this.dest_site = dest_site;}
-
     public HashMap<Item, Integer> getItems() {return items;}
     public void setItems(HashMap<Item, Integer> items) {this.items = items;}
 

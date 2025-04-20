@@ -109,8 +109,11 @@ public class TranManController {
     private void createaTransportMenu(){
         System.out.println("   --------    Transport Creation    --------\n");
         System.out.println("...");
-        System.out.println(" Select Action: ");
+        System.out.println(" Select Option: ");
         //TODO
+
+
+        //TODO:   maybe also when a driver/truck are unavailable we can choose to put in waitqueue or try to choose another
     }
 
 

@@ -29,6 +29,8 @@ public class Item {
 
     @Override
     public String toString() {
-        return "";                    //TODO    <<-------------------
+        String res = "";
+        res += "Item Name: " + name + ", Item Weight: " + weight + ", Item Condition: " + (condition ? "Good" : "Bad");
+        return res;
     }
 }

@@ -8,10 +8,10 @@ import ServiceLayer.*;
 public class Main {
    public static void main(String[] args) {
 
-      TransportFacade tran_f = new TransportFacade();
       TruckFacade tru_f = new TruckFacade();
       EmployeeFacade eff = new EmployeeFacade();
       SiteFacade sf = new SiteFacade();
+      TransportFacade tran_f = new TransportFacade(eff, sf, tru_f);
 
       TransportService tran_s = new TransportService(tran_f);
       TruckService tru_s = new TruckService(tru_f);

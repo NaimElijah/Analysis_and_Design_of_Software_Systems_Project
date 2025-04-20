@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 import java.time.*;
 
 public class TransportDoc {
-    private char status; // 'C'-Canceled,'D'-Delayed,'F'-Finished,'IP'-InProgress
+    private enumTranStatus status; // 'C'-Canceled,'D'-Delayed,'F'-Finished,'IP'-InProgress
     private int tran_Doc_ID;
     private LocalDateTime departure_dt;
     private Truck transportTruck;
@@ -20,11 +20,10 @@ public class TransportDoc {
     private int truck_Depart_Weight;
     private Site src_site;
     private ArrayList<ItemsDoc> dests_Docs;  // In Order of visit
-    private ArrayList<String> problems_descriptions;
-//    private int problems_Level;     //  maybe not needed
+    private ArrayList<enumTranProblem> problems;
 
 
-    public TransportDoc(char status, int tran_Doc_ID, Truck transportTruck, Driver transportDriver, int truck_Depart_Weight, Site src_site) {
+    public TransportDoc(enumTranStatus status, int tran_Doc_ID, Truck transportTruck, Driver transportDriver, int truck_Depart_Weight, Site src_site) {
         this.status = status;
         this.tran_Doc_ID = tran_Doc_ID;
         this.departure_dt = LocalDateTime.now();   // when really departing after the check, set this to departure datetime
@@ -33,11 +32,11 @@ public class TransportDoc {
         this.truck_Depart_Weight = truck_Depart_Weight;
         this.src_site = src_site;
         this.dests_Docs = new ArrayList<ItemsDoc>();
-        this.problems_descriptions = new ArrayList<String>();
+        this.problems = new ArrayList<enumTranProblem>();
     }
 
-    public char getStatus() {return status;}
-    public void setStatus(char status) {this.status = status;}
+    public enumTranStatus getStatus() {return status;}
+    public void setStatus(enumTranStatus status) {this.status = status;}
     public int getTran_Doc_ID() {return tran_Doc_ID;}
     public void setTran_Doc_ID(int tran_Doc_ID) {this.tran_Doc_ID = tran_Doc_ID;}
     public LocalDateTime getDeparture_dt() {return departure_dt;}
@@ -52,19 +51,19 @@ public class TransportDoc {
     public void setSrc_site(Site src_site) {this.src_site = src_site;}
     public ArrayList<ItemsDoc> getDests_Docs() {return dests_Docs;}
     public void setDests_Docs(ArrayList<ItemsDoc> dests_Docs) {this.dests_Docs = dests_Docs;}
-    public ArrayList<String> getProblems_descriptions() {return problems_descriptions;}
-    public void setProblems_descriptions(ArrayList<String> problems_descriptions) {this.problems_descriptions = problems_descriptions;}
+    public ArrayList<enumTranProblem> getProblems() {return problems;}
+    public void setProblems(ArrayList<enumTranProblem> problems_descriptions) {this.problems = problems_descriptions;}
 
 
-    public void addDestSite(int site_menu_index){   // throw msg if in new Area and give option
+    public void addDestSite(Site s){   // throw msg if in new Area and give option
         //TODO
     }
 
-    public void addTransportProblem(String problem){
+    public void addTransportProblem(enumTranProblem problem){
         //TODO
     }
 
-    public void removeDestSite(int site_menu_index){
+    public void removeDestSite(Site s){
         //TODO
     }
 
@@ -76,7 +75,7 @@ public class TransportDoc {
         //TODO
     }
 
-    public void addTransportProblem(int TrNum, String problem){
+    public void addTransportProblem(int TrNum, enumTranProblem problem){
         //TODO
     }
 
@@ -88,8 +87,14 @@ public class TransportDoc {
         return 0;  //TODO
     }
 
+
     @Override
     public String toString() {
-        return "";  //TODO
+        String res = "";
+        res += "TranDoc ID: " + tran_Doc_ID + " Status: " + status + " ........" + "\n";   //TODO
+        for (ItemsDoc itemsdoc : dests_Docs) {
+            res += itemsdoc.toString() + "\n";
+        }
+        return res;
     }
 }
