@@ -8,7 +8,8 @@
 /dataSources.local.xml
 
 # IntelliJ IDEA files
-.idea/
+.idea
+idea/
 *.iml
 *.iws
 *.ipr
