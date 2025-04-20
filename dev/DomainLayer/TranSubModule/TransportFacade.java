@@ -7,6 +7,8 @@ import DomainLayer.SiteSubModule.SiteFacade;
 import DomainLayer.TruSubModule.Truck;
 import DomainLayer.TruSubModule.TruckFacade;
 
+import javax.management.openmbean.KeyAlreadyExistsException;
+import java.io.FileNotFoundException;
 import java.nio.file.FileAlreadyExistsException;
 import java.time.LocalDateTime;
 
@@ -15,7 +17,8 @@ import java.util.HashMap;
 
 public class TransportFacade {
     private HashMap<Integer, TransportDoc> transports;
-    private HashMap<Integer, ItemsDoc> itemsDocs;
+    private int transportIDCounter;
+    private HashMap<Integer, ItemsDoc> itemsDocs;  // to know a ItemsDoc's num is unique and also for connection.
     private ArrayList<TransportDoc> queuedTransports;    ///TODO:  <<-------------------------    implement this functionality
 
     private EmployeeFacade employeeFacade;
@@ -27,6 +30,7 @@ public class TransportFacade {
 
 
     public TransportFacade(EmployeeFacade eF, SiteFacade sF, TruckFacade tF) {
+        this.transportIDCounter = 0;
         this.transports = new HashMap<Integer, TransportDoc>();
         this.itemsDocs = new HashMap<Integer, ItemsDoc>();
         this.queuedTransports = new ArrayList<TransportDoc>();    ///TODO:  <<-------------------------    implement this
@@ -68,24 +72,37 @@ public class TransportFacade {
 
 
 
+
+
     public void createTransport(int truckID, int driverID, int srcsiteAreaNum, String srcsiteAddress){  // time is decided when the Transport departs
         LocalDateTime now = LocalDateTime.now();
 
+        //TODO    <<<<----------------------------------------   CONTINUE FROM HERE in the facade after DOING THE MENUS IN THE PRESENTATION LAYER !!!!!!   <<-----------
+        //TODO    <<<<----------------------------------------   CONTINUE FROM HERE in the facade after DOING THE MENUS IN THE PRESENTATION LAYER !!!!!!   <<-----------
+        //TODO    <<<<----------------------------------------   CONTINUE FROM HERE in the facade after DOING THE MENUS IN THE PRESENTATION LAYER !!!!!!   <<-----------
         //TODO
     }
-
-    public void deleteTransport(int transportID){
-        //TODO
-    }
-
-
-
-
 
 
     public void setTransportStatus(int TranDocID, int menu_status_option){
         //TODO
+        //TODO:  according to the new status change everything relevant(like driver and truck isFree)
     }
+
+
+    public void deleteTransport(int transportID) throws FileNotFoundException {
+        if(!transports.containsKey(transportID)){
+            throw new FileNotFoundException();
+        }
+        //TODO: delete everything inside of the transport and change statuses of
+        transports.remove(transportID);
+        //TODO
+    }
+
+
+
+
+
 
     public void setTransportTruck(int TranDocID, int truckNum){
         //TODO
@@ -139,6 +156,7 @@ public class TransportFacade {
         }
     }
 
+
     public void addTransportToWaitQueue(int transportID){
         //TODO
     }
@@ -164,6 +182,21 @@ public class TransportFacade {
 
 
 
+    public void changeAnItemsDocNum(int oldItemsDocNum, int newItemsDocNum) throws FileNotFoundException, KeyAlreadyExistsException {
+        if (!this.itemsDocs.containsKey(oldItemsDocNum)) {
+            throw new FileNotFoundException();
+        } else if (this.itemsDocs.containsKey(newItemsDocNum)) {
+            throw new KeyAlreadyExistsException();
+        }
+        ItemsDoc temp = this.itemsDocs.get(oldItemsDocNum);
+        this.itemsDocs.put(newItemsDocNum, temp);
+        this.itemsDocs.get(newItemsDocNum).setItemDoc_num(newItemsDocNum);
+        this.itemsDocs.remove(oldItemsDocNum);
+        /// maybe add this function as well
+    }
+
+
+
 
 
 
@@ -181,35 +214,37 @@ public class TransportFacade {
 
 
 
-
-    public void addDestSite(int tran_ID, int siteArea, String siteAddress) {  // (throw msg exce if in new Area and give option)
-        //TODO
+    // TODO: (throw msg exce if in new Area and give option)
+    public void addDestSiteToTransport(int tran_ID, int itemsDoc_num, int destSiteArea, String destSiteAddress) {  // TODO: (throw msg exce if in new Area and give option)
+        //TODO:  use site facade to send the Site downwards
+        //TODO:  also add site/itemsDoc to hashmap here
     }
 
-    public void removeDestSite(int tran_ID, int siteArea, String siteAddress){
-        //TODO
-    }
-
-
-
-
-
-
-
-
-    public void addItem(int tranDocID, int siteArea, String siteAddress, String itemName, int itemWeight, int amount, boolean cond){
-        //TODO
-    }
-
-    public void removeItem(int tranDocID, int siteArea, String siteAddress, String ItemName, int amount, boolean cond){
-        //TODO
-    }
-
-    public void setItemCond(int tranDocID, int siteArea, String siteAddress, String ItemName, int amount, boolean cond){
-        //TODO
+    public void removeDestSiteFromTransport(int tran_ID, int itemsDoc_num){
+        //TODO:  also remove site/itemsDoc from hashmap here
     }
 
 
+
+
+
+
+
+
+    public void addItem(int itemsDoc_num, int itemId, String itemName, int itemWeight, int amount, boolean cond){
+        int res = this.itemsDocs.get(itemsDoc_num).addItem(itemId, itemName, itemWeight, cond, amount);
+        //TODO according to the return value  --->  throw
+    }
+
+    public void removeItem(int itemsDoc_num, int itemId, String ItemName, int itemWeight, int amount, boolean cond){
+        int res = this.itemsDocs.get(itemsDoc_num).removeItem(itemId, ItemName, itemWeight, cond, amount);
+        //TODO according to the return value  --->  throw
+    }
+
+    public void setItemCond(int itemsDoc_num, int itemId, String ItemName, int itemWeight, int amount, boolean newCond){
+        boolean res = this.itemsDocs.get(itemsDoc_num).setItemCond(itemId, ItemName, itemWeight, amount, newCond);
+        //TODO according to the return value  --->  throw
+    }
 
 
 
@@ -225,15 +260,6 @@ public class TransportFacade {
         }
         return resOfAllTransports;
     }
-
-
-//    public String itemsToString(int ItemsDocID){
-///        return "";  //   might not be needed
-//    }
-//
-//    public String transportToString(int TranDocID){
-///        return "";  //   might not be needed
-//    }
 
 
 

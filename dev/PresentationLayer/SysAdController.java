@@ -23,14 +23,16 @@ public class SysAdController {
         System.out.println("(1)  Show All Employees");
         System.out.println("(2)  Change Employees Permissions");
         System.out.println("(3)  ...");
-        System.out.println("\n(4)  Exit The System");
+        System.out.println("(4)  Disconnect and Go Back to Main Program Menu");
         System.out.println();
 
         String choice = scanner.nextLine();
         if(choice.equals("1")){
             showAllEmployees();
+            systemAdminMainMenu();
         }else if(choice.equals("2")){
             changeEmployeesPermissions();
+            systemAdminMainMenu();
         }else if(choice.equals("3")){
             // TODO if needed
         } else if (choice.equals("4")) {

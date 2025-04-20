@@ -10,18 +10,18 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.time.LocalDateTime;
 import java.time.*;
+import java.util.HashMap;
 
 public class TransportDoc {
-    private enumTranStatus status; // 'C'-Canceled,'D'-Delayed,'F'-Finished,'IP'-InProgress
+    private enumTranStatus status;
     private int tran_Doc_ID;
     private LocalDateTime departure_dt;
     private Truck transportTruck;
     private Driver transportDriver;
     private int truck_Depart_Weight;
     private Site src_site;
-    private ArrayList<ItemsDoc> dests_Docs;  // In Order of visit
+    private ArrayList<ItemsDoc> dests_Docs;  ///  <<<--------------  In Order of visit   <<<--------------------
     private ArrayList<enumTranProblem> problems;
-
 
     public TransportDoc(enumTranStatus status, int tran_Doc_ID, Truck transportTruck, Driver transportDriver, int truck_Depart_Weight, Site src_site) {
         this.status = status;
@@ -55,46 +55,128 @@ public class TransportDoc {
     public void setProblems(ArrayList<enumTranProblem> problems_descriptions) {this.problems = problems_descriptions;}
 
 
-    public void addDestSite(Site s){   // throw msg if in new Area and give option
-        //TODO
+
+    public int addDestSite(Site dest, int itemsDoc_num){
+        for(ItemsDoc itemsDoc : dests_Docs){
+            if (itemsDoc.getDest_site().equals(dest)){
+                return -1;  //  Destination Site already in this Transport, do add/remove item from that site instead.
+            }
+        }
+        ItemsDoc addition = new ItemsDoc(itemsDoc_num, this.src_site, dest);
+        dests_Docs.add(addition);
+        return 0;  // all good
     }
 
-    public void addTransportProblem(enumTranProblem problem){
-        //TODO
+    public int removeDestSite(int itemsDoc_num){
+        ItemsDoc temp = null;
+        for (ItemsDoc itemsDoc : dests_Docs) {
+            if(itemsDoc.getItemDoc_num() == itemsDoc_num){
+                temp = itemsDoc;
+            }
+        }
+        if (temp == null) {
+            return -1;  // cannot remove a dest site that isn't in this transport
+        }
+        dests_Docs.remove(temp);
+        return 0;  //  all good
     }
 
-    public void removeDestSite(Site s){
-        //TODO
+
+
+
+
+
+//    public boolean changeAnItemsDocNum(int oldItemsDocNum, int newItemsDocNum){
+//        for (ItemsDoc itemsDoc : dests_Docs) {
+//            if (itemsDoc.getItemDoc_num() == oldItemsDocNum) {
+//                itemsDoc.setItemDoc_num(newItemsDocNum);
+//                return true;  // all good
+//            }
+//        }
+//        return false;  // couldn't find oldItemsDocNum here
+//    }
+
+
+
+
+
+    public int calculateTransportItemsWeight(){
+        int sum = 0;
+        for (ItemsDoc itemsDoc : dests_Docs) {
+            sum += itemsDoc.calculateItemsWeight();
+        }
+        return sum;
     }
 
-    public void addItem(Item item, int amount, Site s){
-        //TODO
+
+
+
+    public int addTransportProblem(enumTranProblem problem){
+        if (problems.contains(problem)) {
+            return -1;  // already have that problem
+        }
+        this.problems.add(problem);
+        return 0;  // all good
     }
 
-    public void removeItem(String ItemName, int amount, Site s, boolean cond){
-        //TODO
+    public int removeTransportProblem(enumTranProblem problem){
+        if (!problems.contains(problem)) {
+            return -1;  // can't delete a problem that didn't exist
+        }
+        this.problems.remove(problem);
+        return 0;  // all good
     }
 
-    public void addTransportProblem(int TrNum, enumTranProblem problem){
-        //TODO
+
+
+
+
+
+    public int addItem(int itemsDoc_Num, int itemId, String ItemName, int itemWeight, int amount, boolean cond){
+        int res = 0;
+        for (ItemsDoc itemsDoc : dests_Docs) {
+            if (itemsDoc.getItemDoc_num() == itemsDoc_Num){
+                res = itemsDoc.addItem(itemId, ItemName, itemWeight, cond, amount);
+            }
+        }
+        return res;
     }
 
-    public String checkTransportValidity(TransportDoc transport){    // throws different exceptions according to case
-        return "";   //TODO
+    public int removeItem(int itemsDoc_Num, int itemId, String ItemName, int itemWeight, int amount, boolean cond){
+        int res = 0;
+        for (ItemsDoc itemsDoc : dests_Docs) {
+            if (itemsDoc.getItemDoc_num() == itemsDoc_Num){
+                res = itemsDoc.removeItem(itemId, ItemName, itemWeight, cond, amount);
+            }
+        }
+        return res;
     }
 
-    public int calculateTransportWeight(){
-        return 0;  //TODO
+    public boolean setItemCond(int itemsDoc_Num, int itemId, String ItemName, int itemWeight, int amount, boolean newCond){
+        boolean res = true;
+        for (ItemsDoc itemsDoc : dests_Docs) {
+            if (itemsDoc.getItemDoc_num() == itemsDoc_Num){
+                res = itemsDoc.setItemCond(itemId, ItemName, itemWeight, amount, newCond);
+            }
+        }
+        return res;
     }
+
+
+
+
 
 
     @Override
     public String toString() {
-        String res = "";
-        res += "TranDoc ID: " + tran_Doc_ID + " Status: " + status + " ........" + "\n";   //TODO
+        String res = "Transport Document ID: " + tran_Doc_ID + " Status: " + status + " ........" + "\n";      //TODO   <<<----------------------
         for (ItemsDoc itemsdoc : dests_Docs) {
             res += itemsdoc.toString() + "\n";
         }
         return res;
     }
+
+
+
 }
+

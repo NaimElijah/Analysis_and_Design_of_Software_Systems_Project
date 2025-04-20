@@ -14,7 +14,7 @@ public class TruckFacade {
     public void removeTruck(int num) {}
 
     public String showAllTrucks(){
-        String res = "Trucks Warehouse Capacity:\n";
+        String res = "Trucks Warehouse:\n";
         for (Truck truck : trucksWareHouse.values()) {
             res += truck.toString() + "\n";
         }

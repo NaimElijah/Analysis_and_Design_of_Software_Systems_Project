@@ -5,44 +5,108 @@ import DomainLayer.SiteSubModule.Site;
 import java.util.HashMap;
 
 public class ItemsDoc {
-    private int itemDoc_num;
+    private int itemsDoc_num;
+    /// we want to take to here
+    private Site src_site;
+    ///  we want to take from there
     private Site dest_site;
 //    private boolean isDestaStore;
-    private HashMap<Item, Integer> items;
+    private HashMap<Item, Integer> goodItems;   //  separate the good items and the bad items
+    private HashMap<Item, Integer> badItems;
 
-    public ItemsDoc(int itemDoc_num, Site dest_site) {
-        this.itemDoc_num = itemDoc_num;
+    public ItemsDoc(int itemDoc_num, Site src_site, Site dest_site) {
+        this.itemsDoc_num = itemDoc_num;
+        this.src_site = src_site;
         this.dest_site = dest_site;
 //        this.isDestaStore = arggg;
-        this.items = new HashMap<Item, Integer>();
+        this.goodItems = new HashMap<Item, Integer>();
+        this.badItems = new HashMap<Item, Integer>();
     }
 
-    public int getItemDoc_num() {return itemDoc_num;}
-    public void setItemDoc_num(int itemDoc_num) {this.itemDoc_num = itemDoc_num;}
+    public int getItemDoc_num() {return itemsDoc_num;}
+    public void setItemDoc_num(int itemDoc_num) {this.itemsDoc_num = itemDoc_num;}
+    public Site getSrc_site() {return src_site;}
+    public void setSrc_site(Site src_site) {this.src_site = src_site;}
     public Site getDest_site() {return dest_site;}
     public void setDest_site(Site dest_site) {this.dest_site = dest_site;}
-    public HashMap<Item, Integer> getItems() {return items;}
-    public void setItems(HashMap<Item, Integer> items) {this.items = items;}
+    public HashMap<Item, Integer> getGoodItems() {return goodItems;}
+    public void setGoodItems(HashMap<Item, Integer> goodItems) {this.goodItems = goodItems;}
+    public HashMap<Item, Integer> getBadItems() {return badItems;}
+    public void setBadItems(HashMap<Item, Integer> badItems) {this.badItems = badItems;}
 
-
-    public void addItem(String itemName, int amount, boolean cond) {
-        //TODO
+    public int addItem(int itemId, String itemName, int itemWeight, boolean cond, int amount) {
+        HashMap<Item, Integer> items = cond ? goodItems : badItems;
+        for (Item item : items.keySet()) {
+            if (item.getItemID() == itemId && item.getName().equals(itemName) && item.getWeight() == itemWeight) {
+                items.put(item, amount + items.get(item));  // if item already exists, add amounts
+                return 0;  // all good
+            }
+        }
+        for (Item item : items.keySet()) {
+            if (item.getItemID() == itemId || (item.getName().equals(itemName) && item.getWeight() == itemWeight)) {
+                return -1;   /////// can't add an item with a duplicate itemID   <<-----------------   Ambiguous Item can't be added  <<--------------
+            }
+        }
+        items.put(new Item(itemId, itemName, itemWeight, cond), amount);
+        return 0;  // all good
     }
 
-    public void removeItem(String itemName, int amount, boolean cond) {
-        //TODO
+    public int removeItem(int itemId, String itemName, int itemWeight, boolean cond, int amount) {
+        HashMap<Item, Integer> items = cond ? goodItems : badItems;
+        for (Item item : items.keySet()) {
+            if (item.getItemID() == itemId && item.getName().equals(itemName) && item.getWeight() == itemWeight) {
+                if(amount >= items.get(item)){
+                    items.remove(item);
+                    return items.get(item); // return how many items removed
+                }
+                items.put(item, items.get(item) - amount);
+                return amount; // return how many items removed
+            }
+        }
+        return -1;  // item to remove not found
     }
 
-    public void removeBadItem(String ItemName, int amount, Site s, boolean cond){
-        //TODO
+    public boolean setItemCond(int itemId, String itemName, int itemWeight, int amount, boolean newCond){
+        HashMap<Item, Integer> itemsFrom = newCond ? badItems : goodItems;
+        HashMap<Item, Integer> itemsTo = newCond ? goodItems : badItems;
+        for (Item item : itemsFrom.keySet()) {
+            if (item.getItemID() == itemId && item.getName().equals(itemName) && item.getWeight() == itemWeight) {
+                int amount_removed = removeItem(itemId, itemName, itemWeight, !newCond, amount);
+                addItem(itemId, itemName, itemWeight, newCond, amount_removed);
+                return true;
+            }
+        }
+        for (Item item : itemsTo.keySet()) {   // checking if already set as the wanted newCond
+            if (item.getItemID() == itemId && item.getName().equals(itemName) && item.getWeight() == itemWeight) {
+                return true;
+            }
+        }
+        return false;  //  item to change cond to was not found
     }
 
-    public void setItemCond(String ItemName, int amount, boolean cond){
-        //TODO
+    public int calculateItemsWeight(){
+        int sum = 0;
+        for (Item item : goodItems.keySet()) {
+            sum += item.getWeight();
+        }
+        for (Item item : badItems.keySet()) {
+            sum += item.getWeight();
+        }
+        return sum;
     }
 
     @Override
     public String toString() {
-        return "";   //TODO
+        String res = "Items Document #" + itemsDoc_num + " Details: from Source Site: " + src_site + " to Destination Site: " + dest_site + ". Items Included:\n";
+        res += "- Good Items:\n";
+        for (Item item : goodItems.keySet()) {
+            res += item.toString() + ".\n";
+        }
+        res += "- Bad Items:\n";
+        for (Item item : badItems.keySet()) {
+            res += item.toString() + ".\n";
+        }
+        res += "\n";
+        return res;
     }
 }

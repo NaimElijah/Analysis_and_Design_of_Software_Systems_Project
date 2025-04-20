@@ -28,7 +28,7 @@ public class TranManController {
         System.out.println("(3)  Sites Options Menu");
         System.out.println("(4)  Drivers Options Menu");
         System.out.println("(5)  Trucks Options Menu");
-        System.out.println("(6)  Exit The System");
+        System.out.println("(6)  Disconnect and Go Back to Main Program Menu");
         System.out.println();
         System.out.println(" Select Options Menu: ");
         String choice = scanner.nextLine();
@@ -49,7 +49,7 @@ public class TranManController {
                 trucksOptionsMenu();
                 break;
             case "6":
-                System.out.println("\nExiting The System, Goodbye.\n");
+                System.out.println("\nGoing Back to Main Program Menu.\n");
                 break;
             default:
                 System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
@@ -108,8 +108,21 @@ public class TranManController {
 
     private void createaTransportMenu(){
         System.out.println("   --------    Transport Creation    --------\n");
-        System.out.println("...");
-        System.out.println(" Select Option: ");
+        System.out.println("Enter the following information:\n");
+        System.out.println("Enter Source Area Number: ");
+        int sourceAreaNum = scanner.nextInt();
+        System.out.println("Enter Source Address String: ");
+        String sourceAddress = scanner.next();
+        System.out.println("Enter Desired Truck Number: ");
+        int truckID = scanner.nextInt();
+        System.out.println("Enter Desired Driver ID: ");
+        int driverID = scanner.nextInt();
+
+        // maybe Also do checks with service layer functions here so that we can prompt for change
+
+        //TODO    <<<<-----------------------------------   CONTINUE FROM HERE IN THE PRESENTATION LAYER !!!!!!   <<-----------  DO the whole menu to see what's needed
+        //TODO    <<<<-----------------------------------   CONTINUE FROM HERE IN THE PRESENTATION LAYER !!!!!!   <<-----------  DO the whole menu to see what's needed
+        //TODO    <<<<-----------------------------------   CONTINUE FROM HERE IN THE PRESENTATION LAYER !!!!!!   <<-----------  DO the whole menu to see what's needed
         //TODO
 
 
@@ -117,10 +130,19 @@ public class TranManController {
     }
 
 
+
+
+
+
+
+
     private void deleteaTransportMenu(){
         System.out.println("   --------    Transport Deletion    --------\n");
         //TODO
     }
+
+
+
 
     private void editaTransportMenu(){
         System.out.println("   --------    Transport Edition Menu    --------\n");

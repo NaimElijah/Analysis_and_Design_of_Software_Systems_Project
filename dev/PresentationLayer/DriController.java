@@ -23,14 +23,16 @@ public class DriController {
         System.out.println("(1)  View All Transports Related to me");
         System.out.println("(2)  Edit Item's Condition in my Transport");
         System.out.println("(3)  ...");
-        System.out.println("\n(4)  Exit The System");
+        System.out.println("(4)  Disconnect and Go Back to Main Program Menu");
         System.out.println();
 
         String choice = scanner.nextLine();
         if(choice.equals("1")){
             viewAllTransportsRelatedtome();
+            driverMainMenu();
         }else if(choice.equals("2")){
             editItemsConditioninmyTransport();
+            driverMainMenu();
         }else if(choice.equals("3")){
             // TODO if needed
         } else if (choice.equals("4")) {

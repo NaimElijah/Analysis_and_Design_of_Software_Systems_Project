@@ -25,8 +25,8 @@ public class MainTranSysController {
     }
 
     void MainMenu(){
-        System.out.println("         --------    Main Menu    -------");
-        System.out.println("   Welcome to the Transport System.");
+        System.out.println("         --------    Main Program Menu    -------");
+        System.out.println("             Welcome to the Transport System !");
         System.out.println("   What would you like to login as ?\n");
         System.out.println("(1)  System Admin");
         System.out.println("(2)  Transport Manager");
@@ -38,10 +38,13 @@ public class MainTranSysController {
 
         if(choice.equals("1")){
             sysAdCont.systemAdminMainMenu();
+            MainMenu();
         }else if(choice.equals("2")){
             tranManCont.transportManagerMainMenu();
+            MainMenu();
         }else if(choice.equals("3")){
             drCont.driverMainMenu();
+            MainMenu();
         } else if (choice.equals("4")) {
             System.out.println("\nExiting The System, Goodbye.\n");
         } else {
