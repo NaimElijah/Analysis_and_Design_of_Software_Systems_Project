@@ -3,7 +3,9 @@ package ServiceLayer;
 import DomainLayer.Employee;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class EmployeeSL {
 
@@ -56,5 +58,24 @@ public class EmployeeSL {
             terms.put(entry.getKey(), entry.getValue());
         }
         return terms;
+    }
+
+    /**
+     * Gets all roles assigned to the employee.
+     * 
+     * @return A set of role names assigned to the employee
+     */
+    public Set<String> getRoles() {
+        return new HashSet<>(employee.getRoles());
+    }
+
+    /**
+     * Checks if the employee has a specific role.
+     * 
+     * @param roleName The name of the role to check
+     * @return true if the employee has the role, false otherwise
+     */
+    public boolean hasRole(String roleName) {
+        return employee.getRoles().contains(roleName);
     }
 }

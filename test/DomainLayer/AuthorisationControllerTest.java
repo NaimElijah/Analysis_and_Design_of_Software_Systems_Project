@@ -1,10 +1,11 @@
 package DomainLayer;
 
+import DomainLayer.exception.InvalidInputException;
+import DomainLayer.exception.UnauthorizedPermissionException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -52,24 +53,73 @@ class AuthorisationControllerTest {
 
     @Test
     void hasPermission() {
-        assertTrue(authorisationController.HasPermission(shira, CREATE_EMPLOYEE)); // Shira has the ADMIN role which has the CREATE_EMPLOYEE permission
-        assertFalse(authorisationController.HasPermission(shira, CASHIER_PERMISSION)); // Shira does not have the CASHIER role
-        assertFalse(authorisationController.HasPermission(cochava, CREATE_EMPLOYEE)); // Cochava has the CASHIER role which does not have the CREATE_EMPLOYEE permission
+        assertTrue(authorisationController.hasPermission(shira, CREATE_EMPLOYEE)); // Shira has the ADMIN role which has the CREATE_EMPLOYEE permission
 
+        // Test cases where employee doesn't have permission - should throw UnauthorizedPermission
+        assertThrows(UnauthorizedPermissionException.class, () -> {
+            authorisationController.hasPermission(shira, CASHIER_PERMISSION); // Shira does not have the CASHIER role
+        });
+
+        assertThrows(UnauthorizedPermissionException.class, () -> {
+            authorisationController.hasPermission(cochava, CREATE_EMPLOYEE); // Cochava has the CASHIER role which does not have the CREATE_EMPLOYEE permission
+        });
+
+        // Test edge cases
+        assertThrows(InvalidInputException.class, () -> {
+            authorisationController.hasPermission(null, CREATE_EMPLOYEE);
+        });
+
+        assertThrows(InvalidInputException.class, () -> {
+            authorisationController.hasPermission(shira, null);
+        });
+
+        assertThrows(InvalidInputException.class, () -> {
+            authorisationController.hasPermission(shira, "");
+        });
     }
 
     @Test
     void hasRole() {
-        assertTrue(authorisationController.HasRole(shira, ADMIN)); // Shira has the ADMIN role
-        assertFalse(authorisationController.HasRole(cochava, ADMIN)); // Cochava does not have the ADMIN role
-        assertTrue(authorisationController.HasRole(cochava, CASHIER_ROLE)); // Cochava has the CASHIER role
+        assertTrue(authorisationController.hasRole(shira, ADMIN)); // Shira has the ADMIN role
+        assertFalse(authorisationController.hasRole(cochava, ADMIN)); // Cochava does not have the ADMIN role
+        assertTrue(authorisationController.hasRole(cochava, CASHIER_ROLE)); // Cochava has the CASHIER role
+
+        // Test edge cases
+        assertThrows(InvalidInputException.class, () -> {
+            authorisationController.hasRole(null, ADMIN);
+        });
+
+        assertThrows(InvalidInputException.class, () -> {
+            authorisationController.hasRole(shira, null);
+        });
+
+        assertThrows(InvalidInputException.class, () -> {
+            authorisationController.hasRole(shira, "");
+        });
     }
 
     @Test
     void addRole() {
-        assertTrue(authorisationController.AddRole(cochava, ADMIN)); // Cochava does not have the ADMIN role
-        assertFalse(authorisationController.AddRole(cochava, CASHIER_ROLE)); // Cochava already has the CASHIER role
-        assertTrue(authorisationController.AddRole(shira, CASHIER_ROLE)); // Shira does not have the CASHIER role
+        assertTrue(authorisationController.addRole(cochava, ADMIN)); // Cochava does not have the ADMIN role
+        assertFalse(authorisationController.addRole(cochava, CASHIER_ROLE)); // Cochava already has the CASHIER role
+        assertTrue(authorisationController.addRole(shira, CASHIER_ROLE)); // Shira does not have the CASHIER role
+
+        // Test edge cases
+        assertThrows(InvalidInputException.class, () -> {
+            authorisationController.addRole(null, ADMIN);
+        });
+
+        assertThrows(InvalidInputException.class, () -> {
+            authorisationController.addRole(shira, null);
+        });
+
+        assertThrows(InvalidInputException.class, () -> {
+            authorisationController.addRole(shira, "");
+        });
+
+        assertThrows(InvalidInputException.class, () -> {
+            authorisationController.addRole(shira, "NON_EXISTENT_ROLE");
+        });
     }
 
     @Test
@@ -111,13 +161,24 @@ class AuthorisationControllerTest {
 
     @Test
     void createPermission() {
-        assertTrue(authorisationController.CreatePermission("MANAGER")); // MANAGER permission does not exist
-        assertFalse(authorisationController.CreatePermission(CREATE_EMPLOYEE)); // CREATE_EMPLOYEE permission already exists
+        assertTrue(authorisationController.createPermission("MANAGER")); // MANAGER permission does not exist
+        assertFalse(authorisationController.createPermission(CREATE_EMPLOYEE)); // CREATE_EMPLOYEE permission already exists
     }
 
     @Test
     void deletePermission() {
-        assertFalse(authorisationController.DeletePermission("MANAGER")); // MANAGER permission does not exist - cannot delete - False
-        assertTrue(authorisationController.DeletePermission(CREATE_EMPLOYEE)); // CREATE_EMPLOYEE permission already exists
+        assertFalse(authorisationController.deletePermission("MANAGER")); // MANAGER permission does not exist - cannot delete - False
+
+        // CREATE_EMPLOYEE permission is in use by the ADMIN role, so it should throw an InvalidInput exception
+        assertThrows(InvalidInputException.class, () -> {
+            authorisationController.deletePermission(CREATE_EMPLOYEE);
+        });
+
+        // Create a new permission that is not in use by any role
+        String NEW_PERMISSION = "NEW_PERMISSION";
+        authorisationController.createPermission(NEW_PERMISSION);
+
+        // Now we should be able to delete it
+        assertTrue(authorisationController.deletePermission(NEW_PERMISSION));
     }
 }
