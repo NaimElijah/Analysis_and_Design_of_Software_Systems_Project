@@ -1,5 +1,8 @@
 package DomainLayer;
 
+import DomainLayer.exception.InvalidInputException;
+import DomainLayer.exception.UnauthorizedPermissionException;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -24,16 +27,24 @@ public class AuthorisationController {
      *
      * @param employee           - The employee to check permissions for
      * @param permissionRequired - The permission to check for
-     * @return true if the employee has the permission, false otherwise
+     * @return true if the employee has the permission
+     * @throws UnauthorizedPermissionException if the employee does not have the permission
      */
-    public boolean HasPermission(Employee employee, String permissionRequired) {
+    public boolean hasPermission(Employee employee, String permissionRequired) {
+        if (employee == null) {
+            throw new InvalidInputException("Employee cannot be null");
+        }
+        if (permissionRequired == null || permissionRequired.isEmpty()) {
+            throw new InvalidInputException("Permission required cannot be null or empty");
+        }
+
         boolean has = employee.getRoles()
                 .stream()
-                .anyMatch(role -> roles.get(role).contains(permissionRequired));
+                .anyMatch(role -> roles.containsKey(role) && roles.get(role).contains(permissionRequired));
         if (!has) {
-            return false; // TODO: throw new UnauthorizedPermission("Employee does not have permission: " + permissionRequired);
+            throw new UnauthorizedPermissionException("Employee does not have permission: " + permissionRequired);
         }
-        return has;
+        return true;
     }
 
     /**
@@ -42,8 +53,15 @@ public class AuthorisationController {
      * @param employee     - The employee to check role for
      * @param roleRequired - The role to check for
      * @return true if the employee has the role, false otherwise
+     * @throws InvalidInputException if employee or roleRequired is null
      */
-    boolean HasRole(Employee employee, String roleRequired) {
+    public boolean hasRole(Employee employee, String roleRequired) {
+        if (employee == null) {
+            throw new InvalidInputException("Employee cannot be null");
+        }
+        if (roleRequired == null || roleRequired.isEmpty()) {
+            throw new InvalidInputException("Role required cannot be null or empty");
+        }
         return employee.getRoles().stream().anyMatch(role -> role.equals(roleRequired));
     }
 
@@ -53,8 +71,18 @@ public class AuthorisationController {
      * @param employee - The employee to add the role to
      * @param role     - The role to add
      * @return true if the role was added successfully, false if the role already exists
+     * @throws InvalidInputException if employee or role is null or if role doesn't exist
      */
-    boolean AddRole(Employee employee, String role) {
+    public boolean addRole(Employee employee, String role) {
+        if (employee == null) {
+            throw new InvalidInputException("Employee cannot be null");
+        }
+        if (role == null || role.isEmpty()) {
+            throw new InvalidInputException("Role cannot be null or empty");
+        }
+        if (!isRoleExists(role)) {
+            throw new InvalidInputException("Role does not exist: " + role);
+        }
         if (employee.getRoles().contains(role)) {
             return false; // Role already exists
         }
@@ -83,8 +111,27 @@ public class AuthorisationController {
      * @param role       - The role to add the permission to
      * @param permission - The permission to add
      * @return true if the permission was added successfully, false if the permission already exists
+     * @throws InvalidInputException if role or permission is null or empty, or if role or permission doesn't exist
      */
     public boolean addPermissionToRole(String role, String permission) {
+        // Validate input
+        if (role == null || role.trim().isEmpty()) {
+            throw new InvalidInputException("Role name cannot be null or empty");
+        }
+        if (permission == null || permission.trim().isEmpty()) {
+            throw new InvalidInputException("Permission name cannot be null or empty");
+        }
+
+        // Check if role exists
+        if (!roles.containsKey(role)) {
+            throw new InvalidInputException("Role does not exist: " + role);
+        }
+
+        // Check if permission exists
+        if (!permissions.contains(permission)) {
+            throw new InvalidInputException("Permission does not exist: " + permission);
+        }
+
         if (roles.get(role).contains(permission)) {
             return false; // Permission already exists
         }
@@ -98,10 +145,24 @@ public class AuthorisationController {
      * @param roleName       - The role to remove the permission from
      * @param permissionName - The permission to remove
      * @return true if the permission was removed successfully, false if the permission does not exist
+     * @throws InvalidInputException if roleName or permissionName is null or empty, or if role doesn't exist
      */
     public boolean removePermissionFromRole(String roleName, String permissionName) {
+        // Validate input
+        if (roleName == null || roleName.trim().isEmpty()) {
+            throw new InvalidInputException("Role name cannot be null or empty");
+        }
+        if (permissionName == null || permissionName.trim().isEmpty()) {
+            throw new InvalidInputException("Permission name cannot be null or empty");
+        }
+
+        // Check if role exists
+        if (!roles.containsKey(roleName)) {
+            throw new InvalidInputException("Role does not exist: " + roleName);
+        }
+
         if (!roles.get(roleName).contains(permissionName)) {
-            return false; // Permission does not exist
+            return false; // Permission does not exist in this role
         }
         roles.get(roleName).remove(permissionName);
         return true;
@@ -110,14 +171,30 @@ public class AuthorisationController {
     /**
      * Creates a new role with the specified name and permissions.
      *
+     * @param doneBy      - The ID of the employee creating the role
      * @param roleName    - The name of the new role
      * @param permissions - The permissions to assign to the new role
      * @return true if the role was created successfully, false if the role already exists
+     * @throws InvalidInputException if roleName or permissions is null or if any permission doesn't exist
      */
     public boolean createRole(long doneBy, String roleName, Set<String> permissions) {
         // Permission check is in the Service layer
 
         // Validate input
+        if (roleName == null || roleName.trim().isEmpty()) {
+            throw new InvalidInputException("Role name cannot be null or empty");
+        }
+        if (permissions == null) {
+            throw new InvalidInputException("Permissions cannot be null");
+        }
+
+        // Check if all permissions exist
+        for (String permission : permissions) {
+            if (!this.permissions.contains(permission)) {
+                throw new InvalidInputException("Permission does not exist: " + permission);
+            }
+        }
+
         if (roles.containsKey(roleName)) {
             return false; // Role already exists
         }
@@ -130,8 +207,12 @@ public class AuthorisationController {
      *
      * @param roleToDelete - The role to delete
      * @return true if the role was deleted successfully, false if the role does not exist
+     * @throws InvalidInputException if roleToDelete is null or empty
      */
-    boolean deleteRole(String roleToDelete) {
+    public boolean deleteRole(String roleToDelete) {
+        if (roleToDelete == null || roleToDelete.trim().isEmpty()) {
+            throw new InvalidInputException("Role name cannot be null or empty");
+        }
 
         if (!roles.containsKey(roleToDelete)) {
             return false; // Role does not exist
@@ -141,18 +222,24 @@ public class AuthorisationController {
     }
 
     /**
-     * Creates a new permission with the specified name and description.
+     * Creates a new permission with the specified name.
      *
      * @param permissionName - The name of the new permission
      * @return true if the permission was created successfully, false if the permission already exists
+     * @throws InvalidInputException if permissionName is null or empty
      */
-    boolean CreatePermission(String permissionName) {
+    public boolean createPermission(String permissionName) {
         // Validate input
-        if (permissions.stream().anyMatch(permission -> permission.equals(permissionName))) {
+        if (permissionName == null || permissionName.trim().isEmpty()) {
+            throw new InvalidInputException("Permission name cannot be null or empty");
+        }
+
+        String trimmedPermissionName = permissionName.trim();
+        if (permissions.contains(trimmedPermissionName)) {
             return false; // Permission already exists
         }
-        permissionName.trim();
-        permissions.add(permissionName);
+
+        permissions.add(trimmedPermissionName);
         return true;
     }
 
@@ -161,11 +248,24 @@ public class AuthorisationController {
      *
      * @param permission - The permission to delete
      * @return true if the permission was deleted successfully, false if the permission does not exist
+     * @throws InvalidInputException if permission is null or empty
      */
-    boolean DeletePermission(String permission) {
+    public boolean deletePermission(String permission) {
+        if (permission == null || permission.trim().isEmpty()) {
+            throw new InvalidInputException("Permission name cannot be null or empty");
+        }
+
         if (!permissions.contains(permission)) {
             return false; // Permission does not exist
         }
+
+        // Check if any role uses this permission
+        for (HashSet<String> rolePermissions : roles.values()) {
+            if (rolePermissions.contains(permission)) {
+                throw new InvalidInputException("Cannot delete permission that is in use by a role");
+            }
+        }
+
         permissions.remove(permission);
         return true;
     }
