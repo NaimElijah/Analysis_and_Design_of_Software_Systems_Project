@@ -351,4 +351,13 @@ public class EmployeeController {
         }
         return employeesMap;
     }
+
+    /**
+     * Gets the AuthorisationController used by this EmployeeController.
+     * 
+     * @return The AuthorisationController
+     */
+    public AuthorisationController getAuthorisationController() {
+        return authorisationController;
+    }
 }
