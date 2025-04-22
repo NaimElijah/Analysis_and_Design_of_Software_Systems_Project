@@ -6,6 +6,8 @@ import DomainLayer.SiteSubModule.Site;
 import DomainLayer.SiteSubModule.SiteFacade;
 import DomainLayer.TruSubModule.Truck;
 import DomainLayer.TruSubModule.TruckFacade;
+import PresentationLayer.DTOs.ItemsDocDTO;
+import PresentationLayer.DTOs.TransportDTO;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 import java.io.FileNotFoundException;
@@ -17,7 +19,7 @@ import java.util.HashMap;
 
 public class TransportFacade {
     private HashMap<Integer, TransportDoc> transports;
-    private int transportIDCounter;
+    private int transportIDCounter;     ///   <<<---------------------------------    for the transport Docs ID's
     private HashMap<Integer, ItemsDoc> itemsDocs;  // to know a ItemsDoc's num is unique and also for connection.
     private ArrayList<TransportDoc> queuedTransports;    ///TODO:  <<-------------------------    implement this functionality
 
@@ -74,13 +76,21 @@ public class TransportFacade {
 
 
 
-    public void createTransport(int truckID, int driverID, int srcsiteAreaNum, String srcsiteAddress){  // time is decided when the Transport departs
+    public void createTransport(TransportDTO transportDTO){  // time is decided when the Transport departs
         LocalDateTime now = LocalDateTime.now();
 
         //TODO    <<<<----------------------------------------   CONTINUE FROM HERE in the facade after DOING THE MENUS IN THE PRESENTATION LAYER !!!!!!   <<-----------
         //TODO    <<<<----------------------------------------   CONTINUE FROM HERE in the facade after DOING THE MENUS IN THE PRESENTATION LAYER !!!!!!   <<-----------
         //TODO    <<<<----------------------------------------   CONTINUE FROM HERE in the facade after DOING THE MENUS IN THE PRESENTATION LAYER !!!!!!   <<-----------
+
         //TODO
+
+//        ///TODO:  check if added some Items for the same Site and add them together
+//        for(ItemsDocDTO itemsDocDTO : dests_Docs_for_Transport){
+//
+//        }
+
+        //TODO: also if good then change driver's and truck's isFrees
     }
 
 
@@ -182,6 +192,14 @@ public class TransportFacade {
 
 
 
+    public boolean checkValidItemsDocID(int currItemsDocNum) {
+        if (this.itemsDocs.containsKey(currItemsDocNum)) {
+            return false;
+        }
+        return true;
+    }
+
+
     public void changeAnItemsDocNum(int oldItemsDocNum, int newItemsDocNum) throws FileNotFoundException, KeyAlreadyExistsException {
         if (!this.itemsDocs.containsKey(oldItemsDocNum)) {
             throw new FileNotFoundException();
@@ -192,7 +210,7 @@ public class TransportFacade {
         this.itemsDocs.put(newItemsDocNum, temp);
         this.itemsDocs.get(newItemsDocNum).setItemDoc_num(newItemsDocNum);
         this.itemsDocs.remove(oldItemsDocNum);
-        /// maybe add this function as well
+        /// bonus function as well
     }
 
 
@@ -231,18 +249,18 @@ public class TransportFacade {
 
 
 
-    public void addItem(int itemsDoc_num, int itemId, String itemName, int itemWeight, int amount, boolean cond){
-        int res = this.itemsDocs.get(itemsDoc_num).addItem(itemId, itemName, itemWeight, cond, amount);
+    public void addItem(int itemsDoc_num, String itemName, int itemWeight, int amount, boolean cond){
+        int res = this.itemsDocs.get(itemsDoc_num).addItem(itemName, itemWeight, cond, amount);
         //TODO according to the return value  --->  throw
     }
 
-    public void removeItem(int itemsDoc_num, int itemId, String ItemName, int itemWeight, int amount, boolean cond){
-        int res = this.itemsDocs.get(itemsDoc_num).removeItem(itemId, ItemName, itemWeight, cond, amount);
+    public void removeItem(int itemsDoc_num, String ItemName, int itemWeight, int amount, boolean cond){
+        int res = this.itemsDocs.get(itemsDoc_num).removeItem(ItemName, itemWeight, cond, amount);
         //TODO according to the return value  --->  throw
     }
 
-    public void setItemCond(int itemsDoc_num, int itemId, String ItemName, int itemWeight, int amount, boolean newCond){
-        boolean res = this.itemsDocs.get(itemsDoc_num).setItemCond(itemId, ItemName, itemWeight, amount, newCond);
+    public void setItemCond(int itemsDoc_num, String ItemName, int itemWeight, int amount, boolean newCond){
+        boolean res = this.itemsDocs.get(itemsDoc_num).setItemCond(ItemName, itemWeight, amount, newCond);
         //TODO according to the return value  --->  throw
     }
 

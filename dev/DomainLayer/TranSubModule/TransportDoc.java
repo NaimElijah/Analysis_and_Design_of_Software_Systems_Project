@@ -86,19 +86,6 @@ public class TransportDoc {
 
 
 
-//    public boolean changeAnItemsDocNum(int oldItemsDocNum, int newItemsDocNum){
-//        for (ItemsDoc itemsDoc : dests_Docs) {
-//            if (itemsDoc.getItemDoc_num() == oldItemsDocNum) {
-//                itemsDoc.setItemDoc_num(newItemsDocNum);
-//                return true;  // all good
-//            }
-//        }
-//        return false;  // couldn't find oldItemsDocNum here
-//    }
-
-
-
-
 
     public int calculateTransportItemsWeight(){
         int sum = 0;
@@ -132,31 +119,31 @@ public class TransportDoc {
 
 
 
-    public int addItem(int itemsDoc_Num, int itemId, String ItemName, int itemWeight, int amount, boolean cond){
+    public int addItem(int itemsDoc_Num, String ItemName, int itemWeight, int amount, boolean cond){
         int res = 0;
         for (ItemsDoc itemsDoc : dests_Docs) {
             if (itemsDoc.getItemDoc_num() == itemsDoc_Num){
-                res = itemsDoc.addItem(itemId, ItemName, itemWeight, cond, amount);
+                res = itemsDoc.addItem(ItemName, itemWeight, cond, amount);
             }
         }
         return res;
     }
 
-    public int removeItem(int itemsDoc_Num, int itemId, String ItemName, int itemWeight, int amount, boolean cond){
+    public int removeItem(int itemsDoc_Num, String ItemName, int itemWeight, int amount, boolean cond){
         int res = 0;
         for (ItemsDoc itemsDoc : dests_Docs) {
             if (itemsDoc.getItemDoc_num() == itemsDoc_Num){
-                res = itemsDoc.removeItem(itemId, ItemName, itemWeight, cond, amount);
+                res = itemsDoc.removeItem(ItemName, itemWeight, cond, amount);
             }
         }
         return res;
     }
 
-    public boolean setItemCond(int itemsDoc_Num, int itemId, String ItemName, int itemWeight, int amount, boolean newCond){
+    public boolean setItemCond(int itemsDoc_Num, String ItemName, int itemWeight, int amount, boolean newCond){
         boolean res = true;
         for (ItemsDoc itemsDoc : dests_Docs) {
             if (itemsDoc.getItemDoc_num() == itemsDoc_Num){
-                res = itemsDoc.setItemCond(itemId, ItemName, itemWeight, amount, newCond);
+                res = itemsDoc.setItemCond(ItemName, itemWeight, amount, newCond);
             }
         }
         return res;
@@ -169,10 +156,18 @@ public class TransportDoc {
 
     @Override
     public String toString() {
-        String res = "Transport Document ID: " + tran_Doc_ID + " Status: " + status + " ........" + "\n";      //TODO   <<<----------------------
+        String res = "Transport Document ID: " + tran_Doc_ID + ", Status: " + status + ", Departure Time: " + this.departure_dt.toString() + ", \n";
+        res += "Truck: " + this.transportTruck.toString() + ", Driver: " + this.transportDriver.toString() + ",\nTruck departure weight: " + this.truck_Depart_Weight;
+        res += ", Source Site: " + this.src_site.toString() + ", Transport Problems: (";
+
+        for (enumTranProblem problem : problems) { res += problem.toString() + ", "; }
+        res = res.substring(0, res.length() - 2);
+        res += "), Transport Sites & Items:\n";
+
         for (ItemsDoc itemsdoc : dests_Docs) {
             res += itemsdoc.toString() + "\n";
         }
+
         return res;
     }
 

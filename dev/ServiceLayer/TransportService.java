@@ -1,14 +1,11 @@
 package ServiceLayer;
 
-import DomainLayer.TranSubModule.ItemsDoc;
-import DomainLayer.TranSubModule.TransportDoc;
 import DomainLayer.TranSubModule.TransportFacade;
-import com.sun.jdi.connect.Transport;
+import PresentationLayer.DTOs.TransportDTO;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 import java.io.FileNotFoundException;
 import java.nio.file.FileAlreadyExistsException;
-import java.time.*;
 
 public class TransportService {
     private TransportFacade tran_f;
@@ -18,7 +15,7 @@ public class TransportService {
 
 
 
-    public String createTransport(int truckID, int driverID, int srcsiteAreaNum, String srcsiteAddress){
+    public String createTransport(TransportDTO transportDTO){
         // TODO: check basic validity
         try {
             //TODO
@@ -95,7 +92,7 @@ public class TransportService {
 
 
 
-    public String checkTransportValidity(int transportID){
+    public String checkTransportValidity(TransportDTO transportDTO){
         // TODO: check basic validity
         try {
             //TODO
@@ -251,12 +248,21 @@ public class TransportService {
 
 
 
+    public boolean checkValidItemsDocID(int currItemsDocNum) {  // very basic check
+        if (currItemsDocNum < 0){  // very basic check
+            return false;
+        }
+        return this.tran_f.checkValidItemsDocID(currItemsDocNum);  // return what the business layer said
+    }
 
 
 
 
 
-    public String addItem(int tranDocID, int siteArea, String siteAddress, int itemId, String itemName, int itemWeight, int amount, boolean cond){
+
+
+
+    public String addItem(int tranDocID, int siteArea, String siteAddress, String itemName, int itemWeight, int amount, boolean cond){
         // TODO: check basic validity
         try {
             //TODO
@@ -269,7 +275,7 @@ public class TransportService {
         return "Success";  //  if All Good
     }
 
-    public String removeItem(int tranDocID, int siteArea, String siteAddress, int itemId, String ItemName, int itemWeight, int amount, boolean cond){
+    public String removeItem(int tranDocID, int siteArea, String siteAddress, String ItemName, int itemWeight, int amount, boolean cond){
         // TODO: check basic validity
         try {
             //TODO
@@ -282,7 +288,7 @@ public class TransportService {
         return "Success";  //  if All Good
     }
 
-    public String setItemCond(int tranDocID, int siteArea, String siteAddress, int itemId, String ItemName, int itemWeight, int amount, boolean cond){
+    public String setItemCond(int tranDocID, int siteArea, String siteAddress, String ItemName, int itemWeight, int amount, boolean cond){
         // TODO: check basic validity
         try {
             //TODO
@@ -311,9 +317,6 @@ public class TransportService {
         }
         return resOfAllTransports;
     }
-
-
-
 
 
 }

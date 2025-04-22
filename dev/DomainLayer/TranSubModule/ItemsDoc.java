@@ -34,27 +34,27 @@ public class ItemsDoc {
     public HashMap<Item, Integer> getBadItems() {return badItems;}
     public void setBadItems(HashMap<Item, Integer> badItems) {this.badItems = badItems;}
 
-    public int addItem(int itemId, String itemName, int itemWeight, boolean cond, int amount) {
+    public int addItem(String itemName, int itemWeight, boolean cond, int amount) {
         HashMap<Item, Integer> items = cond ? goodItems : badItems;
         for (Item item : items.keySet()) {
-            if (item.getItemID() == itemId && item.getName().equals(itemName) && item.getWeight() == itemWeight) {
+            if (item.getName().equals(itemName) && item.getWeight() == itemWeight) {
                 items.put(item, amount + items.get(item));  // if item already exists, add amounts
                 return 0;  // all good
             }
         }
-        for (Item item : items.keySet()) {
-            if (item.getItemID() == itemId || (item.getName().equals(itemName) && item.getWeight() == itemWeight)) {
-                return -1;   /////// can't add an item with a duplicate itemID   <<-----------------   Ambiguous Item can't be added  <<--------------
-            }
-        }
-        items.put(new Item(itemId, itemName, itemWeight, cond), amount);
+//        for (Item item : items.keySet()) {    //  if there was an ID
+//            if (item.getItemID() == itemId || (item.getName().equals(itemName) && item.getWeight() == itemWeight)) {
+//                return -1;   /////// can't add an item with a duplicate itemID   <<-----------------   Ambiguous Item can't be added  <<--------------
+//            }
+//        }
+        items.put(new Item(itemName, itemWeight, cond), amount);
         return 0;  // all good
     }
 
-    public int removeItem(int itemId, String itemName, int itemWeight, boolean cond, int amount) {
+    public int removeItem(String itemName, int itemWeight, boolean cond, int amount) {
         HashMap<Item, Integer> items = cond ? goodItems : badItems;
         for (Item item : items.keySet()) {
-            if (item.getItemID() == itemId && item.getName().equals(itemName) && item.getWeight() == itemWeight) {
+            if (item.getName().equals(itemName) && item.getWeight() == itemWeight) {
                 if(amount >= items.get(item)){
                     items.remove(item);
                     return items.get(item); // return how many items removed
@@ -66,18 +66,18 @@ public class ItemsDoc {
         return -1;  // item to remove not found
     }
 
-    public boolean setItemCond(int itemId, String itemName, int itemWeight, int amount, boolean newCond){
+    public boolean setItemCond(String itemName, int itemWeight, int amount, boolean newCond){
         HashMap<Item, Integer> itemsFrom = newCond ? badItems : goodItems;
         HashMap<Item, Integer> itemsTo = newCond ? goodItems : badItems;
         for (Item item : itemsFrom.keySet()) {
-            if (item.getItemID() == itemId && item.getName().equals(itemName) && item.getWeight() == itemWeight) {
-                int amount_removed = removeItem(itemId, itemName, itemWeight, !newCond, amount);
-                addItem(itemId, itemName, itemWeight, newCond, amount_removed);
+            if (item.getName().equals(itemName) && item.getWeight() == itemWeight) {
+                int amount_removed = removeItem(itemName, itemWeight, !newCond, amount);
+                addItem(itemName, itemWeight, newCond, amount_removed);
                 return true;
             }
         }
         for (Item item : itemsTo.keySet()) {   // checking if already set as the wanted newCond
-            if (item.getItemID() == itemId && item.getName().equals(itemName) && item.getWeight() == itemWeight) {
+            if (item.getName().equals(itemName) && item.getWeight() == itemWeight) {
                 return true;
             }
         }

@@ -1,9 +1,16 @@
 package PresentationLayer;
 
+import PresentationLayer.DTOs.ItemDTO;
+import PresentationLayer.DTOs.ItemsDocDTO;
+import PresentationLayer.DTOs.SiteDTO;
+import PresentationLayer.DTOs.TransportDTO;
 import ServiceLayer.EmployeeService;
 import ServiceLayer.SiteService;
 import ServiceLayer.TransportService;
 import ServiceLayer.TruckService;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class TranManController {
@@ -106,28 +113,184 @@ public class TranManController {
         transportManagerMainMenu();
     }
 
+
+
+
+
     private void createaTransportMenu(){
         System.out.println("   --------    Transport Creation    --------\n");
-        System.out.println("Enter the following information:\n");
+        System.out.println("Ok, let's start creating your new Transport :)");
+        System.out.println("\n- Enter the following information:");
         System.out.println("Enter Source Area Number: ");
         int sourceAreaNum = scanner.nextInt();
         System.out.println("Enter Source Address String: ");
-        String sourceAddress = scanner.next();
+        String sourceAddressString = scanner.next();
+        SiteDTO srcSitedto = new SiteDTO(sourceAreaNum, sourceAddressString);
         System.out.println("Enter Desired Truck Number: ");
-        int truckID = scanner.nextInt();
+        int truckNum = scanner.nextInt();
         System.out.println("Enter Desired Driver ID: ");
         int driverID = scanner.nextInt();
 
-        // maybe Also do checks with service layer functions here so that we can prompt for change
+        ArrayList<ItemsDocDTO> dests_Docs_for_Transport = new ArrayList<ItemsDocDTO>();  //  for the Transport's field
 
-        //TODO    <<<<-----------------------------------   CONTINUE FROM HERE IN THE PRESENTATION LAYER !!!!!!   <<-----------  DO the whole menu to see what's needed
-        //TODO    <<<<-----------------------------------   CONTINUE FROM HERE IN THE PRESENTATION LAYER !!!!!!   <<-----------  DO the whole menu to see what's needed
-        //TODO    <<<<-----------------------------------   CONTINUE FROM HERE IN THE PRESENTATION LAYER !!!!!!   <<-----------  DO the whole menu to see what's needed
-        //TODO
+        System.out.println("We'll now add the Sites(and the items from each site).");
+        System.out.println("\nThe Transport's Site Arrival Order will be based on the order of Sites you add (first added -> first arrived to)");
+        System.out.println("\n- Now Enter Each Site and for Each Site enter the Items Desired from there: ");
+        boolean continueAnotherSite = true, continueAnotherItem = true, continueAskingDifferentAreaNum = true;
+        Integer currSiteAreaNum = -99;
+        ArrayList<Integer> areasNumsUptoNow = new ArrayList<Integer>();  //  for the area numbers in this Transport
 
 
-        //TODO:   maybe also when a driver/truck are unavailable we can choose to put in waitqueue or try to choose another
+        while (continueAnotherSite){   ///   Sites WHILE(TRUE) LOOP
+
+
+            while (continueAskingDifferentAreaNum){
+                System.out.println("Enter Destination Site Area Number: ");
+                currSiteAreaNum = scanner.nextInt();
+                if(!areasNumsUptoNow.contains(currSiteAreaNum)){
+                    if(areasNumsUptoNow.isEmpty()){   //  if first site
+                        areasNumsUptoNow.add(currSiteAreaNum);
+                        continueAskingDifferentAreaNum = false;
+                        continue;  // will break
+                    }
+                    System.out.println("The destination's area number is not within the area numbers in this Transport's destinations, continue with it ? ( Enter 'Y' / 'N'(or any other key) )");
+                    String ifAnotherSiteChoice = scanner.nextLine();
+                    if(!ifAnotherSiteChoice.equals("Y")){
+                        continue;  ///  continue this Loop
+                    }
+                    areasNumsUptoNow.add(currSiteAreaNum);
+                    continueAskingDifferentAreaNum = false;  ///  breaks from this Loop
+//                    break;
+                    // and then a choice of continuing adding this dest_site or not (because it's in another shipping area)
+                }else {
+                    continueAskingDifferentAreaNum = false;  ///  breaks from this Loop
+                }
+            }
+
+
+
+            System.out.println("Enter Destination Site Address String: ");
+            String destinationAddress = scanner.next();
+            SiteDTO destSitedto = new SiteDTO(currSiteAreaNum, destinationAddress);
+
+            System.out.println("\n- Now let's add the Items you want to get from this destination Site back to the Source Site:\n");
+
+            HashMap<ItemDTO, Integer> itemsListFromCurrDestSite = new HashMap<ItemDTO, Integer>();  // for the ItemsDoc's field
+
+
+            System.out.println("Enter Unique Items Document Number: ");
+            int currItemsDocNum = scanner.nextInt();
+            if(!tra_ser.checkValidItemsDocID(currItemsDocNum)){
+                System.out.println("Please Enter a *Unique* and Valid Items Document Number: ");
+                currItemsDocNum = scanner.nextInt();
+            }
+            System.out.println("Valid Items Document Number :)\n");
+
+            System.out.println("Now let's add the Items you want from this destination Site, one by one:");
+            while (continueAnotherItem){   ///   site's Items WHILE(TRUE) LOOP
+                System.out.println("Enter Item Name: ");
+                String itemName = scanner.next();
+                System.out.println("Enter Item Weight: ");
+                int itemWeight = scanner.nextInt();
+                System.out.println("Enter Item Amount: ");
+                int itemAmount = scanner.nextInt();
+                System.out.println("Enter these Items Condition: ( Enter 'Good' / 'Bad'(or any other key) )");
+                String condition = scanner.next();
+
+                ItemDTO itemAddition = new ItemDTO(itemName, itemWeight, condition.equals("Good"));
+
+                if(itemsListFromCurrDestSite.containsKey(itemAddition)){  // so items numbers won't get overridden if we add the same Item.
+                    itemsListFromCurrDestSite.put(itemAddition, itemsListFromCurrDestSite.get(itemAddition) + itemAmount);  ///  adding new Item to the items list
+                }else {
+                    itemsListFromCurrDestSite.put(itemAddition, itemAmount);  ///  adding new Item to the items list
+                }
+
+                System.out.println("Item Added to listed items associated with current Site, do you want to add another Item ? ( Enter 'Y' / 'N'(or any other key) )");
+                String ifAnotherItemChoice = scanner.nextLine();
+                if(!ifAnotherItemChoice.equals("Y")){ continueAnotherItem = false; }  ///  breaks from this Item Addition Loop
+            }
+
+
+
+
+
+            ItemsDocDTO itemsDocAddition = new ItemsDocDTO(currItemsDocNum, srcSitedto, destSitedto, itemsListFromCurrDestSite);
+            System.out.println("Ok, Finished adding the current destination Site's items");
+            dests_Docs_for_Transport.add(itemsDocAddition);   //  adding new ItemsDoc to the destSitesDocs
+
+            System.out.println("Items Wanted from that Site added.\nDo you want to Add another Site and it's Items ? ( Enter 'Y' / 'N'(or any other key) )");
+            String choice = scanner.nextLine();
+            if(!choice.equals("Y")){
+                continueAnotherSite = false;  ///  breaks from this Site Addition Loop
+            }
+        }
+
+
+
+
+
+
+
+        System.out.println("Okay, Checking Transport Validity...");   //////   <<<--------------------------------------------  Checking Transport Validity.
+
+        // And create the DTO object (The Package to send downwards):
+        TransportDTO transportDTO = new TransportDTO(truckNum, driverID, srcSitedto, dests_Docs_for_Transport);  //TODO:   make sure everything here was built well.
+
+        /// TODO:   <<<----------  this is the Transport checking part  <<--------------  /// TODO:   <<<----------  this is the Transport checking part  <<--------------
+        String resOfTransportCheck = this.tra_ser.checkTransportValidity(transportDTO);
+        while (!resOfTransportCheck.equals("Valid")){
+            if (resOfTransportCheck.equals("Queue")){ break; }
+            transportRePlanning(transportDTO, resOfTransportCheck);  /// TODO:   <<<----------  this is the Transport checking part  <<--------------
+            // maybe, if there are no trucks and no driver that are compatible, available, automatically put in queue
+            /// TODO:   <<<----------  this is the Transport checking part  <<--------------   /// TODO:   <<<----------  this is the Transport checking part  <<--------------
+        }   /// TODO:   <<<----------  this is the Transport checking part  <<--------------   /// TODO:   <<<----------  this is the Transport checking part  <<--------------
+        /// TODO:   <<<----------  this is the Transport checking part  <<--------------  /// TODO:   <<<----------  this is the Transport checking part  <<--------------
+        /// TODO:   <<<----------  this is the Transport checking part  <<--------------  /// TODO:   <<<----------  this is the Transport checking part  <<--------------
+        /// TODO:   <<<----------  this is the Transport checking part  <<--------------   SEE ALSO TO THE QUEUEING OPTION IF NO DRIVER/TRUCK ARE VALID
+
+        
+        if (resOfTransportCheck.equals("Queue")){
+            System.out.println("This Transport doesn't have a proper Truck-Driver matching available, so this Transport will now go automatically into the Queued Transport.");
+            System.out.println("The Queued Transports are being sent when they can really be sent, starting with the first Transport in the Queue.");
+        }
+
+        String resOfNewTransportAddition = this.tra_ser.createTransport(transportDTO);
+        /// if there are duplicate sites, in the business layer we add them up to the same Site in this function
+
+        if(resOfNewTransportAddition.equals("Success")){
+            System.out.println("Successfully Added Transport\n");
+        } else if(resOfNewTransportAddition.equals("Exception")){
+            System.out.println("Failed to add Transport due to technical machine error\n");
+        }else { System.out.println(resOfNewTransportAddition + "\n"); }  // printing error string given from Service Layer
+
+        System.out.println();
+        transportsOptionsMenu();
     }
+
+
+
+    private void transportRePlanning(TransportDTO transportDTO, String issue){    /// TODO:   <<<----------  this is the Transport checking part  <<--------------
+
+        if (issue.equals("")){  ///  overweight Transport, choose if to remove Items or to change Truck
+            //
+
+
+
+
+        }else if (issue.equals("")){  ///  Truck and Driver aren't compatible
+            //
+
+
+
+            //TODO:   maybe also when a driver/truck are unavailable we can choose to put in waitqueue or try to choose another
+
+        }
+        //TODO
+    }
+
+
+
+
 
 
 
@@ -144,11 +307,14 @@ public class TranManController {
 
 
 
+
+
+
     private void editaTransportMenu(){
         System.out.println("   --------    Transport Edition Menu    --------\n");
         System.out.println("(1)  Edit a Transport's Status");
         System.out.println("(2)  Edit a Transport's Problems");
-        System.out.println("(3)  Edit a Transport's Sites");    //TODO :  also add order to site edition here   <<<-----------------------
+        System.out.println("(3)  Edit a Transport's Sites");    //TODO :  also add: arrival order to sites here (inside this option's(3's) menu)   <<<------------
         System.out.println("(4)  Edit a Transport's Items");
         System.out.println("(5)  Back to Transports Options Menu");
         System.out.println();

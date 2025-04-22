@@ -1,17 +1,17 @@
-package DomainLayer.TranSubModule;
+package PresentationLayer.DTOs;
 
-public class Item {
+public class ItemDTO {
     private String name;
     private int weight;
     private Boolean condition;
 
-    public Item(String name, int weight, Boolean condition){
+    public ItemDTO(String name, int weight, Boolean condition){
         this.name = name;
         this.weight = weight;
         this.condition = condition;
     }
 
-    public Item(String name, int weight){
+    public ItemDTO(String name, int weight){
         this.name = name;
         this.weight = weight;
         this.condition = true;
@@ -24,10 +24,4 @@ public class Item {
     public Boolean getCondition() {return condition;}
     public void setCondition(Boolean condition) {this.condition = condition;}
 
-    @Override
-    public String toString() {
-        String res = "";
-        res += "Item Name: " + name + ", Item Weight: " + weight + ", Item Condition: " + (condition ? "Good" : "Bad");
-        return res;
-    }
 }
