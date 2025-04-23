@@ -12,15 +12,15 @@ public class Shift {
     private long id;
     private String shiftType;
     private LocalDate shiftDate;
-    private Map<String,Integer> rolesRequired;
-    private Map<String, Set<Employee>> assignedEmployees;
-    private Set<Employee> AvailableEmployees;
+    private Map<String,Integer> rolesRequired;   // e.g., {"Cashier": 2, "Security": 1}
+    private Map<String, Set<Long>> assignedEmployees;  // e.g., {"Cashier": [123456789, 987654321], "Security": [112233445]}
+    private Set<Long> AvailableEmployees;  // e.g., [123456789, 555444333]
     private boolean isAssignedShitManager;
     private boolean isOpen;
     private LocalDate createDate;
     private LocalDate updateDate;
 
-    public Shift(long id, String shiftType, LocalDate shiftDate, Map<String, Integer> roleRequired, Map<String, Set<Employee>> assignedEmployees, Set<Employee> AvailableEmployees, boolean isAssignedShitManager, boolean isOpen, LocalDate updateDate) {
+    public Shift(long id, String shiftType, LocalDate shiftDate, Map<String, Integer> rolesRequired, Map<String, Set<Long>> assignedEmployees, Set<Long> AvailableEmployees, boolean isAssignedShitManager, boolean isOpen, LocalDate updateDate) {
         this.id = id;
         this.shiftType = shiftType;
         this.shiftDate = shiftDate;
@@ -64,19 +64,19 @@ public class Shift {
         this.rolesRequired = rolesRequired;
     }
 
-    public Map<String, Set<Employee>> getAssignedEmployees() {
+    public Map<String, Set<Long>> getAssignedEmployees() {
         return assignedEmployees;
     }
 
-    public void setAssignedEmployees(Map<String, Set<Employee>> assignedEmployees) {
+    public void setAssignedEmployees(Map<String, Set<Long>> assignedEmployees) {
         this.assignedEmployees = assignedEmployees;
     }
 
-    public Set<Employee> getAvailableEmployees() {
+    public Set<Long> getAvailableEmployees() {
         return AvailableEmployees;
     }
 
-    public void setAvailableEmployees(Set<Employee> availableEmployees) {
+    public void setAvailableEmployees(Set<Long> availableEmployees) {
         AvailableEmployees = availableEmployees;
     }
 

@@ -2,6 +2,10 @@ package ServiceLayer;
 
 import DomainLayer.Shift;
 
+import java.time.LocalDate;
+import java.util.Map;
+import java.util.Set;
+
 public class ShiftSL {
     private final Shift shift;
 
@@ -11,28 +15,28 @@ public class ShiftSL {
     }
 
     // Getters
-    public String getId() {
-        return String.valueOf(shift.getId());
+    public long getId() {
+        return shift.getId();
     }
 
     public String getShiftType() {
         return shift.getShiftType();
     }
 
-    public String getShiftDate() {
-        return shift.getShiftDate().toString();
+    public LocalDate getShiftDate() {
+        return shift.getShiftDate();
     }
 
-    public String getRolesRequired() {
-        return shift.getRolesRequired().toString();
+    public Map<String, Integer> getRolesRequired() {
+        return shift.getRolesRequired();
     }
 
-    public String getAssignedEmployees() {
-        return shift.getAssignedEmployees().toString();
+    public Map<String, Set<Long>> getAssignedEmployees() {
+        return shift.getAssignedEmployees();
     }
 
-    public String getAvailableEmployees() {
-        return shift.getAvailableEmployees().toString();
+    public Set<Long> getAvailableEmployees() {
+        return shift.getAvailableEmployees();
     }
 
     public boolean isAssignedShiftManager() {
@@ -42,29 +46,29 @@ public class ShiftSL {
     public boolean isOpen() {
         return shift.isOpen();
     }
-    public String getCreateDate() {
-        return shift.getCreateDate().toString();
+    public LocalDate getCreateDate() {
+        return shift.getCreateDate();
     }
-    public String getUpdateDate() {
-        return shift.getUpdateDate().toString();
+    public LocalDate getUpdateDate() {
+        return shift.getUpdateDate();
     }
 
     // Setters
     public void setShiftType(String shiftType) {
-        shift.setShiftType(shift.getShiftType());
+        shift.setShiftType(shiftType);
     }
 
-    public void setShiftDate(String shiftDate) {
-        shift.setShiftDate(shift.getShiftDate());
+    public void setShiftDate(LocalDate shiftDate) {
+        shift.setShiftDate(shiftDate);
     }
-    public void setRolesRequired(String rolesRequired) {
-        shift.setRolesRequired(shift.getRolesRequired());
+    public void setRolesRequired(Map<String, Integer> rolesRequired) {
+        shift.setRolesRequired(rolesRequired);
     }
-    public void setAssignedEmployees(String assignedEmployees) {
-        shift.setAssignedEmployees(shift.getAssignedEmployees());
+    public void setAssignedEmployees(Map<String, Set<Long>> assignedEmployees) {
+        shift.setAssignedEmployees(assignedEmployees);
     }
-    public void setAvailableEmployees(String availableEmployees) {
-        shift.setAvailableEmployees(shift.getAvailableEmployees());
+    public void setAvailableEmployees(Set<Long> availableEmployees) {
+        shift.setAvailableEmployees(availableEmployees);
     }
     public void setAssignedShiftManager(boolean assignedShiftManager) {
         shift.setAssignedShiftManager(assignedShiftManager);
@@ -73,8 +77,8 @@ public class ShiftSL {
         shift.setOpen(open);
     }
 
-    public void setUpdateDate(String updateDate) {
-        shift.setUpdateDate(shift.getUpdateDate());
+    public void setUpdateDate(LocalDate updateDate) {
+        shift.setUpdateDate(updateDate);
     }
 
 
