@@ -1,0 +1,268 @@
+[
+  {
+    "id": 1,
+    "shiftType": "MORNING",
+    "shiftDate": "2023-04-27",
+    "rolesRequired": {
+      "Manager": 1,
+      "Cashier": 2,
+      "StockClerk": 3
+    },
+    "assignedEmployees": {
+      "Manager": [111111111],
+      "Cashier": [333333333],
+      "StockClerk": [222222222]
+    },
+    "availableEmployees": [111111111, 222222222, 333333333],
+    "isAssignedShiftManager": true,
+    "isOpen": true,
+    "updateDate": "2023-04-20"
+  },
+  {
+    "id": 2,
+    "shiftType": "EVENING",
+    "shiftDate": "2023-04-27",
+    "rolesRequired": {
+      "Manager": 1,
+      "Cashier": 2,
+      "StockClerk": 2
+    },
+    "assignedEmployees": {
+      "Manager": [111111111],
+      "Cashier": [333333333],
+      "StockClerk": [222222222]
+    },
+    "availableEmployees": [111111111, 222222222, 333333333],
+    "isAssignedShiftManager": true,
+    "isOpen": true,
+    "updateDate": "2023-04-20"
+  },
+  {
+    "id": 3,
+    "shiftType": "MORNING",
+    "shiftDate": "2023-04-28",
+    "rolesRequired": {
+      "Manager": 1,
+      "Cashier": 2,
+      "StockClerk": 3
+    },
+    "assignedEmployees": {
+      "Manager": [111111111],
+      "Cashier": [333333333],
+      "StockClerk": [222222222]
+    },
+    "availableEmployees": [111111111, 222222222, 333333333],
+    "isAssignedShiftManager": true,
+    "isOpen": true,
+    "updateDate": "2023-04-20"
+  },
+  {
+    "id": 4,
+    "shiftType": "EVENING",
+    "shiftDate": "2023-04-28",
+    "rolesRequired": {
+      "Manager": 1,
+      "Cashier": 2,
+      "StockClerk": 2
+    },
+    "assignedEmployees": {
+      "Manager": [111111111],
+      "Cashier": [333333333],
+      "StockClerk": [222222222]
+    },
+    "availableEmployees": [111111111, 222222222, 333333333],
+    "isAssignedShiftManager": true,
+    "isOpen": true,
+    "updateDate": "2023-04-20"
+  },
+  {
+    "id": 5,
+    "shiftType": "MORNING",
+    "shiftDate": "2023-04-29",
+    "rolesRequired": {
+      "Manager": 1,
+      "Cashier": 2,
+      "StockClerk": 3
+    },
+    "assignedEmployees": {
+      "Manager": [111111111],
+      "Cashier": [333333333],
+      "StockClerk": [222222222]
+    },
+    "availableEmployees": [111111111, 222222222, 333333333],
+    "isAssignedShiftManager": true,
+    "isOpen": true,
+    "updateDate": "2023-04-20"
+  },
+  {
+    "id": 6,
+    "shiftType": "EVENING",
+    "shiftDate": "2023-04-29",
+    "rolesRequired": {
+      "Manager": 1,
+      "Cashier": 2,
+      "StockClerk": 2
+    },
+    "assignedEmployees": {
+      "Manager": [111111111],
+      "Cashier": [333333333],
+      "StockClerk": [222222222]
+    },
+    "availableEmployees": [111111111, 222222222, 333333333],
+    "isAssignedShiftManager": true,
+    "isOpen": true,
+    "updateDate": "2023-04-20"
+  },
+  {
+    "id": 7,
+    "shiftType": "MORNING",
+    "shiftDate": "2023-04-30",
+    "rolesRequired": {
+      "Manager": 1,
+      "Cashier": 2,
+      "StockClerk": 3
+    },
+    "assignedEmployees": {
+      "Manager": [111111111],
+      "Cashier": [333333333],
+      "StockClerk": [222222222]
+    },
+    "availableEmployees": [111111111, 222222222, 333333333],
+    "isAssignedShiftManager": true,
+    "isOpen": true,
+    "updateDate": "2023-04-20"
+  },
+  {
+    "id": 8,
+    "shiftType": "EVENING",
+    "shiftDate": "2023-04-30",
+    "rolesRequired": {
+      "Manager": 1,
+      "Cashier": 2,
+      "StockClerk": 2
+    },
+    "assignedEmployees": {
+      "Manager": [111111111],
+      "Cashier": [333333333],
+      "StockClerk": [222222222]
+    },
+    "availableEmployees": [111111111, 222222222, 333333333],
+    "isAssignedShiftManager": true,
+    "isOpen": true,
+    "updateDate": "2023-04-20"
+  },
+  {
+    "id": 9,
+    "shiftType": "MORNING",
+    "shiftDate": "2023-05-01",
+    "rolesRequired": {
+      "Manager": 1,
+      "Cashier": 2,
+      "StockClerk": 3
+    },
+    "assignedEmployees": {
+      "Manager": [111111111],
+      "Cashier": [333333333],
+      "StockClerk": [222222222]
+    },
+    "availableEmployees": [111111111, 222222222, 333333333],
+    "isAssignedShiftManager": true,
+    "isOpen": true,
+    "updateDate": "2023-04-20"
+  },
+  {
+    "id": 10,
+    "shiftType": "EVENING",
+    "shiftDate": "2023-05-01",
+    "rolesRequired": {
+      "Manager": 1,
+      "Cashier": 2,
+      "StockClerk": 2
+    },
+    "assignedEmployees": {
+      "Manager": [111111111],
+      "Cashier": [333333333],
+      "StockClerk": [222222222]
+    },
+    "availableEmployees": [111111111, 222222222, 333333333],
+    "isAssignedShiftManager": true,
+    "isOpen": true,
+    "updateDate": "2023-04-20"
+  },
+  {
+    "id": 11,
+    "shiftType": "MORNING",
+    "shiftDate": "2023-05-02",
+    "rolesRequired": {
+      "Manager": 1,
+      "Cashier": 2,
+      "StockClerk": 3
+    },
+    "assignedEmployees": {
+      "Manager": [111111111],
+      "Cashier": [333333333],
+      "StockClerk": [222222222]
+    },
+    "availableEmployees": [111111111, 222222222, 333333333],
+    "isAssignedShiftManager": true,
+    "isOpen": true,
+    "updateDate": "2023-04-20"
+  },
+  {
+    "id": 12,
+    "shiftType": "EVENING",
+    "shiftDate": "2023-05-02",
+    "rolesRequired": {
+      "Manager": 1,
+      "Cashier": 2,
+      "StockClerk": 2
+    },
+    "assignedEmployees": {
+      "Manager": [111111111],
+      "Cashier": [333333333],
+      "StockClerk": [222222222]
+    },
+    "availableEmployees": [111111111, 222222222, 333333333],
+    "isAssignedShiftManager": true,
+    "isOpen": true,
+    "updateDate": "2023-04-20"
+  },
+  {
+    "id": 13,
+    "shiftType": "MORNING",
+    "shiftDate": "2023-05-03",
+    "rolesRequired": {
+      "Manager": 1,
+      "Cashier": 2,
+      "StockClerk": 3
+    },
+    "assignedEmployees": {
+      "Manager": [111111111],
+      "Cashier": [333333333],
+      "StockClerk": [222222222]
+    },
+    "availableEmployees": [111111111, 222222222, 333333333],
+    "isAssignedShiftManager": true,
+    "isOpen": true,
+    "updateDate": "2023-04-20"
+  },
+  {
+    "id": 14,
+    "shiftType": "EVENING",
+    "shiftDate": "2023-05-03",
+    "rolesRequired": {
+      "Manager": 1,
+      "Cashier": 2,
+      "StockClerk": 2
+    },
+    "assignedEmployees": {
+      "Manager": [111111111],
+      "Cashier": [333333333],
+      "StockClerk": [222222222]
+    },
+    "availableEmployees": [111111111, 222222222, 333333333],
+    "isAssignedShiftManager": true,
+    "isOpen": true,
+    "updateDate": "2023-04-20"
+  }
+]

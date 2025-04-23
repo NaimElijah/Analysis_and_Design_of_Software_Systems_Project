@@ -713,9 +713,4 @@ public class ShiftController {
         }
         return weeklyShifts.get(week);
     }
-
-
-
 }
-
-

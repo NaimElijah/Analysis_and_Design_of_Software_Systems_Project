@@ -1,11 +1,14 @@
+import DomainLayer.AssignmentController;
 import DomainLayer.AuthorisationController;
 import DomainLayer.DataInitializer;
 import DomainLayer.Employee;
 import DomainLayer.EmployeeController;
 import DomainLayer.ShiftController;
+import PresentationLayer.AssigmentCLI;
+import PresentationLayer.AvailabillityCLI;
 import PresentationLayer.EmployeeCLI;
 import ServiceLayer.EmployeeService;
-//import ServiceLayer.ShiftService;
+import ServiceLayer.ShiftService;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -22,7 +25,8 @@ public class Main {
         AuthorisationController authController;
         EmployeeController employeeController;
         EmployeeService employeeService;
-        //ShiftService shiftService = null;
+        ShiftService shiftService = null;
+        AssignmentController assignmentController;
 
         boolean minimalMode = true;
         System.out.print("Do you want to load data? (y/n) ==> ");
@@ -48,9 +52,10 @@ public class Main {
             authController = initData.getAuthController();
             employeeController = initData.getEmployeeController();
             ShiftController shiftController = initData.getShiftController();
+            assignmentController = new AssignmentController(employeeController);
 
             employeeService = new EmployeeService(employeeController, authController);
-            //shiftService = new ShiftService(shiftController);
+            shiftService = new ShiftService(shiftController, assignmentController, null);
         } catch (IOException e) {
             System.err.println("Error initializing system: " + e.getMessage());
             System.err.println("Cannot start the system. Please check data files and try again.");
@@ -90,6 +95,29 @@ public class Main {
             }
         }
 
+        System.out.println("Choose CLI to start with: ");
+        System.out.println("1. Employee CLI");
+        System.out.println("2. Assignment CLI");
+        System.out.println("3. Availability CLI");
+        System.out.println("4. Shift CLI");
+        System.out.print("Enter your choice: ");
+        int choice = Integer.parseInt(System.console().readLine());
+        switch (choice) {
+            case 1:
+                EmployeeCLI cli1 = new EmployeeCLI(employeeService, loginId);
+                cli1.start();
+                break;
+            case 2:
+                AssigmentCLI cli2 = new AssigmentCLI(shiftService,employeeService,loginId);
+                cli2.start();
+                break;
+            case 3:
+                AvailabillityCLI cli3 = new AvailabillityCLI(shiftService,loginId);
+                cli3.start();
+                break;
+            case 4:
+                break;
+        }
         EmployeeCLI cli = new EmployeeCLI(employeeService, loginId);
         cli.start();
     }

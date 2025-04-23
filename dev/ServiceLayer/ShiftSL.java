@@ -20,7 +20,7 @@ public class ShiftSL {
         return shift.getId();
     }
 
-    public String getShiftType() {
+    public ShiftType getShiftType() {
         return shift.getShiftType();
     }
 
