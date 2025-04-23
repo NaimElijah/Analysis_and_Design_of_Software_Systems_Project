@@ -27,7 +27,7 @@ public class TransportDoc {
     public TransportDoc(enumTranStatus status, int tran_Doc_ID, Truck transportTruck, Driver transportDriver, Site src_site) {
         this.status = status;
         this.tran_Doc_ID = tran_Doc_ID;
-        this.departure_dt = LocalDateTime.now();   // when really departing after the check, set this to departure datetime
+        this.departure_dt = LocalDateTime.now();   //TODO:  look more into this   // when really departing after the check, set this to departure datetime
         this.transportTruck = transportTruck;
         this.transportDriver = transportDriver;
         this.truck_Depart_Weight = -1;   //  Initialization, calculated before being sent
@@ -59,7 +59,7 @@ public class TransportDoc {
 
     public int addDestSite(Site dest, int itemsDoc_num){
         for(ItemsDoc itemsDoc : dests_Docs){
-            if (itemsDoc.getDest_site().equals(dest)){
+            if (itemsDoc.getDest_site().getAddress().getArea() == dest.getAddress().getArea() && itemsDoc.getDest_site().getAddress().getAddress().equals(dest.getAddress().getAddress())){
                 return -1;  //  Destination Site already in this Transport, do add/remove item from that site instead.
             }
         }
@@ -80,6 +80,20 @@ public class TransportDoc {
         }
         dests_Docs.remove(temp);
         return 0;  //  all good
+    }
+
+
+
+    public void setSiteArrivalIndexInTransport(int siteArea, String siteAddress, int index) {
+        ItemsDoc tempForReInsertionAtGivenIndex = null;
+        for (ItemsDoc itemsDoc : dests_Docs) {
+            if (itemsDoc.getDest_site().getAddress().getArea() == siteArea && itemsDoc.getDest_site().getAddress().getAddress().equals(siteAddress)) {
+                tempForReInsertionAtGivenIndex = itemsDoc;
+                break;  // found
+            }
+        }
+        this.dests_Docs.remove(tempForReInsertionAtGivenIndex);
+        this.dests_Docs.add(index - 1, tempForReInsertionAtGivenIndex);
     }
 
 
@@ -171,7 +185,6 @@ public class TransportDoc {
 
         return res;
     }
-
 
 
 }

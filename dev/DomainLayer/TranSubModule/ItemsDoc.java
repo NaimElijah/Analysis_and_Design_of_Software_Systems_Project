@@ -10,12 +10,13 @@ public class ItemsDoc {
     private Site dest_site;
     private HashMap<Item, Integer> goodItems;   //  separate the good items and the bad items
     private HashMap<Item, Integer> badItems;
+//    private boolean isProvider;     //TODO:  maybe this
 
     public ItemsDoc(int itemDoc_num, Site src_site, Site dest_site) {
         this.itemsDoc_num = itemDoc_num;
         this.src_site = src_site;
         this.dest_site = dest_site;
-//        this.isDestaStore = arggg;
+//        this.isProvider = arggg;
         this.goodItems = new HashMap<Item, Integer>();
         this.badItems = new HashMap<Item, Integer>();
     }

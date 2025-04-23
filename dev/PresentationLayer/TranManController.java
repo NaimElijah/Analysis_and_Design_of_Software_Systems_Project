@@ -1,5 +1,6 @@
 package PresentationLayer;
 
+import DomainLayer.TranSubModule.enumTranStatus;
 import PresentationLayer.DTOs.ItemDTO;
 import PresentationLayer.DTOs.ItemsDocDTO;
 import PresentationLayer.DTOs.SiteDTO;
@@ -258,24 +259,22 @@ public class TranManController {
         System.out.println("Checking Transport Validity...");
 
 
-        /// ////////////////////////////////////////////TODO:    NOW WE'LL DO THE CHECKINGS          <<<-----------------------------------------
+        /// ////////////////////////////////////////////    NOW WE'LL DO THE CHECKS          <<<-----------------------------------------
 
-        //TODO:    the below function now      <<<-----------------------------------------
         String resOfTransportCheck = "";
         try {
-            resOfTransportCheck = this.tra_ser.checkTransportValidity(objectMapper.writeValueAsString(transportDTO)); // TODO <<------   HERE RIGHT NOW
+            resOfTransportCheck = this.tra_ser.checkTransportValidity(objectMapper.writeValueAsString(transportDTO));
             ///  returns: "Valid", "BadLicenses", "overallWeight-truckMaxCarryWeight", "Queue"
         } catch (Exception e) {
             System.out.println("Serialization's fault");
             e.printStackTrace();
         }
-        //TODO:    the above function now      <<<-----------------------------------------
 
         while (!resOfTransportCheck.equals("Valid")){
             if (resOfTransportCheck.equals("Queue")){
                 System.out.println("This Transport doesn't have a proper Truck-Driver matching available at all right now, so this Transport will now go automatically into the Queued Transports.");
-                System.out.println("We will save the Queued Transport in order of creation, when you want, you can go to (Transport Options Menu)->() ");
-                System.out.println("The Queued Transports are being sent when they can really be sent, starting with the first Transport in the Queue.");
+                System.out.println("We save the Queued Transports in order of creation, so when you want to, you can go to (Transports Options Menu)->((3)  Check if a Queued Transport Can Be Sent) "); //TODO: add path
+                System.out.println("And try to send out the next transport to be sent, in the Queued Transports order, you can of course also delete that transport Using the Menu.\n");
                 break;
             }
 
@@ -296,14 +295,14 @@ public class TranManController {
 
         String resOfNewTransportAddition = "";
         try {
-            resOfNewTransportAddition = this.tra_ser.createTransport(objectMapper.writeValueAsString(transportDTO));  ///  <<------  HERE WE CREATE THE TRANSPORT AFTER THE CHECKS
+            resOfNewTransportAddition = this.tra_ser.createTransport(objectMapper.writeValueAsString(transportDTO));  /// <<------  HERE WE CREATE THE TRANSPORT AFTER THE CHECKS
         } catch (Exception e) {
             System.out.println("Serialization's fault");
             e.printStackTrace();
         }
 
         if(resOfNewTransportAddition.equals("Success")){
-            System.out.println("Successfully Added Transport\n");
+            System.out.println("Successfully Added Transport, You can view the Transport's Details (and it's given ID) using the Menu.\n");
         } else if(resOfNewTransportAddition.equals("Exception")){
             System.out.println("Failed to add Transport due to technical machine error\n");
         }else { System.out.println(resOfNewTransportAddition + "\n"); }  // printing error string given from Service Layer
@@ -311,12 +310,6 @@ public class TranManController {
         System.out.println();
         transportsOptionsMenu();
     }
-
-
-
-
-
-
 
 
 
@@ -490,11 +483,58 @@ public class TranManController {
 
 
 
-
     private void deleteaTransportMenu(){
         System.out.println("   --------    Transport Deletion    --------\n");
-        //TODO
+        System.out.println("Let's delete a Transport, Enter the Transport's ID (can be seen with the option, in the Menu, to show all Transports):");
+        int transportId = Integer.parseInt(scanner.nextLine());
+
+        String res = this.tra_ser.deleteTransport(transportId);
+        if(res.equals("Success")){
+            System.out.println("Successfully Deleted Transport.\n");
+        } else if(res.equals("Exception")){
+            System.out.println("Failed to delete Transport due to technical machine error\n");
+        }else { System.out.println(res + "\n"); }  // printing error string given from Service Layer
+
+        System.out.println();
+        transportsOptionsMenu();
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -506,29 +546,261 @@ public class TranManController {
         System.out.println("   --------    Transport Edition Menu    --------\n");
         System.out.println("(1)  Edit a Transport's Status");
         System.out.println("(2)  Edit a Transport's Problems");
-        System.out.println("(3)  Edit a Transport's Sites");    //TODO :  also add: arrival order to sites here (inside this option's(3's) menu)   <<<------------
+        System.out.println("(3)  Edit a Transport's Sites");
         System.out.println("(4)  Edit a Transport's Items");
-        System.out.println("(5)  Back to Transports Options Menu");
+        System.out.println("(5)  Edit a Transport's Driver/Truck");
+        System.out.println("(6)  Back to Transports Options Menu");
         System.out.println();
         System.out.println(" Select Option: ");
 
         String choice = scanner.nextLine();
         if(choice.equals("1")){
-            // TODO: send down to the Service Layer
+            editATransportsStatus();
         }else if(choice.equals("2")){
-            // TODO: send down to the Service Layer
+            editATransportsProblems();
         }else if(choice.equals("3")){
-            // TODO: send down to the Service Layer
+            editATransportsSites(); // TODO: add: (edit arrival order to sites) AND (edit an id of an items doc of a Transport) here (inside this option's(3's) menu)   <<<------------
         } else if (choice.equals("4")) {
-            // TODO
+            editATransportsItems();
         } else if (choice.equals("5")) {
+            editATransportsDriverOrTruck();
+        } else if (choice.equals("6")) {
             System.out.println("\n\n");
             transportsOptionsMenu();
         } else {
             System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
-            editaTransportMenu();
         }
+        System.out.println();
+        editaTransportMenu();
+    }
 
+
+
+
+
+
+    private void editATransportsStatus(){
+        System.out.println("   --------    Transport's Status Edition    --------\n");
+        System.out.println("(1)  Set a Transport's Status");
+        System.out.println("(2)  Back to Transport Edition Menu");
+        System.out.println();
+        System.out.println(" Select Option: ");
+
+        String choice = scanner.nextLine();
+        if(choice.equals("1")){
+
+            System.out.println("Enter the Transport ID of the Transport you want to change it's status:");
+            int transportId = Integer.parseInt(scanner.nextLine());
+            System.out.println(" To which status do you want to change that Transport's Status ?");
+            System.out.println(".1. BeingAssembled");
+            System.out.println(".2. Queued");
+            System.out.println(".3. InTransit");
+            System.out.println(".4. Completed");
+            System.out.println(".5. Canceled");
+            System.out.println(".6. Delayed");
+            System.out.println(" Select Option: ");
+            String statusChoice = scanner.nextLine();
+
+            String res = this.tra_ser.setTransportStatus(transportId, statusChoice);
+            if(res.equals("Success")){
+                System.out.println("Successfully Changed Transport's Status.\n");
+            } else if(res.equals("Exception")){
+                System.out.println("Failed to change the Transport's status due to technical machine error.\n");
+            }else { System.out.println(res + "\n"); }  // printing error string given from Service Layer
+
+        }else if (choice.equals("2")) {
+            System.out.println("\n\n");
+            editaTransportMenu();
+        } else {
+            System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
+        }
+        System.out.println();
+        editATransportsStatus();
+    }
+
+
+
+
+
+
+
+
+
+
+
+    private void editATransportsProblems(){
+        System.out.println("   --------    Transport's Problems Edition    --------\n");
+        System.out.println("(1)  Add a Problem to a Transport");
+        System.out.println("(2)  Remove a Problem from a Transport");
+        System.out.println("(3)  Back to Transport Edition Menu");
+        System.out.println();
+        System.out.println(" Select Option: ");
+
+        String choice = scanner.nextLine();
+        if(choice.equals("1")){
+
+            System.out.println("Enter the Transport ID of the Transport you want to add a problem to:");
+            int transportId1 = Integer.parseInt(scanner.nextLine());
+            System.out.println(" Which Problem do you want to add to that Transport's Document ?");
+            System.out.println(".1. Puncture");
+            System.out.println(".2. HeavyTraffic");
+            System.out.println(".3. RoadAccident");
+            System.out.println(".4. UnresponsiveContact");
+            System.out.println(".5. TruckVehicleProblem");
+            System.out.println(".6. EmptyTruckGasTank");
+            System.out.println(" Select Option: ");
+            String statusChoice1 = scanner.nextLine();
+
+            String res1 = this.tra_ser.addTransportProblem(transportId1, statusChoice1);
+            if(res1.equals("Success")){
+                System.out.println("Successfully Added to Transport's Problems.\n");
+            } else if(res1.equals("Exception")){
+                System.out.println("Failed to add the Transport problem due to technical machine error.\n");
+            }else { System.out.println(res1 + "\n"); }  // printing error string given from Service Layer
+
+        }else if(choice.equals("2")){
+
+            System.out.println("Enter the Transport ID of the Transport you want to add a problem to:");
+            int transportId2 = Integer.parseInt(scanner.nextLine());
+            System.out.println(" Which Problem do you want to remove from that Transport's Document ?");
+            System.out.println(".1. Puncture");
+            System.out.println(".2. HeavyTraffic");
+            System.out.println(".3. RoadAccident");
+            System.out.println(".4. UnresponsiveContact");
+            System.out.println(".5. TruckVehicleProblem");
+            System.out.println(".6. EmptyTruckGasTank");
+            System.out.println(" Select Option: ");
+            String statusChoice2 = scanner.nextLine();
+
+            String res2 = this.tra_ser.removeTransportProblem(transportId2, statusChoice2);
+            if(res2.equals("Success")){
+                System.out.println("Successfully removed from Transport's Problems.\n");
+            } else if(res2.equals("Exception")){
+                System.out.println("Failed to remove the Transport problem due to technical machine error.\n");
+            }else { System.out.println(res2 + "\n"); }  // printing error string given from Service Layer
+
+        }else if (choice.equals("3")) {
+            System.out.println("\n\n");
+            editaTransportMenu();
+        } else {
+            System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
+        }
+        System.out.println();
+        editATransportsProblems();
+    }
+
+
+
+
+
+
+
+
+
+
+
+    private void editATransportsDriverOrTruck(){
+        System.out.println("   --------    Transport's Driver/Truck Edition    --------\n");
+        System.out.println("(1)  Edit a Transport's Status");
+        System.out.println("(2)  Edit a Transport's Problems");
+        System.out.println("(3)  Edit a Transport's Sites");
+        System.out.println("(4)  Edit a Transport's Items");
+        System.out.println("(5)  Edit a Transport's Driver/Truck");
+        System.out.println("(6)  Back to Transport Edition Menu");
+        System.out.println();
+        System.out.println(" Select Option: ");
+
+        String choice = scanner.nextLine();
+        if(choice.equals("1")){
+
+        }else if(choice.equals("2")){
+
+        }else if(choice.equals("3")){
+
+        } else if (choice.equals("4")) {
+
+        } else if (choice.equals("5")) {
+
+        } else if (choice.equals("6")) {
+            System.out.println("\n\n");
+            editaTransportMenu();
+        } else {
+            System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
+        }
+        System.out.println();
+        editATransportsDriverOrTruck();
+        //TODO
+    }
+
+
+    private void editATransportsSites(){
+        System.out.println("   --------    Transport's Sites Edition Menu    --------\n");
+        System.out.println("(1)  Edit a Transport's Status");
+        System.out.println("(2)  Edit a Transport's Problems");
+        System.out.println("(3)  Edit a Transport's Sites");
+        System.out.println("(4)  Edit a Transport's Items");
+        System.out.println("(5)  Edit a Transport's Driver/Truck");
+        System.out.println("(6)  Back to Transport Edition Menu");
+        System.out.println();
+        System.out.println(" Select Option: ");
+
+        String choice = scanner.nextLine();
+        if(choice.equals("1")){
+
+        }else if(choice.equals("2")){
+
+        }else if(choice.equals("3")){
+
+        } else if (choice.equals("4")) {
+
+        } else if (choice.equals("5")) {
+
+        } else if (choice.equals("6")) {
+            System.out.println("\n\n");
+            editaTransportMenu();
+        } else {
+            System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
+        }
+        System.out.println();
+        editATransportsSites();
+        //TODO
+    }
+
+
+
+    private void editATransportsItems(){
+        System.out.println("   --------    Transport's Items Edition Menu    --------\n");
+        System.out.println("(1)  Add an Item to a Transport");
+        System.out.println("(2)  Remove an Item from a Transport");
+        System.out.println("(3)  Set the condition of an Item in this Transport");
+        System.out.println("(4)  Back to Transport Edition Menu");
+        System.out.println();
+        System.out.println(" Select Option: ");
+
+        String choice = scanner.nextLine();
+        if(choice.equals("1")){
+
+            System.out.println("Let's add an item to a Transport");
+            System.out.println("Enter Item Name:");
+            String itemName = scanner.nextLine();
+            System.out.println("Enter Item Weight:");
+            String itemWeight = scanner.nextLine();
+            System.out.println("Enter Item Condition: ( ('Good') / ('Bad'/or any other key) )");
+            boolean itemCondition = (scanner.nextLine().equals("Good") ? true : false);
+
+        }else if(choice.equals("2")){
+
+        }else if(choice.equals("3")){
+
+        } else if (choice.equals("4")) {
+            System.out.println("\n\n");
+            editaTransportMenu();
+        } else {
+            System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
+        }
+        System.out.println();
+        editATransportsItems();
+        //TODO
     }
 
 

@@ -25,7 +25,7 @@ import java.util.HashMap;
 public class TransportFacade {
     private HashMap<Integer, TransportDoc> transports;
     private int transportIDCounter;     ///   <<<---------------------------------    for the transport Docs ID's
-    private HashMap<Integer, ItemsDoc> itemsDocs;  // to know a ItemsDoc's num is unique and also for connection.
+    private HashMap<Integer, ItemsDoc> itemsDocs;  // to know an ItemsDoc's num is unique like required.
     private ArrayList<TransportDoc> queuedTransports;
 
     private EmployeeFacade employeeFacade;
@@ -55,21 +55,45 @@ public class TransportFacade {
 
 
     public void createTransport(String DTO_OfTransport) throws JsonProcessingException {  // time is decided when the Transport departs
+        ///  NOTE: I already did all of the checks beforehand, so if we get to here, then we can successfully and legitimately create the Transport
 
         TransportDTO transport_DTO = this.objectMapper.readValue(DTO_OfTransport, TransportDTO.class);
-        LocalDateTime now = LocalDateTime.now();
+        Driver driver = this.employeeFacade.getDrivers().get(transport_DTO.getTransportDriverID());
+        Truck truck = this.truckFacade.getTrucksWareHouse().get(transport_DTO.getTransportTruckNum());
 
-        //TODO    <<<<----------------------------------------   CONTINUE FROM HERE in the facade after DOING THE MENUS IN THE PRESENTATION LAYER !!!!!!   <<-----------
+        /// finding the srcSite
+        Site srcSite = null;
+        for (Site site : this.siteFacade.getShippingAreas().get(transport_DTO.getSrc_site().getSiteAreaNum()).getSites().values()){
+            if (site.getAddress().getArea() == transport_DTO.getSrc_site().getSiteAreaNum() && site.getAddress().getAddress().equals(transport_DTO.getSrc_site().getAddressString())){
+                srcSite = site;
+            }
+        }
 
-        //TODO
+        TransportDoc newTransportBeingCreated = new TransportDoc(enumTranStatus.BeingAssembled, this.transportIDCounter, truck, driver, srcSite);
+        this.transportIDCounter++;
 
-//        ///TODO:  check if added some ItemsDocs are for the same Site and add them up together so there won't be duplicates for the same site.
-//        for(ItemsDocDTO itemsDocDTO : dests_Docs_for_Transport){
-//
-//        }
+        /// add the ItemsDocs and the Items that should be in them from the itemsDocDTOs:
+        for (ItemsDocDTO itemsDocDTO : transport_DTO.getDests_Docs()){
+            /// finding the current destSite
+            Site destSite = this.siteFacade.getShippingAreas().get(itemsDocDTO.getDest_siteDTO().getSiteAreaNum()).getSites().get(itemsDocDTO.getDest_siteDTO().getAddressString());
 
-        //TODO: change driver's and truck's isFrees and TransportDoc Status
-        //TODO: also make the datetime of departure up to date (to now).
+            newTransportBeingCreated.addDestSite(destSite, itemsDocDTO.getItemsDoc_num());
+
+            for (ItemDTO itemDTO : itemsDocDTO.getItemDTOs().keySet()){  /// add each item of that site from the DTO's data
+                newTransportBeingCreated.addItem(itemsDocDTO.getItemsDoc_num(), itemDTO.getName(), itemDTO.getWeight(), itemsDocDTO.getItemDTOs().get(itemDTO), itemDTO.getCondition());
+            }
+        }
+
+        /// finishing touches before adding Transport
+        newTransportBeingCreated.getTransportTruck().setFree(false);
+        newTransportBeingCreated.getTransportDriver().setFree(false);
+        newTransportBeingCreated.setStatus(enumTranStatus.InTransit);
+        newTransportBeingCreated.setTruck_Depart_Weight(newTransportBeingCreated.calculateTransportItemsWeight());
+        for (ItemsDoc itemsDoc : newTransportBeingCreated.getDests_Docs()){
+            this.itemsDocs.put(itemsDoc.getItemDoc_num(), itemsDoc);
+        }
+        //  the time is set already in the constructor of the Transport
+        this.transports.put(newTransportBeingCreated.getTran_Doc_ID(), newTransportBeingCreated);
     }
 
 
@@ -77,16 +101,39 @@ public class TransportFacade {
 
 
     public void deleteTransport(int transportID) throws FileNotFoundException {
-        if(!transports.containsKey(transportID)){  //TODO also check the queuedTransports  !!!
-            throw new FileNotFoundException();
+        boolean containedInQueued = false;
+        int indexOfTransport = 0;
+        // checking if the transport is in the queue
+        for (TransportDoc transportDoc : this.queuedTransports) {
+            if (transportDoc.getTran_Doc_ID() == transportID) {
+                containedInQueued = true;
+                break;
+            }
+            indexOfTransport++;
         }
-        //TODO also check the queuedTransports  !!!
-        //TODO: delete everything inside of the transport and change statuses of what's needed, driver, truck
+
+        TransportDoc toRemoveDoc = null;
+        if (transports.containsKey(transportID)){
+            toRemoveDoc = transports.get(transportID);
+        } else if (containedInQueued) {
+            toRemoveDoc = this.queuedTransports.get(indexOfTransport);
+        }else {
+            throw new FileNotFoundException("No transport found with the Transport ID you've entered, so can't delete that Transport");
+        }
+
+        /// Transport's delete cleanups
+        for (ItemsDoc itemsDocInRemovingOne : toRemoveDoc.getDests_Docs()){
+            this.itemsDocs.remove(itemsDocInRemovingOne.getItemDoc_num());
+        }
+        if (!toRemoveDoc.getTransportDriver().isFree() && (toRemoveDoc.getStatus().equals(enumTranStatus.InTransit) || toRemoveDoc.getStatus().equals(enumTranStatus.Delayed))){
+            toRemoveDoc.getTransportDriver().setFree(true);
+        }
+        if (!toRemoveDoc.getTransportTruck().isFree() && (toRemoveDoc.getStatus().equals(enumTranStatus.InTransit) || toRemoveDoc.getStatus().equals(enumTranStatus.Delayed))){
+            toRemoveDoc.getTransportTruck().setFree(true);
+        }
+
         transports.remove(transportID);
-        //TODO
     }
-
-
 
 
 
@@ -96,7 +143,7 @@ public class TransportFacade {
         if(!transports.containsKey(TranDocID)){
             throw new FileNotFoundException("The Transport ID you have entered doesn't exist.");
         }
-        enumTranStatus status = enumTranStatus.Else;
+        enumTranStatus status = null;
         if (menu_status_option == 1){
             status = enumTranStatus.BeingAssembled;
         } else if (menu_status_option == 2) {
@@ -109,16 +156,16 @@ public class TransportFacade {
             status = enumTranStatus.Canceled;
         } else if (menu_status_option == 6) {
             status = enumTranStatus.Delayed;
-        }else if (menu_status_option == 7) {
-            status = enumTranStatus.Else;
         }
-        if (transports.get(TranDocID).getProblems().contains(status)) {
+
+        if (transports.get(TranDocID).getStatus().equals(status)) {
             throw new FileAlreadyExistsException("The status you are trying to set already is the status of this Transport");
         }
+
         if(status.equals(enumTranStatus.InTransit)){
             if(this.transports.get(TranDocID).getStatus() == enumTranStatus.Canceled || this.transports.get(TranDocID).getStatus() == enumTranStatus.Completed){
                 if((!this.transports.get(TranDocID).getTransportTruck().isFree()) || (!this.transports.get(TranDocID).getTransportDriver().isFree())){
-                    throw new ClassNotFoundException("cannot change status to InTransit because the driver or the truck aren't free, maybe change the, and try again.");
+                    throw new ClassNotFoundException("cannot change status to InTransit because the driver or the truck aren't free, maybe change them, and try again.");
                 }
             }
             this.transports.get(TranDocID).getTransportDriver().setFree(false);
@@ -129,6 +176,12 @@ public class TransportFacade {
         }
         this.transports.get(TranDocID).setStatus(status);
     }
+
+
+
+
+
+
 
 
 
@@ -290,7 +343,8 @@ public class TransportFacade {
         }
 
         //TODO: if can be sent, then: change driver's and truck's isFrees and TransportDoc Status
-        //TODO: also make the datetime of departure up to date (to now).
+        //TODO: also make the departure_datetime of the Transport up to date (to now).
+        //TODO: also make the truck_depart_weight of the Transport up to date (with the calculation function I made).
     }
 
 
@@ -306,7 +360,7 @@ public class TransportFacade {
 
 
 
-    public void setSiteArrivalIndexInTransport(int transportID, int siteArea, String siteAddress, int index) throws FileNotFoundException, ClassNotFoundException {
+    public void setSiteArrivalIndexInTransport(int transportID, int siteArea, String siteAddress, int index) throws FileNotFoundException, ClassNotFoundException, AbstractMethodError {
         if (!this.transports.containsKey(transportID)){
             throw new FileNotFoundException("The transport ID given was not found");
         }
@@ -321,14 +375,12 @@ public class TransportFacade {
         }
 
         if(!siteResidesInTransport){
-            throw new ClassNotFoundException("Site not found inside that transport");
-        } else if (index >= this.transports.get(transportID).getDests_Docs().size()) {
-            throw new AbstractMethodError("the Index entered is bigger than the bounds");
+            throw new ClassNotFoundException("Site not found inside of that transport");
+        } else if (index > this.transports.get(transportID).getDests_Docs().size()) {   // if the index is valid    //  index should be 1, 2, ....
+            throw new AbstractMethodError("The Index entered is bigger than the amount of sites in the Transport, so can't put that site in that bigger index");
         }
 
-        this.transports.get(transportID).getDests_Docs().remove(itemsDocToMove);
-
-        //TODO
+        this.transports.get(transportID).setSiteArrivalIndexInTransport(siteArea, siteAddress, index);
     }
 
 
@@ -424,21 +476,28 @@ public class TransportFacade {
 
 
 
+    public String showAllQueuedTransports() {
+        String resOfQueuedTransports = "Queued Transports (Values of Drivers/Trucks/Time in the Queued Transports are not final, these are the values set when first trying to create the Transport):\n";
+        for (TransportDoc transportDoc : this.queuedTransports) {
+            resOfQueuedTransports += transportDoc.toString() + "\n";
+        }
+        resOfQueuedTransports += "\n";
+        return resOfQueuedTransports;
+    }
+
 
     public String showAllTransports(){
         String resOfAllTransports = "All Transports:\n";
         for (TransportDoc t : transports.values()){
             resOfAllTransports += t.toString() + "\n";
         }
-        resOfAllTransports += "Queued Transports (Values of Drivers/Trucks in the Queued Transports are not final):\n";
+        resOfAllTransports += "Queued Transports (Values of Drivers/Trucks/Time in the Queued Transports are not final, these are the values set when first trying to create the Transport):\n";
         for (TransportDoc t : this.queuedTransports){
             resOfAllTransports += t.toString() + "\n";
         }
         resOfAllTransports += "\n";
         return resOfAllTransports;
     }
-
-
 
 
 }
