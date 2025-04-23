@@ -706,6 +706,14 @@ public class ShiftController {
                 .collect(Collectors.toSet());
     }
 
+    public Set<Shift> getShiftsByWeek(long doneBy,Week week) {
+        String PERMISSION_REQUIRED = "GET_SHIFT";
+        if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
+            throw new UnauthorizedPermissionException("User does not have permission to get shifts by week");
+        }
+        return weeklyShifts.get(week);
+    }
+
 
 
 }

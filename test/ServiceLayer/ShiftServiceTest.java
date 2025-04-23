@@ -56,7 +56,7 @@ class ShiftServiceTest {
         shiftController = new ShiftController(shifts, authorisationController, employeeController);
 
         assignmentController = new AssignmentController(employeeController);
-        availabilityController = new AvailabilityController();
+        availabilityController = new AvailabilityController(employeeController);
 
         // Create ShiftService with the controllers
         shiftService = new ShiftService(shiftController, assignmentController, availabilityController);

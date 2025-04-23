@@ -36,7 +36,7 @@ public class Shift {
         return id;
     }
 
-    public ShiftType getShiftType() {
+    public String getShiftType() {
         return shiftType;
     }
 

@@ -1,5 +1,7 @@
 package DomainLayer;
 
+import DomainLayer.exception.UnauthorizedPermissionException;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -12,7 +14,7 @@ public class AssignmentController {
     public boolean assignEmployeeToRole(Shift shift, long doneBy, String role) {
         String PERMISSION = "ASSIGN_EMPLOYEE";
         if (!employeeController.isEmployeeAuthorised(doneBy, PERMISSION)) {
-            return false;
+            throw new UnauthorizedPermissionException("User does not have permission to assign employees");
         }
         if (!shift.getRolesRequired().containsKey(role)) return false;
 

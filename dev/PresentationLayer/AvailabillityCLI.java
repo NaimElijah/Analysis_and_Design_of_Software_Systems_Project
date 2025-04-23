@@ -1,15 +1,12 @@
 package PresentationLayer;
 
+import DomainLayer.enums.ShiftType;
 import ServiceLayer.ShiftSL;
 import ServiceLayer.ShiftService;
-
+import Util.Week;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.*;
 
 public class AvailabillityCLI {
     private final ShiftService shiftService;
@@ -24,77 +21,37 @@ public class AvailabillityCLI {
     }
 
     public void start() {
-        while (true) {
-
-            System.out.println("1. Add Availability");
-            System.out.println("2. Update Availability");
-            System.out.println("3. Delete Availability");
-            System.out.println("4. View Availability");
-            System.out.println("5. Exit");
-            System.out.print("Choose an option: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine(); // Consume newline
-            switch (choice) {
-                case 1:
-                    createAvailability();
-                    break;
-                case 2:
-                    updateAvailability();
-                    break;
-                case 3:
-                    deleteAvailability();
-                    break;
-                case 4:
-                    viewAvailability();
-                    break;
-                case 5:
-                    System.out.println("Exiting...");
-                    return;
-                default:
-                    System.out.println("Invalid choice. Please try again.");
-            }
-
             if (isWeekendBlocked()) {
-                System.out.println("⚠️  The availability system is currently closed (Thursday 16:00 to Saturday night).");
+                System.out.println("🚫 Availability update is blocked on weekends.");
                 return;
             }
+            LocalDate startDate = getNextSunday(LocalDate.now());
+            Week Week = Util.Week.from(startDate);
+            Set<ShiftSL> weekShifts = shiftService.getShiftsByWeek(doneBy,Week);
 
             System.out.println("🗓️  Employee Weekly Availability");
-            LocalDate nextSunday = getNextSunday(LocalDate.now());
+            System.out.printf("%-15s| %-13s| %-13s| %-10s%n", "Day", "Type", "Available", "For update Enter Y/N");
+            System.out.println("---------------------------------------------------------------");
 
-            printTableHeader();
+            Map<Long, Boolean> userInputs = new LinkedHashMap<>();
+            for (ShiftSL shift : weekShifts) {
+                LocalDate date = shift.getShiftDate();
+                String dayStr = date.getDayOfWeek().toString().substring(0, 1).toUpperCase() + date.getDayOfWeek().toString().substring(1).toLowerCase();
+                dayStr = dayStr.substring(0, 3); // Sun, Mon...
 
-            for (int i = 0; i < 7; i++) {
-                LocalDate day = startOfWeek.plusDays(i);
-                Set<ShiftTime> existing = availability.getOrDefault(day, new HashSet<>());
+                for (ShiftType type : ShiftType.values()) {
+                    boolean available = shift.getAvailableEmployees().contains(doneBy);
+                    String availabilityMark = available ? "v" : "";
 
-                for (ShiftTime shift : List.of(ShiftTime.MORNING, ShiftTime.EVENING, ShiftTime.NIGHT)) {
-                    String symbol;
-                    if (existing.contains(shift)) {
-                        symbol = "v"; // Available
-                    } else if (existing != null && !existing.contains(shift)) {
-                        symbol = "-"; // Not available
-                    } else {
-                        symbol = " "; // Not selected
-                    }
+                    System.out.printf("%-15s| %-13s| %-13s| ", (type == ShiftType.MORNING ? dayStr + " " + date : ""), type, availabilityMark);
 
-                    String dayStr = shift == ShiftTime.MORNING ? String.format("%-15s", day.format(dateFormatter)) : String.format("%-15s", "");
-                    System.out.printf("%s| %-13s| %-13s| ", dayStr, shift, symbol);
-
-                    String input = scanner.nextLine().trim().toLowerCase();
-                    if (input.equals("v")) {
-                        existing.add(shift);
-                    } else if (input.equals("x") || input.isEmpty()) {
-                        existing.remove(shift);
+                    boolean input = Boolean.parseBoolean(scanner.nextLine().trim().toLowerCase());
+                    if (input){
+                        shiftService.addAvailableEmployee(doneBy,shift.getId(),doneBy);
                     }
                 }
-
-                availability.put(day, existing);
             }
-
-            System.out.println("\n✅ Availability updated successfully!");
-        }
-
+            System.out.println("✅ Availability updated!");
     }
 
     private LocalDate getNextSunday(LocalDate fromDate) {
@@ -114,10 +71,6 @@ public class AvailabillityCLI {
                 || day == DayOfWeek.SATURDAY;
     }
 
-    private static void printTableHeader() {
-        System.out.printf("%-15s| %-13s| %-13s| Input (v/x/Enter)\n", "Day", "Type", "Available");
-        System.out.println("------------------------------------------------------------------");
-    }
 
 
 }

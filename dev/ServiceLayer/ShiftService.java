@@ -2,12 +2,10 @@ package ServiceLayer;
 
 import DomainLayer.*;
 import DomainLayer.enums.ShiftType;
+import Util.Week;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ShiftService {
     private final ShiftController shiftController;
@@ -394,4 +392,19 @@ public class ShiftService {
             return new HashMap<>();
         }
     }
+
+    public Set<ShiftSL> getShiftsByWeek(long doneBy, Week week) {
+        try {
+            Set<ShiftSL> shiftSLS = new HashSet<>();
+            Set<Shift> weekShifts = shiftController.getShiftsByWeek(doneBy, week);
+            for (Shift shift : weekShifts) {
+                shiftSLS.add(new ShiftSL(shift));
+            }
+            return shiftSLS;
+        }
+        catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
