@@ -1,9 +1,9 @@
 package DomainLayer.TranSubModule;
 
+import DomainLayer.EmpSubModule.Driver;
 import DomainLayer.SiteSubModule.Site;
 import DomainLayer.TruSubModule.Truck;
 
-import java.sql.Driver;
 import java.sql.Time;
 import java.time.chrono.ChronoLocalDate;
 import java.util.ArrayList;
@@ -22,14 +22,15 @@ public class TransportDoc {
     private Site src_site;
     private ArrayList<ItemsDoc> dests_Docs;  ///  <<<--------------  In Order of visit   <<<--------------------
     private ArrayList<enumTranProblem> problems;
+    private boolean isProvider;    // TODO  !!!!!!  if true then provider and roles in this clas change(src is gonna from where we get the items(provider itself)....)  <<--------
 
-    public TransportDoc(enumTranStatus status, int tran_Doc_ID, Truck transportTruck, Driver transportDriver, int truck_Depart_Weight, Site src_site) {
+    public TransportDoc(enumTranStatus status, int tran_Doc_ID, Truck transportTruck, Driver transportDriver, Site src_site) {
         this.status = status;
         this.tran_Doc_ID = tran_Doc_ID;
         this.departure_dt = LocalDateTime.now();   // when really departing after the check, set this to departure datetime
         this.transportTruck = transportTruck;
         this.transportDriver = transportDriver;
-        this.truck_Depart_Weight = truck_Depart_Weight;
+        this.truck_Depart_Weight = -1;   //  Initialization, calculated before being sent
         this.src_site = src_site;
         this.dests_Docs = new ArrayList<ItemsDoc>();
         this.problems = new ArrayList<enumTranProblem>();
@@ -53,8 +54,8 @@ public class TransportDoc {
     public void setDests_Docs(ArrayList<ItemsDoc> dests_Docs) {this.dests_Docs = dests_Docs;}
     public ArrayList<enumTranProblem> getProblems() {return problems;}
     public void setProblems(ArrayList<enumTranProblem> problems_descriptions) {this.problems = problems_descriptions;}
-
-
+    public boolean isProvider() {return isProvider;}
+    public void setProvider(boolean provider) {isProvider = provider;}
 
     public int addDestSite(Site dest, int itemsDoc_num){
         for(ItemsDoc itemsDoc : dests_Docs){

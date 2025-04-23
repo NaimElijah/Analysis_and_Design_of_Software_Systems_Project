@@ -2,8 +2,10 @@ package PresentationLayer.DTOs;
 
 public class ItemDTO {
     private String name;
-    private int weight;
+    private int weight;   // In whole numbers, in grams.
     private Boolean condition;
+
+    public ItemDTO() {}
 
     public ItemDTO(String name, int weight, Boolean condition){
         this.name = name;
@@ -24,4 +26,9 @@ public class ItemDTO {
     public Boolean getCondition() {return condition;}
     public void setCondition(Boolean condition) {this.condition = condition;}
 
+    @Override
+    public String toString() {
+        String res = "Item Name: " + name + ", Item Weight: " + weight + ", Item Condition: " + condition;
+        return res;
+    }
 }

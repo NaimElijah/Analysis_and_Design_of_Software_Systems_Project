@@ -6,11 +6,8 @@ import java.util.HashMap;
 
 public class ItemsDoc {
     private int itemsDoc_num;
-    /// we want to take to here
     private Site src_site;
-    ///  we want to take from there
     private Site dest_site;
-//    private boolean isDestaStore;
     private HashMap<Item, Integer> goodItems;   //  separate the good items and the bad items
     private HashMap<Item, Integer> badItems;
 

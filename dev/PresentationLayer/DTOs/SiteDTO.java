@@ -1,8 +1,10 @@
 package PresentationLayer.DTOs;
 
 public class SiteDTO {
-        private int siteAreaNum;
-        private String siteAddressString;
+    private int siteAreaNum;
+    private String siteAddressString;
+
+    public SiteDTO() {}
 
     public SiteDTO(int siteAreaNum, String addressString) {
         this.siteAreaNum = siteAreaNum;
@@ -14,4 +16,9 @@ public class SiteDTO {
     public String getAddressString() {return siteAddressString;}
     public void setAddressString(String addressString) {this.siteAddressString = addressString;}
 
+    @Override
+    public String toString() {
+        String res = "Site Area: " + this.siteAreaNum + ", Site String Address: " + this.siteAddressString;
+        return res;
+    }
 }

@@ -2,6 +2,8 @@ package ServiceLayer;
 
 import DomainLayer.TranSubModule.TransportFacade;
 import PresentationLayer.DTOs.TransportDTO;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 import java.io.FileNotFoundException;
@@ -9,15 +11,18 @@ import java.nio.file.FileAlreadyExistsException;
 
 public class TransportService {
     private TransportFacade tran_f;
+    private ObjectMapper objectMapper;
     public TransportService(TransportFacade tf) {
         this.tran_f = tf;
+        this.objectMapper = new ObjectMapper();
     }
 
 
 
-    public String createTransport(TransportDTO transportDTO){
+    public String createTransport(String transportDTO){
         // TODO: check basic validity
         try {
+            this.tran_f.createTransport(transportDTO);
             //TODO
         } catch (FileAlreadyExistsException e) {
             return "";
@@ -47,18 +52,25 @@ public class TransportService {
 
 
 
-    public String setTransportStatus(int TranDocID, int menu_status_option){
-        // TODO: check basic validity
+    public String setTransportStatus(int TranDocID, String menu_status_option){
+        int intMenuStatusOption = Integer.parseInt(menu_status_option);
         try {
-            //TODO
+            this.tran_f.setTransportStatus(TranDocID, intMenuStatusOption);
+        } catch (FileNotFoundException e) {
+            return "The Transport ID you have entered doesn't exist.";
         } catch (FileAlreadyExistsException e) {
-            return "";
+            return "The problem you are trying to add already exists in this Transport";
+        } catch (ClassNotFoundException e) {
+            return "cannot change status to InTransit because the driver or the truck aren't free, maybe change the, and try again.";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
         }
         return "Success";  //  if All Good
     }
+
+
+
 
     public String setTransportTruck(int TranDocID, int truckNum){
         // TODO: check basic validity
@@ -72,6 +84,8 @@ public class TransportService {
         }
         return "Success";  //  if All Good
     }
+
+
 
     public String setTransportDriver(int TranDocID, int DriverID){
         // TODO: check basic validity
@@ -92,34 +106,23 @@ public class TransportService {
 
 
 
-    public String checkTransportValidity(TransportDTO transportDTO){
-        // TODO: check basic validity
+    public String checkTransportValidity(String transportDTO) {  ///  returns: "Valid", "BadLicenses", "<overallWeight-truckMaxCarryWeight>", "Queue"
+        String res = "";
         try {
-            //TODO
-        } catch (FileAlreadyExistsException e) {
-            return "";
+            res = this.tran_f.checkTransportValidity(transportDTO);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return "JsonProcessingException";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
         }
-        return "Success";  //  if All Good   //TODO:   maybe also when a driver/truck are unavailable we can choose to put in waitqueue or try to choose another
+        return res;  //  if All Good   //TODO:   maybe also when a driver/truck are unavailable we can choose to put in waitqueue or try to choose another
     }
+
+
 
     public String checkIfFirstQueuedTransportsCanGo(){
-        // TODO: check basic validity
-        try {
-            //TODO
-        } catch (FileAlreadyExistsException e) {
-            return "";
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "Exception";
-        }
-        return "Success";  //  if All Good
-    }
-
-
-    public String addTransportToWaitQueue(int transportID){
         // TODO: check basic validity
         try {
             //TODO
@@ -141,12 +144,18 @@ public class TransportService {
 
 
     public String setSiteArrivalIndexInTransport(int transportID, int siteArea, String siteAddress, int index){
-        //TODO   <<<-------------  ADD OPTION FOR TRANSPORT SITES ORDER EDITION, THE ORDER IS THE ARRAYLIST's ORDER    <<<----------
+        if (index < 0){
+            return "The Site Index in the arrival order cannot be negative";
+        }
+        if(transportID < 0 || siteArea < 0){
+            return "The Transport ID and the Site Area cannot be negative";
+        }
         // TODO: check basic validity
         try {
             //TODO
+            this.tran_f.setSiteArrivalIndexInTransport(transportID, siteArea, siteAddress, index);
         } catch (FileAlreadyExistsException e) {
-            return "";
+            return "";  // TODO
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";

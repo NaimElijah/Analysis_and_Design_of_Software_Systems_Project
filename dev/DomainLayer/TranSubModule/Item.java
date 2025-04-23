@@ -2,7 +2,7 @@ package DomainLayer.TranSubModule;
 
 public class Item {
     private String name;
-    private int weight;
+    private int weight;   // In whole numbers, in grams.
     private Boolean condition;
 
     public Item(String name, int weight, Boolean condition){

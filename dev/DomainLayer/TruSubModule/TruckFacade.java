@@ -10,6 +10,8 @@ public class TruckFacade {
         trucksWareHouse = new HashMap<>();
     }
 
+    public HashMap<Integer, Truck> getTrucksWareHouse() {return trucksWareHouse;}
+    public void setTrucksWareHouse(HashMap<Integer, Truck> trucksWareHouse) {this.trucksWareHouse = trucksWareHouse;}
     public void addTruck(int num, String model, int max_weight, int max_carry, String license) {}
     public void removeTruck(int num) {}
 

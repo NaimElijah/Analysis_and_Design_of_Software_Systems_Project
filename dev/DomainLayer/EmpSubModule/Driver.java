@@ -13,18 +13,18 @@ public class Driver extends Employee{
         this.isFree = true;
     }
 
-    private ArrayList<String> getLicenses() {return licenses;}
-    private void setLicenses(ArrayList<String> licenses) {this.licenses = licenses;}
+    public ArrayList<String> getLicenses() {return licenses;}
+    public void setLicenses(ArrayList<String> licenses) {this.licenses = licenses;}
     public boolean isFree() {return isFree;}
     public void setFree(boolean free) {isFree = free;}
 
-    private void addLicense(String s){
+    public void addLicense(String s){
         if(!licenses.contains(s)){
             licenses.add(s);
         }
     }
 
-    private void removeLicense(Character c){licenses.remove(c);}
+    public void removeLicense(Character c){licenses.remove(c);}
 
     @Override
     public String toString() {

@@ -11,6 +11,8 @@ public class ItemsDocDTO {
     //    private boolean isDestaStore;
     private HashMap<ItemDTO, Integer> itemDTOs;
 
+    public ItemsDocDTO() {}
+
     public ItemsDocDTO(int itemsDoc_num, SiteDTO src_siteDTO, SiteDTO dest_siteDTO, HashMap<ItemDTO, Integer> itemDTOs) {
         this.itemsDoc_num = itemsDoc_num;
         this.src_siteDTO = src_siteDTO;
@@ -27,4 +29,12 @@ public class ItemsDocDTO {
     public HashMap<ItemDTO, Integer> getItemDTOs() {return itemDTOs;}
     public void setItemDTOs(HashMap<ItemDTO, Integer> itemDTOs) {this.itemDTOs = itemDTOs;}
 
+    @Override
+    public String toString() {
+        String res = "ItemsDocNum: " + this.itemsDoc_num + ", Source Site: " + this.src_siteDTO.toString() + ", Destination Site: " + this.dest_siteDTO.toString() + "\n";
+        for (ItemDTO itemDTO : this.itemDTOs.keySet()) {
+            res += itemDTO.toString() + "\n";
+        }
+        return res;
+    }
 }

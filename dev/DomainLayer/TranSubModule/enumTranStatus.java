@@ -1,2 +1,2 @@
 package DomainLayer.TranSubModule;
-public enum enumTranStatus { Queued, InProgress, Completed, Canceled, Delayed; }
+public enum enumTranStatus { BeingAssembled, Queued, InTransit, Completed, Canceled, Delayed, Else; }

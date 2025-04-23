@@ -8,8 +8,11 @@ import java.util.HashMap;
 public class SiteFacade {
     private HashMap<Integer, ShippingArea> shippingAreas;
 
-    public SiteFacade() {
-        shippingAreas = new HashMap<Integer, ShippingArea>();
+    public SiteFacade() { shippingAreas = new HashMap<Integer, ShippingArea>(); }
+
+    public HashMap<Integer, ShippingArea> getShippingAreas() {return shippingAreas;}
+    public void setShippingAreas(HashMap<Integer, ShippingArea> shippingAreas) {
+        this.shippingAreas = shippingAreas;
     }
 
     public void addShippingArea(int areaNum, String areaName) throws KeyAlreadyExistsException {
@@ -79,6 +82,18 @@ public class SiteFacade {
         }
         shippingAreas.get(areaNum).getSites().remove(address);
     }
+
+
+
+    public boolean doesSiteExist(Integer currSiteAreaNum, String currDestinationAddress) {
+        if (shippingAreas.containsKey(currSiteAreaNum)) {
+            if(shippingAreas.get(currSiteAreaNum).getSites().containsKey(currDestinationAddress)){
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     public void setSiteAddress(int areaNum, String oldAddress, String newAddress) throws ClassNotFoundException, KeyAlreadyExistsException {
         if (!shippingAreas.containsKey(areaNum)) {

@@ -125,6 +125,12 @@ public class SiteService {
         return "Success";
     }
 
+
+    public boolean doesSiteExist(Integer currSiteAreaNum, String currDestinationAddress) {
+        return this.sf.doesSiteExist(currSiteAreaNum, currDestinationAddress);
+    }
+
+
     public String setSiteAddress(int areaNum, String Oldaddress, String NewAddress){
         try {
             if (NewAddress.isEmpty() || Oldaddress.isEmpty() || NewAddress.isBlank() || Oldaddress.isBlank()) {
