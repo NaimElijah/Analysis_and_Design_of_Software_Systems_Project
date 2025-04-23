@@ -270,7 +270,11 @@ public class AuthorisationController {
         return true;
     }
 
-    public Map<String,String[]> getAllRoles() {
+    public Set<String> getAllRoles() {
+        return new HashSet<>(roles.keySet());
+    }
+
+    public Map<String,String[]> getAllRolesWithPermissions() {
         Map<String,String[]> rolesMap = new HashMap<>();
         for (Map.Entry<String, HashSet<String>> entry : roles.entrySet()) {
             String roleName = entry.getKey();

@@ -75,7 +75,7 @@ public class EmployeeService {
      */
     public String[] getAllRoles() {
         try {
-            Map<String, String[]> rolesMap = authorisationController.getAllRoles();
+            Map<String, String[]> rolesMap = authorisationController.getAllRolesWithPermissions();
             String[] roles = new String[rolesMap.size()];
             int i = 0;
             for (String role : rolesMap.keySet()) {
