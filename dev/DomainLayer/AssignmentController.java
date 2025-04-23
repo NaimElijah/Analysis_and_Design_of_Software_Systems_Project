@@ -4,14 +4,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class AssignmentController {
-    private final AuthorisationController authorizationController;
+    private final EmployeeController employeeController;
 
-    public AssignmentController(AuthorisationController authorizationController) {
-        this.authorizationController = authorizationController;
+    public AssignmentController(EmployeeController employeeController) {
+        this.employeeController = employeeController;
     }
     public boolean assignEmployeeToRole(Shift shift, long doneBy, String role) {
         String PERMISSION = "ASSIGN_EMPLOYEE";
-        if (!authorizationController.hasPermission(doneBy, PERMISSION)) {
+        if (!employeeController.isEmployeeAuthorised(doneBy, PERMISSION)) {
             return false;
         }
         if (!shift.getRolesRequired().containsKey(role)) return false;
@@ -26,6 +26,10 @@ public class AssignmentController {
     }
 
     public boolean removeAssignment(Shift shift, long doneBy) {
+        String PERMISSION = "ASSIGN_EMPLOYEE";
+        if (!employeeController.isEmployeeAuthorised(doneBy, PERMISSION)) {
+            return false;
+        }
         for (Set<Long> assigned : shift.getAssignedEmployees().values()) {
             assigned.remove(doneBy);
         }

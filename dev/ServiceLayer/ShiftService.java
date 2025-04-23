@@ -4,14 +4,20 @@ import DomainLayer.*;
 import DomainLayer.enums.ShiftType;
 
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class ShiftService {
     private final ShiftController shiftController;
+    private final AssignmentController assignmentController;
+    private final AvailabilityController availabilityController;
 
-    public ShiftService(ShiftController shiftController) {
+    public ShiftService(ShiftController shiftController, AssignmentController assignmentController, AvailabilityController availabilityController) {
         this.shiftController = shiftController;
+        this.assignmentController = assignmentController;
+        this.availabilityController = availabilityController;
     }
 
     public String createShift(long doneBy, ShiftType shiftType, LocalDate date,
@@ -242,5 +248,150 @@ public class ShiftService {
 
     public Set<String> getRoles(long doneBy) {
         return shiftController.getRoles(doneBy);
+    }
+
+    /**
+     * Assigns an employee to a role in a shift
+     * @param doneBy the employee making the assignment
+     * @param shiftId the ID of the shift
+     * @param employeeId the ID of the employee to assign
+     * @param role the role to assign the employee to
+     * @return a message indicating success or failure
+     */
+    public String assignEmployeeToRole(long doneBy, long shiftId, long employeeId, String role) {
+        try {
+            Shift shift = shiftController.getShiftByID(doneBy, shiftId);
+            if (shift == null) {
+                return "Shift not found";
+            }
+
+            boolean result = assignmentController.assignEmployeeToRole(shift, employeeId, role);
+            return result ? "Employee assigned to role successfully" : "Failed to assign employee to role";
+        } catch (RuntimeException e) {
+            return "Error: " + e.getMessage();
+        }
+    }
+
+    /**
+     * Removes an employee's assignment from a shift
+     * @param doneBy the employee making the change
+     * @param shiftId the ID of the shift
+     * @param employeeId the ID of the employee to remove
+     * @return a message indicating success or failure
+     */
+    public String removeAssignment(long doneBy, long shiftId, long employeeId) {
+        try {
+            Shift shift = shiftController.getShiftByID(doneBy, shiftId);
+            if (shift == null) {
+                return "Shift not found";
+            }
+
+            boolean result = assignmentController.removeAssignment(shift, employeeId);
+            return result ? "Employee assignment removed successfully" : "Failed to remove employee assignment";
+        } catch (RuntimeException e) {
+            return "Error: " + e.getMessage();
+        }
+    }
+
+    /**
+     * Checks if an employee is assigned to a shift
+     * @param doneBy the employee making the query
+     * @param shiftId the ID of the shift
+     * @param employeeId the ID of the employee to check
+     * @return true if the employee is assigned, false otherwise
+     */
+    public boolean isEmployeeAssigned(long doneBy, long shiftId, long employeeId) {
+        try {
+            Shift shift = shiftController.getShiftByID(doneBy, shiftId);
+            if (shift == null) {
+                return false;
+            }
+
+            return assignmentController.isAssigned(shift, employeeId);
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Marks an employee as available for a shift
+     * @param doneBy the employee making the change
+     * @param shiftId the ID of the shift
+     * @param employeeId the ID of the employee to mark as available
+     * @return a message indicating success or failure
+     */
+    public String markEmployeeAvailable(long doneBy, long shiftId, long employeeId) {
+        try {
+            Shift shift = shiftController.getShiftByID(doneBy, shiftId);
+            if (shift == null) {
+                return "Shift not found";
+            }
+
+            availabilityController.markAvailable(shift, employeeId);
+            return "Employee marked as available successfully";
+        } catch (RuntimeException e) {
+            return "Error: " + e.getMessage();
+        }
+    }
+
+    /**
+     * Removes an employee's availability for a shift
+     * @param doneBy the employee making the change
+     * @param shiftId the ID of the shift
+     * @param employeeId the ID of the employee to remove availability for
+     * @return a message indicating success or failure
+     */
+    public String removeEmployeeAvailability(long doneBy, long shiftId, long employeeId) {
+        try {
+            Shift shift = shiftController.getShiftByID(doneBy, shiftId);
+            if (shift == null) {
+                return "Shift not found";
+            }
+
+            availabilityController.removeAvailability(shift, employeeId);
+            return "Employee availability removed successfully";
+        } catch (RuntimeException e) {
+            return "Error: " + e.getMessage();
+        }
+    }
+
+    /**
+     * Checks if an employee is available for a shift
+     * @param doneBy the employee making the query
+     * @param shiftId the ID of the shift
+     * @param employeeId the ID of the employee to check
+     * @return true if the employee is available, false otherwise
+     */
+    public boolean isEmployeeAvailable(long doneBy, long shiftId, long employeeId) {
+        try {
+            Shift shift = shiftController.getShiftByID(doneBy, shiftId);
+            if (shift == null) {
+                return false;
+            }
+
+            return availabilityController.isAvailable(shift, employeeId);
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Gets an employee's weekly availability
+     * @param doneBy the employee making the query
+     * @param employeeId the ID of the employee to get availability for
+     * @param startDate the start date of the week
+     * @return a map of dates to shift types and availability
+     */
+    public Map<LocalDate, Map<String, Boolean>> getEmployeeWeeklyAvailability(long doneBy, long employeeId, LocalDate startDate) {
+        try {
+            Set<Shift> weekShifts = shiftController.getShiftsByWeek(doneBy, startDate);
+            if (weekShifts.isEmpty()) {
+                return new HashMap<>();
+            }
+
+            return availabilityController.getWeeklyAvailability(weekShifts.stream().toList(), employeeId);
+        } catch (RuntimeException e) {
+            return new HashMap<>();
+        }
     }
 }
