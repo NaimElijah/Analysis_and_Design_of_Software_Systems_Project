@@ -1,6 +1,7 @@
 package ServiceLayer;
 
 import DomainLayer.*;
+import DomainLayer.enums.ShiftType;
 
 import java.time.LocalDate;
 import java.util.Map;
@@ -13,12 +14,12 @@ public class ShiftService {
         this.shiftController = shiftController;
     }
 
-    public String createShift(long doneBy, String shiftType, LocalDate date,
-                               Map<String, Integer> rolesRequired,
-                               Map<String, Set<Long>> assignedEmployees,
-                               Set<Long> availableEmployees,
-                               boolean isAssignedShiftManager,
-                               boolean isOpen, LocalDate updateDate) {
+    public String createShift(long doneBy, ShiftType shiftType, LocalDate date,
+                              Map<String, Integer> rolesRequired,
+                              Map<String, Set<Long>> assignedEmployees,
+                              Set<Long> availableEmployees,
+                              boolean isAssignedShiftManager,
+                              boolean isOpen, LocalDate updateDate) {
         try {
             boolean result = shiftController.createShift(doneBy, shiftType, date, rolesRequired, assignedEmployees,
                     availableEmployees, isAssignedShiftManager, isOpen, updateDate);
@@ -49,7 +50,7 @@ public class ShiftService {
         }
     }
 
-    public String removeShift(long doneBy, LocalDate date, String shiftType) {
+    public String removeShift(long doneBy, LocalDate date, ShiftType shiftType) {
         try {
             boolean result = shiftController.removeShift(doneBy, date, shiftType);
             return result ? "Shift deleted successfully" : "Failed to delete shift";
@@ -58,7 +59,7 @@ public class ShiftService {
         }
     }
 
-    public String updateShift(long doneBy, long shiftId, String shiftType, LocalDate date,
+    public String updateShift(long doneBy, long shiftId, ShiftType shiftType, LocalDate date,
                               boolean isAssignedShiftManager, boolean isOpen, LocalDate updateDate) {
         try {
             boolean result = shiftController.updateShift(doneBy, shiftId, shiftType, date, isAssignedShiftManager, isOpen, updateDate);
@@ -127,7 +128,7 @@ public class ShiftService {
         }
     }
 
-    public ShiftSL getShift(long doneBy, LocalDate date, String shiftType) {
+    public ShiftSL getShift(long doneBy, LocalDate date, ShiftType shiftType) {
         try {
             ShiftSL shift = new ShiftSL(shiftController.getshift(doneBy, date, shiftType));
             if (shift.getId() >= 0) {

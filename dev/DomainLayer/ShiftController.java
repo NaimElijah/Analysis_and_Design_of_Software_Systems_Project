@@ -36,7 +36,7 @@ public class ShiftController {
      * @param updateDate             the date of the last update
      * @return true if the shift was created successfully, false otherwise
      */
-    public boolean createShift(long doneBy, String shiftType, LocalDate date, Map<String, Integer> rolesRequired, Map<String, Set<Long>> assignedEmployees, Set<Long> availableEmployees, boolean isAssignedShiftManager, boolean isOpen, LocalDate updateDate) {
+    public boolean createShift(long doneBy,ShiftType shiftType, LocalDate date, Map<String, Integer> rolesRequired, Map<String, Set<Long>> assignedEmployees, Set<Long> availableEmployees, boolean isAssignedShiftManager, boolean isOpen, LocalDate updateDate) {
         String PERMISSION_REQUIRED = "CREATE_SHIFT";
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to create shift");
@@ -91,7 +91,7 @@ public class ShiftController {
                             throw new RuntimeException("Shift already exists");
                         }
                         Map<String, Set<Long>> assignedEmployees = new HashMap<>();
-                        newShift = new Shift(shiftIdCounter, "MORNING", date, rolesRequired, assignedEmployees, availableEmployees, false, false, LocalDate.now());
+                        newShift = new Shift(shiftIdCounter, ShiftType.MORNING, date, rolesRequired, assignedEmployees, availableEmployees, false, false, LocalDate.now());
                     }
                 } else {
                     if (!(date.getDayOfWeek() == DayOfWeek.FRIDAY)) {
@@ -99,7 +99,7 @@ public class ShiftController {
                             throw new RuntimeException("Shift already exists");
                         }
                         Map<String, Set<Long>> assignedEmployees = new HashMap<>();
-                        newShift = new Shift(shiftIdCounter, "EVENING", date, rolesRequired, assignedEmployees, availableEmployees, false, false, LocalDate.now());
+                        newShift = new Shift(shiftIdCounter, ShiftType.EVENING, date, rolesRequired, assignedEmployees, availableEmployees, false, false, LocalDate.now());
                     }
                 }
                 shiftIdCounter++;
@@ -132,7 +132,7 @@ public class ShiftController {
         return true;
     }
 
-    public boolean removeShift(long doneBy, LocalDate date, String shiftType) {
+    public boolean removeShift(long doneBy, LocalDate date,ShiftType shiftType) {
         String PERMISSION_REQUIRED = "REMOVE_SHIFT";
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to delete shift");
@@ -159,7 +159,7 @@ public class ShiftController {
      * @param updateDate             the date of the last update
      * @return true if the shift was updated successfully, false otherwise
      */
-    public boolean updateShift(long doneBy, long shiftId, String shiftType, LocalDate date, boolean isAssignedShiftManager, boolean isOpen, LocalDate updateDate) {
+    public boolean updateShift(long doneBy, long shiftId,ShiftType shiftType, LocalDate date, boolean isAssignedShiftManager, boolean isOpen, LocalDate updateDate) {
         String PERMISSION_REQUIRED = "UPDATE_SHIFT";
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to update shift");
@@ -271,7 +271,7 @@ public class ShiftController {
      * @param shiftType morning or evening
      * @return the shift if it exists, null otherwise
      */
-    public Shift getshift(long doneBy, LocalDate date, String shiftType) {
+    public Shift getshift(long doneBy, LocalDate date,ShiftType shiftType) {
         String PERMISSION_REQUIRED = "GET_SHIFT";
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to get shifts by date and type");

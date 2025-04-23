@@ -3,14 +3,13 @@ package DomainLayer;
 import DomainLayer.enums.ShiftType;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 
 public class Shift {
     private long id;
-    private String shiftType;
+    private ShiftType shiftType;
     private LocalDate shiftDate;
     private Map<String,Integer> rolesRequired;   // e.g., {"Cashier": 2, "Security": 1}
     private Map<String, Set<Long>> assignedEmployees;  // e.g., {"Cashier": [123456789, 987654321], "Security": [112233445]}
@@ -20,7 +19,7 @@ public class Shift {
     private LocalDate createDate;
     private LocalDate updateDate;
 
-    public Shift(long id, String shiftType, LocalDate shiftDate, Map<String, Integer> rolesRequired, Map<String, Set<Long>> assignedEmployees, Set<Long> AvailableEmployees, boolean isAssignedShitManager, boolean isOpen, LocalDate updateDate) {
+    public Shift(long id,ShiftType shiftType, LocalDate shiftDate, Map<String, Integer> rolesRequired, Map<String, Set<Long>> assignedEmployees, Set<Long> AvailableEmployees, boolean isAssignedShitManager, boolean isOpen, LocalDate updateDate) {
         this.id = id;
         this.shiftType = shiftType;
         this.shiftDate = shiftDate;
@@ -37,12 +36,12 @@ public class Shift {
         return id;
     }
 
-    public String getShiftType() {
+    public ShiftType getShiftType() {
         return shiftType;
     }
 
-    public void setShiftType(String shiftType) {
-        if (!"MORNING".equals(shiftType) && !"EVENING".equals(shiftType)) {
+    public void setShiftType(ShiftType shiftType) {
+        if (!ShiftType.MORNING.equals(shiftType) && !"EVENING".equals(shiftType)) {
             throw new IllegalArgumentException("Shift type must be either MORNING or EVENING");
         }
         this.shiftType = shiftType;

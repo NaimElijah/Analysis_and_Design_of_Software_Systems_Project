@@ -1,5 +1,6 @@
 package PresentationLayer;
 
+import DomainLayer.enums.ShiftType;
 import ServiceLayer.ShiftSL;
 import ServiceLayer.ShiftService;
 
@@ -62,7 +63,7 @@ public class ShiftCLI {
         System.out.print("Enter shift date (YYYY-MM-DD): ");
         LocalDate date = LocalDate.parse(scanner.nextLine());
         System.out.print("Enter shift type (MORNING / EVENING): ");
-        String shiftType = scanner.nextLine();
+        ShiftType shiftType = ShiftType.valueOf(scanner.nextLine());
         Map<String, Integer> rolesRequired = new HashMap<>();
         Set<String> roles = shiftService.getRoles(doneBy);
         System.out.println("Enter number of employees for each role: (if not required, enter 0)");
@@ -90,7 +91,7 @@ public class ShiftCLI {
         System.out.print("Enter shift date (YYYY-MM-DD): ");
         LocalDate date = LocalDate.parse(scanner.nextLine());
         System.out.print("Enter shift type (MORNING / EVENING): ");
-        String shiftType = scanner.nextLine();
+        ShiftType shiftType = ShiftType.valueOf(scanner.nextLine());
 
         ShiftSL shift = shiftService.getShift(doneBy, date, shiftType);
         boolean isOpen = shift.isOpen();
@@ -176,7 +177,7 @@ public class ShiftCLI {
         System.out.print("Enter shift date (YYYY-MM-DD): ");
         LocalDate date = LocalDate.parse(scanner.nextLine());
         System.out.print("Enter shift type (MORNING / EVENING): ");
-        String shiftType = scanner.nextLine();
+        ShiftType shiftType = ShiftType.valueOf(scanner.nextLine());
         System.out.print("Are you sure you want to delete this shift? (yes/no): ");
         String confirmation = scanner.nextLine();
         if (!confirmation.equalsIgnoreCase("yes")) {
@@ -192,7 +193,7 @@ public class ShiftCLI {
         System.out.print("Enter shift date (YYYY-MM-DD): ");
         LocalDate date = LocalDate.parse(scanner.nextLine());
         System.out.print("Enter shift type (MORNING / EVENING): ");
-        String shiftType = scanner.nextLine();
+        ShiftType shiftType = ShiftType.valueOf(scanner.nextLine());
         ShiftSL shift = shiftService.getShift(doneBy, date, shiftType);
         if (shift == null) {
             System.out.println("Shift not found.");

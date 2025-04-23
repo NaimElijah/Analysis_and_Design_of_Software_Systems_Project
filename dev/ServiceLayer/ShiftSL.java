@@ -1,6 +1,7 @@
 package ServiceLayer;
 
 import DomainLayer.Shift;
+import DomainLayer.enums.ShiftType;
 
 import java.time.LocalDate;
 import java.util.Map;
@@ -54,7 +55,7 @@ public class ShiftSL {
     }
 
     // Setters
-    public void setShiftType(String shiftType) {
+    public void setShiftType(ShiftType shiftType) {
         shift.setShiftType(shiftType);
     }
 
