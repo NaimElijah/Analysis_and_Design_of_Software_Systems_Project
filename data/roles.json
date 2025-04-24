@@ -1,0 +1,60 @@
+{
+  "Admin": [
+    "CREATE_EMPLOYEE",
+    "UPDATE_EMPLOYEE",
+    "DEACTIVATE_EMPLOYEE",
+    "DELETE_EMPLOYEE",
+    "ROLE_PERMISSION",
+    "CREATE_ROLE",
+    "ADD_PERMISSION_TO_ROLE",
+    "REMOVE_PERMISSION_FROM_ROLE",
+    "CREATE_PERMISSION",
+    "EDIT_EMPLOYEE",
+    "CREATE_SHIFT",
+    "UPDATE_SHIFT",
+    "REMOVE_SHIFT",
+    "GET_SHIFT",
+    "ASSIGN_EMPLOYEE",
+    "GET_ROLES",
+    "MANAGE_INVENTORY",
+    "HANDLE_CASH",
+    "DRIVE_VEHICLE",
+    "CLEAN_FACILITY",
+    "MANAGE_HR",
+    "MANAGE_SHIFT",
+    "STOCK_SHELVES",
+    "ASSIGN_EMPLOYEE_TO_SHIFT"
+  ],
+  "Cashier": [
+    "GET_SHIFT",
+    "HANDLE_CASH"
+  ],
+  "HR manager": [
+    "CREATE_EMPLOYEE",
+    "UPDATE_EMPLOYEE",
+    "DEACTIVATE_EMPLOYEE",
+    "EDIT_EMPLOYEE",
+    "GET_SHIFT",
+    "MANAGE_HR"
+  ],
+  "Driver": [
+    "GET_SHIFT",
+    "DRIVE_VEHICLE"
+  ],
+  "Stocker": [
+    "GET_SHIFT",
+    "STOCK_SHELVES",
+    "MANAGE_INVENTORY"
+  ],
+  "Cleaner": [
+    "GET_SHIFT",
+    "CLEAN_FACILITY"
+  ],
+  "Shift Manager": [
+    "GET_SHIFT",
+    "CREATE_SHIFT",
+    "UPDATE_SHIFT",
+    "MANAGE_SHIFT",
+    "ASSIGN_EMPLOYEE_TO_SHIFT"
+  ]
+}

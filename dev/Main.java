@@ -1,11 +1,15 @@
+import DomainLayer.AssignmentController;
 import DomainLayer.AuthorisationController;
 import DomainLayer.DataInitializer;
 import DomainLayer.Employee;
 import DomainLayer.EmployeeController;
 import DomainLayer.ShiftController;
+import PresentationLayer.AssignmentCLI;
+import PresentationLayer.AvailabillityCLI;
 import PresentationLayer.EmployeeCLI;
+import PresentationLayer.MainCLI;
 import ServiceLayer.EmployeeService;
-//import ServiceLayer.ShiftService;
+import ServiceLayer.ShiftService;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -17,12 +21,13 @@ import java.util.Set;
 public class Main {
 
     public static void main(String[] args) {
-        System.out.println("Initializing Employee Management System...");
+        System.out.println("Initializing Employee Module System...");
 
         AuthorisationController authController;
         EmployeeController employeeController;
         EmployeeService employeeService;
-        //ShiftService shiftService = null;
+        ShiftService shiftService = null;
+        AssignmentController assignmentController;
 
         boolean minimalMode = true;
         System.out.print("Do you want to load data? (y/n) ==> ");
@@ -48,9 +53,10 @@ public class Main {
             authController = initData.getAuthController();
             employeeController = initData.getEmployeeController();
             ShiftController shiftController = initData.getShiftController();
+            assignmentController = new AssignmentController(employeeController);
 
             employeeService = new EmployeeService(employeeController, authController);
-            //shiftService = new ShiftService(shiftController);
+            shiftService = new ShiftService(shiftController, assignmentController, null);
         } catch (IOException e) {
             System.err.println("Error initializing system: " + e.getMessage());
             System.err.println("Cannot start the system. Please check data files and try again.");
@@ -90,8 +96,9 @@ public class Main {
             }
         }
 
-        EmployeeCLI cli = new EmployeeCLI(employeeService, loginId);
-        cli.start();
+        // Start the main CLI
+        MainCLI mainCLI = new MainCLI(employeeService, shiftService, loginId);
+        mainCLI.start();
     }
 
 }

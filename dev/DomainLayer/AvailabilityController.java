@@ -47,7 +47,7 @@ public class AvailabilityController {
         for (Shift shift : weekShifts) {
             availability
                     .computeIfAbsent(shift.getShiftDate(), k -> new HashMap<>())
-                    .put(shift.getShiftType(), isAvailable(shift, doneBy));
+                    .put(shift.getShiftType().toString(), isAvailable(shift, doneBy));
         }
         return availability;
     }
