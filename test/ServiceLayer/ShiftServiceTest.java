@@ -1,6 +1,8 @@
 package ServiceLayer;
 
 import DomainLayer.*;
+import DomainLayer.enums.ShiftType;
+import Util.Week;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -66,7 +68,7 @@ class ShiftServiceTest {
     void testCreateShift() {
         // Test creating a shift
         long employeeId = 1L;
-        String shiftType = "MORNING";
+        ShiftType shiftType = ShiftType.MORNING;
         LocalDate date = LocalDate.now().plusDays(1);
         Map<String, Integer> rolesRequired = new HashMap<>();
         rolesRequired.put("CASHIER", 2);
@@ -90,7 +92,7 @@ class ShiftServiceTest {
     void testAssignEmployeeToRole() {
         // First create a shift
         long employeeId = 1L;
-        String shiftType = "MORNING";
+        ShiftType shiftType = ShiftType.MORNING;
         LocalDate date = LocalDate.now().plusDays(1);
         Map<String, Integer> rolesRequired = new HashMap<>();
         rolesRequired.put("CASHIER", 2);
@@ -116,7 +118,7 @@ class ShiftServiceTest {
     void testMarkEmployeeAvailable() {
         // First create a shift
         long employeeId = 1L;
-        String shiftType = "MORNING";
+        ShiftType shiftType = ShiftType.MORNING;
         LocalDate date = LocalDate.now().plusDays(1);
         Map<String, Integer> rolesRequired = new HashMap<>();
         rolesRequired.put("CASHIER", 2);
@@ -132,7 +134,7 @@ class ShiftServiceTest {
         long shiftId = shifts[0].getId();
 
         // Mark an employee as available
-        String result = shiftService.markEmployeeAvailable(employeeId, shiftId, employeeId);
+        String result = shiftService.markEmployeeAvailable(employeeId, shiftId);
 
         // Since we don't have a real employee with permissions, this will likely fail
         assertEquals("Employee marked as available successfully", result);
@@ -151,14 +153,14 @@ class ShiftServiceTest {
         // Mark the employee as available for some shifts
         ShiftSL[] shifts = shiftService.getAllShifts(employeeId);
         for (ShiftSL shift : shifts) {
-            if (shift.getShiftType().equals("MORNING")) {
-                shiftService.markEmployeeAvailable(employeeId, shift.getId(), employeeId);
+            if (shift.getShiftType().equals(ShiftType.MORNING)) {
+                shiftService.markEmployeeAvailable(employeeId, shift.getId());
             }
         }
 
         // Get the employee's weekly availability
         Map<LocalDate, Map<String, Boolean>> availability = 
-            shiftService.getEmployeeWeeklyAvailability(employeeId, employeeId, startDate);
+            shiftService.getEmployeeWeeklyAvailability(employeeId, employeeId, Week.from(startDate));
 
         // Check that the availability is as expected
         assertFalse(availability.isEmpty());

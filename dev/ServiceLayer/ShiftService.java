@@ -29,7 +29,7 @@ public class ShiftService {
                     availableEmployees, isAssignedShiftManager, isOpen, updateDate);
             return result ? "Shift created successfully" : "Failed to create shift";
         } catch (RuntimeException e) {
-            throw new RuntimeException(e);
+            return "Error: " + e.getMessage();
         }
     }
 
@@ -39,35 +39,19 @@ public class ShiftService {
             boolean result = shiftController.createWeeklyShifts(doneBy, date, rolesRequired);
             return result ? "Weekly shifts created successfully" : "Failed to create weekly shifts";
         } catch (RuntimeException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Creates shifts for a full week (Sunday to Saturday)
-     * @param doneBy employee who is creating the shifts
-     * @param startDate the start date (should be a Sunday)
-     * @param rolesRequired number of employees of each role required for the shifts
-     * @return a message indicating success or failure
-     */
-    public String createSundayToSaturdayShifts(long doneBy, LocalDate startDate,
-                                           Map<String, Integer> rolesRequired) {
-        try {
-            boolean result = shiftController.createSundayToSaturdayShifts(doneBy, startDate, rolesRequired);
-            return result ? "Sunday to Saturday shifts created successfully" : "Failed to create Sunday to Saturday shifts";
-        } catch (RuntimeException e) {
             return "Error: " + e.getMessage();
         }
     }
 
-    public boolean removeShiftByID(long doneBy, long shiftId) {
+    public String removeShiftByID(long doneBy, long shiftId) {
         try {
             if (shiftId <= 0) {
                 throw new IllegalArgumentException("Shift ID must be a positive number");
             }
-            return shiftController.removeShiftByID(doneBy, shiftId);
+            boolean result = shiftController.removeShiftByID(doneBy, shiftId);
+            return result ? "Shift deleted successfully" : "Failed to delete shift";
         } catch (RuntimeException e) {
-            return false;
+            return "Error: " + e.getMessage();
         }
     }
 
@@ -76,7 +60,7 @@ public class ShiftService {
             boolean result = shiftController.removeShift(doneBy, date, shiftType);
             return result ? "Shift deleted successfully" : "Failed to delete shift";
         } catch (RuntimeException e) {
-            throw new RuntimeException(e);
+            return "Error: " + e.getMessage();
         }
     }
 
@@ -90,7 +74,7 @@ public class ShiftService {
                 return "Failed to update shift";
             }
         } catch (RuntimeException e) {
-            throw new RuntimeException(e);
+            return "Error: " + e.getMessage();
         }
     }
 
@@ -121,11 +105,11 @@ public class ShiftService {
         }
     }
 
-    public ShiftSL[] getShiftsByDate(long doneBy, LocalDate date) {
+    public ShiftSL[] getAllShiftsByDate(long doneBy, LocalDate date) {
         try {
-            ShiftSL[] shifts = new ShiftSL[shiftController.getShiftsByDate(doneBy, date).size()];
+            ShiftSL[] shifts = new ShiftSL[shiftController.getAllShiftsByDate(doneBy, date).size()];
             int i = 0;
-            for (DomainLayer.Shift shift : shiftController.getShiftsByDate(doneBy, date)) {
+            for (DomainLayer.Shift shift : shiftController.getAllShiftsByDate(doneBy, date)) {
                 shifts[i] = new ShiftSL(shift);
                 i++;
             }
@@ -167,16 +151,7 @@ public class ShiftService {
             boolean result = shiftController.updateRolesRequired(doneBy, shiftId, role, roleRequired);
             return result ? "success to update roles required" : "Failed to update roles required";
         } catch (RuntimeException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public String updateAssignedEmployees(long doneBy, long shiftId, Map<String, Set<Long>> assignedEmployees) {
-        try {
-            boolean result = shiftController.updateAssignedEmployees(doneBy, shiftId, assignedEmployees);
-            return result ? "success to update assigned employees" : "Failed to update assigned employees";
-        } catch (RuntimeException e) {
-            throw new RuntimeException(e);
+            return "Error: " + e.getMessage();
         }
     }
 
@@ -185,7 +160,7 @@ public class ShiftService {
             boolean result = shiftController.updateShiftManager(doneBy, shiftId, isAssignedShiftManager);
             return result ? "success to update shift manager" : "Failed to update shift manager";
         } catch (RuntimeException e) {
-            throw new RuntimeException(e);
+            return "Error: " + e.getMessage();
         }
     }
 
@@ -194,70 +169,17 @@ public class ShiftService {
             boolean result = shiftController.updateOpenStatus(doneBy, shiftId, isOpen);
             return result ? "success to update open status" : "Failed to update open status";
         } catch (RuntimeException e) {
-            throw new RuntimeException(e);
+            return "Error: " + e.getMessage();
         }
     }
 
-    public String updateShiftAvailableEmployees(long doneBy, long shiftId, Set<Long> employees) {
-        try {
-            boolean result = shiftController.updateShiftAvailableEmployees(doneBy, shiftId, employees);
-            return result ? "success to update available employees" : "Failed to update available employees";
-        } catch (RuntimeException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public String addAvailableEmployee(long doneBy, long shiftId, long employeeID) {
-        try {
-            boolean result = shiftController.addAvailableEmployee(doneBy, shiftId, employeeID);
-            return result ? "success to add employee to available employees" : "Failed to add employee to available employees";
-        } catch (RuntimeException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public String removeAvailableEmployee(long doneBy, long shiftId, long employeeID) {
-        try {
-            boolean result = shiftController.removeAvailableEmployee(doneBy, shiftId, employeeID);
-            return result ? "success to remove employee to available employees" : "Failed to remove employee to available employees";
-        } catch (RuntimeException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public String addAssignedEmployee(long doneBy, long shiftId, String role, long employeeID) {
-        try {
-            boolean result = shiftController.addAssignedEmployee(doneBy, shiftId, role, employeeID);
-            return result ? "success to add employee to assigned employees" : "Failed to add employee to assigned employees";
-        } catch (RuntimeException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public String removeAssignedEmployee(long doneBy, long shiftId, String role, long employeeID) {
-        try {
-            boolean result = shiftController.removeAssignedEmployee(doneBy, shiftId, role, employeeID);
-            return result ? "success to remove employee to assigned employees" : "Failed to remove employee to assigned employees";
-        } catch (RuntimeException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public String addRoleRequired(long doneBy, long shiftId, String role, Integer roleRequired) {
-        try {
-            boolean result = shiftController.addRoleRequired(doneBy, shiftId, role, roleRequired);
-            return result ? "success to add role to required roles" : "Failed to add role to required roles";
-        } catch (RuntimeException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     public String removeRoleRequired(long doneBy, long shiftId, String role) {
         try {
             boolean result = shiftController.removeRoleRequired(doneBy, shiftId, role);
             return result ? "success to remove role to required roles" : "Failed to remove role to required roles";
         } catch (RuntimeException e) {
-            throw new RuntimeException(e);
+            return "Error: " + e.getMessage();
         }
     }
 
@@ -280,7 +202,7 @@ public class ShiftService {
                 return "Shift not found";
             }
 
-            boolean result = assignmentController.assignEmployeeToRole(shift, employeeId, role);
+            boolean result = assignmentController.assignEmployeeToRole( shift, doneBy, role,employeeId);
             return result ? "Employee assigned to role successfully" : "Failed to assign employee to role";
         } catch (RuntimeException e) {
             return "Error: " + e.getMessage();
@@ -294,14 +216,14 @@ public class ShiftService {
      * @param employeeId the ID of the employee to remove
      * @return a message indicating success or failure
      */
-    public String removeAssignment(long doneBy, long shiftId, long employeeId) {
+    public String removeAssignment(long doneBy, long shiftId, String role, long employeeId) {
         try {
             Shift shift = shiftController.getShiftByID(doneBy, shiftId);
             if (shift == null) {
                 return "Shift not found";
             }
 
-            boolean result = assignmentController.removeAssignment(shift, employeeId);
+            boolean result = assignmentController.removeAssignment(doneBy, shift, role, employeeId);
             return result ? "Employee assignment removed successfully" : "Failed to remove employee assignment";
         } catch (RuntimeException e) {
             return "Error: " + e.getMessage();
@@ -322,7 +244,7 @@ public class ShiftService {
                 return false;
             }
 
-            return assignmentController.isAssigned(shift, employeeId);
+            return assignmentController.isAssigned(doneBy, shift, employeeId);
         } catch (RuntimeException e) {
             return false;
         }
@@ -332,17 +254,16 @@ public class ShiftService {
      * Marks an employee as available for a shift
      * @param doneBy the employee making the change
      * @param shiftId the ID of the shift
-     * @param employeeId the ID of the employee to mark as available
      * @return a message indicating success or failure
      */
-    public String markEmployeeAvailable(long doneBy, long shiftId, long employeeId) {
+    public String markEmployeeAvailable(long doneBy, long shiftId) {
         try {
             Shift shift = shiftController.getShiftByID(doneBy, shiftId);
             if (shift == null) {
                 return "Shift not found";
             }
 
-            availabilityController.markAvailable(shift, employeeId);
+            availabilityController.markAvailable(shift, doneBy);
             return "Employee marked as available successfully";
         } catch (RuntimeException e) {
             return "Error: " + e.getMessage();
@@ -362,7 +283,6 @@ public class ShiftService {
             if (shift == null) {
                 return "Shift not found";
             }
-
             availabilityController.removeAvailability(shift, employeeId);
             return "Employee availability removed successfully";
         } catch (RuntimeException e) {
@@ -383,7 +303,6 @@ public class ShiftService {
             if (shift == null) {
                 return false;
             }
-
             return availabilityController.isAvailable(shift, employeeId);
         } catch (RuntimeException e) {
             return false;
@@ -394,12 +313,12 @@ public class ShiftService {
      * Gets an employee's weekly availability
      * @param doneBy the employee making the query
      * @param employeeId the ID of the employee to get availability for
-     * @param startDate the start date of the week
+     * @param week the week of the shifts
      * @return a map of dates to shift types and availability
      */
-    public Map<LocalDate, Map<String, Boolean>> getEmployeeWeeklyAvailability(long doneBy, long employeeId, LocalDate startDate) {
+    public Map<LocalDate, Map<String, Boolean>> getEmployeeWeeklyAvailability(long doneBy, long employeeId, Week week) {
         try {
-            Set<Shift> weekShifts = shiftController.getShiftsByWeek(doneBy, startDate);
+            Set<Shift> weekShifts = shiftController.getShiftsByWeek(doneBy, week);
             if (weekShifts.isEmpty()) {
                 return new HashMap<>();
             }
@@ -414,6 +333,9 @@ public class ShiftService {
         try {
             Set<ShiftSL> shiftSLS = new HashSet<>();
             Set<Shift> weekShifts = shiftController.getShiftsByWeek(doneBy, week);
+            if (weekShifts == null) {
+                return shiftSLS;
+            }
             for (Shift shift : weekShifts) {
                 shiftSLS.add(new ShiftSL(shift));
             }

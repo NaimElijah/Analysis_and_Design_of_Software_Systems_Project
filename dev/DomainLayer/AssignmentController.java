@@ -1,7 +1,11 @@
 package DomainLayer;
 
+import DomainLayer.exception.UnauthorizedPermissionException;
+
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.SplittableRandom;
 
 public class AssignmentController {
     private final EmployeeController employeeController;
@@ -9,35 +13,46 @@ public class AssignmentController {
     public AssignmentController(EmployeeController employeeController) {
         this.employeeController = employeeController;
     }
-    public boolean assignEmployeeToRole(Shift shift, long doneBy, String role) {
+    public boolean assignEmployeeToRole(Shift shift, long doneBy, String role, long employeeId) {
         String PERMISSION = "ASSIGN_EMPLOYEE";
         if (!employeeController.isEmployeeAuthorised(doneBy, PERMISSION)) {
-            return false;
+            throw new UnauthorizedPermissionException("User does not have permission to assign employees");
         }
-        if (!shift.getRolesRequired().containsKey(role)) return false;
-
-        Set<Long> assigned = shift.getAssignedEmployees()
-                .computeIfAbsent(role, k -> new HashSet<>());
-
-        int required = shift.getRolesRequired().get(role);
-        if (assigned.size() >= required) return false;
-
-        return assigned.add(doneBy);
-    }
-
-    public boolean removeAssignment(Shift shift, long doneBy) {
-        String PERMISSION = "ASSIGN_EMPLOYEE";
-        if (!employeeController.isEmployeeAuthorised(doneBy, PERMISSION)) {
-            return false;
+        if (!shift.getRolesRequired().containsKey(role)){
+            throw new IllegalArgumentException("Role does not exist in shift");
         }
-        for (Set<Long> assigned : shift.getAssignedEmployees().values()) {
-            assigned.remove(doneBy);
+        Map <String, Set<Long>> assignedEmployees = shift.getAssignedEmployees();
+        if (!assignedEmployees.containsKey(role)) {
+            assignedEmployees.put(role, new HashSet<>());
         }
+        assignedEmployees.computeIfAbsent(role, k -> new HashSet<>());
+
+        Set<Long> employeesInRole = assignedEmployees.get(role);
+        int requiredCount = shift.getRolesRequired().get(role);
+
+        if (employeesInRole.size() >= requiredCount) {
+            throw new IllegalStateException("Role is already full");
+        }
+        employeesInRole.add(employeeId);
+        assignedEmployees.put(role, employeesInRole);
+        shift.setAssignedEmployees(assignedEmployees);
         return true;
     }
 
-    public boolean isAssigned(Shift shift, long doneBy) {
+    public boolean removeAssignment(long doneBy, Shift shift, String role, long employeeId) {
+        String PERMISSION = "ASSIGN_EMPLOYEE";
+        if (!employeeController.isEmployeeAuthorised(doneBy, PERMISSION)) {
+            throw new UnauthorizedPermissionException("User does not have permission to remove employees");
+        }
+        return shift.getAssignedEmployees().get(role).contains(employeeId);
+    }
+
+    public boolean isAssigned(long doneBy, Shift shift, long employeeId) {
+        String PERMISSION = "ASSIGN_EMPLOYEE";
+        if (!employeeController.isEmployeeAuthorised(doneBy, PERMISSION)) {
+            throw new UnauthorizedPermissionException("User does not have permission to assign employees");
+        }
         return shift.getAssignedEmployees().values().stream()
-                .anyMatch(set -> set.contains(doneBy));
+                .anyMatch(set -> set.contains(employeeId));
     }
 }

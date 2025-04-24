@@ -14,20 +14,41 @@ public class AvailabilityController {
     public AvailabilityController(EmployeeController employeeController) {
         this.employeeController = employeeController;
     }
-    public void markAvailable(Shift shift, long doneBy) {
+
+    public boolean markAvailable(Shift shift, long doneBy) {
         String PERMISSION = "UPDATE_AVAILABLE";
         if (!employeeController.isEmployeeAuthorised(doneBy, PERMISSION)) {
             throw new UnauthorizedPermissionException("User does not have permission to update availability");
         }
-        shift.getAvailableEmployees().add(doneBy);
+        if (shift == null){
+            throw new IllegalArgumentException("Shift cannot be null");
+        }
+        if (doneBy <= 0){
+            throw new IllegalArgumentException("employeeID cannot be less than 0");
+        }
+        if (shift.getAvailableEmployees() != null && shift.getAvailableEmployees().contains(doneBy)) {
+            throw new IllegalArgumentException("Employee already exists in available employees");
+        }
+
+        return shift.getAvailableEmployees().add(doneBy);
     }
 
-    public void removeAvailability(Shift shift, long doneBy) {
+    public boolean removeAvailability(Shift shift, long doneBy) {
         String PERMISSION = "UPDATE_AVAILABLE";
         if(!employeeController.isEmployeeAuthorised(doneBy, PERMISSION)) {
             throw new UnauthorizedPermissionException("User does not have permission to update availability");
         }
-        shift.getAvailableEmployees().remove(doneBy);
+        if(shift == null){
+            throw new IllegalArgumentException("Shift cannot be null");
+        }
+        if(doneBy <= 0){
+            throw new IllegalArgumentException("employeeID cannot be less than 0");
+        }
+        if (!shift.getAvailableEmployees().contains(doneBy)) {
+            throw new IllegalArgumentException("Employee not found in available employees");
+        }
+
+        return shift.getAvailableEmployees().remove(doneBy);
     }
 
     public boolean isAvailable(Shift shift, long doneBy) {

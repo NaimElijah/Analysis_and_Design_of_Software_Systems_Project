@@ -4,19 +4,12 @@ import DomainLayer.DataInitializer;
 import DomainLayer.Employee;
 import DomainLayer.EmployeeController;
 import DomainLayer.ShiftController;
-import PresentationLayer.AssignmentCLI;
-import PresentationLayer.AvailabillityCLI;
-import PresentationLayer.EmployeeCLI;
 import PresentationLayer.MainCLI;
 import ServiceLayer.EmployeeService;
 import ServiceLayer.ShiftService;
 
 import java.io.IOException;
-import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.Scanner;
 
 public class Main {
 
@@ -30,13 +23,16 @@ public class Main {
         AssignmentController assignmentController;
 
         boolean minimalMode = true;
-        System.out.print("Do you want to load data? (y/n) ==> ");
-        String input = System.console().readLine();
-        if (input.toLowerCase().equals("y")) {
-            minimalMode = false;
-            System.out.println("System will load with out data. only with Admin user.");
-        }
 
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Do you want to load data? (y/n) ==> ");
+        String input = scanner.nextLine();
+        if (input.trim().equalsIgnoreCase("y")) {
+            minimalMode = false;
+            System.out.println("System will load from data files.");
+        } else {
+            System.out.println("System will load with only Admin user.");
+        }
 
         try {
             DataInitializer initializer = new DataInitializer("./data");
@@ -76,7 +72,7 @@ public class Main {
             System.out.println("3. Kochava Shavit");
             System.out.print("Enter your choice: ");
 
-            String choice = System.console().readLine();
+            String choice = scanner.nextLine();
             switch (choice) {
                 case "0":
                     loginId = 123456789;
@@ -100,5 +96,4 @@ public class Main {
         MainCLI mainCLI = new MainCLI(employeeService, shiftService, loginId);
         mainCLI.start();
     }
-
 }

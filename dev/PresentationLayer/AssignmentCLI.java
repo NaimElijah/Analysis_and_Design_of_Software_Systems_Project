@@ -262,7 +262,7 @@ public class AssignmentCLI {
 
         // Show available shifts on this date to help user make a selection
         try {
-            ShiftSL[] shiftsOnDate = shiftService.getShiftsByDate(doneBy, date);
+            ShiftSL[] shiftsOnDate = shiftService.getAllShiftsByDate(doneBy, date);
 
             // Filter shifts if openOnly is true
             if (openOnly) {
@@ -568,7 +568,7 @@ public class AssignmentCLI {
 
         // Create the shifts
         try {
-            String result = shiftService.createSundayToSaturdayShifts(doneBy, startDate, rolesRequired);
+            String result = shiftService.createWeeklyShifts(doneBy, startDate, rolesRequired);
 
             if (result.startsWith("Error:")) {
                 printError(result);
@@ -643,7 +643,7 @@ public class AssignmentCLI {
 
         // Show available shifts on this date to help user make a selection
         try {
-            ShiftSL[] shiftsOnDate = shiftService.getShiftsByDate(doneBy, date);
+            ShiftSL[] shiftsOnDate = shiftService.getAllShiftsByDate(doneBy, date);
 
             if (shiftsOnDate.length == 0) {
                 printError("No shifts found for the selected date: " + date.format(dateFormatter));
@@ -1056,7 +1056,7 @@ public class AssignmentCLI {
             if (confirm("Confirm removing " + formatEmployeeDisplay(employeeId) + " from role '" + assignedRole + "' for shift on " + 
                     shift.getShiftDate() + " (" + shift.getShiftType() + ")?")) {
 
-                String result = shiftService.removeAssignedEmployee(doneBy, shiftId, assignedRole, employeeId);
+                String result = shiftService.removeAssignment(doneBy, shiftId, assignedRole, employeeId);
 
                 if (result.contains("successfully")) {
                     printSuccess(result);
@@ -1188,7 +1188,7 @@ public class AssignmentCLI {
             int requiredCount = CliUtil.getPositiveIntInput("Enter number of employees required for " + selectedRole + ": ", scanner);
 
             // Add the required role
-            String result = shiftService.addRoleRequired(doneBy, shiftId, selectedRole, requiredCount);
+            String result = shiftService.updateRolesRequired(doneBy, shiftId, selectedRole, requiredCount);
 
             if (result.contains("success")) {
                 printSuccess("Role '" + selectedRole + "' added with " + requiredCount + " required employees.");

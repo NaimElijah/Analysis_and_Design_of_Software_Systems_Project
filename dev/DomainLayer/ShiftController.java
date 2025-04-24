@@ -22,6 +22,7 @@ public class ShiftController {
         this.shifts = shifts;
         this.authorizationController = authorizationController;
         this.empCon = employeeController;
+        addShiftsToWeeklyShifts(shifts);
     }
 
     /**
@@ -53,61 +54,90 @@ public class ShiftController {
         Shift newShift = new Shift(shiftIdCounter, shiftType, date, rolesRequired, assignedEmployees, availableEmployees, isAssignedShiftManager, isOpen, updateDate);
         shiftIdCounter++;
         Week week = Week.from(date);
-        weeklyShifts.computeIfAbsent(week, k -> new HashSet<>()).add(newShift);
-        return shifts.add(newShift);
+        boolean addedToWeekly = weeklyShifts.computeIfAbsent(week, k -> new HashSet<>()).add(newShift);
+        boolean added = shifts.add(newShift);
+        return addedToWeekly && added;
     }
 
 
 
     /**
-     * add shifts for the next week to the system
-     * @param doneBy                 employee who is creating the shift
-     * @param StartDate              date of the shift
-     * @param rolesRequired     number of employees of each role required for the shift
-     * @return true if the shift was created successfully, false otherwise
+     * Create shifts from the next Sunday after the given date for one full week (Sunday to Saturday).
+     * @param doneBy employee who is creating the shifts
+     * @param startDate the date to start from (shifts will begin from the next Sunday)
+     * @param rolesRequired number of employees of each role required for the shifts
+     * @return true if all shifts were created successfully, false otherwise
      */
-    public boolean createWeeklyShifts(long doneBy, LocalDate StartDate, Map<String, Integer> rolesRequired) {
-        String PERMISSION_REQUIRED = "CREATE_SHIFT";
+    public boolean createWeeklyShifts(long doneBy, LocalDate startDate, Map<String, Integer> rolesRequired) {
+        final String PERMISSION_REQUIRED = "CREATE_SHIFT";
+
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to create weekly shifts");
         }
-        if (StartDate == null || rolesRequired == null) {
+
+        if (startDate == null || rolesRequired == null) {
             throw new IllegalArgumentException("Start date and roles required cannot be null");
         }
-        if (StartDate.isBefore(LocalDate.now())) {
+
+        if (startDate.isBefore(LocalDate.now())) {
             throw new IllegalArgumentException("Start date cannot be in the past");
         }
+
         if (rolesRequired.isEmpty()) {
             throw new IllegalArgumentException("Roles required cannot be empty");
         }
-        Shift newShift = null;
-        for (int i = 0; i < 7; i++) {
-            for (int j = 0; j < 2; j++) {
-                Set<Long> availableEmployees = new HashSet<>();   //TODO check if this the right way to implement
-                LocalDate date = StartDate.plusDays(i);
-                if (j == 0) {
-                    if (!(date.getDayOfWeek() == DayOfWeek.SATURDAY)) {
-                        if (shifts.stream().anyMatch(s -> s.getShiftDate().equals(date) && s.getShiftType().equals(ShiftType.MORNING))) {
-                            throw new RuntimeException("Shift already exists");
-                        }
-                        Map<String, Set<Long>> assignedEmployees = new HashMap<>();
-                        newShift = new Shift(shiftIdCounter, ShiftType.MORNING, date, rolesRequired, assignedEmployees, availableEmployees, false, false, LocalDate.now());
-                    }
-                } else {
-                    if (!(date.getDayOfWeek() == DayOfWeek.FRIDAY || date.getDayOfWeek() == DayOfWeek.SATURDAY)) {
-                        if (shifts.stream().anyMatch(s -> s.getShiftDate().equals(date) && s.getShiftType().equals(ShiftType.EVENING))) {
-                            throw new RuntimeException("Shift already exists");
-                        }
-                        Map<String, Set<Long>> assignedEmployees = new HashMap<>();
-                        newShift = new Shift(shiftIdCounter, ShiftType.EVENING, date, rolesRequired, assignedEmployees, availableEmployees, false, false, LocalDate.now());
-                    }
-                }
-                shiftIdCounter++;
-                boolean added = shifts.add(newShift);
-                if (!added) return false;
+
+        // Move to the next Sunday if not already Sunday
+        if (startDate.getDayOfWeek() != DayOfWeek.SUNDAY) {
+            int daysUntilSunday = (DayOfWeek.SUNDAY.getValue() - startDate.getDayOfWeek().getValue() + 7) % 7;
+            startDate = startDate.plusDays(daysUntilSunday);
+        }
+
+        for (int day = 0; day < 7; day++) {
+            LocalDate date = startDate.plusDays(day);
+            DayOfWeek dayOfWeek = date.getDayOfWeek();
+
+            // Morning shift for all days except Saturday
+            if (dayOfWeek != DayOfWeek.SATURDAY) {
+                if (AddNewShift(date, ShiftType.MORNING, rolesRequired)) return false;
+            }
+
+            // Evening shift for Sunday to Thursday and Saturday (not Friday)
+            if (dayOfWeek != DayOfWeek.FRIDAY && dayOfWeek != DayOfWeek.SATURDAY) {
+                if (AddNewShift(date, ShiftType.EVENING, rolesRequired)) return false;
             }
         }
+
         return true;
+    }
+
+    /**
+     * create and add
+     * @param date the date of the shift
+     * @param type the type of the shift (morning or evening)
+     * @param rolesRequired number of employees of each role required for the shift
+     * @return true if the shift was added successfully, false otherwise
+     */
+    private boolean AddNewShift(LocalDate date, ShiftType type, Map<String, Integer> rolesRequired) {
+        // Check if a shift of this type already exists for the date
+        if (shifts.stream().anyMatch(s -> s.getShiftDate().equals(date) && s.getShiftType() == type)) {
+            throw new RuntimeException(type + " shift already exists for " + date);
+        }
+
+        Set<Long> availableEmployees = new HashSet<>();
+        Map<String, Set<Long>> assignedEmployees = new HashMap<>();
+        boolean isOpen = (type == ShiftType.MORNING && date.getDayOfWeek() != DayOfWeek.SATURDAY)
+                || (type == ShiftType.EVENING && date.getDayOfWeek() != DayOfWeek.FRIDAY && date.getDayOfWeek() != DayOfWeek.SATURDAY);
+
+        Shift shift = new Shift(shiftIdCounter++, type, date, rolesRequired, assignedEmployees, availableEmployees, false, isOpen, LocalDate.now());
+
+        boolean added = shifts.add(shift);
+        if (!added) return true;
+
+        Week week = Week.from(date);
+        weeklyShifts.computeIfAbsent(week, k -> new HashSet<>()).add(shift);
+
+        return false;
     }
 
     /**
@@ -236,7 +266,7 @@ public class ShiftController {
      * @param date date of the shifts
      * @return all shifts for the date
      */
-    public Set<Shift> getShiftsByDate(long doneBy, LocalDate date) {
+    public Set<Shift> getAllShiftsByDate(long doneBy, LocalDate date) {
         String PERMISSION_REQUIRED = "GET_SHIFT";
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to get shifts by date");
@@ -290,7 +320,7 @@ public class ShiftController {
      * @return true if the roles were updated successfully, false otherwise
      */
     public boolean updateRolesRequired(long doneBy, long shiftId, String role, Integer rolesRequired) {
-        String PERMISSION_REQUIRED = "ROLES_REQUIRED";
+        String PERMISSION_REQUIRED = "ROLE_REQUIRED";
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to update shifts (roles required)");
         }
@@ -307,33 +337,6 @@ public class ShiftController {
         Map <String, Integer> rolesRequiredMap = shiftToUpdate.getRolesRequired();
         rolesRequiredMap.put(role, rolesRequired);
         shiftToUpdate.setRolesRequired(rolesRequiredMap);
-        shiftToUpdate.setUpdateDate(LocalDate.now());
-        return true;
-    }
-
-    /**
-     * update the assigned employees for a shift
-     * @param doneBy             employee who is updating the shift
-     * @param shiftId           id of the shift to update
-     * @param assignedEmployees employees assigned to the shift
-     * @return true if the assigned employees were updated successfully, false otherwise
-     */
-    public boolean updateAssignedEmployees(long doneBy, long shiftId, Map<String, Set<Long>> assignedEmployees) {
-        String PERMISSION_REQUIRED = "ASSIGN_EMPLOYEE";
-        if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
-            throw new UnauthorizedPermissionException("User does not have permission to update shifts (assigned employees)");
-        }
-        if (assignedEmployees == null) {
-            throw new IllegalArgumentException("Assigned employees cannot be null");
-        }
-        if (shiftId <= 0) {
-            throw new IllegalArgumentException("Shift ID must be a positive number");
-        }
-        Shift shiftToUpdate = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
-        if (shiftToUpdate == null) {
-            throw new RuntimeException("Shift does not exist");
-        }
-        shiftToUpdate.setAssignedEmployees(assignedEmployees);
         shiftToUpdate.setUpdateDate(LocalDate.now());
         return true;
     }
@@ -386,237 +389,6 @@ public class ShiftController {
         return true;
     }
 
-    /**
-     * update the available employees set
-     * @param doneBy     employee who is updating the shift
-     * @param shiftId   id of the shift to update
-     * @param employees set of employees to update
-     * @return true id the set was updated successfully
-     */
-    public boolean updateShiftAvailableEmployees(long doneBy, long shiftId, Set<Long> employees) {
-        String PERMISSION_REQUIRED = "AVAILABLE_EMPLOYEES";
-        if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
-            throw new UnauthorizedPermissionException("User does not have permission to update available employees");
-        }
-        Shift shiftToUpdate = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
-        if (shiftToUpdate == null) {
-            throw new RuntimeException("Shift does not exist");
-        }
-        if (employees == null) {
-            throw new IllegalArgumentException("Employees set cannot be null");
-        }
-        if (shiftId <= 0) {
-            throw new IllegalArgumentException("Shift ID must be a positive number");
-        }
-        shiftToUpdate.setAvailableEmployees(employees);
-        shiftToUpdate.setUpdateDate(LocalDate.now());
-        return true;
-    }
-
-    /**
-     * add available employee to the set of the available employees
-     * @param doneBy   employee who is adding the shift
-     * @param shiftId  the id of the relevant shift
-     * @param employeeID the employee to add
-     * @return true if added successfully
-     */
-    public boolean addAvailableEmployee(long doneBy, long shiftId, Long employeeID) {
-        String PERMISSION_REQUIRED = "AVAILABLE_EMPLOYEE";
-        if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
-            throw new UnauthorizedPermissionException("User does not have permission to add available employees");
-        }
-        Shift shiftToUpdate = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
-        if (shiftToUpdate == null) {
-            throw new RuntimeException("Shift does not exist");
-        }
-        if (employeeID <= 0) {
-            throw new IllegalArgumentException("EmployeeID must be a positive number");
-        }
-        if (shiftId <= 0) {
-            throw new IllegalArgumentException("Shift ID must be a positive number");
-        }
-        if (shiftToUpdate.getAssignedEmployees().values().stream().anyMatch(employees -> employees.contains(employeeID))) {
-            throw new IllegalArgumentException("Employee is already assigned to a role in the shift");
-        }
-        if (shiftToUpdate.getAvailableEmployees() != null && shiftToUpdate.getAvailableEmployees().contains(employeeID)) {
-            throw new IllegalArgumentException("Employee already exists in available employees");
-        }
-        if (shiftToUpdate.getRolesRequired().values().stream().anyMatch(role -> role <= shiftToUpdate.getAssignedEmployees().values().stream().flatMap(Set::stream).count())) {
-            throw new IllegalArgumentException("No more employees required for this role in the shift");
-        }
-        if (shiftToUpdate.getAvailableEmployees() == null) {
-            throw new IllegalArgumentException("Available employees set is null");
-        }
-        if (shiftToUpdate.getAvailableEmployees().contains(employeeID)) {
-            throw new IllegalArgumentException("Employee already exists in available employees");
-        }
-        Set<Long> AvailableEmployees = shiftToUpdate.getAvailableEmployees();
-        shiftToUpdate.setUpdateDate(LocalDate.now());
-        return AvailableEmployees.add(employeeID);
-    }
-
-    /**
-     * remove available employee to the set of the available employees
-     * @param doneBy   employee who is adding the shift
-     * @param shiftId  the id of the relevant shift
-     * @param employeeID the employee to add
-     * @return true if removed successfully
-     */
-    public boolean removeAvailableEmployee(long doneBy, long shiftId, Long employeeID) {
-        String PERMISSION_REQUIRED = "AVAILABLE_EMPLOYEE";
-        if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
-            throw new UnauthorizedPermissionException("User does not have permission to remove available employees");
-        }
-        Shift shiftToUpdate = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
-        if (shiftToUpdate == null) {
-            throw new RuntimeException("Shift does not exist");
-        }
-        if (employeeID == null) {
-            throw new IllegalArgumentException("Employee cannot be null");
-        }
-        if (shiftId <= 0) {
-            throw new IllegalArgumentException("Shift ID must be a positive number");
-        }
-        if (!shiftToUpdate.getAvailableEmployees().contains(employeeID)) {
-            throw new IllegalArgumentException("Employee not found in available employees");
-        }
-        if (shiftToUpdate.getAssignedEmployees().values().stream().anyMatch(employees -> employees.contains(employeeID))) {
-            throw new IllegalArgumentException("Employee is already assigned to a role in the shift");
-        }
-        Set<Long> AvailableEmployees = shiftToUpdate.getAvailableEmployees();
-        shiftToUpdate.setUpdateDate(LocalDate.now());
-        return AvailableEmployees.remove(employeeID);
-    }
-
-    /**
-     * Assigns an employee to a specific role in a shift.
-     * @param doneBy   employee who is assigning the shift
-     * @param shiftId  the ID of the shift
-     * @param role     the role to assign the employee to
-     * @param employeeID the employee to assign
-     * @return true if the employee was added (i.e., was not already assigned), false otherwise
-     * @throws RuntimeException if the shift does not exist
-     */
-    public boolean addAssignedEmployee(long doneBy, long shiftId, String role, Long employeeID) {
-        String PERMISSION_REQUIRED = "ASSIGN_EMPLOYEE";
-        if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
-            throw new UnauthorizedPermissionException("User does not have permission to assign employees to shifts");
-        }
-        if (employeeID == null) {
-            throw new IllegalArgumentException("Employee cannot be null");
-        }
-        if (role == null || role.isEmpty()) {
-            throw new IllegalArgumentException("Role cannot be null or empty");
-        }
-        if (shiftId <= 0) {
-            throw new IllegalArgumentException("Shift ID must be a positive number");
-        }
-        Shift shiftToUpdate = shifts.stream()
-                .filter(shift -> shift.getId() == shiftId)
-                .findFirst()
-                .orElse(null);
-
-        if (shiftToUpdate == null) {
-            throw new RuntimeException("Shift does not exist");
-        }
-        if (!shiftToUpdate.getRolesRequired().containsKey(role)) {
-            throw new IllegalArgumentException("Role not found in shift");
-        }
-        if (shiftToUpdate.getAssignedEmployees().get(role) != null && shiftToUpdate.getAssignedEmployees().get(role).contains(employeeID)) {
-            throw new IllegalArgumentException("Employee already assigned to this role in the shift");
-        }
-        if (shiftToUpdate.getAvailableEmployees() != null && !(shiftToUpdate.getAvailableEmployees().contains(employeeID))) {
-            throw new IllegalArgumentException("Employee is not available for this shift");
-        }
-        if (shiftToUpdate.getRolesRequired().get(role) <= shiftToUpdate.getAssignedEmployees().get(role).size()) {
-            throw new IllegalArgumentException("No more employees required for this role in the shift");
-        }
-        Map<String, Set<Long>> availableEmployees = shiftToUpdate.getAssignedEmployees();
-        shiftToUpdate.setUpdateDate(LocalDate.now());
-        return availableEmployees.computeIfAbsent(role, k -> new HashSet<>()).add(employeeID);
-    }
-
-    /**
-     * Removes an assigned employee from a specific role in a shift.
-     * @param doneBy   employee who is removing the shift
-     * @param shiftId  the ID of the shift
-     * @param role     the role to remove the employee from
-     * @param employeeID the employee to remove
-     * @return true if the employee was removed, false if they were not assigned
-     * @throws RuntimeException if the shift does not exist
-     */
-    public boolean removeAssignedEmployee(long doneBy, long shiftId, String role, Long employeeID) {
-        String PERMISSION_REQUIRED = "ASSIGN_EMPLOYEE";
-        if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
-            throw new UnauthorizedPermissionException("User does not have permission to remove employees from shifts");
-        }
-        Shift shiftToUpdate = shifts.stream()
-                .filter(shift -> shift.getId() == shiftId)
-                .findFirst()
-                .orElse(null);
-
-        if (shiftToUpdate == null) {
-            throw new RuntimeException("Shift does not exist");
-        }
-        if (employeeID == null) {
-            throw new IllegalArgumentException("Employee cannot be null");
-        }
-        if (role == null || role.isEmpty()) {
-            throw new IllegalArgumentException("Role cannot be null or empty");
-        }
-        if (shiftId <= 0) {
-            throw new IllegalArgumentException("Shift ID must be a positive number");
-        }
-        if (!shiftToUpdate.getRolesRequired().containsKey(role)) {
-            throw new IllegalArgumentException("Role not found in shift");
-        }
-        if (!shiftToUpdate.getAssignedEmployees().get(role).contains(employeeID)) {
-            throw new IllegalArgumentException("Employee not assigned to this role in the shift");
-        }
-        Map<String, Set<Long>> availableEmployees = shiftToUpdate.getAssignedEmployees();
-        shiftToUpdate.setUpdateDate(LocalDate.now());
-        return availableEmployees.computeIfAbsent(role, k -> new HashSet<>()).remove(employeeID);
-    }
-
-    /**
-     * Adds a required number of employees for a specific role in a shift.
-     * Does not overwrite if the role is already present.
-     * @param doneBy       employee who is adding the shift
-     * @param shiftId      the ID of the shift
-     * @param role         the role to add the requirement for
-     * @param roleRequired the number of employees required for the role
-     * @return true if the role was added (was not already defined), false otherwise
-     * @throws RuntimeException if the shift does not exist
-     */
-    public boolean addRoleRequired(long doneBy, long shiftId, String role, Integer roleRequired) {
-        String PERMISSION_REQUIRED = "ROLE_REQUIRED";
-        if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
-            throw new UnauthorizedPermissionException("User does not have permission to update Role required");
-        }
-        Shift shiftToUpdate = shifts.stream()
-                .filter(shift -> shift.getId() == shiftId)
-                .findFirst()
-                .orElse(null);
-
-        if (shiftToUpdate == null) {
-            throw new RuntimeException("Shift does not exist");
-        }
-        if (role == null || role.isEmpty()) {
-            throw new IllegalArgumentException("Role cannot be null or empty");
-        }
-        if (shiftId <= 0) {
-            throw new IllegalArgumentException("Shift ID must be a positive number");
-        }
-        if (shiftToUpdate == null) {
-            throw new IllegalArgumentException("Shift not found");
-        }
-        if (shiftToUpdate.getRolesRequired().containsKey(role)) {
-            throw new IllegalArgumentException("Role already exists in the shift");
-        }
-        Map<String, Integer> requiredRoles = shiftToUpdate.getRolesRequired();
-        shiftToUpdate.setUpdateDate(LocalDate.now());
-        return requiredRoles.putIfAbsent(role, roleRequired) == null;
-    }
 
     /**
      * Removes a role requirement from a shift.
@@ -668,126 +440,28 @@ public class ShiftController {
     }
 
 
-    /**
-     * get all shifts for a specific week
-     * @param doneBy employee who is requesting the shifts
-     * @param Date date of start of the week
-     * @return all shifts for the week from the start date
-     */
-    public Set<Shift> getShiftsByWeek(long doneBy, LocalDate Date) {
-        String PERMISSION_REQUIRED = "GET_SHIFT";
-        if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
-            throw new UnauthorizedPermissionException("User does not have permission to get shifts by week");
-        }
-        if (Date == null) {
-            throw new IllegalArgumentException("Date cannot be null");
-        }
-        if (Date.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Date cannot be in the past");
-        }
-        return shifts.stream()
-                .filter(shift -> !shift.getShiftDate().isBefore(Date) && !shift.getShiftDate().isAfter(Date.plusDays(6)))
-                .collect(Collectors.toSet());
-    }
-
-    public Set<Shift> getAvailabillityByEmployee (long doneBy, LocalDate Date) {
-        String PERMISSION_REQUIRED = "GET_AVAILABILITY";
-        if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
-            throw new UnauthorizedPermissionException("User does not have permission to get availability by week");
-        }
-        if (Date == null) {
-            throw new IllegalArgumentException("Date cannot be null");
-        }
-        if (Date.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Date cannot be in the past");
-        }
-        return shifts.stream()
-                .filter(shift -> shift.getAvailableEmployees() != null && shift.getAvailableEmployees().contains(doneBy))
-                .collect(Collectors.toSet());
-    }
-
-    /**
-     * Create shifts specifically for Sunday to Saturday (full week)
-     * @param doneBy employee who is creating the shifts
-     * @param startDate the start date (should be a Sunday)
-     * @param rolesRequired number of employees of each role required for the shifts
-     * @return true if all shifts were created successfully, false otherwise
-     */
-    public boolean createSundayToSaturdayShifts(long doneBy, LocalDate startDate, Map<String, Integer> rolesRequired) {
-        String PERMISSION_REQUIRED = "CREATE_SHIFT";
-        if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
-            throw new UnauthorizedPermissionException("User does not have permission to create weekly shifts");
-        }
-        if (startDate == null || rolesRequired == null) {
-            throw new IllegalArgumentException("Start date and roles required cannot be null");
-        }
-        if (startDate.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Start date cannot be in the past");
-        }
-        if (rolesRequired.isEmpty()) {
-            throw new IllegalArgumentException("Roles required cannot be empty");
-        }
-
-        // Verify the start date is a Sunday
-        if (startDate.getDayOfWeek() != DayOfWeek.SUNDAY) {
-            throw new IllegalArgumentException("Start date must be a Sunday");
-        }
-
-        boolean isOpen = true;
-
-        // Create shifts from Sunday to Saturday
-        for (int day = 0; day < 7; day++) { // 0 = Sunday, 6 = Saturday
-            LocalDate date = startDate.plusDays(day);
-
-            // Morning shift for all days (Sunday to Saturday)
-            if (shifts.stream().anyMatch(s -> s.getShiftDate().equals(date) && s.getShiftType().equals(ShiftType.MORNING))) {
-                throw new RuntimeException("Morning shift already exists for " + date);
-            }
-
-            isOpen = date.getDayOfWeek() != DayOfWeek.SATURDAY;
-
-            Set<Long> availableEmployees = new HashSet<>();
-            Map<String, Set<Long>> assignedEmployees = new HashMap<>();
-            Shift morningShift = new Shift(shiftIdCounter++, ShiftType.MORNING, date, rolesRequired, 
-                                          assignedEmployees, availableEmployees, false, isOpen, LocalDate.now());
-
-            boolean morningAdded = shifts.add(morningShift);
-            if (!morningAdded) return false;
-
-            // Evening shift for Sunday to Thursday and Saturday (not Friday)
-            if (day < 5 || day == 6) { // Days 0-4 (Sunday to Thursday) and day 6 (Saturday)
-                if (shifts.stream().anyMatch(s -> s.getShiftDate().equals(date) && s.getShiftType().equals(ShiftType.EVENING))) {
-                    throw new RuntimeException("Evening shift already exists for " + date);
-                }
-
-                availableEmployees = new HashSet<>();
-                assignedEmployees = new HashMap<>();
-
-                isOpen = date.getDayOfWeek() != DayOfWeek.FRIDAY && date.getDayOfWeek() != DayOfWeek.SATURDAY;
-
-                Shift eveningShift = new Shift(shiftIdCounter++, ShiftType.EVENING, date, rolesRequired, 
-                                              assignedEmployees, availableEmployees, false, isOpen, LocalDate.now());
-
-                boolean eveningAdded = shifts.add(eveningShift);
-                if (!eveningAdded) return false;
-            }
-
-            // Add to weekly shifts map
-            Week week = Week.from(date);
-            weeklyShifts.computeIfAbsent(week, k -> new HashSet<>()).add(morningShift);
-            weeklyShifts.computeIfAbsent(week, k -> new HashSet<>()).add(shifts.stream()
-                .filter(s -> s.getShiftDate().equals(date) && s.getShiftType().equals(ShiftType.EVENING))
-                .findFirst()
-                .orElse(null));
-        }
-        return true;
-    }
-
     public Set<Shift> getShiftsByWeek(long doneBy,Week week) {
         String PERMISSION_REQUIRED = "GET_SHIFT";
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to get shifts by week");
         }
         return weeklyShifts.get(week);
+    }
+
+    public void addShiftsToWeeklyShifts(Set<Shift> shifts) {
+        if (shifts == null || shifts.isEmpty()) {
+            throw new IllegalArgumentException("Shifts cannot be null or empty");
+        }
+
+        for (Shift shift : shifts) {
+            if (shift == null) {
+                throw new IllegalArgumentException("Shift cannot be null");
+            }
+            if (shift.getShiftDate() == null) {
+                throw new IllegalArgumentException("Shift date cannot be null");
+            }
+            Week week = Week.from(shift.getShiftDate());
+            weeklyShifts.computeIfAbsent(week, k -> new HashSet<>()).add(shift);
+        }
     }
 }
