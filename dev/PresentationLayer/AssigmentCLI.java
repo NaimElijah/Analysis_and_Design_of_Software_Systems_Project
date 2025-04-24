@@ -52,11 +52,12 @@ public class AssigmentCLI {
      */
     public void start() {
         printWelcomeBanner();
+        boolean running = true;
 
-        while (true) {
+        while (running) {
             displayMenu();
             String choice = scanner.nextLine();
-            processMenuChoice(choice);
+            running = processMenuChoice(choice);
         }
     }
 
@@ -96,8 +97,9 @@ public class AssigmentCLI {
      * Processes the user's menu choice
      * 
      * @param choice The user's input choice
+     * @return true to continue in the menu, false to return to main menu
      */
-    private void processMenuChoice(String choice) {
+    private boolean processMenuChoice(String choice) {
         System.out.println();
 
         try {
@@ -107,38 +109,40 @@ public class AssigmentCLI {
             // View All Shifts
             if (choiceNum == currentOption++) {
                 viewAllShifts();
-                return;
+                return true;
             }
 
             // View Shift Details
             if (choiceNum == currentOption++) {
                 viewShiftDetails();
-                return;
+                return true;
             }
 
             // Shift Management
             if (hasPermission("ASSIGN_EMPLOYEE")) {
                 if (choiceNum == currentOption++) {
                     shiftManagement();
-                    return;
+                    return true;
                 }
             }
 
             // View Employee Assignments
             if (choiceNum == currentOption++) {
                 viewEmployeeAssignments();
-                return;
+                return true;
             }
 
             // Exit
             if (choiceNum == currentOption++) {
                 System.out.println(BOLD + YELLOW + "Returning to main menu..." + RESET);
-                return;
+                return false;
             }
 
             printError("Invalid choice. Please try again.");
+            return true;
         } catch (NumberFormatException e) {
             printError("Please enter a valid number.");
+            return true;
         }
     }
 

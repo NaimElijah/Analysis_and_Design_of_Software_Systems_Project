@@ -1,6 +1,7 @@
 # User Instructions for Employee Module
 
 ### Quick Start
+The module entry point is from the "Employee Module Main Menu" screen where the user can navigate to the desired part.
 The system is preloaded with an Admin user with all the system permissions, the user id is 123456789.
 **NEED TO ADD MORE ONCE WE WILL UNITE ALL PARTS TO ONE CLI**
 

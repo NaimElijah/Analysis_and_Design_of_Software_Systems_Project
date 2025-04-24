@@ -49,11 +49,12 @@ public class EmployeeCLI {
      */
     public void start() {
         printWelcomeBanner();
+        boolean running = true;
 
-        while (true) {
+        while (running) {
             displayMenu();
             String choice = scanner.nextLine();
-            processMenuChoice(choice);
+            running = processMenuChoice(choice);
         }
     }
 
@@ -130,8 +131,9 @@ public class EmployeeCLI {
      * Processes the user's menu choice
      * 
      * @param choice The user's input choice
+     * @return true to continue in the menu, false to return to main menu
      */
-    private void processMenuChoice(String choice) {
+    private boolean processMenuChoice(String choice) {
         System.out.println();
 
         try {
@@ -141,111 +143,112 @@ public class EmployeeCLI {
             // Employee Management Section
             if (choiceNum == currentOption++) {
                 printAllEmployees();
-                return;
+                return true;
             }
 
             if (choiceNum == currentOption++) {
                 System.out.print(BOLD + "Enter Employee Israeli ID: " + RESET);
                 long israeliId = Long.parseLong(scanner.nextLine());
                 printEmployeeDetails(israeliId);
-                return;
+                return true;
             }
 
             if (hasPermission("CREATE_EMPLOYEE")) {
                 if (choiceNum == currentOption++) {
                     createEmployee();
-                    return;
+                    return true;
                 }
             }
 
             if (hasPermission("UPDATE_EMPLOYEE")) {
                 if (choiceNum == currentOption++) {
                     updateEmployee();
-                    return;
+                    return true;
                 }
             }
 
             if (hasPermission("DEACTIVATE_EMPLOYEE")) {
                 if (choiceNum == currentOption++) {
                     deactivateEmployee();
-                    return;
+                    return true;
                 }
             }
 
             // Role Management Section
             if (choiceNum == currentOption++) {
                 printAllRoles();
-                return;
+                return true;
             }
 
             if (choiceNum == currentOption++) {
                 System.out.print(BOLD + "Enter Role Name: " + RESET);
                 String roleName = scanner.nextLine();
                 printRoleDetails(roleName);
-                return;
+                return true;
             }
 
             if (hasPermission("CREATE_ROLE")) {
                 if (choiceNum == currentOption++) {
                     createRole();
-                    return;
+                    return true;
                 }
             }
 
             if (hasPermission("CREATE_ROLE")) {
                 if (choiceNum == currentOption++) {
                     cloneRole();
-                    return;
+                    return true;
                 }
             }
 
             if (hasPermission("ROLE_PERMISSION")) {
                 if (choiceNum == currentOption++) {
                     addRoleToEmployee();
-                    return;
+                    return true;
                 }
 
                 if (choiceNum == currentOption++) {
                     removeRoleFromEmployee();
-                    return;
+                    return true;
                 }
             }
 
             if (choiceNum == currentOption++) {
                 printAllPermissions();
-                return;
+                return true;
             }
 
             if (hasPermission("CREATE_PERMISSION")) {
                 if (choiceNum == currentOption++) {
                     createPermission();
-                    return;
+                    return true;
                 }
             }
 
             if (hasPermission("ADD_PERMISSION_TO_ROLE")) {
                 if (choiceNum == currentOption++) {
                     addPermissionToRole();
-                    return;
+                    return true;
                 }
             }
 
             if (hasPermission("REMOVE_PERMISSION_FROM_ROLE")) {
                 if (choiceNum == currentOption++) {
                     removePermissionFromRole();
-                    return;
+                    return true;
                 }
             }
 
             if (choiceNum == currentOption++) {
-                System.out.println(BOLD + YELLOW + "Exiting system..." + RESET);
-                System.exit(0);
-                return;
+                System.out.println(BOLD + YELLOW + "Returning to main menu..." + RESET);
+                return false;
             }
 
             printError("Invalid choice. Please try again.");
+            return true;
         } catch (NumberFormatException e) {
-            printError("Please enter a valid number.");
+            printError("Please enter a valid input.");
+            return true;
         }
     }
 
