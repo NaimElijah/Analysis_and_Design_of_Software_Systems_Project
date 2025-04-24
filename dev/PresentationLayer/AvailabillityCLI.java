@@ -70,7 +70,4 @@ public class AvailabillityCLI {
                 || day == DayOfWeek.FRIDAY
                 || day == DayOfWeek.SATURDAY;
     }
-
-
-
 }
