@@ -79,7 +79,7 @@ public class EmployeeController {
             throw new InvalidInputException("Israeli ID must be 9 digits");
         }
         if (roles == null) {
-            throw new InvalidInputException("Roles cannot be null");
+            roles = new HashSet<>();
         }
 
         // Create new employee

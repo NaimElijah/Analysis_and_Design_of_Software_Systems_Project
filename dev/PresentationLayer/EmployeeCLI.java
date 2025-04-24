@@ -6,6 +6,8 @@ import ServiceLayer.exception.AuthorizationException;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -15,15 +17,6 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public class EmployeeCLI {
-    // ANSI color codes
-    private static final String RESET = CliUtil.RESET;
-    private static final String RED = CliUtil.RED;
-    private static final String GREEN = CliUtil.GREEN;
-    private static final String YELLOW = CliUtil.YELLOW;
-    private static final String BLUE = CliUtil.BLUE;
-    private static final String PURPLE = CliUtil.PURPLE;
-    private static final String CYAN = CliUtil.CYAN;
-    private static final String BOLD = CliUtil.BOLD;
 
     // Properties
     private final DateTimeFormatter dateFormatter = CliUtil.dateFormatter;
@@ -34,7 +27,7 @@ public class EmployeeCLI {
 
     /**
      * Constructor for the Employee Command Line Interface
-     * 
+     *
      * @param employeeService The service layer for employee operations
      * @param doneBy The ID of the employee using the CLI
      */
@@ -66,75 +59,79 @@ public class EmployeeCLI {
      * Displays the main menu with options based on user permissions
      */
     private void displayMenu() {
-        System.out.println();
+        CliUtil.printEmptyLine();
         printSectionHeader("Main Menu");
+
+        // Display breadcrumb navigation
+        CliUtil.printBreadcrumb("Employee Management");
 
         List<String> menuOptions = new ArrayList<>();
         int optionNumber = 1;
 
-        menuOptions.add(YELLOW + optionNumber++ + RESET + ". View All Employees");
-        menuOptions.add(YELLOW + optionNumber++ + RESET + ". View Employee Details");
+        menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". View All Employees");
+        menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". View Employee Details");
 
         if (hasPermission("CREATE_EMPLOYEE")) {
-            menuOptions.add(YELLOW + optionNumber++ + RESET + ". Create Employee");
+            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Create Employee");
         }
 
         if (hasPermission("UPDATE_EMPLOYEE")) {
-            menuOptions.add(YELLOW + optionNumber++ + RESET + ". Update Employee");
+            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Update Employee");
         }
 
         if (hasPermission("DEACTIVATE_EMPLOYEE")) {
-            menuOptions.add(YELLOW + optionNumber++ + RESET + ". Deactivate Employee");
+            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Deactivate Employee");
         }
 
-        menuOptions.add(YELLOW + optionNumber++ + RESET + ". View All Roles");
-        menuOptions.add(YELLOW + optionNumber++ + RESET + ". View Role Details");
+        menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". View All Roles");
+        menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". View Role Details");
 
         if (hasPermission("CREATE_ROLE")) {
-            menuOptions.add(YELLOW + optionNumber++ + RESET + ". Create Role");
+            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Create Role");
         }
 
         if (hasPermission("CREATE_ROLE")) {
-            menuOptions.add(YELLOW + optionNumber++ + RESET + ". Clone Role");
+            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Clone Role");
         }
 
         if (hasPermission("ROLE_PERMISSION")) {
-            menuOptions.add(YELLOW + optionNumber++ + RESET + ". Add Role to Employee");
-            menuOptions.add(YELLOW + optionNumber++ + RESET + ". Remove Role from Employee");
+            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Add Role to Employee");
+            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Remove Role from Employee");
         }
 
-        menuOptions.add(YELLOW + optionNumber++ + RESET + ". View All Permissions");
+        menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". View All Permissions");
 
         if (hasPermission("CREATE_PERMISSION")) {
-            menuOptions.add(YELLOW + optionNumber++ + RESET + ". Create Permission");
+            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Create Permission");
         }
 
         if (hasPermission("ADD_PERMISSION_TO_ROLE")) {
-            menuOptions.add(YELLOW + optionNumber++ + RESET + ". Add Permission to Role");
+            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Add Permission to Role");
         }
 
         if (hasPermission("REMOVE_PERMISSION_FROM_ROLE")) {
-            menuOptions.add(YELLOW + optionNumber++ + RESET + ". Remove Permission from Role");
+            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Remove Permission from Role");
         }
 
-        menuOptions.add(YELLOW + optionNumber++ + RESET + ". Back To Main Menu");
+        menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Back To Main Menu");
 
+        // Print the menu options
         for (String option : menuOptions) {
-            System.out.println("  " + option);
+            CliUtil.print("  " + option);
         }
 
-        System.out.println();
-        System.out.print(CYAN + "======>" + RESET + " Enter your choice: ");
+        CliUtil.printEmptyLine();
+        CliUtil.printPrompt("Enter your choice: ");
     }
 
     /**
      * Processes the user's menu choice
-     * 
+     *
      * @param choice The user's input choice
      * @return true to continue in the menu, false to return to main menu
      */
     private boolean processMenuChoice(String choice) {
-        System.out.println();
+        CliUtil.printEmptyLine();
 
         try {
             int choiceNum = Integer.parseInt(choice);
@@ -147,7 +144,7 @@ public class EmployeeCLI {
             }
 
             if (choiceNum == currentOption++) {
-                System.out.print(BOLD + "Enter Employee Israeli ID: " + RESET);
+                CliUtil.printBold("Enter Employee Israeli ID:");
                 long israeliId = Long.parseLong(scanner.nextLine());
                 printEmployeeDetails(israeliId);
                 return true;
@@ -181,7 +178,7 @@ public class EmployeeCLI {
             }
 
             if (choiceNum == currentOption++) {
-                System.out.print(BOLD + "Enter Role Name: " + RESET);
+                CliUtil.printBold("Enter Role Name:");
                 String roleName = scanner.nextLine();
                 printRoleDetails(roleName);
                 return true;
@@ -240,7 +237,7 @@ public class EmployeeCLI {
             }
 
             if (choiceNum == currentOption++) {
-                System.out.println(BOLD + YELLOW + "Returning to main menu..." + RESET);
+                CliUtil.printReturnMessage("main menu");
                 return false;
             }
 
@@ -283,7 +280,7 @@ public class EmployeeCLI {
 
     /**
      * Gets user confirmation for an action
-     * 
+     *
      * @param message The confirmation message to display
      * @return true if confirmed, false otherwise
      */
@@ -293,7 +290,7 @@ public class EmployeeCLI {
 
     /**
      * Gets a long value from user input
-     * 
+     *
      * @param prompt The prompt to display
      * @return The long value entered by the user
      */
@@ -303,7 +300,7 @@ public class EmployeeCLI {
 
     /**
      * Checks if the current user has a specific permission
-     * 
+     *
      * @param permission The permission to check
      * @return true if the user has the permission, false otherwise
      */
@@ -312,9 +309,10 @@ public class EmployeeCLI {
             employeeService.isEmployeeAuthorised(doneBy, permission);
             return true;
         } catch (AuthorizationException e) {
+            printError(e.getMessage());
             return false;
         } catch (Exception e) {
-            System.out.println("Error checking permissions: " + e.getMessage());
+            printError("Error checking permissions.");
             return false;
         }
     }
@@ -331,17 +329,17 @@ public class EmployeeCLI {
         printSectionHeader("Deactivate Employee");
 
         // Show all employee
-        System.out.println(CYAN + "Current employees:" + RESET);
+        CliUtil.printInfo("Current employees:");
         EmployeeSL[] employees = employeeService.getAllEmployees();
         for (EmployeeSL employee : employees) {
-            String status = employee.isActive() ? GREEN + "Active" + RESET : RED + "Inactive" + RESET;
-            System.out.printf("  • ID: %-9s | Name: %-20s | Status: %s%n", 
-                employee.getIsraeliId(), 
+            String status = employee.isActive() ? CliUtil.greenString("Active") : CliUtil.redString("Inactive");
+            System.out.printf("  • ID: %-9s | Name: %-20s | Status: %s%n",
+                employee.getIsraeliId(),
                 employee.getFullName(),
                 status);
         }
 
-        System.out.println();
+        CliUtil.printEmptyLine();
         long israeliId = getLongInput("Employee Israeli ID: ");
 
         try {
@@ -349,7 +347,7 @@ public class EmployeeCLI {
 
             if (!employee.isActive()) {
                 printError("Employee is already inactive.");
-                waitForEnter();
+                CliUtil.waitForEnter(scanner);
                 return;
             }
 
@@ -363,13 +361,13 @@ public class EmployeeCLI {
                     printError(result);
                 }
             } else {
-                System.out.println(YELLOW + "Operation cancelled." + RESET);
+                CliUtil.printOperationCancelled();
             }
         } catch (Exception e) {
             printError("Error retrieving employee details: " + e.getMessage());
         }
 
-        waitForEnter();
+        CliUtil.waitForEnter(scanner);
     }
 
     private void printWelcomeBanner() {
@@ -389,52 +387,58 @@ public class EmployeeCLI {
     private void createEmployee() {
         printSectionHeader("Create Employee");
 
-        System.out.print(BOLD + "Israeli ID: " + RESET);
-        long israeliId = Long.parseLong(scanner.nextLine());
+        try {
+            CliUtil.printBold("Israeli ID: ");
+            long israeliId = Long.parseLong(scanner.nextLine());
 
-        System.out.print(BOLD + "First Name: " + RESET);
-        String firstName = scanner.nextLine();
+            CliUtil.printBold("First Name: ");
+            String firstName = scanner.nextLine();
 
-        System.out.print(BOLD + "Last Name: " + RESET);
-        String lastName = scanner.nextLine();
+            CliUtil.printBold("Last Name: ");
+            String lastName = scanner.nextLine();
 
-        System.out.print(BOLD + "Salary: " + RESET);
-        long salary = Long.parseLong(scanner.nextLine());
+            CliUtil.printBold("Salary: ");
+            long salary = Long.parseLong(scanner.nextLine());
 
-        System.out.print(BOLD + "Start Date (dd-MM-yyyy): " + RESET);
-        LocalDate startDate = LocalDate.parse(scanner.nextLine(), dateFormatter);
+            CliUtil.printBold("Start Date (dd-MM-yyyy): ");
+            LocalDate startDate = LocalDate.parse(scanner.nextLine(), dateFormatter);
 
-        Map<String, Object> termsOfEmployment = new HashMap<>();
-        System.out.println();
-        System.out.println(CYAN + "📋 " + BOLD + "TERMS OF EMPLOYMENT" + RESET);
-        System.out.println(CYAN + "Enter key-value pairs. Type 'done' when finished." + RESET);
-        System.out.println();
+            Map<String, Object> termsOfEmployment = new HashMap<>();
+            CliUtil.printEmptyLine();
+            CliUtil.printSectionWithIcon("TERMS OF EMPLOYMENT", "📋");
+            CliUtil.printInfo("Enter key-value pairs. Type 'done' when finished.");
+            CliUtil.printEmptyLine();
 
-        while (true) {
-            System.out.print(BOLD + "Key (or 'done'): " + RESET);
-            String key = scanner.nextLine();
-            if (key.equalsIgnoreCase("done")) break;
+            while (true) {
+                CliUtil.printBold("Key (or 'done'): ");
+                String key = scanner.nextLine();
+                if (key.equalsIgnoreCase("done")) break;
 
-            System.out.print(BOLD + "Value: " + RESET);
-            String value = scanner.nextLine();
-            termsOfEmployment.put(key, value);
-            System.out.println(CYAN + "✓ Added: " + key + " = " + value + RESET);
+                CliUtil.printBold("Value: ");
+                String value = scanner.nextLine();
+                termsOfEmployment.put(key, value);
+                CliUtil.printSuccessWithCheckmark("Added: " + key + " = " + value);
+            }
+            String result = employeeService.createEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, startDate);
+
+            if (result.contains("successfully")) {
+                printSuccess(result);
+            } else {
+                printError(result);
+            }
+        } catch (NumberFormatException e) {
+            printError("Please enter valid input.");
+        } catch (DateTimeParseException e) {
+            printError("Please enter date in format dd-MM-yyyy.");
+        } catch (Exception e) {
+            printError("An error occurred: " + e.getMessage());
         }
 
-        String result = employeeService.createEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, startDate);
-
-        if (result.contains("successfully")) {
-            printSuccess(result);
-        } else {
-            printError(result);
-        }
-
-        System.out.println(YELLOW + "Press Enter to continue..." + RESET);
-        scanner.nextLine();
+        CliUtil.waitForEnter(scanner);
     }
     private void updateEmployee() {
         printSectionHeader("Update Employee");
-        System.out.print(BOLD + "Israeli ID: " + RESET);
+        CliUtil.printBold("Israeli ID: ");
         long israeliId = Long.parseLong(scanner.nextLine());
 
         EmployeeSL existing = employeeService.getEmployeeById(israeliId);
@@ -443,61 +447,61 @@ public class EmployeeCLI {
             return;
         }
 
-        printSectionHeader("Edit Employee: " + YELLOW + existing.getFullName() + RESET);
+        printSectionHeader("Edit Employee: " + CliUtil.YELLOW + existing.getFullName() + CliUtil.RESET);
 
-        System.out.println(CYAN + "Leave field empty to keep current value" + RESET);
-        System.out.println();
+        CliUtil.printInfo("Leave field empty to keep current value");
+        CliUtil.printEmptyLine();
 
-        System.out.println(BOLD + "Current First Name: " + RESET + existing.getFirstName());
-        System.out.print(BOLD + "New First Name: " + RESET);
+        CliUtil.printBold("Current First Name: " + existing.getFirstName());
+        CliUtil.printBold("New First Name: ");
         String firstName = scanner.nextLine();
         if (firstName.isBlank()) firstName = existing.getFirstName();
 
-        System.out.println(BOLD + "Current Last Name: " + RESET + existing.getLastName());
-        System.out.print(BOLD + "New Last Name: " + RESET);
+        CliUtil.printBold("Current Last Name: " + existing.getLastName());
+        CliUtil.printBold("New Last Name: ");
         String lastName = scanner.nextLine();
         if (lastName.isBlank()) lastName = existing.getLastName();
 
-        System.out.println(BOLD + "Current Salary: " + RESET + existing.getSalary());
-        System.out.print(BOLD + "New Salary: " + RESET);
+        CliUtil.printBold("Current Salary: " + existing.getSalary());
+        CliUtil.printBold("New Salary: ");
         String salaryInput = scanner.nextLine();
         long salary = salaryInput.isBlank() ? existing.getSalary() : Long.parseLong(salaryInput);
 
-        System.out.println(BOLD + "Current Active Status: " + RESET + existing.isActive());
-        System.out.print(BOLD + "Is Active? (true/false): " + RESET);
+        CliUtil.printBold("Current Active Status: " + existing.isActive());
+        CliUtil.printBold("Is Active? (true/false): ");
         String activeInput = scanner.nextLine();
         boolean active = activeInput.isBlank() ? existing.isActive() : Boolean.parseBoolean(activeInput);
 
-        System.out.println();
-        System.out.println(CYAN + "📋 " + BOLD + "CURRENT TERMS OF EMPLOYMENT" + RESET);
+        CliUtil.printEmptyLine();
+        CliUtil.printSectionWithIcon("CURRENT TERMS OF EMPLOYMENT", "📋");
         if (existing.getTermsOfEmployment().isEmpty()) {
-            System.out.println(YELLOW + "  No terms defined" + RESET);
+            CliUtil.printInfo("  No terms defined");
         } else {
             existing.getTermsOfEmployment().forEach((k, v) -> 
-                System.out.println("  " + BOLD + k + RESET + ": " + v));
+                CliUtil.print("  " + CliUtil.BOLD + k + CliUtil.RESET + ": " + v));
         }
 
-        System.out.println();
-        System.out.println(CYAN + "📝 " + BOLD + "UPDATE TERMS OF EMPLOYMENT" + RESET);
-        System.out.println(CYAN + "Enter key-value pairs. Type 'done' when finished." + RESET);
-        System.out.println(CYAN + "To remove a term, enter its key with an empty value." + RESET);
-        System.out.println();
+        CliUtil.printEmptyLine();
+        CliUtil.printSectionWithIcon("UPDATE TERMS OF EMPLOYMENT", "📝");
+        CliUtil.printInfo("Enter key-value pairs. Type 'done' when finished.");
+        CliUtil.printInfo("To remove a term, enter its key with an empty value.");
+        CliUtil.printEmptyLine();
 
         Map<String, Object> termsOfEmployment = new HashMap<>(existing.getTermsOfEmployment());
         while (true) {
-            System.out.print(BOLD + "Key (or 'done'): " + RESET);
+            CliUtil.printBold("Key (or 'done'): ");
             String key = scanner.nextLine();
             if (key.equalsIgnoreCase("done")) break;
 
-            System.out.print(BOLD + "Value: " + RESET);
+            CliUtil.printBold("Value: ");
             String value = scanner.nextLine();
 
             if (value.isEmpty()) {
                 termsOfEmployment.remove(key);
-                System.out.println(YELLOW + "✓ Removed: " + key + RESET);
+                CliUtil.printSuccessWithCheckmark("Removed: " + key);
             } else {
                 termsOfEmployment.put(key, value);
-                System.out.println(CYAN + "✓ Updated: " + key + " = " + value + RESET);
+                CliUtil.printSuccessWithCheckmark("Updated: " + key + " = " + value);
             }
         }
 
@@ -509,50 +513,43 @@ public class EmployeeCLI {
             printError(result);
         }
 
-        System.out.println(YELLOW + "Press Enter to continue..." + RESET);
-        scanner.nextLine();
+        CliUtil.waitForEnter(scanner);
     }
     private void addRoleToEmployee() {
         printSectionHeader("Add Role to Employee");
 
         String[] allRoles = employeeService.getAllRoles();
 
-        System.out.print(BOLD + "Employee Israeli ID: " + RESET);
+        CliUtil.printBold("Employee Israeli ID: ");
         long israeliId = Long.parseLong(scanner.nextLine());
 
         try {
             EmployeeSL employee = employeeService.getEmployeeById(israeliId);
-            System.out.println(GREEN + "Employee: " + RESET + employee.getFullName());
+            CliUtil.printSuccess("Employee: " + employee.getFullName());
 
-            System.out.println();
-            System.out.println(CYAN + "👤 " + BOLD + "CURRENT ROLES" + RESET);
+            CliUtil.printEmptyLine();
+            CliUtil.printSectionWithIcon("CURRENT ROLES", "👤");
             if (employee.getRoles().isEmpty()) {
-                System.out.println(YELLOW + "  No roles assigned" + RESET);
+                CliUtil.printInfo("  No roles assigned");
             } else {
-                for (String role : employee.getRoles()) {
-                    System.out.println("  • " + role);
-                }
+                List<String> roles = new ArrayList<>(employee.getRoles());
+                CliUtil.printHierarchicalList(roles, "•", 2);
             }
         } catch (Exception e) {
             printError("Could not retrieve employee details: " + e.getMessage());
         }
 
-        System.out.println();
-        System.out.println(CYAN + "🔑 " + BOLD + "AVAILABLE ROLES" + RESET);
-        for (int i = 0; i < allRoles.length; i++) {
-            System.out.println("  • " + allRoles[i]);
-        }
+        CliUtil.printEmptyLine();
+        CliUtil.printSectionWithIcon("AVAILABLE ROLES", "🔑");
+        List<String> rolesList = Arrays.asList(allRoles);
+        CliUtil.printHierarchicalList(rolesList, "•", 2);
 
-        System.out.println();
-        System.out.print(BOLD + "Role Name to Add: " + RESET);
+        CliUtil.printEmptyLine();
+        CliUtil.printBold("Role Name to Add: ");
         String roleName = scanner.nextLine();
 
         // Confirm
-        System.out.println();
-        System.out.print(YELLOW + "Confirm adding role '" + roleName + "' to employee #" + israeliId + "? (y/n): " + RESET);
-        String confirm = scanner.nextLine();
-
-        if (confirm.equalsIgnoreCase("y") || confirm.equalsIgnoreCase("yes")) {
+        if (confirm("Confirm adding role '" + roleName + "' to employee #" + israeliId + "?")) {
             String result = employeeService.addRoleToEmployee(doneBy, israeliId, roleName);
 
             if (result.contains("successfully")) {
@@ -561,46 +558,39 @@ public class EmployeeCLI {
                 printError(result);
             }
         } else {
-            System.out.println(YELLOW + "Operation cancelled." + RESET);
+            CliUtil.printOperationCancelled();
         }
 
-        System.out.println(YELLOW + "Press Enter to continue..." + RESET);
-        scanner.nextLine();
+        CliUtil.waitForEnter(scanner);
     }
 
     private void removeRoleFromEmployee() {
         printSectionHeader("Remove Role from Employee");
 
-        System.out.print(BOLD + "Employee Israeli ID: " + RESET);
+        CliUtil.printBold("Employee Israeli ID: ");
         long israeliId = Long.parseLong(scanner.nextLine());
 
         try {
             EmployeeSL employee = employeeService.getEmployeeById(israeliId);
-            System.out.println(GREEN + "Employee: " + RESET + employee.getFullName());
+            CliUtil.printSuccess("Employee: " + employee.getFullName());
 
-            System.out.println();
-            System.out.println(CYAN + "👤 " + BOLD + "CURRENT ROLES" + RESET);
+            CliUtil.printEmptyLine();
+            CliUtil.printSectionWithIcon("CURRENT ROLES", "👤");
             if (employee.getRoles().isEmpty()) {
-                System.out.println(YELLOW + "  No roles assigned" + RESET);
-                System.out.println(YELLOW + "Press Enter to continue..." + RESET);
-                scanner.nextLine();
+                CliUtil.printInfo("  No roles assigned");
+                CliUtil.waitForEnter(scanner);
                 return;
             } else {
-                for (String role : employee.getRoles()) {
-                    System.out.println("  • " + role);
-                }
+                List<String> roles = new ArrayList<>(employee.getRoles());
+                CliUtil.printHierarchicalList(roles, "•", 2);
             }
 
-            System.out.println();
-            System.out.print(BOLD + "Role Name to Remove: " + RESET);
+            CliUtil.printEmptyLine();
+            CliUtil.printBold("Role Name to Remove: ");
             String roleName = scanner.nextLine();
 
             // Confirm
-            System.out.println();
-            System.out.print(YELLOW + "Confirm removing role '" + roleName + "' from employee #" + israeliId + "? (y/n): " + RESET);
-            String confirm = scanner.nextLine();
-
-            if (confirm.equalsIgnoreCase("y") || confirm.equalsIgnoreCase("yes")) {
+            if (confirm("Confirm removing role '" + roleName + "' from employee #" + israeliId + "?")) {
                 String result = employeeService.removeRoleFromEmployee(doneBy, israeliId, roleName);
 
                 if (result.contains("successfully")) {
@@ -609,59 +599,53 @@ public class EmployeeCLI {
                     printError(result);
                 }
             } else {
-                System.out.println(YELLOW + "Operation cancelled." + RESET);
+                CliUtil.printOperationCancelled();
             }
         } catch (Exception e) {
             printError("Could not retrieve employee details: " + e.getMessage());
         }
 
-        System.out.println(YELLOW + "Press Enter to continue..." + RESET);
-        scanner.nextLine();
+        CliUtil.waitForEnter(scanner);
     }
 
     private void createRole() {
         printSectionHeader("Create Role");
 
-        System.out.print(BOLD + "Role Name: " + RESET);
+        CliUtil.printBold("Role Name: ");
         String roleName = scanner.nextLine();
 
-        System.out.println();
-        System.out.print(BOLD + "Do you want to add permissions now? (yes/no): " + RESET);
+        CliUtil.printEmptyLine();
+        CliUtil.printBold("Do you want to add permissions now? (yes/no): ");
         String addPermissions = scanner.nextLine();
 
         if (addPermissions.equalsIgnoreCase("yes")) {
-            System.out.println();
-            System.out.println(CYAN + "🔑 " + BOLD + "AVAILABLE PERMISSIONS" + RESET);
+            CliUtil.printEmptyLine();
+            CliUtil.printSectionWithIcon("AVAILABLE PERMISSIONS", "🔑");
             String[] allPermissions = employeeService.getAllPermissions();
 
             if (allPermissions.length == 0) {
-                System.out.println(YELLOW + "  No permissions defined in the system" + RESET);
+                CliUtil.printInfo("  No permissions defined in the system");
             } else {
-                for (String permission : allPermissions) {
-                    System.out.println("  • " + permission);
-                }
+                List<String> permissionsList = Arrays.asList(allPermissions);
+                CliUtil.printHierarchicalList(permissionsList, "•", 2);
             }
 
-            System.out.println();
-            System.out.println(CYAN + "📝 " + BOLD + "ADD PERMISSIONS TO ROLE" + RESET);
-            System.out.println(CYAN + "Enter permissions one by one. Type 'done' when finished." + RESET);
-            System.out.println();
+            CliUtil.printEmptyLine();
+            CliUtil.printSectionWithIcon("ADD PERMISSIONS TO ROLE", "📝");
+            CliUtil.printInfo("Enter permissions one by one. Type 'done' when finished.");
+            CliUtil.printEmptyLine();
 
             HashSet<String> permissions = new HashSet<>();
             while (true) {
-                System.out.print(BOLD + "Permission (or 'done'): " + RESET);
+                CliUtil.printBold("Permission (or 'done'): ");
                 String permission = scanner.nextLine();
                 if (permission.equalsIgnoreCase("done")) break;
                 permissions.add(permission);
-                System.out.println(CYAN + "✓ Added: " + permission + RESET);
+                CliUtil.printSuccessWithCheckmark("Added: " + permission);
             }
 
             // Confirm
-            System.out.println();
-            System.out.print(YELLOW + "Confirm creating role '" + roleName + "' with " + permissions.size() + " permissions? (y/n): " + RESET);
-            String confirm = scanner.nextLine();
-
-            if (confirm.equalsIgnoreCase("y") || confirm.equalsIgnoreCase("yes")) {
+            if (confirm("Confirm creating role '" + roleName + "' with " + permissions.size() + " permissions?")) {
                 String result = employeeService.createRoleWithPermissions(doneBy, roleName, permissions);
 
                 if (result.contains("successfully")) {
@@ -670,15 +654,11 @@ public class EmployeeCLI {
                     printError(result);
                 }
             } else {
-                System.out.println(YELLOW + "Operation cancelled." + RESET);
+                CliUtil.printOperationCancelled();
             }
         } else {
             // Confirm
-            System.out.println();
-            System.out.print(YELLOW + "Confirm creating role '" + roleName + "' with no permissions? (y/n): " + RESET);
-            String confirm = scanner.nextLine();
-
-            if (confirm.equalsIgnoreCase("y") || confirm.equalsIgnoreCase("yes")) {
+            if (confirm("Confirm creating role '" + roleName + "' with no permissions?")) {
                 // Create role without permissions
                 String result = employeeService.createRole(doneBy, roleName);
 
@@ -688,46 +668,39 @@ public class EmployeeCLI {
                     printError(result);
                 }
             } else {
-                System.out.println(YELLOW + "Operation cancelled." + RESET);
+                CliUtil.printOperationCancelled();
             }
         }
 
-        System.out.println(YELLOW + "Press Enter to continue..." + RESET);
-        scanner.nextLine();
+        CliUtil.waitForEnter(scanner);
     }
 
     private void addPermissionToRole() {
         printSectionHeader("Add Permission to Role");
 
         // Show roles
-        System.out.println(CYAN + "Available roles:" + RESET);
+        CliUtil.printInfo("Available roles:");
         String[] allRoles = employeeService.getAllRoles();
-        for (String role : allRoles) {
-            System.out.println("  • " + role);
-        }
+        List<String> rolesList = Arrays.asList(allRoles);
+        CliUtil.printHierarchicalList(rolesList, "•", 2);
 
-        System.out.println();
-        System.out.print(BOLD + "Role Name: " + RESET);
+        CliUtil.printEmptyLine();
+        CliUtil.printBold("Role Name: ");
         String roleName = scanner.nextLine();
 
         // Show permissions
-        System.out.println();
-        System.out.println(CYAN + "Available permissions:" + RESET);
+        CliUtil.printEmptyLine();
+        CliUtil.printInfo("Available permissions:");
         String[] allPermissions = employeeService.getAllPermissions();
-        for (String permission : allPermissions) {
-            System.out.println("  • " + permission);
-        }
+        List<String> permissionsList = Arrays.asList(allPermissions);
+        CliUtil.printHierarchicalList(permissionsList, "•", 2);
 
-        System.out.println();
-        System.out.print(BOLD + "Permission Name: " + RESET);
+        CliUtil.printEmptyLine();
+        CliUtil.printBold("Permission Name: ");
         String permissionName = scanner.nextLine();
 
         // Confirm
-        System.out.println();
-        System.out.print(YELLOW + "Confirm adding permission '" + permissionName + "' to role '" + roleName + "'? (y/n): " + RESET);
-        String confirm = scanner.nextLine();
-
-        if (confirm.equalsIgnoreCase("y") || confirm.equalsIgnoreCase("yes")) {
+        if (confirm("Confirm adding permission '" + permissionName + "' to role '" + roleName + "'?")) {
             String result = employeeService.addPermissionToRole(doneBy, roleName, permissionName);
 
             if (result.contains("successfully")) {
@@ -736,24 +709,22 @@ public class EmployeeCLI {
                 printError(result);
             }
         } else {
-            System.out.println(YELLOW + "Operation cancelled." + RESET);
+            CliUtil.printOperationCancelled();
         }
 
-        System.out.println(YELLOW + "Press Enter to continue..." + RESET);
-        scanner.nextLine();
+        CliUtil.waitForEnter(scanner);
     }
 
     private void removePermissionFromRole() {
         printSectionHeader("Remove Permission from Role");
 
-        System.out.println(CYAN + "Available roles:" + RESET);
+        CliUtil.printInfo("Available roles:");
         String[] allRoles = employeeService.getAllRoles();
-        for (String role : allRoles) {
-            System.out.println("  • " + role);
-        }
+        List<String> rolesList = Arrays.asList(allRoles);
+        CliUtil.printHierarchicalList(rolesList, "•", 2);
 
-        System.out.println();
-        System.out.print(BOLD + "Role Name: " + RESET);
+        CliUtil.printEmptyLine();
+        CliUtil.printBold("Role Name: ");
         String roleName = scanner.nextLine();
 
         try {
@@ -761,30 +732,24 @@ public class EmployeeCLI {
             if (roleDetails != null && !roleDetails.isEmpty()) {
                 HashSet<String> permissions = roleDetails.get(roleName);
 
-                System.out.println();
-                System.out.println(CYAN + "Current permissions for role '" + roleName + "':" + RESET);
+                CliUtil.printEmptyLine();
+                CliUtil.printInfo("Current permissions for role '" + roleName + "':");
 
                 if (permissions == null || permissions.isEmpty()) {
-                    System.out.println(YELLOW + "  No permissions assigned to this role" + RESET);
-                    System.out.println(YELLOW + "Press Enter to continue..." + RESET);
-                    scanner.nextLine();
+                    CliUtil.printInfo("  No permissions assigned to this role");
+                    CliUtil.waitForEnter(scanner);
                     return;
                 } else {
-                    for (String permission : permissions) {
-                        System.out.println("  • " + permission);
-                    }
+                    List<String> permissionsList = new ArrayList<>(permissions);
+                    CliUtil.printHierarchicalList(permissionsList, "•", 2);
                 }
 
-                System.out.println();
-                System.out.print(BOLD + "Permission Name to Remove: " + RESET);
+                CliUtil.printEmptyLine();
+                CliUtil.printBold("Permission Name to Remove: ");
                 String permissionName = scanner.nextLine();
 
                 // Confirm
-                System.out.println();
-                System.out.print(YELLOW + "Confirm removing permission '" + permissionName + "' from role '" + roleName + "'? (y/n): " + RESET);
-                String confirm = scanner.nextLine();
-
-                if (confirm.equalsIgnoreCase("y") || confirm.equalsIgnoreCase("yes")) {
+                if (confirm("Confirm removing permission '" + permissionName + "' from role '" + roleName + "'?")) {
                     String result = employeeService.removePermissionFromRole(doneBy, roleName, permissionName);
 
                     if (result.contains("successfully")) {
@@ -793,7 +758,7 @@ public class EmployeeCLI {
                         printError(result);
                     }
                 } else {
-                    System.out.println(YELLOW + "Operation cancelled." + RESET);
+                    CliUtil.printOperationCancelled();
                 }
             } else {
                 printError("Role '" + roleName + "' not found.");
@@ -802,41 +767,34 @@ public class EmployeeCLI {
             printError("Error retrieving role details: " + e.getMessage());
         }
 
-        System.out.println(YELLOW + "Press Enter to continue..." + RESET);
-        scanner.nextLine();
+        CliUtil.waitForEnter(scanner);
     }
 
     /**
-     * Displays all employees in the system
+     * Displays all employees in the system with pagination
      */
     private void printAllEmployees() {
-        printSectionHeader("All Employees");
+        // Convert array to list for pagination
+        List<EmployeeSL> employeeList = Arrays.asList(employeeService.getAllEmployees());
 
-        EmployeeSL[] employees = employeeService.getAllEmployees();
+        // Define how many employees to show per page
+        final int ITEMS_PER_PAGE = 5;
 
-        if (employees.length == 0) {
-            System.out.println(YELLOW + "No employees found in the system." + RESET);
-        } else {
-            System.out.println(CYAN + "Found " + employees.length + " employees:" + RESET);
-            System.out.println();
-
-            System.out.println(BOLD + "┌─────────────┬────────────────────────────┬──────────┐" + RESET);
-            System.out.println(BOLD + "│     ID      │            Name            │  Status  │" + RESET);
-            System.out.println(BOLD + "├─────────────┼────────────────────────────┼──────────┤" + RESET);
-
-            for (EmployeeSL employee : employees) {
-                String status = employee.isActive() ? GREEN + "Active" + RESET : RED + "Inactive" + RESET;
-                System.out.printf("│ %-11s │ %-28s │ %-8s │%n", 
-                    employee.getIsraeliId(), 
+        // Use the pagination utility to display employees
+        CliUtil.displayPaginatedList(
+            "All Employees",
+            employeeList,
+            ITEMS_PER_PAGE,
+            employee -> {
+                // Format each employee for display
+                String status = employee.isActive() ? CliUtil.greenString("Active") : CliUtil.redString("Inactive");
+                return String.format("ID: %-11s | Name: %-28s | Status: %s",
+                    employee.getIsraeliId(),
                     employee.getFullName(),
                     status);
-            }
-
-            // Print table footer
-            System.out.println(BOLD + "└─────────────┴────────────────────────────┴──────────┘" + RESET);
-        }
-
-        waitForEnter();
+            },
+            scanner
+        );
     }
 
     /**
@@ -850,108 +808,106 @@ public class EmployeeCLI {
         try {
             EmployeeSL employee = employeeService.getEmployeeById(israeliId);
 
-            System.out.println(BLUE + "┌───────────────────────────────────────────────────┐" + RESET);
-            System.out.println(BLUE + "│" + RESET + BOLD + YELLOW + "                 EMPLOYEE INFORMATION              " + RESET + BLUE + "│" + RESET);
-            System.out.println(BLUE + "├───────────────────────────────────────────────────┤" + RESET);
+            // Create headers for the table sections
+            List<String> headers = Arrays.asList(
+                "EMPLOYEE INFORMATION",
+                "ROLES & PERMISSIONS",
+                "TERMS OF EMPLOYMENT"
+            );
 
-            System.out.printf(BLUE + "│ " + RESET + BOLD + "%-15s" + RESET + "│ %-33s " + BLUE + "│%n" + RESET, "ID:", employee.getIsraeliId());
-            System.out.printf(BLUE + "│ " + RESET + BOLD + "%-15s" + RESET + "│ %-33s " + BLUE + "│%n" + RESET, "Name:", employee.getFullName());
-            System.out.printf(BLUE + "│ " + RESET + BOLD + "%-15s" + RESET + "│ %-33s " + BLUE + "│%n" + RESET, "Salary:", employee.getSalary());
+            // Create content for each section
+            Map<String, List<String[]>> content = new HashMap<>();
+
+            // Employee Information section
+            List<String[]> employeeInfo = new ArrayList<>();
+            employeeInfo.add(new String[]{"ID:", String.valueOf(employee.getIsraeliId())});
+            employeeInfo.add(new String[]{"Name:", employee.getFullName()});
+            employeeInfo.add(new String[]{"Salary:", String.valueOf(employee.getSalary())});
 
             String status = employee.isActive()
-                ? GREEN + "Active" + RESET 
-                : RED + "Inactive" + RESET;
-            System.out.printf(BLUE + "│ " + RESET + BOLD + "%-15s" + RESET + "│ %-33s " + BLUE + "│%n" + RESET, "Status:", status);
+                ? CliUtil.greenString("Active") 
+                : CliUtil.redString("Inactive");
+            employeeInfo.add(new String[]{"Status:", status});
+            employeeInfo.add(new String[]{"Start Date:", employee.getStartOfEmployment().toString()});
+            content.put("EMPLOYEE INFORMATION", employeeInfo);
 
-            System.out.printf(BLUE + "│ " + RESET + BOLD + "%-15s" + RESET + "│ %-33s " + BLUE + "│%n" + RESET, "Start Date:", employee.getStartOfEmployment());
+            // Roles & Permissions section
+            List<String[]> rolesInfo = new ArrayList<>();
+            rolesInfo.add(new String[]{"Roles:", ""});
 
-            System.out.println(BLUE + "├───────────────────────────────────────────────────┤" + RESET);
-            System.out.println(BLUE + "│" + RESET + BOLD + YELLOW + "                  ROLES & PERMISSIONS              " + RESET + BLUE + "│" + RESET);
-            System.out.println(BLUE + "├───────────────────────────────────────────────────┤" + RESET);
-
-            System.out.printf(BLUE + "│ " + RESET + BOLD + "%-15s" + RESET + "│ %-33s " + BLUE + "│%n" + RESET, "Roles:", "");
-            if (employee.getRoles().isEmpty()) {
-                System.out.printf(BLUE + "│ " + RESET + "%-15s" + "│ %-33s " + BLUE + "│%n" + RESET, "", YELLOW + "No roles assigned" + RESET);
-            } else {
-                boolean first = true;
+            if (!employee.getRoles().isEmpty()) {
                 for (String role : employee.getRoles()) {
-                    if (first) {
-                        System.out.printf(BLUE + "│ " + RESET + "%-15s" + "│ %-33s " + BLUE + "│%n" + RESET, "", "• " + role);
-                        first = false;
-                    } else {
-                        System.out.printf(BLUE + "│ " + RESET + "%-15s" + "│ %-33s " + BLUE + "│%n" + RESET, "", "• " + role);
-                    }
+                    rolesInfo.add(new String[]{"", "• " + role});
                 }
             }
+            content.put("ROLES & PERMISSIONS", rolesInfo);
 
-            System.out.println(BLUE + "├───────────────────────────────────────────────────┤" + RESET);
-            System.out.println(BLUE + "│" + RESET + BOLD + YELLOW + "               TERMS OF EMPLOYMENT               " + RESET + BLUE + "│" + RESET);
-            System.out.println(BLUE + "├───────────────────────────────────────────────────┤" + RESET);
+            // Terms of Employment section
+            List<String[]> termsInfo = new ArrayList<>();
 
-            if (employee.getTermsOfEmployment().isEmpty()) {
-                System.out.printf(BLUE + "│ " + RESET + "%-49s " + BLUE + "│%n" + RESET, YELLOW + "  No terms of employment defined" + RESET);
-            } else {
+            if (!employee.getTermsOfEmployment().isEmpty()) {
                 for (Map.Entry<String, Object> entry : employee.getTermsOfEmployment().entrySet()) {
                     String key = entry.getKey();
                     String value = entry.getValue().toString();
 
                     // Handle long values by splitting them
                     if (key.length() + value.length() > 45) {
-                        System.out.printf(BLUE + "│ " + RESET + BOLD + "%-15s" + RESET + "%-34s " + BLUE + "│%n" + RESET, key + ":", value.substring(0, Math.min(value.length(), 34)));
+                        termsInfo.add(new String[]{key + ":", value.substring(0, Math.min(value.length(), 34))});
 
-                        // Print remaining value on next lines if needed
+                        // Add remaining value on next lines if needed
                         String remaining = value.substring(Math.min(value.length(), 34));
                         while (remaining.length() > 0) {
                             String chunk = remaining.substring(0, Math.min(remaining.length(), 49));
-                            System.out.printf(BLUE + "│ " + RESET + "%-49s " + BLUE + "│%n" + RESET, chunk);
+                            termsInfo.add(new String[]{chunk});
                             remaining = remaining.substring(Math.min(remaining.length(), 49));
                         }
                     } else {
-                        System.out.printf(BLUE + "│ " + RESET + BOLD + "%-15s" + RESET + "%-34s " + BLUE + "│%n" + RESET, key + ":", value);
+                        termsInfo.add(new String[]{key + ":", value});
                     }
                 }
             }
+            content.put("TERMS OF EMPLOYMENT", termsInfo);
 
-            System.out.println(BLUE + "└───────────────────────────────────────────────────┘" + RESET);
+            // Create empty messages for each section
+            Map<String, String> emptyMessages = new HashMap<>();
+            emptyMessages.put("ROLES & PERMISSIONS", "No roles assigned");
+            emptyMessages.put("TERMS OF EMPLOYMENT", "No terms of employment defined");
+
+            // Print the formatted table
+            CliUtil.printFormattedTable("Employee Details", headers, content, emptyMessages);
 
         } catch (Exception e) {
             printError("Employee not found or error retrieving details: " + e.getMessage());
         }
 
-        waitForEnter();
+        CliUtil.waitForEnter(scanner);
     }
     //==========================================================================================
     // ROLE MANAGEMENT METHODS
     //==========================================================================================
 
     /**
-     * Displays all roles in the system
+     * Displays all roles in the system with pagination
      */
     private void printAllRoles() {
-        printSectionHeader("All Roles");
+        // Convert array to list for pagination
+        List<String> rolesList = Arrays.asList(employeeService.getAllRoles());
 
-        String[] roles = employeeService.getAllRoles();
+        // Define how many roles to show per page
+        final int ITEMS_PER_PAGE = 5;
 
-        if (roles.length == 0) {
-            System.out.println(YELLOW + "No roles found in the system." + RESET);
-        } else {
-            System.out.println(CYAN + "Found " + roles.length + " roles:" + RESET);
-            System.out.println();
+        // Use the pagination utility to display roles
+        CliUtil.displayPaginatedList(
+            "All Roles",
+            rolesList,
+            ITEMS_PER_PAGE,
+            role -> role,  // Simple display function as roles are just strings
+            scanner
+        );
 
-            System.out.println(BOLD + "┌────────────────────────────────────────────┐" + RESET);
-            System.out.println(BOLD + "│                  ROLE NAME                 │" + RESET);
-            System.out.println(BOLD + "├────────────────────────────────────────────┤" + RESET);
-
-            for (String role : roles) {
-                System.out.printf("│ %-42s │%n", role);
-            }
-
-            System.out.println(BOLD + "└────────────────────────────────────────────┘" + RESET);
-            System.out.println();
-            System.out.println(CYAN + "💡 " + RESET + "Use 'View Role Details' to see permissions for each role");
-        }
-
-        waitForEnter();
+        // Display tip after exiting the paginated view
+        CliUtil.printSectionWithIcon("Use 'View Role Details' to see permissions for each role","💡");
+        CliUtil.waitForEnter(scanner);
     }
 
     /**
@@ -966,26 +922,37 @@ public class EmployeeCLI {
             Map<String, HashSet<String>> roleDetails = employeeService.getRoleDetails(roleName);
 
             if (roleDetails != null && !roleDetails.isEmpty()) {
-                System.out.println(PURPLE + "┌───────────────────────────────────────────────────┐" + RESET);
-                System.out.println(PURPLE + "│" + RESET + BOLD + YELLOW + "                    ROLE DETAILS                  " + RESET + PURPLE + "│" + RESET);
-                System.out.println(PURPLE + "├───────────────────────────────────────────────────┤" + RESET);
+                // Create headers for the table sections
+                List<String> headers = Arrays.asList(
+                    "ROLE DETAILS",
+                    "PERMISSIONS"
+                );
 
-                System.out.printf(PURPLE + "│ " + RESET + BOLD + "%-15s" + RESET + "│ %-33s " + PURPLE + "│%n" + RESET, "Role Name:", roleName);
+                // Create content for each section
+                Map<String, List<String[]>> content = new HashMap<>();
 
-                System.out.println(PURPLE + "├───────────────────────────────────────────────────┤" + RESET);
-                System.out.println(PURPLE + "│" + RESET + BOLD + YELLOW + "                    PERMISSIONS                   " + RESET + PURPLE + "│" + RESET);
-                System.out.println(PURPLE + "├───────────────────────────────────────────────────┤" + RESET);
+                // Role Details section
+                List<String[]> roleInfo = new ArrayList<>();
+                roleInfo.add(new String[]{"Role Name:", roleName});
+                content.put("ROLE DETAILS", roleInfo);
 
+                // Permissions section
+                List<String[]> permissionsInfo = new ArrayList<>();
                 HashSet<String> permissions = roleDetails.get(roleName);
-                if (permissions == null || permissions.isEmpty()) {
-                    System.out.printf(PURPLE + "│ " + RESET + "%-49s " + PURPLE + "│%n" + RESET, YELLOW + "  No permissions assigned to this role" + RESET);
-                } else {
+
+                if (permissions != null && !permissions.isEmpty()) {
                     for (String permission : permissions) {
-                        System.out.printf(PURPLE + "│ " + RESET + "  • %-45s " + PURPLE + "│%n" + RESET, permission);
+                        permissionsInfo.add(new String[]{"  • " + permission});
                     }
                 }
+                content.put("PERMISSIONS", permissionsInfo);
 
-                System.out.println(PURPLE + "└───────────────────────────────────────────────────┘" + RESET);
+                // Create empty messages for each section
+                Map<String, String> emptyMessages = new HashMap<>();
+                emptyMessages.put("PERMISSIONS", "No permissions assigned to this role");
+
+                // Print the formatted table
+                CliUtil.printFormattedTable("Role Details", headers, content, emptyMessages);
             } else {
                 printError("Role '" + roleName + "' not found.");
             }
@@ -993,7 +960,7 @@ public class EmployeeCLI {
             printError("Error retrieving role details: " + e.getMessage());
         }
 
-        waitForEnter();
+        CliUtil.waitForEnter(scanner);
     }
 
     //==========================================================================================
@@ -1001,31 +968,23 @@ public class EmployeeCLI {
     //==========================================================================================
 
     /**
-     * Displays all permissions in the system
+     * Displays all permissions in the system with pagination
      */
     private void printAllPermissions() {
-        printSectionHeader("All Permissions");
+        // Convert array to list for pagination
+        List<String> permissionsList = Arrays.asList(employeeService.getAllPermissions());
 
-        String[] permissions = employeeService.getAllPermissions();
+        // Define how many permissions to show per page
+        final int ITEMS_PER_PAGE = 5;
 
-        if (permissions.length == 0) {
-            System.out.println(YELLOW + "No permissions found in the system." + RESET);
-        } else {
-            System.out.println(CYAN + "Found " + permissions.length + " permissions:" + RESET);
-            System.out.println();
-
-            System.out.println(BOLD + "┌────────────────────────────────────────────┐" + RESET);
-            System.out.println(BOLD + "│              PERMISSION NAME               │" + RESET);
-            System.out.println(BOLD + "├────────────────────────────────────────────┤" + RESET);
-
-            for (String permission : permissions) {
-                System.out.printf("│ %-42s │%n", permission);
-            }
-
-            System.out.println(BOLD + "└────────────────────────────────────────────┘" + RESET);
-        }
-
-        waitForEnter();
+        // Use the pagination utility to display permissions
+        CliUtil.displayPaginatedList(
+            "All Permissions",
+            permissionsList,
+            ITEMS_PER_PAGE,
+            permission -> permission,  // Simple display function as permissions are just strings
+            scanner
+        );
     }
 
     /**
@@ -1037,14 +996,13 @@ public class EmployeeCLI {
         // Show permissions
         String[] existingPermissions = employeeService.getAllPermissions();
         if (existingPermissions.length > 0) {
-            System.out.println(CYAN + "Existing permissions in the system:" + RESET);
-            for (String permission : existingPermissions) {
-                System.out.println("  • " + permission);
-            }
-            System.out.println();
+            CliUtil.printInfo("Existing permissions in the system:");
+            List<String> permissionsList = Arrays.asList(existingPermissions);
+            CliUtil.printHierarchicalList(permissionsList, "•", 2);
+            CliUtil.printEmptyLine();
         }
 
-        System.out.print(BOLD + "New Permission Name: " + RESET);
+        CliUtil.printBold("New Permission Name: ");
         String permissionName = scanner.nextLine();
 
         // Confirm
@@ -1057,10 +1015,10 @@ public class EmployeeCLI {
                 printError(result);
             }
         } else {
-            System.out.println(YELLOW + "Operation cancelled." + RESET);
+            CliUtil.printOperationCancelled();
         }
 
-        waitForEnter();
+        CliUtil.waitForEnter(scanner);
     }
 
     /**
@@ -1073,46 +1031,44 @@ public class EmployeeCLI {
         String[] existingRoles = employeeService.getAllRoles();
         if (existingRoles.length == 0) {
             printError("No roles exist in the system to clone.");
-            waitForEnter();
+            CliUtil.waitForEnter(scanner);
             return;
         }
 
-        System.out.println(CYAN + "Available roles to clone:" + RESET);
-        for (String role : existingRoles) {
-            System.out.println("  • " + role);
-        }
-        System.out.println();
+        CliUtil.printInfo("Available roles to clone:");
+        List<String> rolesList = Arrays.asList(existingRoles);
+        CliUtil.printHierarchicalList(rolesList, "•", 2);
+        CliUtil.printEmptyLine();
 
-        System.out.print(BOLD + "Source Role Name: " + RESET);
+        CliUtil.printBold("Source Role Name: ");
         String existingRoleName = scanner.nextLine();
 
         try {
             Map<String, HashSet<String>> roleDetails = employeeService.getRoleDetails(existingRoleName);
             if (roleDetails == null || roleDetails.isEmpty()) {
                 printError("Source role '" + existingRoleName + "' not found.");
-                waitForEnter();
+                CliUtil.waitForEnter(scanner);
                 return;
             }
 
             // Show permissions that will be cloned
             HashSet<String> permissions = roleDetails.get(existingRoleName);
-            System.out.println();
-            System.out.println(CYAN + "Permissions that will be cloned:" + RESET);
+            CliUtil.printEmptyLine();
+            CliUtil.printInfo("Permissions that will be cloned:");
             if (permissions == null || permissions.isEmpty()) {
-                System.out.println(YELLOW + "  No permissions in source role" + RESET);
+                CliUtil.printInfo("  No permissions in source role");
             } else {
-                for (String permission : permissions) {
-                    System.out.println("  • " + permission);
-                }
+                List<String> permissionsList = new ArrayList<>(permissions);
+                CliUtil.printHierarchicalList(permissionsList, "•", 2);
             }
         } catch (Exception e) {
             printError("Error retrieving role details: " + e.getMessage());
-            waitForEnter();
+            CliUtil.waitForEnter(scanner);
             return;
         }
 
-        System.out.println();
-        System.out.print(BOLD + "New Role Name: " + RESET);
+        CliUtil.printEmptyLine();
+        CliUtil.printBold("New Role Name: ");
         String newRoleName = scanner.nextLine();
 
         // Confirm
@@ -1122,12 +1078,12 @@ public class EmployeeCLI {
             if (result.contains("successfully")) {
                 printSuccess(result);
             } else {
-                printError(result);
+                CliUtil.printOperationCancelled();
             }
         } else {
-            System.out.println(YELLOW + "Operation cancelled." + RESET);
+            CliUtil.printOperationCancelled();
         }
 
-        waitForEnter();
+        CliUtil.waitForEnter(scanner);
     }
 }

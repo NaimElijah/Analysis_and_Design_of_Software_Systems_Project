@@ -4,7 +4,7 @@ import DomainLayer.DataInitializer;
 import DomainLayer.Employee;
 import DomainLayer.EmployeeController;
 import DomainLayer.ShiftController;
-import PresentationLayer.AssigmentCLI;
+import PresentationLayer.AssignmentCLI;
 import PresentationLayer.AvailabillityCLI;
 import PresentationLayer.EmployeeCLI;
 import PresentationLayer.MainCLI;

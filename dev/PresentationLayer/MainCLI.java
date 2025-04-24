@@ -14,7 +14,7 @@ public class MainCLI {
     private final Scanner scanner;
 
     private final EmployeeCLI employeeCLI;
-    private final AssigmentCLI assignmentCLI;
+    private final AssignmentCLI assignmentCLI;
     private final AvailabillityCLI availabilityCLI;
 
     public MainCLI(EmployeeService employeeService, ShiftService shiftService, long doneBy) {
@@ -25,7 +25,7 @@ public class MainCLI {
 
         // Initialize sub-CLI classes
         this.employeeCLI = new EmployeeCLI(employeeService, doneBy);
-        this.assignmentCLI = new AssigmentCLI(shiftService, employeeService, doneBy);
+        this.assignmentCLI = new AssignmentCLI(shiftService, employeeService, doneBy);
         this.availabilityCLI = new AvailabillityCLI(shiftService, doneBy);
     }
 
