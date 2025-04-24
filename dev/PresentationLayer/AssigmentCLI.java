@@ -9,6 +9,7 @@ import ServiceLayer.exception.EmployeeNotFoundException;
 import ServiceLayer.exception.ServiceException;
 import DomainLayer.enums.ShiftType;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -16,21 +17,21 @@ import java.util.function.Supplier;
 
 public class AssigmentCLI {
     // ANSI color codes
-    private static final String RESET = "\u001B[0m";
-    private static final String RED = "\u001B[31m";
-    private static final String GREEN = "\u001B[32m";
-    private static final String YELLOW = "\u001B[33m";
-    private static final String BLUE = "\u001B[34m";
-    private static final String PURPLE = "\u001B[35m";
-    private static final String CYAN = "\u001B[36m";
-    private static final String BOLD = "\u001B[1m";
+    private static final String RESET = CliUtil.RESET;
+    private static final String RED = CliUtil.RED;
+    private static final String GREEN = CliUtil.GREEN;
+    private static final String YELLOW = CliUtil.YELLOW;
+    private static final String BLUE = CliUtil.BLUE;
+    private static final String PURPLE = CliUtil.PURPLE;
+    private static final String CYAN = CliUtil.CYAN;
+    private static final String BOLD = CliUtil.BOLD;
 
     // Properties
     private final ShiftService shiftService;
     private final EmployeeService employeeService;
     private final Scanner scanner;
     private final long doneBy;
-    private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    private static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
     /**
      * Constructor for the Assignment Command Line Interface
@@ -167,7 +168,7 @@ public class AssigmentCLI {
      * @param message The error message to display
      */
     private void printError(String message) {
-        System.out.println(RED + "❌ ERROR: " + message + RESET);
+        CliUtil.printError(message);
     }
 
     /**
@@ -176,15 +177,14 @@ public class AssigmentCLI {
      * @param message The success message to display
      */
     private void printSuccess(String message) {
-        System.out.println(GREEN + "✅ SUCCESS: " + message + RESET);
+        CliUtil.printSuccess(message);
     }
 
     /**
      * Waits for the user to press Enter to continue
      */
     private void waitForEnter() {
-        System.out.println(YELLOW + "Press Enter to continue..." + RESET);
-        scanner.nextLine();
+        CliUtil.waitForEnter(scanner);
     }
 
     /**
@@ -194,10 +194,7 @@ public class AssigmentCLI {
      * @return true if confirmed, false otherwise
      */
     private boolean confirm(String message) {
-        System.out.println();
-        System.out.print(YELLOW + message + " (y/n): " + RESET);
-        String input = scanner.nextLine();
-        return input.equalsIgnoreCase("y") || input.equalsIgnoreCase("yes");
+        return CliUtil.confirm(message, scanner);
     }
 
     /**
@@ -207,14 +204,7 @@ public class AssigmentCLI {
      * @return The long value entered by the user
      */
     private long getLongInput(String prompt) {
-        while (true) {
-            try {
-                System.out.print(BOLD + prompt + RESET);
-                return Long.parseLong(scanner.nextLine());
-            } catch (NumberFormatException e) {
-                printError("Please enter a valid number.");
-            }
-        }
+        return CliUtil.getLongInput(prompt, scanner);
     }
 
     /**
@@ -224,38 +214,7 @@ public class AssigmentCLI {
      * @return The LocalDate selected by the user
      */
     private LocalDate getDateInput(String prompt) {
-        LocalDate today = LocalDate.now();
-
-        while (true) {
-            System.out.println(BOLD + prompt + RESET);
-            System.out.println("1. Today (" + today.format(dateFormatter) + ")");
-            System.out.println("2. Tomorrow (" + today.plusDays(1).format(dateFormatter) + ")");
-            System.out.println("3. Next week (" + today.plusDays(7).format(dateFormatter) + ")");
-            System.out.println("4. Enter specific date (yyyy-MM-dd)");
-            System.out.print(CYAN + "======>" + RESET + " Enter your choice (1-4): ");
-
-            try {
-                int choice = Integer.parseInt(scanner.nextLine());
-                switch (choice) {
-                    case 1:
-                        return today;
-                    case 2:
-                        return today.plusDays(1);
-                    case 3:
-                        return today.plusDays(7);
-                    case 4:
-                        System.out.print(BOLD + "Enter date (yyyy-MM-dd): " + RESET);
-                        String input = scanner.nextLine();
-                        return LocalDate.parse(input, dateFormatter);
-                    default:
-                        printError("Please enter a valid option (1-4).");
-                }
-            } catch (NumberFormatException e) {
-                printError("Please enter a valid number.");
-            } catch (Exception e) {
-                printError("Please enter a valid date in the format yyyy-MM-dd.");
-            }
-        }
+        return CliUtil.getDateInput(prompt, scanner);
     }
 
     /**
@@ -265,26 +224,7 @@ public class AssigmentCLI {
      * @return The ShiftType selected by the user
      */
     private ShiftType getShiftTypeInput(String prompt) {
-        while (true) {
-            System.out.println(BOLD + prompt + RESET);
-            System.out.println("1. MORNING");
-            System.out.println("2. EVENING");
-            System.out.print(CYAN + "======>" + RESET + " Enter your choice (1-2): ");
-
-            try {
-                int choice = Integer.parseInt(scanner.nextLine());
-                switch (choice) {
-                    case 1:
-                        return ShiftType.MORNING;
-                    case 2:
-                        return ShiftType.EVENING;
-                    default:
-                        printError("Please enter a valid option (1-2).");
-                }
-            } catch (NumberFormatException e) {
-                printError("Please enter a valid number.");
-            }
-        }
+        return CliUtil.getShiftTypeInput(prompt, scanner);
     }
 
     /**
@@ -309,15 +249,7 @@ public class AssigmentCLI {
      * Prints a welcome banner for the CLI
      */
     private void printWelcomeBanner() {
-        System.out.println(CYAN + "╔══════════════════════════════════════════════════╗" + RESET);
-        System.out.println(CYAN + "║" + RESET + "                                                  " + CYAN + "║" + RESET);
-        System.out.println(CYAN + "║" + RESET + BOLD + BLUE + "          ASSIGNMENT MANAGEMENT SYSTEM           " + RESET + CYAN + "║" + RESET);
-        System.out.println(CYAN + "║" + RESET + "                                                  " + CYAN + "║" + RESET);
-        System.out.println(CYAN + "╠══════════════════════════════════════════════════╣" + RESET);
-        System.out.println(CYAN + "║" + RESET + YELLOW + "                    Welcome!                     " + RESET + CYAN + "║" + RESET);
-        System.out.println(CYAN + "╚══════════════════════════════════════════════════╝" + RESET);
-        System.out.println(GREEN + "Current date: " + RESET + LocalDate.now());
-        System.out.println(GREEN + "Logged in as: " + RESET + formatEmployeeDisplay(doneBy));
+        CliUtil.printWelcomeBanner("ASSIGNMENT MANAGEMENT SYSTEM", LocalDate.now().toString(), formatEmployeeDisplay(doneBy));
     }
 
     /**
@@ -326,16 +258,8 @@ public class AssigmentCLI {
      * @param title - The title of the section to be printed.
      */
     private void printSectionHeader(String title) {
-        String border = "┌─────────────────────────────────────────────┐";
-
-        if (title.equalsIgnoreCase("Assignment Management Menu")) {
-            System.out.println(BOLD + CYAN + "⚙️ ASSIGNMENT OPTIONS:" + RESET);
-        } else {
-            String formatted = String.format("│ %1$-43s │", BOLD + PURPLE + title.toUpperCase() + RESET);
-            System.out.println(BLUE + border + RESET);
-            System.out.println(BLUE + formatted + RESET);
-            System.out.println(BLUE + border.replace('┌', '└').replace('┐', '┘') + RESET);
-        }
+        boolean isMainMenu = title.equalsIgnoreCase("Assignment Management Menu");
+        CliUtil.printSectionHeader(title, isMainMenu, "ASSIGNMENT");
     }
 
     //==========================================================================================
@@ -352,7 +276,8 @@ public class AssigmentCLI {
         System.out.println("1. Assign Employees to Shift");
         System.out.println("2. Remove Employee from Shift");
         System.out.println("3. Modify Required Roles");
-        System.out.println("4. Back to Assignment Management Menu");
+        System.out.println("4. Create Full Week of Shifts (Sunday-Saturday)");
+        System.out.println("5. Back to Assignment Management Menu");
 
         System.out.println();
         System.out.print(CYAN + "======>" + RESET + " Enter your choice: ");
@@ -371,6 +296,9 @@ public class AssigmentCLI {
                     modifyRequiredRoles();
                     break;
                 case 4:
+                    createFullWeekShifts();
+                    break;
+                case 5:
                     System.out.println(YELLOW + "Returning to Assignment Management Menu..." + RESET);
                     break;
                 default:
@@ -382,6 +310,177 @@ public class AssigmentCLI {
             printError("Please enter a valid number.");
             shiftManagement(); // Recursive call to show the menu again
         }
+    }
+
+    /**
+     * Creates a full week of shifts from Sunday to Saturday
+     */
+    private void createFullWeekShifts() {
+        printSectionHeader("Create Full Week of Shifts");
+
+        if (!hasPermission("CREATE_SHIFT")) {
+            printError("You don't have permission to create shifts.");
+            waitForEnter();
+            return;
+        }
+
+        // start date (must be a Sunday)
+        LocalDate startDate = null;
+        boolean validStartDate = false;
+
+        while (!validStartDate) {
+            startDate = getDateInput("Select the Sunday start date for the week:");
+
+            if (startDate.getDayOfWeek() != DayOfWeek.SUNDAY) {
+                printError("The start date must be a Sunday. Selected date is " + startDate.getDayOfWeek() + ".");
+                System.out.println("Please select a Sunday date.");
+            } else {
+                validStartDate = true;
+            }
+        }
+
+        // Get roles required
+        Map<String, Integer> rolesRequired = new HashMap<>();
+        boolean addingRoles = true;
+
+        System.out.println(CYAN + "Define the roles required for all shifts in this week:" + RESET);
+
+        while (addingRoles) {
+            // Display current roles
+            if (!rolesRequired.isEmpty()) {
+                System.out.println();
+                System.out.println(CYAN + "Current roles defined:" + RESET);
+                for (Map.Entry<String, Integer> entry : rolesRequired.entrySet()) {
+                    System.out.printf("  • %-15s: %d required%n", entry.getKey(), entry.getValue());
+                }
+            }
+
+            // Get available roles
+            Set<String> allRoles;
+            try {
+                allRoles = shiftService.getRoles(doneBy);
+            } catch (Exception e) {
+                printError("Error retrieving available roles: " + e.getMessage());
+                waitForEnter();
+                return;
+            }
+
+            // Filter out roles already added
+            List<String> availableRoles = new ArrayList<>();
+            for (String role : allRoles) {
+                if (!rolesRequired.containsKey(role)) {
+                    availableRoles.add(role);
+                }
+            }
+
+            System.out.println();
+            System.out.println(CYAN + "What would you like to do?" + RESET);
+            System.out.println("1. Add a role");
+            System.out.println("2. Finish adding roles and create shifts");
+
+            if (rolesRequired.isEmpty()) {
+                System.out.println(YELLOW + "Note: You must add at least one role before creating shifts." + RESET);
+            }
+
+            System.out.print(BOLD + "Enter your choice (1 or 2): " + RESET);
+            String choice = scanner.nextLine();
+
+            if (choice.equals("2")) {
+                if (rolesRequired.isEmpty()) {
+                    printError("You must add at least one role before creating shifts.");
+                    continue;
+                }
+                addingRoles = false;
+                continue;
+            }
+
+            if (!choice.equals("1")) {
+                printError("Invalid choice. Please try again.");
+                continue;
+            }
+
+            // No more roles to add
+            if (availableRoles.isEmpty()) {
+                printError("No more roles available to add.");
+                if (!rolesRequired.isEmpty()) {
+                    addingRoles = false;
+                }
+                continue;
+            }
+
+            // Display available roles
+            System.out.println();
+            System.out.println(CYAN + "Available roles:" + RESET);
+            for (int i = 0; i < availableRoles.size(); i++) {
+                System.out.printf("  %d. %s%n", i + 1, availableRoles.get(i));
+            }
+
+            System.out.print(CYAN + "======>" + RESET + " Enter your choice (1-" + availableRoles.size() + "): ");
+
+            int roleChoice;
+            try {
+                roleChoice = Integer.parseInt(scanner.nextLine());
+                if (roleChoice < 1 || roleChoice > availableRoles.size()) {
+                    printError("Invalid choice. Please try again.");
+                    continue;
+                }
+            } catch (NumberFormatException e) {
+                printError("Please enter a valid number.");
+                continue;
+            }
+
+            // Get the selected role
+            String selectedRole = availableRoles.get(roleChoice - 1);
+
+            // Get the number of employees required for this role
+            int requiredCount = (int) getLongInput("Enter number of employees required for " + selectedRole + ": ");
+
+            if (requiredCount <= 0) {
+                printError("Number of required employees must be greater than zero.");
+                continue;
+            }
+
+            // Add the role to the map
+            rolesRequired.put(selectedRole, requiredCount);
+            System.out.println(GREEN + "✓ Role '" + selectedRole + "' added with " + requiredCount + " required employees." + RESET);
+        }
+
+        // Confirm creation
+        System.out.println();
+        System.out.println(CYAN + "Summary of shifts to be created:" + RESET);
+        System.out.println("• Week starting: " + startDate.format(dateFormatter) + " (Sunday)");
+        System.out.println("• Week ending: " + startDate.plusDays(6).format(dateFormatter) + " (Saturday)");
+        System.out.println("• Morning shifts: Sunday through Saturday");
+        System.out.println("• Evening shifts: Sunday through Thursday and Saturday (no Friday evening)");
+        System.out.println("• Total shifts: 13 (7 morning shifts, 6 evening shifts)");
+
+        System.out.println();
+        System.out.println(CYAN + "Roles required for each shift:" + RESET);
+        for (Map.Entry<String, Integer> entry : rolesRequired.entrySet()) {
+            System.out.printf("  • %-15s: %d required%n", entry.getKey(), entry.getValue());
+        }
+
+        if (!confirm("Do you want to create these shifts?")) {
+            System.out.println(YELLOW + "Operation cancelled." + RESET);
+            waitForEnter();
+            return;
+        }
+
+        // Create the shifts
+        try {
+            String result = shiftService.createSundayToSaturdayShifts(doneBy, startDate, rolesRequired);
+
+            if (result.startsWith("Error:")) {
+                printError(result);
+            } else {
+                printSuccess(result);
+                System.out.println(GREEN + "✓ Created 13 shifts for the week of " + startDate.format(dateFormatter) + "." + RESET);
+            }
+        } catch (Exception e) {
+            printError("Error creating shifts: " + e.getMessage());
+        }
+
+        waitForEnter();
     }
 
     /**
@@ -435,14 +534,43 @@ public class AssigmentCLI {
 
     /**
      * Displays detailed information about a specific shift
+     * User selects a shift by entering date and shift type
      */
     private void viewShiftDetails() {
         printSectionHeader("Shift Details");
 
-        long shiftId = getLongInput("Enter Shift ID: ");
+        // Get date from user
+        LocalDate date = getDateInput("Select a date for the shift you want to view:");
+
+        // Show available shifts on this date to help user make a selection
+        try {
+            ShiftSL[] shiftsOnDate = shiftService.getShiftsByDate(doneBy, date);
+
+            if (shiftsOnDate.length == 0) {
+                printError("No shifts found for the selected date: " + date.format(dateFormatter));
+                waitForEnter();
+                return;
+            }
+
+            System.out.println(CYAN + "Available shifts on " + date.format(dateFormatter) + ":" + RESET);
+            for (ShiftSL s : shiftsOnDate) {
+                System.out.println("  • " + s.getShiftType() + " shift (ID: " + s.getId() + ")");
+            }
+            System.out.println();
+        } catch (Exception e) {
+            // If there's an error getting shifts by date, continue with manual selection
+            System.out.println(YELLOW + "Could not retrieve shifts for the selected date. Please select a shift type manually." + RESET);
+        }
+
+        // Get shift type from user
+        ShiftType shiftType = getShiftTypeInput("Select the shift type:");
 
         try {
-            ShiftSL shift = shiftService.getShiftById(doneBy, shiftId);
+            // Get shift by date and type
+            ShiftSL shift = shiftService.getShift(doneBy, date, shiftType);
+
+            System.out.println(GREEN + "✓ Found shift: " + date.format(dateFormatter) + " " + shiftType + " (ID: " + shift.getId() + ")" + RESET);
+            System.out.println();
 
             System.out.println(BLUE + "┌───────────────────────────────────────────────────┐" + RESET);
             System.out.println(BLUE + "│" + RESET + BOLD + YELLOW + "                  SHIFT INFORMATION               " + RESET + BLUE + "│" + RESET);
@@ -506,8 +634,15 @@ public class AssigmentCLI {
 
             System.out.println(BLUE + "└───────────────────────────────────────────────────┘" + RESET);
 
+        } catch (RuntimeException e) {
+            if (e.getMessage() != null && e.getMessage().contains("not found")) {
+                printError("No " + shiftType + " shift found for date " + date.format(dateFormatter));
+                System.out.println(YELLOW + "Tip: Check if the shift exists using 'View All Shifts' option first." + RESET);
+            } else {
+                printError("Error retrieving shift details: " + e.getMessage());
+            }
         } catch (Exception e) {
-            printError("Shift not found or error retrieving details: " + e.getMessage());
+            printError("Unexpected error: " + e.getMessage());
         }
 
         waitForEnter();

@@ -43,6 +43,23 @@ public class ShiftService {
         }
     }
 
+    /**
+     * Creates shifts for a full week (Sunday to Saturday)
+     * @param doneBy employee who is creating the shifts
+     * @param startDate the start date (should be a Sunday)
+     * @param rolesRequired number of employees of each role required for the shifts
+     * @return a message indicating success or failure
+     */
+    public String createSundayToSaturdayShifts(long doneBy, LocalDate startDate,
+                                           Map<String, Integer> rolesRequired) {
+        try {
+            boolean result = shiftController.createSundayToSaturdayShifts(doneBy, startDate, rolesRequired);
+            return result ? "Sunday to Saturday shifts created successfully" : "Failed to create Sunday to Saturday shifts";
+        } catch (RuntimeException e) {
+            return "Error: " + e.getMessage();
+        }
+    }
+
     public boolean removeShiftByID(long doneBy, long shiftId) {
         try {
             if (shiftId <= 0) {

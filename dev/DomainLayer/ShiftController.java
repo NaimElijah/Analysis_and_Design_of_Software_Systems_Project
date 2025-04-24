@@ -94,7 +94,7 @@ public class ShiftController {
                         newShift = new Shift(shiftIdCounter, ShiftType.MORNING, date, rolesRequired, assignedEmployees, availableEmployees, false, false, LocalDate.now());
                     }
                 } else {
-                    if (!(date.getDayOfWeek() == DayOfWeek.FRIDAY)) {
+                    if (!(date.getDayOfWeek() == DayOfWeek.FRIDAY || date.getDayOfWeek() == DayOfWeek.SATURDAY)) {
                         if (shifts.stream().anyMatch(s -> s.getShiftDate().equals(date) && s.getShiftType().equals(ShiftType.EVENING))) {
                             throw new RuntimeException("Shift already exists");
                         }
@@ -704,6 +704,79 @@ public class ShiftController {
         return shifts.stream()
                 .filter(shift -> shift.getAvailableEmployees() != null && shift.getAvailableEmployees().contains(doneBy))
                 .collect(Collectors.toSet());
+    }
+
+    /**
+     * Create shifts specifically for Sunday to Saturday (full week)
+     * @param doneBy employee who is creating the shifts
+     * @param startDate the start date (should be a Sunday)
+     * @param rolesRequired number of employees of each role required for the shifts
+     * @return true if all shifts were created successfully, false otherwise
+     */
+    public boolean createSundayToSaturdayShifts(long doneBy, LocalDate startDate, Map<String, Integer> rolesRequired) {
+        String PERMISSION_REQUIRED = "CREATE_SHIFT";
+        if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
+            throw new UnauthorizedPermissionException("User does not have permission to create weekly shifts");
+        }
+        if (startDate == null || rolesRequired == null) {
+            throw new IllegalArgumentException("Start date and roles required cannot be null");
+        }
+        if (startDate.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Start date cannot be in the past");
+        }
+        if (rolesRequired.isEmpty()) {
+            throw new IllegalArgumentException("Roles required cannot be empty");
+        }
+
+        // Verify the start date is a Sunday
+        if (startDate.getDayOfWeek() != DayOfWeek.SUNDAY) {
+            throw new IllegalArgumentException("Start date must be a Sunday");
+        }
+
+        // Create shifts from Sunday to Saturday
+        for (int day = 0; day < 7; day++) { // 0 = Sunday, 6 = Saturday
+            LocalDate date = startDate.plusDays(day);
+
+            // Morning shift for all days (Sunday to Saturday)
+            if (shifts.stream().anyMatch(s -> s.getShiftDate().equals(date) && s.getShiftType().equals(ShiftType.MORNING))) {
+                throw new RuntimeException("Morning shift already exists for " + date);
+            }
+
+            Set<Long> availableEmployees = new HashSet<>();
+            Map<String, Set<Long>> assignedEmployees = new HashMap<>();
+            Shift morningShift = new Shift(shiftIdCounter++, ShiftType.MORNING, date, rolesRequired, 
+                                          assignedEmployees, availableEmployees, false, false, LocalDate.now());
+
+            boolean morningAdded = shifts.add(morningShift);
+            if (!morningAdded) return false;
+
+            // Evening shift for Sunday to Thursday and Saturday (not Friday)
+            if (day < 5 || day == 6) { // Days 0-4 (Sunday to Thursday) and day 6 (Saturday)
+                if (shifts.stream().anyMatch(s -> s.getShiftDate().equals(date) && s.getShiftType().equals(ShiftType.EVENING))) {
+                    throw new RuntimeException("Evening shift already exists for " + date);
+                }
+
+                availableEmployees = new HashSet<>();
+                assignedEmployees = new HashMap<>();
+                Shift eveningShift = new Shift(shiftIdCounter++, ShiftType.EVENING, date, rolesRequired, 
+                                              assignedEmployees, availableEmployees, false, false, LocalDate.now());
+
+                boolean eveningAdded = shifts.add(eveningShift);
+                if (!eveningAdded) return false;
+            }
+
+            // Add to weekly shifts map
+            Week week = Week.from(date);
+            weeklyShifts.computeIfAbsent(week, k -> new HashSet<>()).add(morningShift);
+            if (day < 5 || day == 6) { // Days 0-4 (Sunday to Thursday) and day 6 (Saturday)
+                weeklyShifts.computeIfAbsent(week, k -> new HashSet<>()).add(shifts.stream()
+                    .filter(s -> s.getShiftDate().equals(date) && s.getShiftType().equals(ShiftType.EVENING))
+                    .findFirst()
+                    .orElse(null));
+            }
+        }
+
+        return true;
     }
 
     public Set<Shift> getShiftsByWeek(long doneBy,Week week) {

@@ -5,6 +5,7 @@ import ServiceLayer.EmployeeService;
 import ServiceLayer.exception.AuthorizationException;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -15,16 +16,17 @@ import java.util.function.Supplier;
 
 public class EmployeeCLI {
     // ANSI color codes
-    private static final String RESET = "\u001B[0m";
-    private static final String RED = "\u001B[31m";
-    private static final String GREEN = "\u001B[32m";
-    private static final String YELLOW = "\u001B[33m";
-    private static final String BLUE = "\u001B[34m";
-    private static final String PURPLE = "\u001B[35m";
-    private static final String CYAN = "\u001B[36m";
-    private static final String BOLD = "\u001B[1m";
+    private static final String RESET = CliUtil.RESET;
+    private static final String RED = CliUtil.RED;
+    private static final String GREEN = CliUtil.GREEN;
+    private static final String YELLOW = CliUtil.YELLOW;
+    private static final String BLUE = CliUtil.BLUE;
+    private static final String PURPLE = CliUtil.PURPLE;
+    private static final String CYAN = CliUtil.CYAN;
+    private static final String BOLD = CliUtil.BOLD;
 
     // Properties
+    private final DateTimeFormatter dateFormatter = CliUtil.dateFormatter;
     private final EmployeeService employeeService;
     private final Scanner scanner;
     private final long doneBy;
@@ -257,7 +259,7 @@ public class EmployeeCLI {
      * @param message The error message to display
      */
     private void printError(String message) {
-        System.out.println(RED + "❌ ERROR: " + message + RESET);
+        CliUtil.printError(message);
     }
 
     /**
@@ -266,15 +268,14 @@ public class EmployeeCLI {
      * @param message The success message to display
      */
     private void printSuccess(String message) {
-        System.out.println(GREEN + "✅ SUCCESS: " + message + RESET);
+        CliUtil.printSuccess(message);
     }
 
     /**
      * Waits for the user to press Enter to continue
      */
     private void waitForEnter() {
-        System.out.println(YELLOW + "Press Enter to continue..." + RESET);
-        scanner.nextLine();
+        CliUtil.waitForEnter(scanner);
     }
 
     /**
@@ -284,10 +285,7 @@ public class EmployeeCLI {
      * @return true if confirmed, false otherwise
      */
     private boolean confirm(String message) {
-        System.out.println();
-        System.out.print(YELLOW + message + " (y/n): " + RESET);
-        String input = scanner.nextLine();
-        return input.equalsIgnoreCase("y") || input.equalsIgnoreCase("yes");
+        return CliUtil.confirm(message, scanner);
     }
 
     /**
@@ -297,14 +295,7 @@ public class EmployeeCLI {
      * @return The long value entered by the user
      */
     private long getLongInput(String prompt) {
-        while (true) {
-            try {
-                System.out.print(BOLD + prompt + RESET);
-                return Long.parseLong(scanner.nextLine());
-            } catch (NumberFormatException e) {
-                printError("Please enter a valid number.");
-            }
-        }
+        return CliUtil.getLongInput(prompt, scanner);
     }
 
     /**
@@ -379,15 +370,7 @@ public class EmployeeCLI {
     }
 
     private void printWelcomeBanner() {
-        System.out.println(CYAN + "╔══════════════════════════════════════════════════╗" + RESET);
-        System.out.println(CYAN + "║" + RESET + "                                                  " + CYAN + "║" + RESET);
-        System.out.println(CYAN + "║" + RESET + BOLD + BLUE + "          EMPLOYEE MANAGEMENT SYSTEM             " + RESET + CYAN + "║" + RESET);
-        System.out.println(CYAN + "║" + RESET + "                                                  " + CYAN + "║" + RESET);
-        System.out.println(CYAN + "╠══════════════════════════════════════════════════╣" + RESET);
-        System.out.println(CYAN + "║" + RESET + YELLOW + "                    Welcome!                     " + RESET + CYAN + "║" + RESET);
-        System.out.println(CYAN + "╚══════════════════════════════════════════════════╝" + RESET);
-        System.out.println(GREEN + "Current date: " + RESET + LocalDate.now());
-        System.out.println(GREEN + "Logged in as: " + RESET + "Employee #" + doneBy);
+        CliUtil.printWelcomeBanner("EMPLOYEE MANAGEMENT SYSTEM", LocalDate.now().toString(), "Employee #" + doneBy);
     }
 
     /**
@@ -396,16 +379,8 @@ public class EmployeeCLI {
      * @param title - The title of the section to be printed.
      */
     private void printSectionHeader(String title) {
-        String border = "┌─────────────────────────────────────────────┐";
-
-        if (title.equalsIgnoreCase("Main Menu")) {
-            System.out.println(BOLD + CYAN + "⚙️ SYSTEM OPTIONS:" + RESET);
-        } else {
-            String formatted = String.format("│ %1$-43s │", BOLD + PURPLE + title.toUpperCase() + RESET);
-            System.out.println(BLUE + border + RESET);
-            System.out.println(BLUE + formatted + RESET);
-            System.out.println(BLUE + border.replace('┌', '└').replace('┐', '┘') + RESET);
-        }
+        boolean isMainMenu = title.equalsIgnoreCase("Main Menu");
+        CliUtil.printSectionHeader(title, isMainMenu, "SYSTEM");
     }
 
     private void createEmployee() {
@@ -423,8 +398,8 @@ public class EmployeeCLI {
         System.out.print(BOLD + "Salary: " + RESET);
         long salary = Long.parseLong(scanner.nextLine());
 
-        System.out.print(BOLD + "Start Date (YYYY-MM-DD): " + RESET);
-        LocalDate startDate = LocalDate.parse(scanner.nextLine());
+        System.out.print(BOLD + "Start Date (dd-MM-yyyy): " + RESET);
+        LocalDate startDate = LocalDate.parse(scanner.nextLine(), dateFormatter);
 
         Map<String, Object> termsOfEmployment = new HashMap<>();
         System.out.println();
