@@ -5,7 +5,6 @@ import ServiceLayer.EmployeeService;
 import ServiceLayer.ShiftService;
 
 import java.time.LocalDate;
-import java.util.Objects;
 import java.util.Scanner;
 
 public class MainCLI {
@@ -19,7 +18,6 @@ public class MainCLI {
     private final AvailabillityCLI availabilityCLI;
     private final ShiftCLI shiftCLI;
 
-
     public MainCLI(EmployeeService employeeService, ShiftService shiftService, long doneBy) {
         this.employeeService = employeeService;
         this.shiftService = shiftService;
@@ -30,7 +28,6 @@ public class MainCLI {
         this.assignmentCLI = new AssignmentCLI(shiftService, employeeService, doneBy);
         this.availabilityCLI = new AvailabillityCLI(shiftService, doneBy);
         this.shiftCLI = new ShiftCLI(shiftService, doneBy);
-
     }
 
     public void start() {
@@ -43,35 +40,34 @@ public class MainCLI {
             running = processMenuChoice(choice);
         }
 
-        System.out.println("Thank you for using the Employee Module. Goodbye!");
+        CliUtil.printInfo("Thank you for using the Employee Module. Goodbye!");
     }
 
     private void displayMenu() {
-        System.out.println("\n===== Employee Module Main Menu =====");
+        CliUtil.printSectionHeader("Main Menu", true, "Employee Module");
         int option = 1;
 
         if (hasPermission("EDIT_EMPLOYEE") || hasPermission("VIEW_EMPLOYEE")) {
-            System.out.println(option++ + ". Employees");
+            System.out.println(CliUtil.YELLOW + option++ + CliUtil.RESET + ". Employees");
         }
 
         if (hasPermission("EDIT_SHIFT") || hasPermission("VIEW_SHIFT")) {
-            System.out.println(option++ + ". Shifts");
+            System.out.println(CliUtil.YELLOW + option++ + CliUtil.RESET + ". Shifts");
         }
 
         if (hasPermission("ASSIGN_EMPLOYEE")) {
-            System.out.println(option++ + ". Assignment Board");
+            System.out.println(CliUtil.YELLOW + option++ + CliUtil.RESET + ". Assignment Board");
         }
 
         if (hasPermission("UPDATE_AVAILABLE")) {
-            System.out.println(option++ + ". Availability Board");
+            System.out.println(CliUtil.YELLOW + option++ + CliUtil.RESET + ". Availability Board");
         }
 
         System.out.println("0. Exit");
-        System.out.print("Enter your choice: ");
+        CliUtil.printPrompt("Enter your choice: ");
     }
 
     private boolean processMenuChoice(String choice) {
-        String option = "";
         try {
             switch (choice) {
                 case "1":
@@ -80,41 +76,44 @@ public class MainCLI {
                     } else if (hasPermission("EDIT_SHIFT") || hasPermission("VIEW_SHIFT")) {
                         shiftCLI.start();
                     } else {
-                        System.out.println("You do not have permission.");
+                        CliUtil.printWarning("You do not have permission.");
                     }
                     break;
                 case "2":
-                    if ((hasPermission("EDIT_EMPLOYEE") || hasPermission("VIEW_EMPLOYEE")) && (hasPermission("EDIT_SHIFT") || hasPermission("VIEW_SHIFT"))) {
+                    if ((hasPermission("EDIT_EMPLOYEE") || hasPermission("VIEW_EMPLOYEE")) &&
+                            (hasPermission("EDIT_SHIFT") || hasPermission("VIEW_SHIFT"))) {
                         shiftCLI.start();
                     } else if (hasPermission("UPDATE_AVAILABLE")) {
                         availabilityCLI.start();
                     } else {
-                        System.out.println("You do not have permission.");
+                        CliUtil.printWarning("You do not have permission.");
                     }
                     break;
                 case "3":
                     if (hasPermission("ASSIGN_EMPLOYEE")) {
                         assignmentCLI.start();
-                    } else if (hasPermission("UPDATE_AVAILABLE") && (hasPermission("EDIT_EMPLOYEE") || hasPermission("VIEW_EMPLOYEE"))) {
+                    } else if (hasPermission("UPDATE_AVAILABLE") &&
+                            (hasPermission("EDIT_EMPLOYEE") || hasPermission("VIEW_EMPLOYEE"))) {
                         availabilityCLI.start();
                     } else {
-                        System.out.println("You do not have permission.");
+                        CliUtil.printWarning("You do not have permission.");
                     }
                     break;
                 case "4":
-                    if (hasPermission("UPDATE_AVAILABLE") && (hasPermission("EDIT_EMPLOYEE") || hasPermission("VIEW_EMPLOYEE") || hasPermission("ASSIGN_EMPLOYEE"))) {
+                    if (hasPermission("UPDATE_AVAILABLE") &&
+                            (hasPermission("EDIT_EMPLOYEE") || hasPermission("VIEW_EMPLOYEE") || hasPermission("ASSIGN_EMPLOYEE"))) {
                         availabilityCLI.start();
                     } else {
-                        System.out.println("You do not have permission.");
+                        CliUtil.printWarning("You do not have permission.");
                     }
                     break;
                 case "0":
                     return false;
                 default:
-                    System.out.println("Invalid choice.");
+                    CliUtil.printError("Invalid choice.");
             }
         } catch (UnauthorizedPermissionException e) {
-            System.out.println("Access denied: " + e.getMessage());
+            CliUtil.printError("Access denied: " + e.getMessage());
         }
         return true;
     }
