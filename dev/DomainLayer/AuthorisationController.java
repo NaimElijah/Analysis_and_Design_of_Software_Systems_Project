@@ -3,10 +3,7 @@ package DomainLayer;
 import DomainLayer.exception.InvalidInputException;
 import DomainLayer.exception.UnauthorizedPermissionException;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class AuthorisationController {
 
@@ -38,13 +35,10 @@ public class AuthorisationController {
             throw new InvalidInputException("Permission required cannot be null or empty");
         }
 
-        boolean has = employee.getRoles()
+        return employee.getRoles()
                 .stream()
                 .anyMatch(role -> roles.containsKey(role) && roles.get(role).contains(permissionRequired));
-        if (!has) {
-            throw new UnauthorizedPermissionException("Employee does not have permission: " + permissionRequired);
-        }
-        return true;
+
     }
 
     /**
