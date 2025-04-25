@@ -2,10 +2,7 @@ package DomainLayer;
 
 import DomainLayer.exception.UnauthorizedPermissionException;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.SplittableRandom;
+import java.util.*;
 
 public class AssignmentController {
     private final EmployeeController employeeController;
@@ -32,6 +29,9 @@ public class AssignmentController {
 
         if (employeesInRole.size() >= requiredCount) {
             throw new IllegalStateException("Role is already full");
+        }
+        if (Objects.equals(role, "SHIFT_MANAGER")) {
+            shift.setAssignedShiftManager(true);
         }
         employeesInRole.add(employeeId);
         assignedEmployees.put(role, employeesInRole);
