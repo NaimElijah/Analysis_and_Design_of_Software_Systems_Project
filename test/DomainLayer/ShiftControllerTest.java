@@ -253,7 +253,7 @@ class ShiftControllerTest {
         shiftController.createShift(shira.getIsraeliId(), ShiftType.MORNING, date, StringsRequired, assignedEmployees, availableEmployees, false, true, LocalDate.now());
 
         // Check if a non-existing employee is available
-        boolean isAvailable = availabilityController.isAvailable(shift, 999L);
+        boolean isAvailable = availabilityController.isAvailable(shift, shira.getIsraeliId());
         assertFalse(isAvailable, "Employee should not be available");
     }
 
@@ -263,6 +263,7 @@ class ShiftControllerTest {
         Map<String, Integer> StringsRequired = new HashMap<>();
         Map<String, Set<Long>> assignedEmployees = new HashMap<>();
         Set<Long> availableEmployees = new HashSet<>();
+        StringsRequired.put("CASHIER", 1);
 
         shiftController.createShift(shira.getIsraeliId(), ShiftType.MORNING, date, StringsRequired, assignedEmployees, availableEmployees, false, true, LocalDate.now());
 
@@ -288,9 +289,11 @@ class ShiftControllerTest {
         Map<String, Integer> StringsRequired = new HashMap<>();
         Map<String, Set<Long>> assignedEmployees = new HashMap<>();
         Set<Long> availableEmployees = new HashSet<>();
+        StringsRequired.put("CASHIER", 1);
 
         shiftController.createShift(shira.getIsraeliId(), ShiftType.MORNING, date, StringsRequired, assignedEmployees, availableEmployees, false, true, LocalDate.now());
 
+        Shift shift = shiftController.getShiftByID(shira.getIsraeliId(), 1L);
         // Add an employee to assigned employees
         assignmentController.assignEmployeeToRole(shift, shira.getIsraeliId(), "CASHIER", cochava.getIsraeliId());
 
@@ -313,9 +316,11 @@ class ShiftControllerTest {
         Map<String, Integer> StringsRequired = new HashMap<>();
         Map<String, Set<Long>> assignedEmployees = new HashMap<>();
         Set<Long> availableEmployees = new HashSet<>();
+        StringsRequired.put("CASHIER", 1);
 
         shiftController.createShift(shira.getIsraeliId(), ShiftType.MORNING, date, StringsRequired, assignedEmployees, availableEmployees, false, true, LocalDate.now());
 
+        Shift shift = shiftController.getShiftByID(shira.getIsraeliId(), 1L);
         // Add an employee to assigned employees
         assignmentController.assignEmployeeToRole(shift, shira.getIsraeliId(), "CASHIER", cochava.getIsraeliId());
 
