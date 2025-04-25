@@ -1,5 +1,16 @@
 {
   "Admin": [
+    "EDIT_ROLE",
+    "EDIT_PERMISSION",
+    "EDIT_EMPLOYEE",
+    "VIEW_EMPLOYEE",
+    "EDIT_SHIFT",
+    "VIEW_SHIFT",
+    "ROLE_REQUIRED",
+    "GET_ROLES",
+    "ASSIGN_EMPLOYEE",
+    "UPDATE_AVAILABLE",
+
     "CREATE_EMPLOYEE",
     "UPDATE_EMPLOYEE",
     "DEACTIVATE_EMPLOYEE",
@@ -14,8 +25,11 @@
     "UPDATE_SHIFT",
     "REMOVE_SHIFT",
     "GET_SHIFT",
-    "ASSIGN_EMPLOYEE",
+    "ROLE_REQUIRED",
     "GET_ROLES",
+    "ASSIGN_EMPLOYEE",
+    "UPDATE_AVAILABLE",
+
     "MANAGE_INVENTORY",
     "HANDLE_CASH",
     "DRIVE_VEHICLE",
@@ -25,11 +39,16 @@
     "STOCK_SHELVES",
     "ASSIGN_EMPLOYEE_TO_SHIFT"
   ],
-  "Cashier": [
-    "GET_SHIFT",
-    "HANDLE_CASH"
-  ],
   "HR manager": [
+    "EDIT_EMPLOYEE",
+    "VIEW_EMPLOYEE",
+    "EDIT_SHIFT",
+    "VIEW_SHIFT",
+    "ROLE_REQUIRED",
+    "GET_ROLES",
+    "ASSIGN_EMPLOYEE",
+    "UPDATE_AVAILABLE",
+
     "CREATE_EMPLOYEE",
     "UPDATE_EMPLOYEE",
     "DEACTIVATE_EMPLOYEE",
@@ -37,24 +56,37 @@
     "GET_SHIFT",
     "MANAGE_HR"
   ],
-  "Driver": [
+  "Shift Manager": [
+    "VIEW_SHIFT",
+    "UPDATE_AVAILABLE",
+
     "GET_SHIFT",
-    "DRIVE_VEHICLE"
+    "MANAGE_SHIFT"
+  ],
+  "Cashier": [
+    "VIEW_SHIFT",
+    "UPDATE_AVAILABLE",
+    "GET_SHIFT",
+    "HANDLE_CASH"
+  ],
+  "Driver": [
+    "VIEW_SHIFT",
+    "DRIVE_VEHICLE",
+    "UPDATE_AVAILABLE",
+    "GET_SHIFT"
   ],
   "Stocker": [
-    "GET_SHIFT",
+    "VIEW_SHIFT",
+    "UPDATE_AVAILABLE",
     "STOCK_SHELVES",
-    "MANAGE_INVENTORY"
+    "MANAGE_INVENTORY",
+    "GET_SHIFT"
   ],
   "Cleaner": [
+    "VIEW_SHIFT",
+    "UPDATE_AVAILABLE",
     "GET_SHIFT",
     "CLEAN_FACILITY"
-  ],
-  "Shift Manager": [
-    "GET_SHIFT",
-    "CREATE_SHIFT",
-    "UPDATE_SHIFT",
-    "MANAGE_SHIFT",
-    "ASSIGN_EMPLOYEE_TO_SHIFT"
   ]
+
 }
