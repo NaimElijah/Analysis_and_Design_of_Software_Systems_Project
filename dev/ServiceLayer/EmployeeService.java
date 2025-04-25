@@ -550,4 +550,14 @@ public class EmployeeService {
             throw new ServiceException("Error retrieving employee: " + e.getMessage(), e);
         }
     }
+
+    public boolean hasPermission(long israeliId, String permission) {
+        try {
+            return employeeController.hasPermission(israeliId, permission);
+        } catch (UnauthorizedPermissionException e) {
+            throw new AuthorizationException(israeliId, permission);
+        } catch (Exception e) {
+            throw new ServiceException("Error checking authorization: " + e.getMessage(), e);
+        }
+    }
 }
