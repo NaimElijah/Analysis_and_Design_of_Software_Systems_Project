@@ -13,10 +13,10 @@ import java.util.stream.Collectors;
 
 public class ShiftController {
     private final Set<Shift> shifts;
-    private final Map<Week, Set<Shift>> weeklyShifts = new HashMap<>();
+    private final Map<Week, Set<Shift>> weeklyShifts = new TreeMap<>();
     private final AuthorisationController authorizationController;
     private final EmployeeController empCon;
-    private long shiftIdCounter = 0;
+    private long shiftIdCounter = 1;
 
     public ShiftController(Set<Shift> shifts, AuthorisationController authorizationController, EmployeeController employeeController) {
         this.shifts = shifts;
@@ -48,13 +48,12 @@ public class ShiftController {
         if (shiftType == null || date == null || rolesRequired == null || assignedEmployees == null) {
             throw new IllegalArgumentException("Shift type, date, roles required, and assigned employees cannot be null");
         }
-        if (date.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Date cannot be in the past");
-        }
+//        if (date.isBefore(LocalDate.now())) {
+//            throw new IllegalArgumentException("Date cannot be in the past");
+//        }
         Shift newShift = new Shift(shiftIdCounter, shiftType, date, rolesRequired, assignedEmployees, availableEmployees, isAssignedShiftManager, isOpen, updateDate);
         shiftIdCounter++;
-        Week week = Week.from(date);
-        boolean addedToWeekly = weeklyShifts.computeIfAbsent(week, k -> new HashSet<>()).add(newShift);
+        boolean addedToWeekly = addShiftToWeekly(newShift);
         boolean added = shifts.add(newShift);
         return addedToWeekly && added;
     }
@@ -79,9 +78,9 @@ public class ShiftController {
             throw new IllegalArgumentException("Start date and roles required cannot be null");
         }
 
-        if (startDate.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Start date cannot be in the past");
-        }
+//        if (startDate.isBefore(LocalDate.now())) {
+//            throw new IllegalArgumentException("Start date cannot be in the past");
+//        }
 
         if (rolesRequired.isEmpty()) {
             throw new IllegalArgumentException("Roles required cannot be empty");
@@ -132,12 +131,8 @@ public class ShiftController {
         Shift shift = new Shift(shiftIdCounter++, type, date, rolesRequired, assignedEmployees, availableEmployees, false, isOpen, LocalDate.now());
 
         boolean added = shifts.add(shift);
-        if (!added) return true;
-
-        Week week = Week.from(date);
-        weeklyShifts.computeIfAbsent(week, k -> new HashSet<>()).add(shift);
-
-        return false;
+        boolean addedToWeekly = addShiftToWeekly(shift);
+        return added && addedToWeekly;
     }
 
     /**
@@ -200,18 +195,18 @@ public class ShiftController {
         if (shiftType == null || date == null ) {
             throw new IllegalArgumentException("Shift type, date cannot be null");
         }
-        if (date.isBefore(LocalDate.now())) {
-            throw new IllegalArgumentException("Date cannot be in the past");
-        }
+//        if (date.isBefore(LocalDate.now())) {
+//            throw new IllegalArgumentException("Date cannot be in the past");
+//        }
         if (updateDate == null) {
             throw new IllegalArgumentException("Update date cannot be null");
         }
-        if (updateDate.isBefore(date)) {
-            throw new IllegalArgumentException("Update date cannot be before the shift date");
-        }
-        if (updateDate.isAfter(LocalDate.now())) {
-            throw new IllegalArgumentException("Update date cannot be in the future");
-        }
+//        if (updateDate.isBefore(date)) {
+//            throw new IllegalArgumentException("Update date cannot be before the shift date");
+//        }
+//        if (updateDate.isAfter(LocalDate.now())) {
+//            throw new IllegalArgumentException("Update date cannot be in the future");
+//        }
         if (isAssignedShiftManager) {
             throw new IllegalArgumentException("Shift manager must be assigned if isAssignedShiftManager is true");
         }
@@ -454,14 +449,17 @@ public class ShiftController {
         }
 
         for (Shift shift : shifts) {
-            if (shift == null) {
-                throw new IllegalArgumentException("Shift cannot be null");
+            if (shift == null || shift.getShiftDate() == null) {
+                throw new IllegalArgumentException("Shift or shift date cannot be null");
             }
-            if (shift.getShiftDate() == null) {
-                throw new IllegalArgumentException("Shift date cannot be null");
-            }
-            Week week = Week.from(shift.getShiftDate());
-            weeklyShifts.computeIfAbsent(week, k -> new HashSet<>()).add(shift);
+            addShiftToWeekly(shift);
         }
+    }
+
+    public boolean addShiftToWeekly(Shift shift) {
+        Week week = Week.from(shift.getShiftDate());
+        // Comparator to sort by date (and optionally by hour if needed)
+        Comparator<Shift> byDate = Comparator.comparing(Shift::getShiftDate);
+        return weeklyShifts.computeIfAbsent(week, k -> new TreeSet<>(byDate)).add(shift);
     }
 }
