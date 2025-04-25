@@ -199,9 +199,12 @@ public class EmployeeController {
         if (employee == null) {
             throw new InvalidInputException("Employee with ID " + israeliId + " not found");
         }
-
+        boolean has = authorisationController.hasPermission(employee, permission);
+        if (!has) {
+            throw new UnauthorizedPermissionException("Employee does not have permission: " + permission);
+        }
         // Check if employee has the required permission
-        return authorisationController.hasPermission(employee, permission);
+        return true;
     }
 
     /**
@@ -360,4 +363,20 @@ public class EmployeeController {
     public AuthorisationController getAuthorisationController() {
         return authorisationController;
     }
+
+    public boolean hasPermission(long israeliId, String permission) {
+        Employee employee = getEmployeeByIsraeliId(israeliId);
+        if (employee == null) {
+            throw new InvalidInputException("Employee with ID " + israeliId + " not found");
+        }
+        return authorisationController.hasPermission(employee, permission);
+    }
+
+//    public String getHighestRole(long israeliId) {
+//        Employee employee = getEmployeeByIsraeliId(israeliId);
+//        if (employee == null) {
+//            throw new InvalidInputException("Employee with ID " + israeliId + " not found");
+//        }
+//        return authorisationController.getHighestRole(employee);
+//    }
 }
