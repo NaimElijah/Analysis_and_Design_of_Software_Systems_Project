@@ -41,9 +41,6 @@ public class Shift {
     }
 
     public void setShiftType(ShiftType shiftType) {
-        if (!ShiftType.MORNING.equals(shiftType) && !"EVENING".equals(shiftType)) {
-            throw new IllegalArgumentException("Shift type must be either MORNING or EVENING");
-        }
         this.shiftType = shiftType;
     }
 
