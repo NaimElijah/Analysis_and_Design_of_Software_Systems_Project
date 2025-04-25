@@ -264,7 +264,7 @@ public class TranManController {
         String resOfTransportCheck = "";
         try {
             resOfTransportCheck = this.tra_ser.checkTransportValidity(objectMapper.writeValueAsString(transportDTO));
-            ///  returns: "Valid", "BadLicenses", "overallWeight-truckMaxCarryWeight", "Queue"
+            ///  returns: "Valid", "BadLicenses", "overallWeight-truckMaxCarryWeight", "Queue"  //TODO: add a "Occupied" return string as well   <<---------------
         } catch (Exception e) {
             System.out.println("Serialization's fault");
             e.printStackTrace();
@@ -279,11 +279,11 @@ public class TranManController {
             }
 
             System.out.println("It seems There is a problem with The Transport you're trying to create: ");
-            transportRePlanning(transportDTO, resOfTransportCheck); /// "BadLicenses" & "overallWeight-truckMaxCarryWeight" Cases
+            transportRePlanning(transportDTO, resOfTransportCheck);///"BadLicenses"&"overallWeight-truckMaxCarryWeight" Cases //TODO:  should only be "overallWeight-truckMaxCarryWeight" here.
 
             try {
                 resOfTransportCheck = this.tra_ser.checkTransportValidity(objectMapper.writeValueAsString(transportDTO));  //  check Transport Validity again
-                ///  returns: "Valid", "BadLicenses", "overallWeight-truckMaxCarryWeight", "Queue"
+                ///  returns: "Valid", "BadLicenses", "overallWeight-truckMaxCarryWeight", "Queue"  //TODO: add a "Occupied" return string as well   <<---------------
             } catch (Exception e) {
                 System.out.println("Serialization's fault");
                 e.printStackTrace();
@@ -305,7 +305,7 @@ public class TranManController {
             System.out.println("Successfully Added Transport, You can view the Transport's Details (and it's given ID) using the Menu.\n");
         } else if(resOfNewTransportAddition.equals("Exception")){
             System.out.println("Failed to add Transport due to technical machine error\n");
-        }else { System.out.println(resOfNewTransportAddition + "\n"); }  // printing error string given from Service Layer
+        }else { System.out.println(resOfNewTransportAddition + "\n"); }
 
         System.out.println();
         transportsOptionsMenu();
@@ -317,7 +317,7 @@ public class TranManController {
 
     private void transportRePlanning(TransportDTO transportDTO, String issue){
 
-        if (issue.equals("BadLicenses")){  ///  Truck and Driver aren't compatible
+        if (issue.equals("BadLicenses")){  ///  Truck and Driver aren't compatible //TODO:  this if is not needed becasue this isn't part offff the replanning, only return error print <<----
             System.out.println("The problem seems to be that the Driver's Driving License indicates that he cannot Drive the selected Truck for this Transport.");
             //  Note: if we got to here it seems there is a possible pairing in the system (because we didn't automatically go to the "Queue")
             System.out.println("These are the available Trucks and the available Drivers, from them, let's choose a new Truck-Driver pairing for your Transport:\n");
@@ -469,7 +469,8 @@ public class TranManController {
         if(choice.equals("1")){
             System.out.println(this.tra_ser.showAllQueuedTransports());
         }else if(choice.equals("2")){
-            this.tra_ser.checkIfFirstQueuedTransportsCanGo();
+            this.tra_ser.checkIfFirstQueuedTransportsCanGo();   //TODO      <<<-------------------------------------------
+
         }else if (choice.equals("3")) {
             System.out.println("\n\n");
             transportsOptionsMenu();
@@ -493,7 +494,7 @@ public class TranManController {
             System.out.println("Successfully Deleted Transport.\n");
         } else if(res.equals("Exception")){
             System.out.println("Failed to delete Transport due to technical machine error\n");
-        }else { System.out.println(res + "\n"); }  // printing error string given from Service Layer
+        }else { System.out.println(res + "\n"); }
 
         System.out.println();
         transportsOptionsMenu();
@@ -559,7 +560,7 @@ public class TranManController {
         }else if(choice.equals("2")){
             editATransportsProblems();
         }else if(choice.equals("3")){
-            editATransportsSites(); // TODO: add: (edit arrival order to sites) AND (edit an id of an items doc of a Transport) here (inside this option's(3's) menu)   <<<------------
+            editATransportsSites();
         } else if (choice.equals("4")) {
             editATransportsItems();
         } else if (choice.equals("5")) {
@@ -592,12 +593,12 @@ public class TranManController {
             System.out.println("Enter the Transport ID of the Transport you want to change it's status:");
             int transportId = Integer.parseInt(scanner.nextLine());
             System.out.println(" To which status do you want to change that Transport's Status ?");
-            System.out.println(".1. BeingAssembled");
+            System.out.println(".1. Being Assembled");
             System.out.println(".2. Queued");
-            System.out.println(".3. InTransit");
+            System.out.println(".3. In Transit");
             System.out.println(".4. Completed");
             System.out.println(".5. Canceled");
-            System.out.println(".6. Delayed");
+            System.out.println(".6. Being Delayed");
             System.out.println(" Select Option: ");
             String statusChoice = scanner.nextLine();
 
@@ -606,7 +607,7 @@ public class TranManController {
                 System.out.println("Successfully Changed Transport's Status.\n");
             } else if(res.equals("Exception")){
                 System.out.println("Failed to change the Transport's status due to technical machine error.\n");
-            }else { System.out.println(res + "\n"); }  // printing error string given from Service Layer
+            }else { System.out.println(res + "\n"); }
 
         }else if (choice.equals("2")) {
             System.out.println("\n\n");
@@ -617,9 +618,6 @@ public class TranManController {
         System.out.println();
         editATransportsStatus();
     }
-
-
-
 
 
 
@@ -653,14 +651,14 @@ public class TranManController {
 
             String res1 = this.tra_ser.addTransportProblem(transportId1, statusChoice1);
             if(res1.equals("Success")){
-                System.out.println("Successfully Added to Transport's Problems.\n");
+                System.out.println("Successfully Added to Transport's Problems, I hope it gets solved as as fast as possible.\n");
             } else if(res1.equals("Exception")){
                 System.out.println("Failed to add the Transport problem due to technical machine error.\n");
-            }else { System.out.println(res1 + "\n"); }  // printing error string given from Service Layer
+            }else { System.out.println(res1 + "\n"); }
 
         }else if(choice.equals("2")){
 
-            System.out.println("Enter the Transport ID of the Transport you want to add a problem to:");
+            System.out.println("Enter the Transport ID of the Transport you want to remove a problem from:");
             int transportId2 = Integer.parseInt(scanner.nextLine());
             System.out.println(" Which Problem do you want to remove from that Transport's Document ?");
             System.out.println(".1. Puncture");
@@ -677,7 +675,7 @@ public class TranManController {
                 System.out.println("Successfully removed from Transport's Problems.\n");
             } else if(res2.equals("Exception")){
                 System.out.println("Failed to remove the Transport problem due to technical machine error.\n");
-            }else { System.out.println(res2 + "\n"); }  // printing error string given from Service Layer
+            }else { System.out.println(res2 + "\n"); }
 
         }else if (choice.equals("3")) {
             System.out.println("\n\n");
@@ -696,66 +694,83 @@ public class TranManController {
 
 
 
-
-
-
-    private void editATransportsDriverOrTruck(){
-        System.out.println("   --------    Transport's Driver/Truck Edition    --------\n");
-        System.out.println("(1)  Edit a Transport's Status");
-        System.out.println("(2)  Edit a Transport's Problems");
-        System.out.println("(3)  Edit a Transport's Sites");
-        System.out.println("(4)  Edit a Transport's Items");
-        System.out.println("(5)  Edit a Transport's Driver/Truck");
-        System.out.println("(6)  Back to Transport Edition Menu");
-        System.out.println();
-        System.out.println(" Select Option: ");
-
-        String choice = scanner.nextLine();
-        if(choice.equals("1")){
-
-        }else if(choice.equals("2")){
-
-        }else if(choice.equals("3")){
-
-        } else if (choice.equals("4")) {
-
-        } else if (choice.equals("5")) {
-
-        } else if (choice.equals("6")) {
-            System.out.println("\n\n");
-            editaTransportMenu();
-        } else {
-            System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
-        }
-        System.out.println();
-        editATransportsDriverOrTruck();
-        //TODO
-    }
-
-
     private void editATransportsSites(){
         System.out.println("   --------    Transport's Sites Edition Menu    --------\n");
-        System.out.println("(1)  Edit a Transport's Status");
-        System.out.println("(2)  Edit a Transport's Problems");
-        System.out.println("(3)  Edit a Transport's Sites");
-        System.out.println("(4)  Edit a Transport's Items");
-        System.out.println("(5)  Edit a Transport's Driver/Truck");
-        System.out.println("(6)  Back to Transport Edition Menu");
+        System.out.println("(1)  Add a New Site's Items Document to a Transport");
+        System.out.println("(2)  Remove a Site's Items Document from a Transport");
+        System.out.println("(3)  Edit a Transport's Site's Items Document ID");
+        System.out.println("(4)  Set a Site's Arrival order in it's Transport");
+        System.out.println("(5)  Back to Transport Edition Menu");
         System.out.println();
         System.out.println(" Select Option: ");
 
         String choice = scanner.nextLine();
         if(choice.equals("1")){
+            System.out.println("Enter the Transport ID of the Transport you want to add a New Site's Items Document to:");
+            int transportId1 = Integer.parseInt(scanner.nextLine());
+            System.out.println("Enter the New Items Document ID number, for that site, you want to add:");
+            int newItemsDocId1 = Integer.parseInt(scanner.nextLine());
+            System.out.println("Enter Destination Area number for that site:");
+            int destAreaNumber1 = Integer.parseInt(scanner.nextLine());
+            System.out.println("Enter Destination Site Address String for that site:");
+            String destSiteAddress1 = scanner.nextLine();
+            System.out.println("Enter that Site's Contact Name:");
+            String contactName1 = scanner.nextLine();
+            System.out.println("Enter that contact's number:");
+            long contactNumber1 = Long.parseLong(scanner.nextLine());
+
+            String res1 = this.tra_ser.addDestSite(transportId1, newItemsDocId1, destAreaNumber1, destSiteAddress1, contactName1, contactNumber1);
+            if(res1.equals("Success")){
+                System.out.println("Successfully removed from Transport's Site's Items Documents.\n");
+            } else if(res1.equals("Exception")){
+                System.out.println("Failed to remove the Transport's Site's Items Document due to technical machine error.\n");
+            }else { System.out.println(res1 + "\n"); }
 
         }else if(choice.equals("2")){
+            System.out.println("Enter the Transport ID of the Transport you want to remove a Site's Items Document from:");
+            int transportId2 = Integer.parseInt(scanner.nextLine());
+            System.out.println("Enter the Items Document ID number, for that site, you want to remove:");
+            int oldItemsDocId2 = Integer.parseInt(scanner.nextLine());
+
+            String res2 = this.tra_ser.removeDestSite(transportId2, oldItemsDocId2);
+            if(res2.equals("Success")){
+                System.out.println("Successfully removed from Transport's Site's Items Documents.\n");
+            } else if(res2.equals("Exception")){
+                System.out.println("Failed to remove the Transport's Site's Items Document due to technical machine error.\n");
+            }else { System.out.println(res2 + "\n"); }
 
         }else if(choice.equals("3")){
+            System.out.println("Let's change a Transport's Site's Items Document ID.");
+            System.out.println("Enter Old Items Document ID number:");
+            int oldItemsDocId3 = Integer.parseInt(scanner.nextLine());
+            System.out.println("Enter New Items Document ID number:");
+            int newItemsDocId3 = Integer.parseInt(scanner.nextLine());
+
+            String res3 = this.tra_ser.changeAnItemsDocNum(oldItemsDocId3, newItemsDocId3);
+            if(res3.equals("Success")){
+                System.out.println("Successfully changed Items Documents ID.\n");
+            } else if(res3.equals("Exception")){
+                System.out.println("Failed to change Items Documents ID due to technical machine error.\n");
+            }else { System.out.println(res3 + "\n"); }
 
         } else if (choice.equals("4")) {
+            System.out.println("Enter the Transport ID:");
+            int transportID = Integer.parseInt(scanner.nextLine());
+            System.out.println("Enter the Site's Area number:");
+            int areaNumber1 = Integer.parseInt(scanner.nextLine());
+            System.out.println("Enter the Site's Site Address String:");
+            String siteAddress1 = scanner.nextLine();
+            System.out.println("Enter the New index in the Sites Arrival Order, of that Transport, that you want to put that Site:");
+            String newIndex1 = scanner.nextLine();
+
+            String res4 = this.tra_ser.setSiteArrivalIndexInTransport(transportID, areaNumber1, siteAddress1, newIndex1);
+            if(res4.equals("Success")){
+                System.out.println("Successfully changed the Site's Arrival Order.\n");
+            } else if(res4.equals("Exception")){
+                System.out.println("Failed to change the Site's Arrival Order due to technical machine error.\n");
+            }else { System.out.println(res4 + "\n"); }
 
         } else if (choice.equals("5")) {
-
-        } else if (choice.equals("6")) {
             System.out.println("\n\n");
             editaTransportMenu();
         } else {
@@ -763,8 +778,23 @@ public class TranManController {
         }
         System.out.println();
         editATransportsSites();
-        //TODO
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -772,25 +802,74 @@ public class TranManController {
         System.out.println("   --------    Transport's Items Edition Menu    --------\n");
         System.out.println("(1)  Add an Item to a Transport");
         System.out.println("(2)  Remove an Item from a Transport");
-        System.out.println("(3)  Set the condition of an Item in this Transport");
+        System.out.println("(3)  Set the condition of an Item in a Transport");
         System.out.println("(4)  Back to Transport Edition Menu");
         System.out.println();
         System.out.println(" Select Option: ");
 
         String choice = scanner.nextLine();
         if(choice.equals("1")){
-
-            System.out.println("Let's add an item to a Transport");
+            System.out.println("Let's add an Item to a Transport.");
+            System.out.println("Enter The Items Document ID of the Items Document you want to add an Item to:");
+            int itemsDocId = Integer.parseInt(scanner.nextLine());
             System.out.println("Enter Item Name:");
             String itemName = scanner.nextLine();
             System.out.println("Enter Item Weight:");
-            String itemWeight = scanner.nextLine();
+            int itemWeight = Integer.parseInt(scanner.nextLine());
             System.out.println("Enter Item Condition: ( ('Good') / ('Bad'/or any other key) )");
             boolean itemCondition = (scanner.nextLine().equals("Good") ? true : false);
+            System.out.println("Enter Item Amount you want to add:");
+            int itemAmount = Integer.parseInt(scanner.nextLine());
+
+            String res1 = this.tra_ser.addItem(itemsDocId, itemName, itemWeight, itemAmount, itemCondition);
+            if(res1.equals("Success")){
+                System.out.println("Successfully added Item.\n");
+            } else if(res1.equals("Exception")){
+                System.out.println("Failed to add Item due to technical machine error.\n");
+            }else { System.out.println(res1 + "\n"); }
 
         }else if(choice.equals("2")){
 
+            System.out.println("Let's remove an Item from a Transport.");
+            System.out.println("Enter The Items Document ID of the Items Document you want to remove an Item from:");
+            int itemsDocId = Integer.parseInt(scanner.nextLine());
+            System.out.println("Enter Item Name:");
+            String itemName = scanner.nextLine();
+            System.out.println("Enter Item Weight:");
+            int itemWeight = Integer.parseInt(scanner.nextLine());
+            System.out.println("Enter Item Condition: ( ('Good') / ('Bad'/or any other key) )");
+            boolean itemCondition = (scanner.nextLine().equals("Good"));
+            System.out.println("Enter Item Amount you want to remove:");
+            int itemAmount = Integer.parseInt(scanner.nextLine());
+
+            String res1 = this.tra_ser.removeItem(itemsDocId, itemName, itemWeight, itemAmount, itemCondition);
+            if(res1.equals("Success")){
+                System.out.println("Successfully removed Item.\n");
+            } else if(res1.equals("Exception")){
+                System.out.println("Failed to remove Item due to technical machine error.\n");
+            }else { System.out.println(res1 + "\n"); }
+
+
         }else if(choice.equals("3")){
+
+            System.out.println("Let's change the Condition of an Item in a Transport.");
+            System.out.println("Enter The Items Document ID of the Items Document you want to change an Item's condition in:");
+            int itemsDocId = Integer.parseInt(scanner.nextLine());
+            System.out.println("Enter Item Name:");
+            String itemName = scanner.nextLine();
+            System.out.println("Enter Item Weight:");
+            int itemWeight = Integer.parseInt(scanner.nextLine());
+            System.out.println("Enter the New Item Condition you want to set to that Item: ( ('Good') / ('Bad'/or any other key) )");
+            boolean itemCondition = (scanner.nextLine().equals("Good"));
+            System.out.println("Enter Item Amount you want to change condition to:");
+            int itemAmount = Integer.parseInt(scanner.nextLine());
+
+            String res1 = this.tra_ser.setItemCond(itemsDocId, itemName, itemWeight, itemAmount, itemCondition);
+            if(res1.equals("Success")){
+                System.out.println("Successfully changed Item's Condition.\n");
+            } else if(res1.equals("Exception")){
+                System.out.println("Failed to change Item's Condition due to technical machine error.\n");
+            }else { System.out.println(res1 + "\n"); }
 
         } else if (choice.equals("4")) {
             System.out.println("\n\n");
@@ -800,8 +879,86 @@ public class TranManController {
         }
         System.out.println();
         editATransportsItems();
-        //TODO
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    private void editATransportsDriverOrTruck(){
+        System.out.println("   --------    Transport's Driver/Truck Edition    --------\n");
+        System.out.println("(1)  Set a Transport's Truck");
+        System.out.println("(2)  Set a Transport's Driver");
+        System.out.println("(3)  Back to Transport Edition Menu");
+        System.out.println();
+        System.out.println(" Select Option: ");
+
+        String choice = scanner.nextLine();
+        if(choice.equals("1")){
+            System.out.println("Enter the Transport ID:");
+            int transportID = Integer.parseInt(scanner.nextLine());
+            System.out.println("Enter the Desired Truck's Number:");
+            int truckID = Integer.parseInt(scanner.nextLine());
+
+            String res1 = this.tra_ser.setTransportTruck(transportID, truckID);
+            if(res1.equals("Success")){
+                System.out.println("Successfully set Transport's Truck.\n");
+            } else if(res1.equals("Exception")){
+                System.out.println("Failed to set Transport's Truck due to technical machine error.\n");
+            }else { System.out.println(res1 + "\n"); }
+
+        }else if(choice.equals("2")){
+            System.out.println("Enter the Transport ID:");
+            int transportID = Integer.parseInt(scanner.nextLine());
+            System.out.println("Enter the Desired Driver's ID:");
+            int driverID = Integer.parseInt(scanner.nextLine());
+
+            String res2 = this.tra_ser.setTransportDriver(transportID, driverID);
+            if(res2.equals("Success")){
+                System.out.println("Successfully set Transport's Driver.\n");
+            } else if(res2.equals("Exception")){
+                System.out.println("Failed to set Transport's Driver due to technical machine error.\n");
+            }else { System.out.println(res2 + "\n"); }
+
+        }else if (choice.equals("3")) {
+            System.out.println("\n\n");
+            editaTransportMenu();
+        } else {
+            System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
+        }
+        System.out.println();
+        editATransportsDriverOrTruck();
+    }
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -899,7 +1056,7 @@ public class TranManController {
             System.out.println("Successfully Added Shipping Area\n");
         } else if(res.equals("Exception")){
             System.out.println("Failed to add Shipping Area due to technical machine error\n");
-        }else { System.out.println(res + "\n"); }  // printing error string given from Service Layer
+        }else { System.out.println(res + "\n"); }
 
         System.out.println();
         shippingAreasOptionsMenu();
@@ -918,7 +1075,7 @@ public class TranManController {
             System.out.println("Successfully Deleted Shipping Area\n");
         } else if(res.equals("Exception")){
             System.out.println("Failed to Delete Shipping Area due to technical machine error\n");
-        }else { System.out.println(res + "\n"); }  // printing error string given from Service Layer
+        }else { System.out.println(res + "\n"); }
 
         System.out.println();
         shippingAreasOptionsMenu();
@@ -951,7 +1108,7 @@ public class TranManController {
             System.out.println("Successfully Edited Site\n");
         } else if(res.equals("Exception")){
             System.out.println("Failed to Edit Site due to technical machine error\n");
-        }else { System.out.println(res + "\n"); }  // printing error string given from Service Layer
+        }else { System.out.println(res + "\n"); }
 
         System.out.println();
         shippingAreasOptionsMenu();
@@ -1017,7 +1174,7 @@ public class TranManController {
             System.out.println("Successfully Added Site\n");
         } else if(res.equals("Exception")){
             System.out.println("Failed to add Site due to technical machine error\n");
-        }else { System.out.println(res + "\n"); }  // printing error string given from Service Layer
+        }else { System.out.println(res + "\n"); }
 
         System.out.println();
         sitesOptionsMenu();
@@ -1036,7 +1193,7 @@ public class TranManController {
             System.out.println("Successfully Deleted Site\n");
         } else if(res.equals("Exception")){
             System.out.println("Failed to Delete Site due to technical machine error\n");
-        }else { System.out.println(res + "\n"); }  // printing error string given from Service Layer
+        }else { System.out.println(res + "\n"); }
 
         System.out.println();
         sitesOptionsMenu();
@@ -1079,7 +1236,7 @@ public class TranManController {
             System.out.println("Successfully Edited Site\n");
         } else if(res.equals("Exception")){
             System.out.println("Failed to Edit Site due to technical machine error\n");
-        }else { System.out.println(res + "\n"); }  // printing error string given from Service Layer
+        }else { System.out.println(res + "\n"); }
 
         System.out.println();
         sitesOptionsMenu();

@@ -42,7 +42,7 @@ public class ItemsDoc {
         }
 //        for (Item item : items.keySet()) {    //  if there was an ID
 //            if (item.getItemID() == itemId || (item.getName().equals(itemName) && item.getWeight() == itemWeight)) {
-//                return -1;   /////// can't add an item with a duplicate itemID   <<-----------------   Ambiguous Item can't be added  <<--------------
+//                return -1;   /////// can't add an item with a duplicate itemID   <<-----------------   Ambiguous Item can't be added   <<-------  if there was Item ID
 //            }
 //        }
         items.put(new Item(itemName, itemWeight, cond), amount);
@@ -64,22 +64,16 @@ public class ItemsDoc {
         return -1;  // item to remove not found
     }
 
-    public boolean setItemCond(String itemName, int itemWeight, int amount, boolean newCond){
+    public int setItemCond(String itemName, int itemWeight, int amount, boolean newCond){
         HashMap<Item, Integer> itemsFrom = newCond ? badItems : goodItems;
-        HashMap<Item, Integer> itemsTo = newCond ? goodItems : badItems;
         for (Item item : itemsFrom.keySet()) {
             if (item.getName().equals(itemName) && item.getWeight() == itemWeight) {
-                int amount_removed = removeItem(itemName, itemWeight, !newCond, amount);
-                addItem(itemName, itemWeight, newCond, amount_removed);
-                return true;
+                int amount_removed = removeItem(itemName, itemWeight, !newCond, amount);   //  maybe save and remove out of the loop
+                addItem(itemName, itemWeight, newCond, amount_removed);  //  only set the condition to the existing amount of items of that kind if requested to change more amount of items
+                return 0;
             }
         }
-        for (Item item : itemsTo.keySet()) {   // checking if already set as the wanted newCond
-            if (item.getName().equals(itemName) && item.getWeight() == itemWeight) {
-                return true;
-            }
-        }
-        return false;  //  item to change cond to was not found
+        return -1;  //  item to change cond to was not found
     }
 
     public int calculateItemsWeight(){

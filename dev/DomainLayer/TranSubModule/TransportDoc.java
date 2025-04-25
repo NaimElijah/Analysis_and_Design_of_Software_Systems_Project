@@ -22,7 +22,7 @@ public class TransportDoc {
     private Site src_site;
     private ArrayList<ItemsDoc> dests_Docs;  ///  <<<--------------  In Order of visit   <<<--------------------
     private ArrayList<enumTranProblem> problems;
-    private boolean isProvider;    // TODO  !!!!!!  if true then provider and roles in this clas change(src is gonna from where we get the items(provider itself)....)  <<--------
+//    private boolean isProvider;    // TODO  !!!!!!  if true then provider and roles in this clas change(src is gonna from where we get the items(provider itself)....)  <<--------
 
     public TransportDoc(enumTranStatus status, int tran_Doc_ID, Truck transportTruck, Driver transportDriver, Site src_site) {
         this.status = status;
@@ -43,9 +43,27 @@ public class TransportDoc {
     public LocalDateTime getDeparture_dt() {return departure_dt;}
     public void setDeparture_dt(LocalDateTime departure_dt) {this.departure_dt = departure_dt;}
     public Truck getTransportTruck() {return transportTruck;}
-    public void setTransportTruck(Truck transportTruck) {this.transportTruck = transportTruck;}
+
+
+    public void setTransportTruck(Truck transportTruck) {
+        if (this.transportTruck.getInTransportID() == this.tran_Doc_ID) {  // if another truck belongs to the transport already
+            this.transportTruck.setInTransportID(-1);  // unassign old one
+        }
+        this.transportTruck = transportTruck;
+        this.transportTruck.setInTransportID(this.tran_Doc_ID);
+    }
+
     public Driver getTransportDriver() {return transportDriver;}
-    public void setTransportDriver(Driver transportDriver) {this.transportDriver = transportDriver;}
+
+    public void setTransportDriver(Driver transportDriver) {
+        if (this.transportDriver.getInTransportID() == this.tran_Doc_ID) {  // if another driver belongs to the transport already
+            this.transportDriver.setInTransportID(-1);  // unassign old one
+        }
+        this.transportDriver = transportDriver;
+        this.transportDriver.setInTransportID(this.tran_Doc_ID);
+    }
+
+
     public int getTruck_Depart_Weight() {return truck_Depart_Weight;}
     public void setTruck_Depart_Weight(int truck_Depart_Weight) {this.truck_Depart_Weight = truck_Depart_Weight;}
     public Site getSrc_site() {return src_site;}
@@ -54,18 +72,19 @@ public class TransportDoc {
     public void setDests_Docs(ArrayList<ItemsDoc> dests_Docs) {this.dests_Docs = dests_Docs;}
     public ArrayList<enumTranProblem> getProblems() {return problems;}
     public void setProblems(ArrayList<enumTranProblem> problems_descriptions) {this.problems = problems_descriptions;}
-    public boolean isProvider() {return isProvider;}
-    public void setProvider(boolean provider) {isProvider = provider;}
 
-    public int addDestSite(Site dest, int itemsDoc_num){
+
+
+
+    public ItemsDoc addDestSite(int itemsDoc_num, Site dest){
         for(ItemsDoc itemsDoc : dests_Docs){
             if (itemsDoc.getDest_site().getAddress().getArea() == dest.getAddress().getArea() && itemsDoc.getDest_site().getAddress().getAddress().equals(dest.getAddress().getAddress())){
-                return -1;  //  Destination Site already in this Transport, do add/remove item from that site instead.
+                return null;  //  Destination Site already in this Transport, do add/remove item from that site instead. Every Site has a primary key which is the address.
             }
         }
         ItemsDoc addition = new ItemsDoc(itemsDoc_num, this.src_site, dest);
         dests_Docs.add(addition);
-        return 0;  // all good
+        return addition;  // all good
     }
 
     public int removeDestSite(int itemsDoc_num){
@@ -81,6 +100,7 @@ public class TransportDoc {
         dests_Docs.remove(temp);
         return 0;  //  all good
     }
+
 
 
 
@@ -138,7 +158,7 @@ public class TransportDoc {
         int res = 0;
         for (ItemsDoc itemsDoc : dests_Docs) {
             if (itemsDoc.getItemDoc_num() == itemsDoc_Num){
-                res = itemsDoc.addItem(ItemName, itemWeight, cond, amount);
+                res = itemsDoc.addItem(ItemName, itemWeight, cond, amount);    //Note:  this function is needed to do something with an Item using the transport in hand.
             }
         }
         return res;
@@ -148,17 +168,17 @@ public class TransportDoc {
         int res = 0;
         for (ItemsDoc itemsDoc : dests_Docs) {
             if (itemsDoc.getItemDoc_num() == itemsDoc_Num){
-                res = itemsDoc.removeItem(ItemName, itemWeight, cond, amount);
+                res = itemsDoc.removeItem(ItemName, itemWeight, cond, amount);    //Note:  this function is needed to do something with an Item using the transport in hand.
             }
         }
         return res;
     }
 
-    public boolean setItemCond(int itemsDoc_Num, String ItemName, int itemWeight, int amount, boolean newCond){
-        boolean res = true;
+    public int setItemCond(int itemsDoc_Num, String ItemName, int itemWeight, int amount, boolean newCond){
+        int res = 0;
         for (ItemsDoc itemsDoc : dests_Docs) {
             if (itemsDoc.getItemDoc_num() == itemsDoc_Num){
-                res = itemsDoc.setItemCond(ItemName, itemWeight, amount, newCond);
+                res = itemsDoc.setItemCond(ItemName, itemWeight, amount, newCond);    //Note:  this function is needed to do something with an Item using the transport in hand.
             }
         }
         return res;

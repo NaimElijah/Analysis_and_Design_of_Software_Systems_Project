@@ -3,6 +3,7 @@ package DomainLayer.TranSubModule;
 import DomainLayer.EmpSubModule.Driver;
 import DomainLayer.EmpSubModule.Employee;
 import DomainLayer.EmpSubModule.EmployeeFacade;
+import DomainLayer.SiteSubModule.Address;
 import DomainLayer.SiteSubModule.Site;
 import DomainLayer.SiteSubModule.SiteFacade;
 import DomainLayer.TruSubModule.Truck;
@@ -77,7 +78,8 @@ public class TransportFacade {
             /// finding the current destSite
             Site destSite = this.siteFacade.getShippingAreas().get(itemsDocDTO.getDest_siteDTO().getSiteAreaNum()).getSites().get(itemsDocDTO.getDest_siteDTO().getAddressString());
 
-            newTransportBeingCreated.addDestSite(destSite, itemsDocDTO.getItemsDoc_num());
+            ItemsDoc addition = newTransportBeingCreated.addDestSite(itemsDocDTO.getItemsDoc_num(), destSite);
+            this.itemsDocs.put(itemsDocDTO.getItemsDoc_num(), addition);
 
             for (ItemDTO itemDTO : itemsDocDTO.getItemDTOs().keySet()){  /// add each item of that site from the DTO's data
                 newTransportBeingCreated.addItem(itemsDocDTO.getItemsDoc_num(), itemDTO.getName(), itemDTO.getWeight(), itemsDocDTO.getItemDTOs().get(itemDTO), itemDTO.getCondition());
@@ -85,8 +87,8 @@ public class TransportFacade {
         }
 
         /// finishing touches before adding Transport
-        newTransportBeingCreated.getTransportTruck().setFree(false);
-        newTransportBeingCreated.getTransportDriver().setFree(false);
+        newTransportBeingCreated.getTransportTruck().setInTransportID(newTransportBeingCreated.getTran_Doc_ID());
+        newTransportBeingCreated.getTransportDriver().setInTransportID(newTransportBeingCreated.getTran_Doc_ID());
         newTransportBeingCreated.setStatus(enumTranStatus.InTransit);
         newTransportBeingCreated.setTruck_Depart_Weight(newTransportBeingCreated.calculateTransportItemsWeight());
         for (ItemsDoc itemsDoc : newTransportBeingCreated.getDests_Docs()){
@@ -125,11 +127,11 @@ public class TransportFacade {
         for (ItemsDoc itemsDocInRemovingOne : toRemoveDoc.getDests_Docs()){
             this.itemsDocs.remove(itemsDocInRemovingOne.getItemDoc_num());
         }
-        if (!toRemoveDoc.getTransportDriver().isFree() && (toRemoveDoc.getStatus().equals(enumTranStatus.InTransit) || toRemoveDoc.getStatus().equals(enumTranStatus.Delayed))){
-            toRemoveDoc.getTransportDriver().setFree(true);
+        if (toRemoveDoc.getTransportDriver().getInTransportID() != -1 && (toRemoveDoc.getStatus().equals(enumTranStatus.InTransit) || toRemoveDoc.getStatus().equals(enumTranStatus.BeingDelayed))){
+            toRemoveDoc.getTransportDriver().setInTransportID(-1);  //TODO:  change up according to the NEW  format of the inTransportID new field  !!!!!!     <<<--------------------------------------   TODO
         }
-        if (!toRemoveDoc.getTransportTruck().isFree() && (toRemoveDoc.getStatus().equals(enumTranStatus.InTransit) || toRemoveDoc.getStatus().equals(enumTranStatus.Delayed))){
-            toRemoveDoc.getTransportTruck().setFree(true);
+        if (toRemoveDoc.getTransportTruck().getInTransportID() != -1 && (toRemoveDoc.getStatus().equals(enumTranStatus.InTransit) || toRemoveDoc.getStatus().equals(enumTranStatus.BeingDelayed))){
+            toRemoveDoc.getTransportTruck().setInTransportID(-1);  //TODO:  change up according to the NEW  format of the inTransportID new field  !!!!!!     <<<--------------------------------------   TODO
         }
 
         transports.remove(transportID);
@@ -155,7 +157,7 @@ public class TransportFacade {
         } else if (menu_status_option == 5) {
             status = enumTranStatus.Canceled;
         } else if (menu_status_option == 6) {
-            status = enumTranStatus.Delayed;
+            status = enumTranStatus.BeingDelayed;
         }
 
         if (transports.get(TranDocID).getStatus().equals(status)) {
@@ -164,15 +166,15 @@ public class TransportFacade {
 
         if(status.equals(enumTranStatus.InTransit)){
             if(this.transports.get(TranDocID).getStatus() == enumTranStatus.Canceled || this.transports.get(TranDocID).getStatus() == enumTranStatus.Completed){
-                if((!this.transports.get(TranDocID).getTransportTruck().isFree()) || (!this.transports.get(TranDocID).getTransportDriver().isFree())){
+                if((this.transports.get(TranDocID).getTransportTruck().getInTransportID() != -1) || (this.transports.get(TranDocID).getTransportDriver().getInTransportID() != -1)){
                     throw new ClassNotFoundException("cannot change status to InTransit because the driver or the truck aren't free, maybe change them, and try again.");
-                }
-            }
-            this.transports.get(TranDocID).getTransportDriver().setFree(false);
-            this.transports.get(TranDocID).getTransportTruck().setFree(false);
+                }       //TODO:  change up according to the NEW  format of the inTransportID new field  !!!!!!     <<<--------------------------------------   TODO
+            }     //TODO:  take care of the situation where we set to InTransit, but Driver or Truck are not free
+            this.transports.get(TranDocID).getTransportDriver().setInTransportID(TranDocID);
+            this.transports.get(TranDocID).getTransportTruck().setInTransportID(TranDocID);     //TODO:  take care of the Driver, and the Truck's Statuses
         } else if (status.equals(enumTranStatus.Canceled) || status.equals(enumTranStatus.Completed)) {
-            this.transports.get(TranDocID).getTransportDriver().setFree(true);
-            this.transports.get(TranDocID).getTransportTruck().setFree(true);
+            this.transports.get(TranDocID).getTransportDriver().setInTransportID(-1);
+            this.transports.get(TranDocID).getTransportTruck().setInTransportID(-1);
         }
         this.transports.get(TranDocID).setStatus(status);
     }
@@ -187,43 +189,91 @@ public class TransportFacade {
 
 
 
-    public void setTransportTruck(int TranDocID, int truckNum) throws FileNotFoundException, ArrayIndexOutOfBoundsException, CommunicationException {
+
+
+
+    public void setTransportTruck(int TranDocID, int truckNum) throws FileNotFoundException, ArrayIndexOutOfBoundsException, CommunicationException, FileAlreadyExistsException, CloneNotSupportedException {
         if(!transports.containsKey(TranDocID)){
             throw new FileNotFoundException("The Transport ID you have entered doesn't exist.");
         } else if (!this.truckFacade.getTrucksWareHouse().containsKey(truckNum)){
             throw new ArrayIndexOutOfBoundsException("The Truck number you have entered doesn't exist.");
+        } else if (this.transports.get(TranDocID).getTransportTruck().getTruck_num() == truckNum) {
+            throw new FileAlreadyExistsException("This Truck is already the Truck of this Transport");
         }
 
-        Truck tNEW = truckFacade.getTrucksWareHouse().get(truckNum);  // the new truck we want to set
-        if (transports.get(TranDocID).getTransportTruck() != null && tNEW.isFree()) {
-            transports.get(TranDocID).getTransportTruck().setFree(true);  // if there was a truck and we're setting another truck, free the before truck
-        } else if (!tNEW.isFree()) {
+        /// Note:  a Truck cannot be in more than 1 active Transport
 
+        Truck truck = this.truckFacade.getTrucksWareHouse().get(truckNum);  // the truck in contention to be set in the Transport
+        if(truck.getInTransportID() != -1){    // so it belong to another Transport Active right now, We take care of the Transport's status in the setTransportStatus() function
+            if (this.transports.get(TranDocID).getStatus() == enumTranStatus.InTransit || this.transports.get(TranDocID).getStatus() == enumTranStatus.BeingDelayed || this.transports.get(TranDocID).getStatus() == enumTranStatus.BeingAssembled) {
+                throw new CloneNotSupportedException("The Transport you are trying to set to is Active and The Truck you are trying to set is already Occupied with another Active Transport right now");
+            }
         }
 
-        this.transports.get(TranDocID).setTransportTruck(tNEW);
-        this.transports.get(TranDocID).getTransportTruck().setFree(false);  // taking the new truck
+        // if we got to here so the truck is not in an active transport OR/AND the Transport we are trying to set is not active
+        // check NewTruck - Driver Compatability
+        if (!this.transports.get(TranDocID).getTransportDriver().getLicenses().contains(truck.getValid_license())){
+            throw new CommunicationException("The transport's driver doesn't have the fitting license for the new Truck you want to set.");
+        }
 
-        // availability issues
-        throw new AbstractMethodError("There are availability issues ");
+        this.transports.get(TranDocID).setTransportTruck(truck);
 
-        // Driver - Truck Compatability
-        throw new CommunicationException("The transport's driver doesn't have the fitting license for the new Truck you want to set.");
-        // TODO  and then duplicate same structure to the setTransportDriver Function    <<<<-----------------------------------------------------  TODO
+        //TODO: also, DON'T UPDATE ANY STATUSES !!!!           <<<---------------------------------------     <<------------------------------
     }
 
 
 
 
-    public void setTransportDriver(int TranDocID, int DriverID) throws FileNotFoundException, ArrayIndexOutOfBoundsException {
+    public void setTransportDriver(int TranDocID, int DriverID) throws FileNotFoundException, ArrayIndexOutOfBoundsException, FileAlreadyExistsException, CloneNotSupportedException, CommunicationException {
         if(!transports.containsKey(TranDocID)){
             throw new FileNotFoundException("The Transport ID you have entered doesn't exist.");
         } else if (!this.employeeFacade.getDrivers().containsKey(DriverID)){
             throw new ArrayIndexOutOfBoundsException("The Driver ID you have entered doesn't exist.");
+        } else if (this.transports.get(TranDocID).getTransportDriver().getId() == DriverID) {
+            throw new FileAlreadyExistsException("This Driver is already the Driver of this Transport");
         }
 
-        // TODO
+        /// Note:  a Driver cannot be in more than 1 active Transport
+
+        Driver driver = this.employeeFacade.getDrivers().get(DriverID);  // the driver in contention to be set in the Transport
+        if(driver.getInTransportID() != -1){    // so it belong to another Transport Active right now, We take care of the Transport's status in the setTransportStatus() function
+            if (this.transports.get(TranDocID).getStatus() == enumTranStatus.InTransit || this.transports.get(TranDocID).getStatus() == enumTranStatus.BeingDelayed || this.transports.get(TranDocID).getStatus() == enumTranStatus.BeingAssembled) {
+                throw new CloneNotSupportedException("The Transport you are trying to set to is Active and The Driver you are trying to set is already Occupied with another Active Transport right now");
+            }
+        }
+
+        // if we got to here so the driver is not in an active transport OR/AND the Transport we are trying to set is not active
+        // check Truck - NewDriver Compatability
+        if (!driver.getLicenses().contains(this.transports.get(TranDocID).getTransportTruck().getValid_license())){
+            throw new CommunicationException("The New Driver you are trying to set doesn't have the fitting license for the Truck that is in the Transport.");
+        }
+
+        this.transports.get(TranDocID).setTransportDriver(driver);
+
+        //TODO: also, DON'T UPDATE ANY STATUSES !!!!           <<<---------------------------------------     <<------------------------------
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -257,7 +307,7 @@ public class TransportFacade {
             Site destSiteTemp = this.siteFacade.getShippingAreas().get(itemsDocDTO.getDest_siteDTO().getSiteAreaNum()).getSites().get(itemsDocDTO.getDest_siteDTO().getAddressString());
             String tempCName = destSiteTemp.getcName();
             long tempCNumber = destSiteTemp.getcNumber();
-            tempTransport.addDestSite(destSiteTemp, itemsDocDTO.getItemsDoc_num());
+            tempTransport.addDestSite(itemsDocDTO.getItemsDoc_num(), destSiteTemp);     ///    parameters were switched      <<<----------------------------------
 
             for (ItemDTO itemDTO : itemsDocDTO.getItemDTOs().keySet()){
                 tempTransport.addItem(itemsDocDTO.getItemsDoc_num(), itemDTO.getName(), itemDTO.getWeight(), itemsDocDTO.getItemDTOs().get(itemDTO), itemDTO.getCondition());
@@ -275,7 +325,7 @@ public class TransportFacade {
         for (Driver driv : this.employeeFacade.getDrivers().values()){
             for (String drivers_license : driv.getLicenses()){
                 for (Truck truc : this.truckFacade.getTrucksWareHouse().values()){
-                    if (truc.getValid_license().equals(drivers_license) && driv.isFree() && truc.isFree()){
+                    if (truc.getValid_license().equals(drivers_license) && driv.getInTransportID() == -1 && truc.getInTransportID() == -1){
                         isThereMatchAtAllBetweenLicenses = true;  // if already found
                         break;
                     }
@@ -295,12 +345,27 @@ public class TransportFacade {
         // else: continue to check other stuff
 
 
+        /// /////////////////////////////////    <<-------------------------------------   checking if the Driver-Truck pairing is free
+
+
+
+
+
+        //TODO   <<----------------------  add  "Occupied"
+        add
+
+
+
+
+
+
+
         /// /////////////////////////////////    <<-------------------------------------   checking if the Driver-Truck pairing is compatible
 
         boolean driver_has_correct_license = false;
         for (String drivers_license : driver.getLicenses()){
-            if (truck.getValid_license().equals(drivers_license) && driver.isFree() && truck.isFree()){
-                driver_has_correct_license = true;
+            if (truck.getValid_license().equals(drivers_license) && driver.getInTransportID() == -1 && truck.getInTransportID() == -1){  // also checking if these driver are free
+                driver_has_correct_license = true;                      //TODO split the if free ? and if compatible checks, and add another return string type "Occupied"
                 break;
             }
         }
@@ -360,6 +425,103 @@ public class TransportFacade {
 
 
 
+    public void addTransportProblem(int TransportID, int menu_Problem_option) throws FileNotFoundException, FileAlreadyExistsException {
+        if (!this.transports.containsKey(TransportID)) {
+            throw new FileNotFoundException("Transport ID doesn't exist.");
+        }
+
+        enumTranProblem probEnum = null;
+        if(menu_Problem_option == 1){
+            probEnum = enumTranProblem.Puncture;
+        }else if (menu_Problem_option == 2){
+            probEnum = enumTranProblem.HeavyTraffic;
+        }else if (menu_Problem_option == 3){
+            probEnum = enumTranProblem.RoadAccident;
+        }else if (menu_Problem_option == 4){
+            probEnum = enumTranProblem.UnresponsiveContact;
+        }else if (menu_Problem_option == 5){
+            probEnum = enumTranProblem.TruckVehicleProblem;
+        }else if (menu_Problem_option == 6){
+            probEnum = enumTranProblem.EmptyTruckGasTank;
+        }
+
+        if (this.transports.get(TransportID).addTransportProblem(probEnum) == -1){
+            throw new FileAlreadyExistsException("The problem you entered already exists in this Transport");
+        }
+    }
+
+
+    public void removeTransportProblem(int TransportID, int menu_Problem_option) throws FileNotFoundException, FileAlreadyExistsException {
+        if (!this.transports.containsKey(TransportID)) {
+            throw new FileNotFoundException("Transport ID doesn't exist.");
+        }
+
+        enumTranProblem probEnum = null;
+        if(menu_Problem_option == 1){
+            probEnum = enumTranProblem.Puncture;
+        }else if (menu_Problem_option == 2){
+            probEnum = enumTranProblem.HeavyTraffic;
+        }else if (menu_Problem_option == 3){
+            probEnum = enumTranProblem.RoadAccident;
+        }else if (menu_Problem_option == 4){
+            probEnum = enumTranProblem.UnresponsiveContact;
+        }else if (menu_Problem_option == 5){
+            probEnum = enumTranProblem.TruckVehicleProblem;
+        }else if (menu_Problem_option == 6){
+            probEnum = enumTranProblem.EmptyTruckGasTank;
+        }
+
+        if (this.transports.get(TransportID).removeTransportProblem(probEnum) == -1){
+            throw new FileAlreadyExistsException("The problem you entered already doesn't exists in this Transport");
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public void addDestSiteToTransport(int tran_ID, int itemsDoc_num, int destSiteArea, String destSiteAddress, String contName, long contNum) throws FileNotFoundException, FileAlreadyExistsException, CommunicationException {
+        if (!transports.containsKey(tran_ID)) {
+            throw new FileNotFoundException("The Transport ID you've entered doesn't exist.");
+        } else if (this.itemsDocs.containsKey(itemsDoc_num)) {
+            throw new FileAlreadyExistsException("The Site's Items Document Number you are trying to add already exists.");
+        }
+
+        ItemsDoc addition = this.transports.get(tran_ID).addDestSite(itemsDoc_num, new Site(new Address(destSiteArea, destSiteAddress), contName, contNum));
+        if (addition == null){
+            throw new CommunicationException("Destination Site already in this Transport, you can add items to that site instead.");
+        }
+
+        this.itemsDocs.put(itemsDoc_num, addition);
+    }
+
+
+    public void removeDestSiteFromTransport(int tran_ID, int itemsDoc_num) throws FileNotFoundException, CommunicationException, ClassNotFoundException {
+        if (!transports.containsKey(tran_ID)) {
+            throw new FileNotFoundException("The Transport ID you've entered doesn't exist.");
+        } else if (!this.itemsDocs.containsKey(itemsDoc_num)) {
+            throw new CommunicationException("The Site's Items Document Number you are trying to remove doesn't exist in the system.");
+        }
+
+        if (this.transports.get(tran_ID).removeDestSite(itemsDoc_num) == -1){ throw new ClassNotFoundException("The Site's Items Document Number is not in that Transport"); }
+        this.itemsDocs.remove(itemsDoc_num);
+    }
+
+
+
+
     public void setSiteArrivalIndexInTransport(int transportID, int siteArea, String siteAddress, int index) throws FileNotFoundException, ClassNotFoundException, AbstractMethodError {
         if (!this.transports.containsKey(transportID)){
             throw new FileNotFoundException("The transport ID given was not found");
@@ -386,18 +548,6 @@ public class TransportFacade {
 
 
 
-
-
-
-
-    public boolean checkValidItemsDocID(int currItemsDocNum) {
-        if (this.itemsDocs.containsKey(currItemsDocNum)) {
-            return false;
-        }
-        return true;
-    }
-
-
     public void changeAnItemsDocNum(int oldItemsDocNum, int newItemsDocNum) throws FileNotFoundException, KeyAlreadyExistsException {
         if (!this.itemsDocs.containsKey(oldItemsDocNum)) {
             throw new FileNotFoundException();
@@ -414,38 +564,11 @@ public class TransportFacade {
 
 
 
-
-
-    public void addTransportProblem(int TransportID, int menu_Problem_option) throws FileNotFoundException {
-        if (!this.transports.containsKey(TransportID)) {
-            throw new FileNotFoundException();
+    public boolean checkValidItemsDocID(int currItemsDocNum) {
+        if (this.itemsDocs.containsKey(currItemsDocNum)) {
+            return false;
         }
-        if ()
-        //TODO
-    }
-
-    public void removeTransportProblem(int TransportID, int menu_Problem_option) throws FileNotFoundException {
-        if (!this.transports.containsKey(TransportID)) {
-            throw new FileNotFoundException();
-        }
-        if ()
-        //TODO
-    }
-
-
-
-
-
-
-
-    // TODO: (throw msg exce if in new Area and give option)
-    public void addDestSiteToTransport(int tran_ID, int itemsDoc_num, int destSiteArea, String destSiteAddress) {  // TODO: (throw msg exce if in new Area and give option)
-        //TODO:  use site facade to send the Site downwards
-        //TODO:  also add site/itemsDoc to hashmap here
-    }
-
-    public void removeDestSiteFromTransport(int tran_ID, int itemsDoc_num){
-        //TODO:  also remove site/itemsDoc from hashmap here
+        return true;
     }
 
 
@@ -455,20 +578,52 @@ public class TransportFacade {
 
 
 
-    public void addItem(int itemsDoc_num, String itemName, int itemWeight, int amount, boolean cond){
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public void addItem(int itemsDoc_num, String itemName, int itemWeight, int amount, boolean cond) throws FileNotFoundException {
+        if (!this.itemsDocs.containsKey(itemsDoc_num)) { throw new FileNotFoundException("Item's Document ID not found"); }
+
         int res = this.itemsDocs.get(itemsDoc_num).addItem(itemName, itemWeight, cond, amount);
-        //TODO according to the return value  --->  throw
+        //Note: Right now there is no other error when adding an Item
     }
 
-    public void removeItem(int itemsDoc_num, String ItemName, int itemWeight, int amount, boolean cond){
-        int res = this.itemsDocs.get(itemsDoc_num).removeItem(ItemName, itemWeight, cond, amount);
-        //TODO according to the return value  --->  throw
+    public void removeItem(int itemsDoc_num, String itemName, int itemWeight, int amount, boolean cond) throws FileNotFoundException, ClassNotFoundException {
+        if (!this.itemsDocs.containsKey(itemsDoc_num)) { throw new FileNotFoundException("Item's Document ID not found"); }
+
+        int res = this.itemsDocs.get(itemsDoc_num).removeItem(itemName, itemWeight, cond, amount);
+        if (res == -1){
+            throw new ClassNotFoundException("Item to remove not found in that Items Document");
+        }
     }
 
-    public void setItemCond(int itemsDoc_num, String ItemName, int itemWeight, int amount, boolean newCond){
-        boolean res = this.itemsDocs.get(itemsDoc_num).setItemCond(ItemName, itemWeight, amount, newCond);
-        //TODO according to the return value  --->  throw
+    public void setItemCond(int itemsDoc_num, String itemName, int itemWeight, int amount, boolean newCond) throws FileNotFoundException, ClassNotFoundException {
+        if (!this.itemsDocs.containsKey(itemsDoc_num)) { throw new FileNotFoundException("Item's Document ID not found"); }
+
+        int res = this.itemsDocs.get(itemsDoc_num).setItemCond(itemName, itemWeight, amount, newCond);
+        if (res == -1){
+            throw new ClassNotFoundException("Item to change condition to was not found in that Items Document");
+        }
     }
+
+
+
 
 
 

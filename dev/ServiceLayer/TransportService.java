@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
+import javax.naming.CommunicationException;
 import java.io.FileNotFoundException;
 import java.nio.file.FileAlreadyExistsException;
 
@@ -69,11 +70,12 @@ public class TransportService {
 
 
 
+
     public String setTransportTruck(int TranDocID, int truckNum){
-        // TODO: check basic validity
+        if (TranDocID < 0 || truckNum < 0){ return "Transport Document number, Truck number values cannot be negative."; }
         try {
-            //TODO
-        } catch (FileAlreadyExistsException e) {
+            this.tran_f.setTransportTruck(TranDocID, truckNum);
+        } catch (FileAlreadyExistsException e) {  //TODO: catch all exception being thrown from the Domain Layer.
             return "";
         } catch (Exception e) {
             e.printStackTrace();
@@ -85,10 +87,10 @@ public class TransportService {
 
 
     public String setTransportDriver(int TranDocID, int DriverID){
-        // TODO: check basic validity
+        if (TranDocID < 0 || DriverID < 0){ return "Transport Document number, Driver ID values cannot be negative."; }
         try {
-            //TODO
-        } catch (FileAlreadyExistsException e) {
+            this.tran_f.setTransportDriver(TranDocID, DriverID);
+        } catch (FileAlreadyExistsException e) {  //TODO: catch all exception being thrown from the Domain Layer.
             return "";
         } catch (Exception e) {
             e.printStackTrace();
@@ -142,15 +144,68 @@ public class TransportService {
 
 
 
-    public String setSiteArrivalIndexInTransport(int transportID, int siteArea, String siteAddress, int index){
-        if (index < 0){    //  index should be 1, 2, ....
+
+
+
+
+
+
+
+    public String addDestSite(int tran_ID, int itemsDoc_num, int destSiteArea, String destSiteAddress, String contName, long contNum) {
+        if (tran_ID < 0 || itemsDoc_num < 0 || destSiteArea < 0 || contNum < 0){
+            return "The info numbers you have entered cannot be negative";
+        }
+        if (destSiteAddress.isEmpty() || destSiteAddress.isBlank() || contName.isEmpty() || contName.isBlank()){
+            return "The info strings you've entered cannot be empty";
+        }
+        try {
+            this.tran_f.addDestSiteToTransport(tran_ID, itemsDoc_num, destSiteArea, destSiteAddress, contName, contNum);
+        } catch (FileNotFoundException e) {
+            return "The Transport ID you've entered doesn't exist.";
+        } catch (FileAlreadyExistsException e) {
+            return "The Site's Items Document Number you are trying to add already exists.";
+        } catch (CommunicationException e) {
+            return "Destination Site already in this Transport, you can add items to that site instead.";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Exception";
+        }
+        return "Success";  //  if All Good
+    }
+
+
+    public String removeDestSite(int tran_ID, int itemsDoc_num){
+        if (tran_ID < 0 || itemsDoc_num < 0){
+            return "The info you entered cannot be negative";
+        }
+        try {
+            this.tran_f.removeDestSiteFromTransport(tran_ID, itemsDoc_num);
+        } catch (FileNotFoundException e) {
+            return "The Transport ID you've entered doesn't exist.";
+        } catch (CommunicationException e) {
+            return "The Site's Items Document Number you are trying to remove doesn't exist in the system.";
+        } catch (ClassNotFoundException e) {
+            return "The Site's Items Document Number is not in that Transport";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Exception";
+        }
+        return "Success";  //  if All Good
+    }
+
+
+
+
+    public String setSiteArrivalIndexInTransport(int transportID, int siteArea, String siteAddress, String index){
+        int intIndex = Integer.parseInt(index);
+        if (intIndex < 0){    //  index should be 1, 2, ....
             return "The Site Index in the arrival order cannot be negative";
         }
         if(transportID < 0 || siteArea < 0){
             return "The Transport ID and the Site Area cannot be negative";
         }
         try {
-            this.tran_f.setSiteArrivalIndexInTransport(transportID, siteArea, siteAddress, index);
+            this.tran_f.setSiteArrivalIndexInTransport(transportID, siteArea, siteAddress, intIndex);
         } catch (FileNotFoundException e) {
             return "The transport ID given was not found";
         } catch (ClassNotFoundException e) {
@@ -163,8 +218,6 @@ public class TransportService {
         }
         return "Success";  //  if All Good
     }
-
-
 
 
 
@@ -187,77 +240,6 @@ public class TransportService {
     }
 
 
-
-
-
-
-
-
-
-
-
-    public String addTransportProblem(int TransportID, String menu_Problem_option){
-        // TODO: check basic validity
-        try {
-            //TODO
-        } catch (FileAlreadyExistsException e) {
-            return "";
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "Exception";
-        }
-        return "Success";  //  if All Good
-    }
-
-    public String removeTransportProblem(int TransportID, String menu_Problem_option){
-        // TODO: check basic validity
-        try {
-            //TODO
-        } catch (FileAlreadyExistsException e) {
-            return "";
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "Exception";
-        }
-        return "Success";  //  if All Good
-    }
-
-
-
-
-
-
-
-
-
-    public String addDestSite(int tran_ID, int siteArea, String siteAddress) {  // (throw msg exce if in new Area and give option)
-        // TODO: check basic validity
-        try {
-            //TODO
-        } catch (FileAlreadyExistsException e) {
-            return "";
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "Exception";
-        }
-        return "Success";  //  if All Good
-    }
-
-    public String removeDestSite(int tran_ID, int siteArea, String siteAddress){
-        // TODO: check basic validity
-        try {
-            //TODO
-        } catch (FileAlreadyExistsException e) {
-            return "";
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "Exception";
-        }
-        return "Success";  //  if All Good
-    }
-
-
-
     public boolean checkValidItemsDocID(int currItemsDocNum) {  // very basic check
         if (currItemsDocNum < 0){  // very basic check
             return false;
@@ -272,12 +254,19 @@ public class TransportService {
 
 
 
-    public String addItem(int tranDocID, int siteArea, String siteAddress, String itemName, int itemWeight, int amount, boolean cond){
-        // TODO: check basic validity
+
+
+
+    public String addTransportProblem(int TransportID, String menu_Problem_option){
+        int intMenuProblemOption = Integer.parseInt(menu_Problem_option);
+        if (intMenuProblemOption < 1 || intMenuProblemOption > 6){ return "The Problem option number you have entered is out of existing problem's numbers bounds"; }
+        if (TransportID < 0){ return "The Transport ID you've entered is invalid (it's negative)"; }
         try {
-            //TODO
+            this.tran_f.addTransportProblem(TransportID, intMenuProblemOption);
+        } catch (FileNotFoundException e) {
+            return "Transport ID doesn't exist.";
         } catch (FileAlreadyExistsException e) {
-            return "";
+            return "The problem you entered already exists in this Transport";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -285,12 +274,16 @@ public class TransportService {
         return "Success";  //  if All Good
     }
 
-    public String removeItem(int tranDocID, int siteArea, String siteAddress, String ItemName, int itemWeight, int amount, boolean cond){
-        // TODO: check basic validity
+    public String removeTransportProblem(int TransportID, String menu_Problem_option){
+        int intMenuProblemOption = Integer.parseInt(menu_Problem_option);
+        if (intMenuProblemOption < 1 || intMenuProblemOption > 6){ return "The Problem option number you have entered is out of existing problem's numbers bounds"; }
+        if (TransportID < 0){ return "The Transport ID you've entered is invalid (it's negative)"; }
         try {
-            //TODO
+            this.tran_f.removeTransportProblem(TransportID, intMenuProblemOption);
+        } catch (FileNotFoundException e) {
+            return "Transport ID doesn't exist.";
         } catch (FileAlreadyExistsException e) {
-            return "";
+            return "The problem you entered already doesn't exists in this Transport";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -298,18 +291,86 @@ public class TransportService {
         return "Success";  //  if All Good
     }
 
-    public String setItemCond(int tranDocID, int siteArea, String siteAddress, String ItemName, int itemWeight, int amount, boolean cond){
-        // TODO: check basic validity
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public String addItem(int itemsDocNum, String itemName, int itemWeight, int amount, boolean cond){
+        if (itemName.isEmpty() || itemName.isBlank()){ return "Item's name cannot be empty"; }
+        if (itemsDocNum < 0 || itemWeight < 0 || amount < 0){ return "Item's document number/weight/amount cannot be negative"; }
         try {
-            //TODO
-        } catch (FileAlreadyExistsException e) {
-            return "";
+            this.tran_f.addItem(itemsDocNum, itemName, itemWeight, amount, cond);
+        } catch (FileNotFoundException e) {
+            return "Item's Document ID not found";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
         }
         return "Success";  //  if All Good
     }
+
+
+    public String removeItem(int itemsDocNum, String itemName, int itemWeight, int amount, boolean cond){
+        if (itemName.isEmpty() || itemName.isBlank()){ return "Item's name cannot be empty"; }
+        if (itemsDocNum < 0 || itemWeight < 0 || amount < 0){ return "Item's document number/weight/amount cannot be negative"; }
+        try {
+            this.tran_f.removeItem(itemsDocNum, itemName, itemWeight, amount, cond);
+        } catch (FileNotFoundException e) {
+            return "Item's Document ID not found";
+        } catch (ClassNotFoundException e) {
+            return "Item to remove not found in that Items Document";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Exception";
+        }
+        return "Success";  //  if All Good
+    }
+
+
+    public String setItemCond(int itemsDocNum, String itemName, int itemWeight, int amount, boolean cond){
+        if (itemName.isEmpty() || itemName.isBlank()){ return "Item's name cannot be empty"; }
+        if (itemsDocNum < 0 || itemWeight < 0 || amount < 0){ return "Item's document number/weight/amount cannot be negative"; }
+        try {
+            this.tran_f.setItemCond(itemsDocNum, itemName, itemWeight, amount, cond);
+        } catch (FileNotFoundException e) {
+            return "Item's Document ID not found";
+        } catch (ClassNotFoundException e) {
+            return "Item to change condition to was not found in that Items Document";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Exception";
+        }
+        return "Success";  //  if All Good
+    }
+
+
+
+
+
+
 
 
 
