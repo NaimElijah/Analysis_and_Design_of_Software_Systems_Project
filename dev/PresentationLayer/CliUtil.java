@@ -392,13 +392,26 @@ public class CliUtil {
      * @param userInfo Information about the current user
      */
     public static void printWelcomeBanner(String title, String currentDate, String userInfo) {
-        System.out.println(CYAN + "╔══════════════════════════════════════════════════╗" + RESET);
-        System.out.println(CYAN + "║" + RESET + "                                                  " + CYAN + "║" + RESET);
-        System.out.println(CYAN + "║" + RESET + BOLD + BLUE + String.format("%42s", title) + RESET + CYAN + "║" + RESET);
-        System.out.println(CYAN + "║" + RESET + "                                                  " + CYAN + "║" + RESET);
-        System.out.println(CYAN + "╠══════════════════════════════════════════════════╣" + RESET);
-        System.out.println(CYAN + "║" + RESET + YELLOW + "                    Welcome!                     " + RESET + CYAN + "║" + RESET);
-        System.out.println(CYAN + "╚══════════════════════════════════════════════════╝" + RESET);
+        int totalWidth = 50; // width between the borders ║....║
+        System.out.println(CYAN + "╔" + "═".repeat(totalWidth) + "╗" + RESET);
+        System.out.println(CYAN + "║" + " ".repeat(totalWidth) + "║" + RESET);
+
+        // Center the title
+        int padding = (totalWidth - title.length()) / 2;
+        String centeredTitle = " ".repeat(Math.max(0, padding)) + title + " ".repeat(Math.max(0, totalWidth - padding - title.length()));
+        System.out.println(CYAN + "║" + RESET + BOLD + BLUE + centeredTitle + RESET + CYAN + "║" + RESET);
+
+        System.out.println(CYAN + "║" + " ".repeat(totalWidth) + "║" + RESET);
+        System.out.println(CYAN + "╠" + "═".repeat(totalWidth) + "╣" + RESET);
+
+        // Welcome text
+        String welcome = "Welcome!";
+        padding = (totalWidth - welcome.length()) / 2;
+        String centeredWelcome = " ".repeat(Math.max(0, padding)) + welcome + " ".repeat(Math.max(0, totalWidth - padding - welcome.length()));
+        System.out.println(CYAN + "║" + RESET + YELLOW + centeredWelcome + RESET + CYAN + "║" + RESET);
+
+        System.out.println(CYAN + "╚" + "═".repeat(totalWidth) + "╝" + RESET);
+
         System.out.println(GREEN + "Current date: " + RESET + currentDate);
         System.out.println(GREEN + "Logged in as: " + RESET + userInfo);
     }
