@@ -54,6 +54,10 @@ public class ShiftSL {
         return shift.getUpdateDate();
     }
 
+    public String getHours() {
+        return shift.getHours();
+    }
+
     // Setters
     public void setShiftType(ShiftType shiftType) {
         shift.setShiftType(shiftType);
@@ -80,6 +84,10 @@ public class ShiftSL {
 
     public void setUpdateDate(LocalDate updateDate) {
         shift.setUpdateDate(updateDate);
+    }
+
+    public void setCreateDate(LocalDate createDate) {
+        shift.setCreateDate(createDate);
     }
 
 

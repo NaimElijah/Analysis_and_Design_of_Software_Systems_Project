@@ -74,6 +74,7 @@ class ShiftServiceTest {
         rolesRequired.put("CASHIER", 2);
         Map<String, Set<Long>> assignedEmployees = new HashMap<>();
         Set<Long> availableEmployees = new HashSet<>();
+        String hours = "08:00-16:00";
 
         // Mock the employee authorization
         // This would normally be done by adding the employee to the EmployeeController
@@ -81,7 +82,7 @@ class ShiftServiceTest {
 
         String result = shiftService.createShift(employeeId, shiftType, date, rolesRequired, 
                                                assignedEmployees, availableEmployees, 
-                                               false, true, LocalDate.now());
+                                               false, true,hours, LocalDate.now());
 
         // Since we don't have a real employee with permissions, this will likely fail
         // In a real test, we would add an employee with the necessary permissions
@@ -98,10 +99,11 @@ class ShiftServiceTest {
         rolesRequired.put("CASHIER", 2);
         Map<String, Set<Long>> assignedEmployees = new HashMap<>();
         Set<Long> availableEmployees = new HashSet<>();
+        String hours = "08:00-16:00";
 
         shiftService.createShift(employeeId, shiftType, date, rolesRequired, 
                                assignedEmployees, availableEmployees, 
-                               false, true, LocalDate.now());
+                               false, true,hours, LocalDate.now());
 
         // Get the shift ID
         ShiftSL[] shifts = shiftService.getAllShifts(employeeId);
@@ -124,10 +126,11 @@ class ShiftServiceTest {
         rolesRequired.put("CASHIER", 2);
         Map<String, Set<Long>> assignedEmployees = new HashMap<>();
         Set<Long> availableEmployees = new HashSet<>();
+        String hours = "08:00-16:00";
 
         shiftService.createShift(employeeId, shiftType, date, rolesRequired, 
                                assignedEmployees, availableEmployees, 
-                               false, true, LocalDate.now());
+                               false, true,hours, LocalDate.now());
 
         // Get the shift ID
         ShiftSL[] shifts = shiftService.getAllShifts(employeeId);
@@ -147,6 +150,7 @@ class ShiftServiceTest {
         LocalDate startDate = LocalDate.now().plusDays(1);
         Map<String, Integer> rolesRequired = new HashMap<>();
         rolesRequired.put("CASHIER", 2);
+        String hours = "08:00-16:00";
 
         shiftService.createWeeklyShifts(employeeId, startDate, rolesRequired);
 

@@ -34,10 +34,11 @@ public class ShiftController {
      * @param assignedEmployees      employees assigned to the shift
      * @param isAssignedShiftManager true if the shift has a shift manager assigned, false otherwise
      * @param isOpen                 true if the place is open
+     * @param hours                  the hours of the shift
      * @param updateDate             the date of the last update
      * @return true if the shift was created successfully, false otherwise
      */
-    public boolean createShift(long doneBy,ShiftType shiftType, LocalDate date, Map<String, Integer> rolesRequired, Map<String, Set<Long>> assignedEmployees, Set<Long> availableEmployees, boolean isAssignedShiftManager, boolean isOpen, LocalDate updateDate) {
+    public boolean createShift(long doneBy,ShiftType shiftType, LocalDate date, Map<String, Integer> rolesRequired, Map<String, Set<Long>> assignedEmployees, Set<Long> availableEmployees, boolean isAssignedShiftManager, boolean isOpen,String hours ,LocalDate updateDate) {
         String PERMISSION_REQUIRED = "CREATE_SHIFT";
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to create shift");
@@ -51,7 +52,7 @@ public class ShiftController {
 //        if (date.isBefore(LocalDate.now())) {
 //            throw new IllegalArgumentException("Date cannot be in the past");
 //        }
-        Shift newShift = new Shift(shiftIdCounter, shiftType, date, rolesRequired, assignedEmployees, availableEmployees, isAssignedShiftManager, isOpen, updateDate);
+        Shift newShift = new Shift(shiftIdCounter, shiftType, date, rolesRequired, assignedEmployees, availableEmployees, isAssignedShiftManager, isOpen, hours, updateDate);
         shiftIdCounter++;
         boolean addedToWeekly = addShiftToWeekly(newShift);
         boolean added = shifts.add(newShift);
@@ -120,7 +121,8 @@ public class ShiftController {
         boolean isOpen = (type == ShiftType.MORNING && date.getDayOfWeek() != DayOfWeek.SATURDAY)
                 || (type == ShiftType.EVENING && date.getDayOfWeek() != DayOfWeek.FRIDAY && date.getDayOfWeek() != DayOfWeek.SATURDAY);
 
-        Shift shift = new Shift(shiftIdCounter++, type, date, rolesRequired, assignedEmployees, availableEmployees, false, isOpen, LocalDate.now());
+        String hours = type == ShiftType.MORNING ? "9:00 AM - 4:00 PM" : "4:00 PM - 8:00 PM";
+        Shift shift = new Shift(shiftIdCounter++, type, date, rolesRequired, assignedEmployees, availableEmployees, false, isOpen,hours, LocalDate.now());
 
         boolean added = shifts.add(shift);
         // Even if the shift wasn't added to the weekly shifts map, it's still in the shifts set
@@ -177,7 +179,7 @@ public class ShiftController {
      * @param updateDate             the date of the last update
      * @return true if the shift was updated successfully, false otherwise
      */
-    public boolean updateShift(long doneBy, long shiftId,ShiftType shiftType, LocalDate date, boolean isAssignedShiftManager, boolean isOpen, LocalDate updateDate) {
+    public boolean updateShift(long doneBy, long shiftId,ShiftType shiftType, LocalDate date, boolean isAssignedShiftManager, boolean isOpen,String hours, LocalDate updateDate) {
         String PERMISSION_REQUIRED = "UPDATE_SHIFT";
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to update shift");
@@ -211,6 +213,7 @@ public class ShiftController {
         shiftToUpdate.setShiftDate(date);
         shiftToUpdate.setAssignedShiftManager(isAssignedShiftManager);
         shiftToUpdate.setOpen(isOpen);
+        shiftToUpdate.setHours(hours);
         shiftToUpdate.setUpdateDate(updateDate);
         return true;
     }

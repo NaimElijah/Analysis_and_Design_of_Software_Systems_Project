@@ -23,10 +23,10 @@ public class ShiftService {
                               Map<String, Set<Long>> assignedEmployees,
                               Set<Long> availableEmployees,
                               boolean isAssignedShiftManager,
-                              boolean isOpen, LocalDate updateDate) {
+                              boolean isOpen,String hours, LocalDate updateDate) {
         try {
             boolean result = shiftController.createShift(doneBy, shiftType, date, rolesRequired, assignedEmployees,
-                    availableEmployees, isAssignedShiftManager, isOpen, updateDate);
+                    availableEmployees, isAssignedShiftManager, isOpen,hours, updateDate);
             return result ? "Shift created successfully" : "Failed to create shift";
         } catch (RuntimeException e) {
             return "Error: " + e.getMessage();
