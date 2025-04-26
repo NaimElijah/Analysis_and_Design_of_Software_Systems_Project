@@ -25,9 +25,9 @@ public class ShiftCLI {
 
     /**
      * Constructor for ShiftCLI
-     * @param shiftService
-     * @param employeeService
-     * @param doneBy
+     * @param shiftService ShiftService
+     * @param employeeService EmployeeService
+     * @param doneBy User ID
      */
     public ShiftCLI(ShiftService shiftService, EmployeeService employeeService, long doneBy) {
         this.shiftService = shiftService;
@@ -135,7 +135,7 @@ public class ShiftCLI {
             }
 
             // Delete Shift
-            if (hasPermission("DELETE_SHIFT")) {
+            if (hasPermission("REMOVE_SHIFT")) {
                 if (choiceNum == currentOption++) {
                     deleteShift();
                     return true;
