@@ -35,10 +35,15 @@ public class AuthorisationController {
             throw new InvalidInputException("Permission required cannot be null or empty");
         }
 
-        return employee.getRoles()
+        boolean hasPermission = employee.getRoles()
                 .stream()
                 .anyMatch(role -> roles.containsKey(role) && roles.get(role).contains(permissionRequired));
 
+        if (!hasPermission) {
+            throw new UnauthorizedPermissionException("Employee does not have the required permission: " + permissionRequired);
+        }
+
+        return true;
     }
 
     /**

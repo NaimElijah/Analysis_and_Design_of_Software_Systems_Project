@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
 public class EmployeeCLI {
 
@@ -45,9 +44,9 @@ public class EmployeeCLI {
         boolean running = true;
 
         while (running) {
-            displayMenu();
+            int max = displayMenu();
             String choice = scanner.nextLine();
-            running = processMenuChoice(choice);
+            running = processMenuChoice(choice, max);
         }
     }
 
@@ -57,8 +56,9 @@ public class EmployeeCLI {
 
     /**
      * Displays the main menu with options based on user permissions
+     * @return The number of menu options
      */
-    private void displayMenu() {
+    private int displayMenu() {
         CliUtil.printEmptyLine();
         printSectionHeader("Main Menu");
 
@@ -113,7 +113,7 @@ public class EmployeeCLI {
             menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Remove Permission from Role");
         }
 
-        menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Back To Main Menu");
+        menuOptions.add(CliUtil.YELLOW + optionNumber + CliUtil.RESET + ". Back To Main Menu");
 
         // Print the menu options
         for (String option : menuOptions) {
@@ -122,20 +122,27 @@ public class EmployeeCLI {
 
         CliUtil.printEmptyLine();
         CliUtil.printPrompt("Enter your choice: ");
+        return menuOptions.size();
     }
 
     /**
      * Processes the user's menu choice
      *
      * @param choice The user's input choice
+     * @param max The maximum valid choice number
      * @return true to continue in the menu, false to return to main menu
      */
-    private boolean processMenuChoice(String choice) {
+    private boolean processMenuChoice(String choice, int max) {
         CliUtil.printEmptyLine();
 
         try {
             int choiceNum = Integer.parseInt(choice);
             int currentOption = 1;
+
+            if (choiceNum < 1 || choiceNum > max) {
+                printError("Invalid choice. Please enter a number between 1 and " + max + ".");
+                return true;
+            }
 
             // Employee Management Section
             if (choiceNum == currentOption++) {
@@ -308,11 +315,8 @@ public class EmployeeCLI {
         try {
             employeeService.isEmployeeAuthorised(doneBy, permission);
             return true;
-        } catch (AuthorizationException e) {
-            printError(e.getMessage());
-            return false;
         } catch (Exception e) {
-            printError("Error checking permissions.");
+            //printError("Error checking permissions: " + e.getMessage());
             return false;
         }
     }
