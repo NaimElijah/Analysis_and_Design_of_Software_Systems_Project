@@ -185,6 +185,8 @@ public class TranManController {
                 if (!siteExists){
                     areasNumsUptoNow.remove(currSiteAreaNum);
                     System.out.println("Site Doesn't Exist, please choose a site that actually exists.\n");
+                } else {  // siteExists
+                    break;
                 }
             }
 
@@ -255,27 +257,28 @@ public class TranManController {
 
 
 
-
         /// ////////////////////////////////////////////    NOW WE'LL DO THE CHECKS          <<<-----------------------------------------
 
 
-        checkIfTransportDTOIsValid(transportDTO);
+        String resValid = checkIfTransportDTOIsValid(transportDTO);
 
-        System.out.println("Okay, Transport is Valid :)");
+        if (resValid.equals("Valid")){
+            System.out.println("Okay, Transport is Valid :)");
 
-        String resOfNewTransportAddition = "";
-        try {
-            resOfNewTransportAddition = this.tra_ser.createTransport(objectMapper.writeValueAsString(transportDTO));  /// <<------  HERE WE CREATE THE TRANSPORT AFTER THE CHECKS
-        } catch (Exception e) {
-            System.out.println("Serialization's fault");
-            e.printStackTrace();
+            String resOfNewTransportAddition = "";
+            try {
+                resOfNewTransportAddition = this.tra_ser.createTransport(objectMapper.writeValueAsString(transportDTO), -100);  /// <<------  HERE WE CREATE THE TRANSPORT AFTER THE CHECKS
+            } catch (Exception e) {
+                System.out.println("Serialization's fault");
+                e.printStackTrace();
+            }
+
+            if(resOfNewTransportAddition.equals("Success")){
+                System.out.println("Successfully Added Transport, You can view the Transport's Details (and it's given ID) using the Menu.\n");
+            } else if(resOfNewTransportAddition.equals("Exception")){
+                System.out.println("Failed to add Transport due to technical machine error\n");
+            }else { System.out.println(resOfNewTransportAddition + "\n"); }
         }
-
-        if(resOfNewTransportAddition.equals("Success")){
-            System.out.println("Successfully Added Transport, You can view the Transport's Details (and it's given ID) using the Menu.\n");
-        } else if(resOfNewTransportAddition.equals("Exception")){
-            System.out.println("Failed to add Transport due to technical machine error\n");
-        }else { System.out.println(resOfNewTransportAddition + "\n"); }
 
         System.out.println();
         transportsOptionsMenu();
@@ -287,7 +290,7 @@ public class TranManController {
 
     private void transportPairingRePlanning(TransportDTO transportDTO) {
         //  Note: if we got to here it seems there is a possible pairing in the system right now. (because we didn't automatically go to the "Queue")
-        System.out.println("The Good news is that we've Detected that a Driver-Truck Pairing for this Transport is Available, so let's try and choose a matching pair:");
+        System.out.println("The Good news is that we've Detected that a Compatible Driver-Truck Pairing is Available, try and choose a matching pair:");
         System.out.println("These are the available Trucks and the available Drivers, from them, let's choose a new Truck-Driver pairing for your Transport:\n");
         System.out.println("Available Trucks:\n" + this.tru_ser.showTrucks() + "\n");
         System.out.println("Available Drivers: \n" + this.emp_ser.showDrivers() + "\n");
@@ -410,7 +413,7 @@ public class TranManController {
 
             } else {
                 System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
-                //  not changing stillLoopingInReplanningChiceLoop (boolean) so it remains true and will ask for an option choice again.
+                //  not changing stillLoopingInReplanningChoiceLoop (boolean) so it remains true and will ask for an option choice again.
             }
         }
         // and then it will check validity again in the caller function
@@ -424,7 +427,7 @@ public class TranManController {
 
 
 
-    private void checkIfTransportDTOIsValid(TransportDTO transportDTO){
+    private String checkIfTransportDTOIsValid(TransportDTO transportDTO){
         System.out.println("Checking Transport Validity...");
 
         String resOfTransportCheck = "";
@@ -439,9 +442,11 @@ public class TranManController {
         while (!resOfTransportCheck.equals("Valid")){
             System.out.println("There seems There is a problem with The Transport you're trying to create:\n");
             if (resOfTransportCheck.equals("Queue")){
-                System.out.println("This Transport doesn't have a proper Truck-Driver matching available at all right now, so this Transport will now go automatically into the Queued Transports.");
+                System.out.println("This Transport doesn't have a proper Truck-Driver matching available at all right now.");
+                System.out.println("If this is a new Transport, this Transport will now go automatically into the Queued Transports.");
+                System.out.println("If it's an already Queued Transport that is being checked again, it will remain where it is in the Queued Transports.");
                 System.out.println("We save the Queued Transports in order of creation, so when you want to, you can go to (Transports Options Menu)->((3)  Check if a Queued Transport Can Be Sent) "); //TODO: add path
-                System.out.println("And try to send out the next transport to be sent, in the Queued Transports order, you can of course also delete that transport Using the Menu.\n");
+                System.out.println("And try to send out a Queued Transport, you can of course also delete that transport using the Menu.\n");
                 break;
 
             } else if (resOfTransportCheck.equals("Occupied")){
@@ -465,7 +470,7 @@ public class TranManController {
                 e.printStackTrace();
             }
         }
-
+        return resOfTransportCheck;
 
     }
 
@@ -476,8 +481,8 @@ public class TranManController {
 
     private void checkIfQueuedTransportCanBeSent(){
         System.out.println("   --------    Transport Queue Checkup    --------\n");
-        System.out.println("(1)  View All Queued Transports (In Queue Order)");
-        System.out.println("(2)  Try Sending Head (1) Queued Transport");
+        System.out.println("(1)  View All Queued Transports");
+        System.out.println("(2)  Try Initiating a Queued Transport");
         System.out.println("(3)  Back to Transports Options Menu");
         System.out.println();
         System.out.println(" Select Option: ");
@@ -488,47 +493,52 @@ public class TranManController {
 
 
 
-
         }else if(choice.equals("2")){
+            System.out.println("These are all of the Queued Transports, choose one you want to try to Initiate:");
+            System.out.println(this.tra_ser.showAllQueuedTransports());
+            System.out.println("\nEnter your choice");
+            int choiceInt = Integer.parseInt(scanner.nextLine());
 
-            String resOfcheckIfCanGo = this.tra_ser.checkIfFirstQueuedTransportsCanGo();
+            String resTransportDTOAsJson = this.tra_ser.getAQueuedTransportAsDTOJson(choiceInt);
+            
+            if (resTransportDTOAsJson.equals("index")){
+                System.out.println("The index you've entered in invalid. (it's above the last index)\n");
+            } else if (resTransportDTOAsJson.equals("Json")) {
+                System.out.println("JsonProcessingException\n");
+            } else if (resTransportDTOAsJson.equals("noQueued")) {
+                System.out.println("There are no Queued Transports.\n");
+            } else if (resTransportDTOAsJson.equals("Exception")) {
+                System.out.println("machine error Exception\n");
+            }else {   /// if got a TransportDTOAsJson result
 
-            //TODO:  so we basically do exactly as we did before when we created a Transport.
-            //TODO: also use the checkIfTransportDTOIsValid function.
+                TransportDTO transport_DTO = null;
+                try {
+                    transport_DTO = this.objectMapper.readValue(resTransportDTOAsJson, TransportDTO.class);
+                } catch (Exception e) {
+                    System.out.println("Serialization's fault");
+                    e.printStackTrace();
+                }
 
-            TransportDTO transport_DTO = null;
-            try {
-                transport_DTO = this.objectMapper.readValue(resOfcheckIfCanGo, TransportDTO.class);   //  see what to do about the return value of the resOfcheckIfCanGo
-            } catch (Exception e) {
-                System.out.println("Serialization's fault");
-                e.printStackTrace();
+                String resValid = checkIfTransportDTOIsValid(transport_DTO);   //  checking loop
+
+                if (resValid.equals("Valid")){
+                    System.out.println("Hurray, the Queued Transport you chose is now Valid :)");  //  because got to this line
+
+                    String resOfNewTransportAddition = "";
+                    try {
+                        resOfNewTransportAddition = this.tra_ser.createTransport(objectMapper.writeValueAsString(transport_DTO), choiceInt);  /// <<------  HERE WE CREATE THE TRANSPORT AFTER THE CHECKS
+                    } catch (Exception e) {
+                        System.out.println("Serialization's fault");
+                        e.printStackTrace();
+                    }
+
+                    if(resOfNewTransportAddition.equals("Success")){
+                        System.out.println("Successfully Added Transport, You can view the Transport's Details (and it's given ID) using the Menu.\n");
+                    } else if(resOfNewTransportAddition.equals("Exception")){
+                        System.out.println("Failed to add Transport due to technical machine error\n");
+                    }else { System.out.println(resOfNewTransportAddition + "\n"); }
+                }
             }
-
-            checkIfTransportDTOIsValid(transport_DTO);
-
-            System.out.println("Okay, Transport is Valid :)");
-
-            String resOfNewTransportAddition = "";
-            try {
-                resOfNewTransportAddition = this.tra_ser.createTransport(objectMapper.writeValueAsString(transport_DTO));  /// <<------  HERE WE CREATE THE TRANSPORT AFTER THE CHECKS
-            } catch (Exception e) {
-                System.out.println("Serialization's fault");
-                e.printStackTrace();
-            }
-
-            if(resOfNewTransportAddition.equals("Success")){
-                System.out.println("Successfully Added Transport, You can view the Transport's Details (and it's given ID) using the Menu.\n");
-            } else if(resOfNewTransportAddition.equals("Exception")){
-                System.out.println("Failed to add Transport due to technical machine error\n");
-            }else { System.out.println(resOfNewTransportAddition + "\n"); }
-
-
-//            if (resOfcheckIfCanGo.equals("Queue")){
-//                System.out.println("Seems that the First Transport in the Queued Transports still can't go, you can keep it there, or you can edit and delete it if you'd like");
-//            }else if (resOfcheckIfCanGo.equals("Valid")){
-//                System.out.println("Hurray, The First ");
-//            }
-
 
 
 

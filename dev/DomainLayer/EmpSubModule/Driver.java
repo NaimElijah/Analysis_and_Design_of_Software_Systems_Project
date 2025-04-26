@@ -9,7 +9,7 @@ public class Driver extends Employee{
     private int inTransportID;
 
 
-    public Driver(int id, String fname, String lname, int permissions, ArrayList<enumDriLicense> licenses) {
+    public Driver(int id, String fname, String lname, enumPermissionRank permissions, ArrayList<enumDriLicense> licenses) {
         super(id, fname, lname, permissions);
         this.licenses = licenses;
         this.inTransportID = -1;  // not assigned yet

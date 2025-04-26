@@ -22,10 +22,11 @@ public class TransportDoc {
     private Site src_site;
     private ArrayList<ItemsDoc> dests_Docs;  ///  <<<--------------  In Order of visit   <<<--------------------
     private ArrayList<enumTranProblem> problems;
-//    private boolean isProvider;    // TODO  !!!!!!  if true then provider and roles in this clas change(src is gonna from where we get the items(provider itself)....)  <<--------
+//    private boolean isProviding;   // TODO  !!!!!!  if true then roles in this class change(src is gonna from where we get the items and ....  <<--------
 
     public TransportDoc(enumTranStatus status, int tran_Doc_ID, Truck transportTruck, Driver transportDriver, Site src_site) {
         this.status = status;
+//        this.isProviding = arggg;
         this.tran_Doc_ID = tran_Doc_ID;
         this.departure_dt = LocalDateTime.now();   // In the code, if it doesn't depart immediately, this always updates right before genuine departure.
         this.transportTruck = transportTruck;

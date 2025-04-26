@@ -3,19 +3,21 @@ package ServiceLayer;
 import DomainLayer.TranSubModule.TransportFacade;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import javax.management.AttributeNotFoundException;
 import javax.management.openmbean.KeyAlreadyExistsException;
 import javax.naming.CommunicationException;
 import java.io.FileNotFoundException;
 import java.nio.file.FileAlreadyExistsException;
+import java.util.ArrayList;
 
 public class TransportService {
     private TransportFacade tran_f;
     public TransportService(TransportFacade tf) { this.tran_f = tf; }
 
 
-    public String createTransport(String transportDTO){
+    public String createTransport(String transportDTO, int queuedIndexIfWasQueued){
         try {
-            this.tran_f.createTransport(transportDTO);
+            this.tran_f.createTransport(transportDTO, queuedIndexIfWasQueued);
         } catch (JsonProcessingException e) {
             return "JSON's Error Exception";
         } catch (Exception e) {
@@ -139,12 +141,18 @@ public class TransportService {
 
 
 
-    public String checkIfFirstQueuedTransportsCanGo(){
+    public String getAQueuedTransportAsDTOJson(int index){
         String res = "";
+        if (index < 1){ return "The index you've entered in invalid. (it's below the Starting index which is 1)"; }
         try {
-            res = this.tran_f.checkIfFirstQueuedTransportsCanGo();
-        } catch (FileAlreadyExistsException e) {
-            return "";
+            res = this.tran_f.getAQueuedTransportAsDTOJson(index);
+        } catch (IndexOutOfBoundsException e) {
+            return "index";
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return "Json";
+        } catch (AttributeNotFoundException e) {
+            return "noQueued";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";

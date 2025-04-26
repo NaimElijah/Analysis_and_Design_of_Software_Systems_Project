@@ -28,6 +28,7 @@ import java.util.HashMap;
 
 public class TransportFacade {
     private HashMap<Integer, TransportDoc> transports;
+//    private HashMap<Integer, TransportDoc> providing_transports;   //TODO:    <<<---------------------------   maybe do 2 hash maps like this (prividing & collecting)
     private int transportIDCounter;     ///   <<<---------------------------------    for the transport Docs ID's
     private HashMap<Integer, ItemsDoc> itemsDocs;  // to know an ItemsDoc's num is unique like required.
     private ArrayList<TransportDoc> queuedTransports;
@@ -58,7 +59,7 @@ public class TransportFacade {
 
 
 
-    public void createTransport(String DTO_OfTransport) throws JsonProcessingException {  // time is decided when the Transport departs
+    public void createTransport(String DTO_OfTransport, int queuedIndexIfWasQueued) throws JsonProcessingException {  // time is decided when the Transport departs
         ///  NOTE: I already did all of the checks beforehand, so if we get to here, then we can successfully and legitimately create the Transport
 
         TransportDTO transport_DTO = this.objectMapper.readValue(DTO_OfTransport, TransportDTO.class);
@@ -73,8 +74,16 @@ public class TransportFacade {
             }
         }
 
-        TransportDoc newTransportBeingCreated = new TransportDoc(enumTranStatus.BeingAssembled, this.transportIDCounter, truck, driver, srcSite);
-        this.transportIDCounter++;
+        int tra_id = -98; // just init
+        if (queuedIndexIfWasQueued != -100){   // if was queued
+            tra_id = this.queuedTransports.get(queuedIndexIfWasQueued-1).getTran_Doc_ID();  // getting his already allocated Transport ID
+            this.queuedTransports.remove(queuedIndexIfWasQueued - 1);   // removing him from the queue
+        } else {   // if new Transport
+            tra_id = this.transportIDCounter;
+            this.transportIDCounter++;
+        }
+
+        TransportDoc newTransportBeingCreated = new TransportDoc(enumTranStatus.BeingAssembled, tra_id, truck, driver, srcSite);
 
         /// add the ItemsDocs and the Items that should be in them from the itemsDocDTOs:
         for (ItemsDocDTO itemsDocDTO : transport_DTO.getDests_Docs()){
@@ -431,29 +440,25 @@ public class TransportFacade {
 
 
 
-    public String checkIfFirstQueuedTransportsCanGo() throws AttributeNotFoundException, JsonProcessingException {
+
+
+
+
+
+    public String getAQueuedTransportAsDTOJson(int index) throws IndexOutOfBoundsException, AttributeNotFoundException, JsonProcessingException {
         if(!this.queuedTransports.isEmpty()){
-
-            TransportDoc firstTransport = queuedTransports.get(0);
-            TransportDTO transportDTO = convertTransportDocToTransportDTO(firstTransport);
-            String res = this.checkTransportValidity(objectMapper.writeValueAsString(transportDTO));
-            if(res.equals("Valid")){
-                this.queuedTransports.remove(0);  // becasue in the caller function we are going to create that Transport as a regular one, not a queued one.
+            if (index > this.queuedTransports.size()) {   //  the index is going to be 1, 2...
+                throw new IndexOutOfBoundsException("The index you've entered in invalid. (it's above the last index which is " + this.queuedTransports.size() + ")");
             }
-            return res;
+            TransportDoc queuedTransport = queuedTransports.get(index-1);
+            TransportDTO transportDTO = convertTransportDocToTransportDTO(queuedTransport);
+            String transportDTOAsJson = objectMapper.writeValueAsString(transportDTO);
+
+            return transportDTOAsJson;
         }else {
-            throw new AttributeNotFoundException("The Queued Transports Queue is empty.");
+            throw new AttributeNotFoundException("There are no Queued Transports.");
         }
-
-        //TODO:  it'll be a problem if when we can send it there will be a problem with the weight, so when checking if can go, then prompt the rePlanning
-        //TODO:  after checking with checkTransportValidity again.
-        //TODO: if can be sent, then: change driver's and truck's inTransportID's and TransportDoc Status
-        //TODO: also make the departure_datetime of the Transport up to date (to now).
-        //TODO: also make the truck_depart_weight of the Transport up to date (with the calculation function I made).
     }
-
-
-
 
 
 
@@ -477,12 +482,6 @@ public class TransportFacade {
                 ItemDTO itemDTO = new ItemDTO(item.getName(), item.getWeight(), item.getCondition());
                 itemDTOs.put(itemDTO, itemsDoc.getGoodItems().get(item));
             }
-
-            //TODO: add to the itemDTOs    <<<---------------------------------     <<<---------------------------
-            //TODO: add to the itemDTOs    <<<---------------------------------     <<<---------------------------
-            //TODO: add to the itemDTOs    <<<---------------------------------     <<<---------------------------
-
-
             listOfItemsDocDTOs.add(new ItemsDocDTO(itemsDoc.getItemDoc_num(), srcSiteDTO, destSiteDTO, itemDTOs));
         }
 
