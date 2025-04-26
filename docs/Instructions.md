@@ -8,7 +8,7 @@ The system is preloaded with an Admin user with all the system permissions, the 
 ### Overview
 The employee module is responsible for managing the employees, shifts, and system permissions.
  - The employee management supports viewing, editing, and creating employees.
- - The Assignment management supports viewing, editing, and creating shifts.
+ - The Shift management supports viewing, editing, and creating shifts.
  - The Avalibilty ** PLACE HOLDER FOR ROTEM **
 
 ---
@@ -47,7 +47,7 @@ The Employee Management allows you to manage employees, roles, and permissions w
 
 ---
 
-## Assignment Management Instructions
+## Shift Management Instructions
 
 ### Overview
 The Assignment Management allows you to manage shifts and employee assignments. Different options are available based on user permissions.
@@ -92,6 +92,49 @@ The XXXX Management allows you to manage employees, roles, and permissions withi
 ---
 
 ## General 
+
+### Starting the System
+
+1. The system will display: "Initializing Employee Module System..."
+
+2. You will be prompted with: "Do you want to load data? (y/n) ==>"
+   - Type `y` and press Enter to load data from files (recommended for normal operation)
+   - Type `n` and press Enter to start in minimal mode with only the Admin user
+3. System Initialization:
+   - If you chose to load data, the system will load from data files in the "./data" directory
+   - If you chose minimal mode, only the Admin user will be available
+   - The system will display a confirmation message upon successful initialization
+4. User Selection:
+   - In minimal mode, you will automatically log in as the Admin user (ID: 123456789)
+   - In normal mode, you will be prompted to select a user:
+        ```
+        Pick an employee to start the CLI with:
+        0. Admin
+        1. Shira Steinbuch
+        2. Ramzi Abd Rabo
+        3. Kochava Shavit
+        Enter your choice:
+        ```
+   - Enter the number (0-3) corresponding to your choice and press Enter
+4. The Main Menu will appear, displaying a welcome banner with the current date and logged-in user information.
+
+### Using the Main Menu
+
+The Main Menu displays options based on your user permissions:
+
+1. **Employees** - Manage employee information (requires VIEW_EMPLOYEE or EDIT_EMPLOYEE permission)
+2. **Shifts** - Manage shifts (requires VIEW_SHIFT or EDIT_SHIFT permission)
+3. **Assignment Board** - Manage employee assignments to shifts (requires ASSIGN_EMPLOYEE permission)
+4. **Availability Board** - Manage employee availability (requires UPDATE_AVAILABLE permission)
+0. **Exit** - Exit the system
+
+Enter the number corresponding to your desired action and press Enter.
+
+### Errors
+
+- **Error initializing system**: Check that the data directory exists and contains valid data files
+- **Invalid choice**: Make sure you enter a valid option number from the displayed menu
+- **Permission denied**: The current user does not have the required permissions for the selected action
 
 ### Data and Massages info
 - Required fields are marked with an asterisk (*) or highlighted
