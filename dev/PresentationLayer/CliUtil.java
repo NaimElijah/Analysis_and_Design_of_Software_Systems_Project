@@ -486,7 +486,12 @@ public class CliUtil {
                     case 4:
                         System.out.print(BOLD + "Enter date (dd-mm-yyyy): " + RESET);
                         input = scanner.nextLine();
-                        return LocalDate.parse(input, dateFormatter);
+                        try {
+                            return LocalDate.parse(input, dateFormatter);
+                        } catch (Exception e) {
+                            printError("Please enter a valid date in the format dd-mm-yyyy.");
+                            continue;
+                        }
                     default:
                         printError("Please enter a valid option (1-4).");
                 }

@@ -81,8 +81,16 @@ public class ShiftCLI {
         return menuOptions.size();
     }
 
+    /**
+     * Processes the user's menu choice
+     *
+     * @param choice The user's input choice
+     * @param max The maximum valid choice number
+     * @return true to continue in the menu, false to return to main menu
+     */
     private boolean processMenuChoice(String choice, int max) {
         CliUtil.printEmptyLine();
+
         try {
             int choiceNum = Integer.parseInt(choice);
             int currentOption = 1;
@@ -92,43 +100,59 @@ public class ShiftCLI {
                 return true;
             }
 
-            if (choiceNum == currentOption++) {
-                viewAllShifts();
-                return true;
-            }
-            if (choiceNum == currentOption++) {
-                viewShiftDetails();
-                return true;
+            // View All Shifts
+            if (hasPermission("VIEW_SHIFT")) {
+                if (choiceNum == currentOption++) {
+                    viewAllShifts();
+                    return true;
+                }
+
+                if (choiceNum == currentOption++) {
+                    viewShiftDetails();
+                    return true;
+                }
             }
 
-            if (choiceNum == currentOption++) {
-                createShift();
-                return true;
-            }
-            if (choiceNum == currentOption++) {
-                addWeeklyShifts();
-                return true;
+            // Create Shift options
+            if (hasPermission("CREATE_SHIFT")) {
+                if (choiceNum == currentOption++) {
+                    createShift();
+                    return true;
+                }
+
+                if (choiceNum == currentOption++) {
+                    addWeeklyShifts();
+                    return true;
+                }
             }
 
-            if (choiceNum == currentOption++) {
-                updateShift();
-                return true;
-            }
-            if (choiceNum == currentOption++) {
-                deleteShift();
-                return true;
+            // Edit Shift
+            if (hasPermission("EDIT_SHIFT")) {
+                if (choiceNum == currentOption++) {
+                    updateShift();
+                    return true;
+                }
             }
 
-            if (choiceNum == currentOption++) {
+            // Delete Shift
+            if (hasPermission("DELETE_SHIFT")) {
+                if (choiceNum == currentOption++) {
+                    deleteShift();
+                    return true;
+                }
+            }
+
+            // Back to main menu
+            if (choiceNum == currentOption) {
                 CliUtil.printReturnMessage("main menu");
                 return false;
             }
 
-            CliUtil.printError("Invalid choice. Please try again.");
+            printError("Invalid choice. Please try again.");
             return true;
 
         } catch (NumberFormatException e) {
-            CliUtil.printError("Please enter a valid number.");
+            printError("Please enter a valid number.");
             return true;
         }
     }
@@ -137,8 +161,20 @@ public class ShiftCLI {
         CliUtil.printWelcomeBanner("SHIFT MANAGEMENT SYSTEM", LocalDate.now().toString(), "Employee #" + doneBy);
     }
 
+    /**
+     * Checks if the current user has a specific permission
+     *
+     * @param permission The permission to check
+     * @return true if the user has the permission, false otherwise
+     */
     private boolean hasPermission(String permission) {
-        return employeeService.hasPermission(doneBy, permission);
+        try {
+            employeeService.isEmployeeAuthorised(doneBy, permission);
+            return true;
+        } catch (Exception e) {
+            //printError("Error checking permissions: " + e.getMessage());
+            return false;
+        }
     }
 
     /**
@@ -248,8 +284,27 @@ public class ShiftCLI {
      * @param title - The title of the section to be printed.
      */
     private void printSectionHeader(String title) {
-        boolean isMainMenu = title.equalsIgnoreCase("Shift Management Menu");
+        boolean isMainMenu = title.equalsIgnoreCase("Main Menu");
         CliUtil.printSectionHeader(title, isMainMenu, "SHIFTS");
+    }
+
+    /**
+     * Prints a success message with formatting
+     *
+     * @param message The success message to display
+     */
+    private void printSuccess(String message) {
+        CliUtil.printSuccess(message);
+    }
+
+    /**
+     * Gets user confirmation for an action
+     *
+     * @param message The confirmation message to display
+     * @return true if confirmed, false otherwise
+     */
+    private boolean confirm(String message) {
+        return CliUtil.confirm(message, scanner);
     }
 
     /**
@@ -469,206 +524,401 @@ public class ShiftCLI {
 
 
 
-//    private void viewShifts() {
-//        CliUtil.printSectionHeader("View Shifts", false, "");
-//        System.out.println(CliUtil.YELLOW + "1. View shift by date" + CliUtil.RESET);
-//        System.out.println(CliUtil.YELLOW + "2. View all my shifts" + CliUtil.RESET);
-//        System.out.println(CliUtil.YELLOW + "3. View this week's shifts" + CliUtil.RESET);
-//        CliUtil.printPrompt("Choose an option (1-3): ");
-//
-//        String input = scanner.nextLine();
-//        switch (input) {
-//            case "1" -> viewShiftByDate();
-////            case "2" -> viewAllUserShifts();
-////            case "3" -> viewWeekShifts();
-//            default -> CliUtil.printWarning("Invalid choice.");
-//        }
-//    }
-//
-//    private void viewShiftByDate() {
-//        LocalDate date = CliUtil.getDateInput("Enter shift date:", scanner);
-//        ShiftType shiftType = CliUtil.getShiftTypeInput("Enter shift type:", scanner);
-//        ShiftSL shift = shiftService.getShift(doneBy, date, shiftType);
-//        if (shift == null) {
-//            CliUtil.printWarning("Shift not found.");
-//            return;
-//        }
-//        displayShiftDetails(shift);
-//    }
-
-//    private void viewAllUserShifts() {
-//        List<ShiftSL> shifts = shiftService.getShiftsForEmployee(doneBy);
-//        if (shifts.isEmpty()) {
-//            CliUtil.printWarning("No shifts found for you.");
-//        } else {
-//            for (ShiftSL shift : shifts) {
-//                displayShiftDetails(shift);
-//            }
-//        }
-//    }
-//
-//    private void viewWeekShifts() {
-//        List<ShiftSL> weekShifts = shiftService.getShiftsForEmployeeThisWeek(doneBy);
-//        if (weekShifts.isEmpty()) {
-//            CliUtil.printInfo("No shifts this week.");
-//        } else {
-//            for (ShiftSL shift : weekShifts) {
-//                displayShiftDetails(shift);
-//            }
-//        }
-//    }
-
-//    private void displayShiftDetails(ShiftSL shift) {
-//        List<String> headers = List.of("Shift Info");
-//        Map<String, List<String[]>> content = new LinkedHashMap<>();
-//
-//        List<String[]> details = new ArrayList<>();
-//        details.add(new String[]{"Date", shift.getShiftDate().toString()});
-//        details.add(new String[]{"Type", shift.getShiftType().toString()});
-//        details.add(new String[]{"Is Open", String.valueOf(shift.isOpen())});
-//        details.add(new String[]{"Has Manager", String.valueOf(shift.isAssignedShiftManager())});
-//
-//        if (!hasPermission("VIEW_SHIFT") || hasPermission("EDIT_SHIFT")) {
-//            details.add(new String[]{"Roles Required", shift.getRolesRequired().toString()});
-//            details.add(new String[]{"Assigned Employees", shift.getAssignedEmployees().toString()});
-//            details.add(new String[]{"Available Employees", shift.getAvailableEmployees().toString()});
-//        }
-//
-//        content.put("Shift Info", details);
-//        Map<String, String> emptyMsg = Map.of("Shift Info", "No data found");
-//
-//        CliUtil.printFormattedTable("Shift Details", headers, content, emptyMsg);
-//        CliUtil.waitForEnter(scanner);
-//    }
-//
+    /**
+     * Updates an existing shift
+     */
     private void updateShift() {
-        CliUtil.printSectionHeader("Update Shift", false, "");
-        LocalDate date = CliUtil.getDateInput("Enter shift date:", scanner);
-        ShiftType shiftType = CliUtil.getShiftTypeInput("Enter shift type:", scanner);
-        ShiftSL shift = shiftService.getShift(doneBy, date, shiftType);
+        printSectionHeader("Update Shift");
 
+        // Select a shift to update
+        ShiftSL shift = selectShiftByDateAndType("Select Shift to Update", false);
         if (shift == null) {
-            CliUtil.printWarning("Shift not found.");
-            return;
+            return; // User cancelled or no shift found
         }
 
-        List<String[]> table = new ArrayList<>();
-        table.add(new String[]{"Date", shift.getShiftDate().toString()});
-        table.add(new String[]{"Type", shift.getShiftType().toString()});
-        table.add(new String[]{"Is Open", String.valueOf(shift.isOpen())});
-        table.add(new String[]{"Has Manager", String.valueOf(shift.isAssignedShiftManager())});
+        try {
+            // Display current shift details
+            List<String[]> table = new ArrayList<>();
+            table.add(new String[]{"ID", String.valueOf(shift.getId())});
+            table.add(new String[]{"Date", shift.getShiftDate().toString()});
+            table.add(new String[]{"Type", shift.getShiftType().toString()});
 
-        CliUtil.printFormattedTable("Current Shift Details", List.of("Shift Data"), Map.of("Shift Data", table), Map.of());
+            String openStatus = shift.isOpen() 
+                ? CliUtil.greenString("Open") 
+                : CliUtil.redString("Closed");
+            table.add(new String[]{"Status", openStatus});
 
-        boolean isOpen = shift.isOpen();
-        boolean hasManager = shift.isAssignedShiftManager();
+            String managerStatus = shift.isAssignedShiftManager() 
+                ? CliUtil.greenString("Assigned") 
+                : CliUtil.redString("Not Assigned");
+            table.add(new String[]{"Shift Manager", managerStatus});
 
-        if (CliUtil.confirm("Do you want to change open status?", scanner)) {
-            isOpen = CliUtil.confirm("Mark shift as OPEN?", scanner);
+            CliUtil.printFormattedTable("Current Shift Details", List.of("Shift Data"), Map.of("Shift Data", table), Map.of());
+            CliUtil.printEmptyLine();
+
+            // Get updated values
+            boolean isOpen = shift.isOpen();
+            boolean hasManager = shift.isAssignedShiftManager();
+            ShiftType shiftType = shift.getShiftType();
+            LocalDate date = shift.getShiftDate();
+
+            // Option to change shift type
+            if (confirm("Do you want to change the shift type?")) {
+                CliUtil.printInfo("Current type: " + shiftType);
+                shiftType = getShiftTypeInput("Select new shift type:");
+            }
+
+            // Option to change date
+            if (confirm("Do you want to change the shift date?")) {
+                CliUtil.printInfo("Current date: " + date.format(dateFormatter));
+                date = getDateInput("Select new date:");
+            }
+
+            // Option to change open status
+            if (confirm("Do you want to change open status?")) {
+                CliUtil.printInfo("Current status: " + (isOpen ? "Open" : "Closed"));
+                isOpen = confirm("Mark shift as OPEN?");
+            }
+
+            // Option to change manager status
+            if (confirm("Do you want to change manager status?")) {
+                CliUtil.printInfo("Current manager status: " + (hasManager ? "Assigned" : "Not Assigned"));
+                hasManager = confirm("Is a shift manager assigned?");
+            }
+
+            // Option to update roles required
+            if (confirm("Do you want to update roles required?")) {
+                CliUtil.printSectionWithIcon("CURRENT ROLES REQUIRED", "👥");
+                Map<String, Integer> rolesRequired = shift.getRolesRequired();
+
+                if (rolesRequired.isEmpty()) {
+                    CliUtil.printInfo("  No roles defined for this shift");
+                } else {
+                    for (Map.Entry<String, Integer> entry : rolesRequired.entrySet()) {
+                        CliUtil.print("  • " + entry.getKey() + ": " + entry.getValue());
+                    }
+                }
+
+                CliUtil.printEmptyLine();
+                CliUtil.printSectionWithIcon("UPDATE ROLES REQUIRED", "📝");
+
+                Map<String, Integer> updatedRoles = new HashMap<>(rolesRequired);
+                for (String role : updatedRoles.keySet()) {
+                    int current = updatedRoles.get(role);
+                    CliUtil.printPrompt(role + " (current: " + current + "): ");
+                    String input = scanner.nextLine().trim();
+
+                    if (!input.isEmpty()) {
+                        try {
+                            int newValue = Integer.parseInt(input);
+                            updatedRoles.put(role, newValue);
+                            CliUtil.printSuccessWithCheckmark("Updated " + role + " to " + newValue);
+                        } catch (NumberFormatException e) {
+                            printError("Invalid input for " + role + ". Must be a number.");
+                        }
+                    }
+                }
+
+                // Apply role updates
+                if (confirm("Apply these role changes?")) {
+                    for (Map.Entry<String, Integer> entry : updatedRoles.entrySet()) {
+                        try {
+                            shiftService.updateRolesRequired(doneBy, shift.getId(), entry.getKey(), entry.getValue());
+                        } catch (Exception e) {
+                            printError("Failed to update role " + entry.getKey() + ": " + e.getMessage());
+                        }
+                    }
+                    printSuccess("Roles updated successfully");
+                } else {
+                    CliUtil.printOperationCancelled();
+                }
+            }
+
+            // Confirm all changes
+            CliUtil.printEmptyLine();
+            if (confirm("Apply all changes to this shift?")) {
+                String result = shiftService.updateShift(doneBy, shift.getId(), shiftType, date, isOpen, hasManager, LocalDate.now());
+                if (result.contains("successfully")) {
+                    printSuccess(result);
+                } else {
+                    printError(result);
+                }
+            } else {
+                CliUtil.printOperationCancelled();
+            }
+
+        } catch (Exception e) {
+            printError("Error updating shift: " + e.getMessage());
         }
 
-        if (CliUtil.confirm("Do you want to change manager status?", scanner)) {
-            hasManager = CliUtil.confirm("Is a shift manager assigned?", scanner);
+        waitForEnter();
+    }
+
+    /**
+     * Deletes an existing shift
+     */
+    private void deleteShift() {
+        printSectionHeader("Delete Shift");
+
+        // Select a shift to delete
+        ShiftSL shift = selectShiftByDateAndType("Select Shift to Delete", false);
+        if (shift == null) {
+            return; // User cancelled or no shift found
         }
 
-        if (CliUtil.confirm("Do you want to update roles required?", scanner)) {
-            Map<String, Integer> updatedRoles = new HashMap<>(shift.getRolesRequired());
-            for (String role : updatedRoles.keySet()) {
-                int current = updatedRoles.get(role);
-                CliUtil.print(CliUtil.YELLOW + role + " (current: " + current + "): " + CliUtil.RESET);
-                String input = scanner.nextLine().trim();
-                if (!input.isEmpty()) {
+        try {
+            // Display shift details for confirmation
+            List<String[]> table = new ArrayList<>();
+            table.add(new String[]{"ID", String.valueOf(shift.getId())});
+            table.add(new String[]{"Date", shift.getShiftDate().toString()});
+            table.add(new String[]{"Type", shift.getShiftType().toString()});
+
+            String openStatus = shift.isOpen() 
+                ? CliUtil.greenString("Open") 
+                : CliUtil.redString("Closed");
+            table.add(new String[]{"Status", openStatus});
+
+            // Check if shift has assigned employees
+            boolean hasAssignedEmployees = false;
+            for (Set<Long> employees : shift.getAssignedEmployees().values()) {
+                if (!employees.isEmpty()) {
+                    hasAssignedEmployees = true;
+                    break;
+                }
+            }
+
+            if (hasAssignedEmployees) {
+                table.add(new String[]{"Warning", CliUtil.redString("This shift has assigned employees!")});
+            }
+
+            CliUtil.printFormattedTable("Shift To Delete", List.of("Shift Details"), Map.of("Shift Details", table), Map.of());
+            CliUtil.printEmptyLine();
+
+            // Double confirmation for shifts with assigned employees
+            if (hasAssignedEmployees) {
+                CliUtil.printWarning("This shift has assigned employees. Deleting it will remove all assignments.");
+                if (!confirm("Are you ABSOLUTELY SURE you want to delete this shift?")) {
+                    CliUtil.printOperationCancelled();
+                    waitForEnter();
+                    return;
+                }
+            }
+
+            // Final confirmation
+            if (confirm("Are you sure you want to delete this shift?")) {
+                String result = shiftService.removeShift(doneBy, shift.getShiftDate(), shift.getShiftType());
+                if (result.contains("successfully")) {
+                    printSuccess(result);
+                } else {
+                    printError(result);
+                }
+            } else {
+                CliUtil.printOperationCancelled();
+            }
+
+        } catch (Exception e) {
+            printError("Error deleting shift: " + e.getMessage());
+        }
+
+        waitForEnter();
+    }
+
+    /**
+     * Creates a new shift
+     */
+    private void createShift() {
+        printSectionHeader("Create Shift");
+
+        try {
+            // Get basic shift information
+            CliUtil.printSectionWithIcon("BASIC SHIFT INFORMATION", "📅");
+
+            LocalDate date = getDateInput("Enter shift date:");
+            ShiftType shiftType = getShiftTypeInput("Enter shift type:");
+
+            // Check if shift already exists
+            try {
+                ShiftSL existingShift = shiftService.getShift(doneBy, date, shiftType);
+                if (existingShift != null) {
+                    printError("A " + shiftType + " shift already exists for " + date.format(dateFormatter));
+                    CliUtil.printTip("You can edit the existing shift using the 'Edit Shifts' option.");
+                    waitForEnter();
+                    return;
+                }
+            } catch (Exception e) {
+                // No shift exists, continue with creation
+            }
+
+            // Get roles required
+            CliUtil.printEmptyLine();
+            CliUtil.printSectionWithIcon("ROLES REQUIRED", "👥");
+            CliUtil.printInfo("Enter the number of employees required for each role (0 for none)");
+            CliUtil.printEmptyLine();
+
+            Map<String, Integer> rolesRequired = new HashMap<>();
+            Set<String> roles = shiftService.getRoles(doneBy);
+
+            if (roles.isEmpty()) {
+                printError("No roles defined in the system. Please create roles first.");
+                waitForEnter();
+                return;
+            }
+
+            for (String role : roles) {
+                CliUtil.printPrompt("Required number for '" + role + "': ");
+                try {
+                    int count = Integer.parseInt(scanner.nextLine().trim());
+                    if (count > 0) {
+                        rolesRequired.put(role, count);
+                        CliUtil.printSuccessWithCheckmark("Added: " + role + " x" + count);
+                    }
+                } catch (NumberFormatException e) {
+                    printError("Invalid number for " + role + ". Must be a number.");
+                    CliUtil.printPrompt("Required number for '" + role + "': ");
                     try {
-                        updatedRoles.put(role, Integer.parseInt(input));
-                    } catch (NumberFormatException e) {
-                        CliUtil.printWarning("Invalid input for " + role);
+                        int count = Integer.parseInt(scanner.nextLine().trim());
+                        if (count > 0) {
+                            rolesRequired.put(role, count);
+                            CliUtil.printSuccessWithCheckmark("Added: " + role + " x" + count);
+                        }
+                    } catch (NumberFormatException ex) {
+                        CliUtil.printWarning("Invalid number again, skipping " + role);
                     }
                 }
             }
-            for (Map.Entry<String, Integer> entry : updatedRoles.entrySet()) {
-                shiftService.updateRolesRequired(doneBy, shift.getId(), entry.getKey(), entry.getValue());
+
+            if (rolesRequired.isEmpty()) {
+                CliUtil.printWarning("No roles were added to this shift.");
+                if (!confirm("Continue creating shift with no roles?")) {
+                    CliUtil.printOperationCancelled();
+                    waitForEnter();
+                    return;
+                }
             }
-        }
 
-        String result = shiftService.updateShift(doneBy, shift.getId(), shiftType, date, isOpen, hasManager, LocalDate.now());
-        CliUtil.printSuccess(result);
-        CliUtil.waitForEnter(scanner);
-    }
+            // Get shift settings
+            CliUtil.printEmptyLine();
+            CliUtil.printSectionWithIcon("SHIFT SETTINGS", "⚙️");
 
-    private void deleteShift() {
-        CliUtil.printSectionHeader("Delete Shift", false, "");
-        LocalDate date = CliUtil.getDateInput("Enter shift date:", scanner);
-        ShiftType shiftType = CliUtil.getShiftTypeInput("Enter shift type:", scanner);
-        ShiftSL shift = shiftService.getShift(doneBy, date, shiftType);
+            boolean isManagerShift = confirm("Is this a manager shift?");
+            boolean isOpen = confirm("Is the shift open for assignments?");
 
-        if (shift == null) {
-            CliUtil.printWarning("Shift not found.");
-            return;
-        }
+            // Initialize empty collections for new shift
+            Map<String, Set<Long>> assignedEmployees = new HashMap<>();
+            Set<Long> availableEmployees = new HashSet<>();
 
-        List<String[]> table = new ArrayList<>();
-        table.add(new String[]{"Date", shift.getShiftDate().toString()});
-        table.add(new String[]{"Type", shift.getShiftType().toString()});
-        table.add(new String[]{"Is Open", String.valueOf(shift.isOpen())});
-
-        CliUtil.printFormattedTable("Shift To Delete", List.of("Shift Preview"), Map.of("Shift Preview", table), Map.of());
-
-        if (CliUtil.confirm("Are you sure you want to delete this shift?", scanner)) {
-            String result = shiftService.removeShift(doneBy, date, shiftType);
-            CliUtil.printSuccess(result);
-        } else {
-            CliUtil.printOperationCancelled();
-        }
-
-        CliUtil.waitForEnter(scanner);
-    }
-
-    private void createShift() {
-        CliUtil.printSectionHeader("Create Shift", false, "");
-        LocalDate date = CliUtil.getDateInput("Enter shift date:", scanner);
-        ShiftType shiftType = CliUtil.getShiftTypeInput("Enter shift type:", scanner);
-
-        Map<String, Integer> rolesRequired = new HashMap<>();
-        Set<String> roles = shiftService.getRoles(doneBy);
-        for (String role : roles) {
-            CliUtil.printPrompt("Enter required number for role '" + role + "': ");
-            try {
-                int count = Integer.parseInt(scanner.nextLine().trim());
-                if (count > 0) rolesRequired.put(role, count);
-            } catch (NumberFormatException e) {
-                CliUtil.printWarning("Invalid number, skipping " + role);
+            // Confirm creation
+            CliUtil.printEmptyLine();
+            if (confirm("Create this shift?")) {
+                String result = shiftService.createShift(
+                    doneBy, 
+                    shiftType, 
+                    date, 
+                    rolesRequired, 
+                    assignedEmployees, 
+                    availableEmployees, 
+                    isManagerShift, 
+                    isOpen, 
+                    LocalDate.now()
+                );
+                if (result.contains("successfully")) {
+                    printSuccess(result);
+                } else {
+                    printError(result);
+                }
+            } else {
+                CliUtil.printOperationCancelled();
             }
+
+        } catch (Exception e) {
+            printError("Error creating shift: " + e.getMessage());
         }
 
-        boolean isManagerShift = CliUtil.confirm("Is this a manager shift?", scanner);
-        boolean isOpen = CliUtil.confirm("Is the shift open?", scanner);
-
-        Map<String, Set<Long>> assignedEmployees = new HashMap<>();
-        Set<Long> availableEmployees = new HashSet<>();
-
-        String result = shiftService.createShift(doneBy, shiftType, date, rolesRequired, assignedEmployees, availableEmployees, isManagerShift, isOpen, LocalDate.now());
-        CliUtil.printSuccess(result);
-        CliUtil.waitForEnter(scanner);
+        waitForEnter();
     }
 
+    /**
+     * Creates shifts for an entire week
+     */
     private void addWeeklyShifts() {
-        CliUtil.printSectionHeader("Add Weekly Shifts", false, "");
-        LocalDate startDate = CliUtil.getDateInput("Enter start date:", scanner);
-        Map<String, Integer> rolesRequired = new HashMap<>();
-        Set<String> roles = shiftService.getRoles(doneBy);
+        printSectionHeader("Add Weekly Shifts");
 
-        for (String role : roles) {
-            CliUtil.printPrompt("Default number for '" + role + "': ");
-            try {
-                int number = Integer.parseInt(scanner.nextLine().trim());
-                if (number > 0) rolesRequired.put(role, number);
-            } catch (NumberFormatException e) {
-                CliUtil.printWarning("Invalid number for " + role);
+        try {
+            // Get start date for the week
+            CliUtil.printSectionWithIcon("WEEKLY SHIFT CREATION", "📅");
+            CliUtil.printInfo("This will create morning and evening shifts for an entire week");
+            CliUtil.printEmptyLine();
+
+            LocalDate startDate = getDateInput("Enter the first day of the week:");
+
+            // Get roles required
+            CliUtil.printEmptyLine();
+            CliUtil.printSectionWithIcon("DEFAULT ROLES REQUIRED", "👥");
+            CliUtil.printInfo("Enter the default number of employees required for each role");
+            CliUtil.printInfo("These values will be used for all shifts in the week");
+            CliUtil.printEmptyLine();
+
+            Map<String, Integer> rolesRequired = new HashMap<>();
+            Set<String> roles = shiftService.getRoles(doneBy);
+
+            if (roles.isEmpty()) {
+                printError("No roles defined in the system. Please create roles first.");
+                waitForEnter();
+                return;
             }
+
+            for (String role : roles) {
+                CliUtil.printPrompt("Default number for '" + role + "': ");
+                try {
+                    int number = Integer.parseInt(scanner.nextLine().trim());
+                    if (number > 0) {
+                        rolesRequired.put(role, number);
+                        CliUtil.printSuccessWithCheckmark("Added: " + role + " x" + number);
+                    }
+                } catch (NumberFormatException e) {
+                    printError("Invalid number for " + role + ". Must be a number.");
+                    CliUtil.printPrompt("Default number for '" + role + "': ");
+                    try {
+                        int number = Integer.parseInt(scanner.nextLine().trim());
+                        if (number > 0) {
+                            rolesRequired.put(role, number);
+                            CliUtil.printSuccessWithCheckmark("Added: " + role + " x" + number);
+                        }
+                    } catch (NumberFormatException ex) {
+                        CliUtil.printWarning("Invalid number again, skipping " + role);
+                    }
+                }
+            }
+
+            if (rolesRequired.isEmpty()) {
+                CliUtil.printWarning("No roles were added to the shifts.");
+                if (!confirm("Continue creating weekly shifts with no roles?")) {
+                    CliUtil.printOperationCancelled();
+                    waitForEnter();
+                    return;
+                }
+            }
+
+            // Confirm creation
+            CliUtil.printEmptyLine();
+            CliUtil.printInfo("This will create 14 shifts (morning and evening) for the week starting " + 
+                startDate.format(dateFormatter));
+
+            if (confirm("Create these shifts?")) {
+                String result = shiftService.createWeeklyShifts(doneBy, startDate, rolesRequired);
+                if (result.contains("successfully")) {
+                    printSuccess(result);
+                } else {
+                    printError(result);
+                }
+            } else {
+                CliUtil.printOperationCancelled();
+            }
+
+        } catch (Exception e) {
+            printError("Error creating weekly shifts: " + e.getMessage());
         }
 
-        String result = shiftService.createWeeklyShifts(doneBy, startDate, rolesRequired);
-        CliUtil.printSuccess(result);
-        CliUtil.waitForEnter(scanner);
+        waitForEnter();
     }
 }

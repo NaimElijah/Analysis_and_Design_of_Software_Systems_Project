@@ -78,19 +78,11 @@ public class ShiftController {
             throw new IllegalArgumentException("Start date and roles required cannot be null");
         }
 
-//        if (startDate.isBefore(LocalDate.now())) {
-//            throw new IllegalArgumentException("Start date cannot be in the past");
+//        // Move to the next Sunday if not already Sunday
+//        if (startDate.getDayOfWeek() != DayOfWeek.SUNDAY) {
+//            int daysUntilSunday = (DayOfWeek.SUNDAY.getValue() - startDate.getDayOfWeek().getValue() + 7) % 7;
+//            startDate = startDate.plusDays(daysUntilSunday);
 //        }
-
-        if (rolesRequired.isEmpty()) {
-            throw new IllegalArgumentException("Roles required cannot be empty");
-        }
-
-        // Move to the next Sunday if not already Sunday
-        if (startDate.getDayOfWeek() != DayOfWeek.SUNDAY) {
-            int daysUntilSunday = (DayOfWeek.SUNDAY.getValue() - startDate.getDayOfWeek().getValue() + 7) % 7;
-            startDate = startDate.plusDays(daysUntilSunday);
-        }
 
         for (int day = 0; day < 7; day++) {
             LocalDate date = startDate.plusDays(day);
@@ -98,12 +90,12 @@ public class ShiftController {
 
             // Morning shift for all days except Saturday
             if (dayOfWeek != DayOfWeek.SATURDAY) {
-                if (AddNewShift(date, ShiftType.MORNING, rolesRequired)) return false;
+                if (!AddNewShift(date, ShiftType.MORNING, rolesRequired)) return false;
             }
 
             // Evening shift for Sunday to Thursday and Saturday (not Friday)
             if (dayOfWeek != DayOfWeek.FRIDAY && dayOfWeek != DayOfWeek.SATURDAY) {
-                if (AddNewShift(date, ShiftType.EVENING, rolesRequired)) return false;
+                if (!AddNewShift(date, ShiftType.EVENING, rolesRequired)) return false;
             }
         }
 
@@ -131,8 +123,9 @@ public class ShiftController {
         Shift shift = new Shift(shiftIdCounter++, type, date, rolesRequired, assignedEmployees, availableEmployees, false, isOpen, LocalDate.now());
 
         boolean added = shifts.add(shift);
-        boolean addedToWeekly = addShiftToWeekly(shift);
-        return added && addedToWeekly;
+        // Even if the shift wasn't added to the weekly shifts map, it's still in the shifts set
+        addShiftToWeekly(shift);
+        return added;
     }
 
     /**
@@ -445,7 +438,7 @@ public class ShiftController {
 
     public void addShiftsToWeeklyShifts(Set<Shift> shifts) {
         if (shifts == null || shifts.isEmpty()) {
-            throw new IllegalArgumentException("Shifts cannot be null or empty");
+            return; // Nothing to add, just return
         }
 
         for (Shift shift : shifts) {

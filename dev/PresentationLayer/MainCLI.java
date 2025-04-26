@@ -125,6 +125,10 @@ public class MainCLI {
     }
 
     private boolean hasPermission(String permission) {
-        return employeeService.hasPermission(doneBy, permission);
+        try {
+            return employeeService.hasPermission(doneBy, permission);
+        } catch (Exception e) {
+            return false;
+        }
     }
 }
