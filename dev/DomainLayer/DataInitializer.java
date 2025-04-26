@@ -2,6 +2,7 @@ package DomainLayer;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
@@ -132,8 +133,13 @@ public class DataInitializer {
      * Load permissions from a JSON file
      */
     private Set<String> loadPermissions() throws IOException {
-        String filePath = dataDirectory + "/permissions.json";
-        JsonNode rootNode = jsonMapper.readTree(new File(filePath));
+//        String filePath = dataDirectory + "/permissions.json";
+//        JsonNode rootNode = jsonMapper.readTree(new File(filePath));
+
+        // for JAR
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream("permissions.json");
+        JsonNode rootNode = jsonMapper.readTree(inputStream);
+
 
         Set<String> permissions = new HashSet<>();
         if (rootNode.isArray()) {
@@ -149,8 +155,12 @@ public class DataInitializer {
      * Load roles and their permissions from a JSON file
      */
     private Map<String, HashSet<String>> loadRoles() throws IOException {
-        String filePath = dataDirectory + "/roles.json";
-        JsonNode rootNode = jsonMapper.readTree(new File(filePath));
+        // String filePath = dataDirectory + "/roles.json";
+        // JsonNode rootNode = jsonMapper.readTree(new File(filePath));
+
+        // for JAR
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream("roles.json");
+        JsonNode rootNode = jsonMapper.readTree(inputStream);
 
         Map<String, HashSet<String>> roles = new HashMap<>();
 
@@ -176,8 +186,12 @@ public class DataInitializer {
      * Load employees from a JSON file
      */
     private Set<Employee> loadEmployees() throws IOException {
-        String filePath = dataDirectory + "/employees.json";
-        JsonNode rootNode = jsonMapper.readTree(new File(filePath));
+        // String filePath = dataDirectory + "/employees.json";
+        // JsonNode rootNode = jsonMapper.readTree(new File(filePath));
+
+        // for JAR
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream("employees.json");
+        JsonNode rootNode = jsonMapper.readTree(inputStream);
 
         Set<Employee> employees = new HashSet<>();
 
@@ -228,8 +242,12 @@ public class DataInitializer {
      * Load shifts from a JSON file
      */
     private Set<Shift> loadShifts(EmployeeController employeeController) throws IOException {
-        String filePath = dataDirectory + "/shifts.json";
-        JsonNode rootNode = jsonMapper.readTree(new File(filePath));
+        // String filePath = dataDirectory + "/shifts.json";
+        // JsonNode rootNode = jsonMapper.readTree(new File(filePath));
+
+        // for JAR
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream("shifts.json");
+        JsonNode rootNode = jsonMapper.readTree(inputStream);
 
         Set<Shift> shifts = new HashSet<>();
 
