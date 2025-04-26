@@ -66,7 +66,7 @@ public class ShiftCLI {
         if (hasPermission("EDIT_SHIFT")) {
             menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Edit Shifts");
         }
-        if (hasPermission("DELETE_SHIFT")) {
+        if (hasPermission("REMOVE_SHIFT")) {
             menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Delete Shifts");
         }
 

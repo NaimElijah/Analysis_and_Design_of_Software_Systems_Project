@@ -23,6 +23,7 @@ public class CliUtil {
     public static final String PURPLE = "\u001B[35m";
     public static final String CYAN = "\u001B[36m";
     public static final String BOLD = "\u001B[1m";
+    public static final String GRAY = "\u001B[37m";
 
     // Properties
     public static final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
@@ -725,4 +726,5 @@ public class CliUtil {
 
         return true;
     }
+
 }

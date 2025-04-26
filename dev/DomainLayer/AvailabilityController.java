@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.Set;
+import java.util.HashSet;
 
 public class AvailabilityController {
     private final EmployeeController employeeController;
@@ -29,8 +31,13 @@ public class AvailabilityController {
         if (shift.getAvailableEmployees() != null && shift.getAvailableEmployees().contains(doneBy)) {
             throw new IllegalArgumentException("Employee already exists in available employees");
         }
-
-        return shift.getAvailableEmployees().add(doneBy);
+        Set<Long> availableEmployees = shift.getAvailableEmployees();
+        if (availableEmployees == null) {
+            availableEmployees = new HashSet<>();
+        }
+        availableEmployees.add(doneBy);
+        shift.setAvailableEmployees(availableEmployees);
+        return true;
     }
 
     public boolean removeAvailability(Shift shift, long doneBy) {
@@ -44,11 +51,13 @@ public class AvailabilityController {
         if(doneBy <= 0){
             throw new IllegalArgumentException("employeeID cannot be less than 0");
         }
-        if (!shift.getAvailableEmployees().contains(doneBy)) {
+        Set<Long> availableEmployees = shift.getAvailableEmployees();
+        if (!availableEmployees.contains(doneBy)) {
             throw new IllegalArgumentException("Employee not found in available employees");
         }
-
-        return shift.getAvailableEmployees().remove(doneBy);
+        availableEmployees.remove(doneBy);
+        shift.setAvailableEmployees(availableEmployees);
+        return true;
     }
 
     public boolean isAvailable(Shift shift, long doneBy) {
@@ -56,7 +65,8 @@ public class AvailabilityController {
         if (!employeeController.isEmployeeAuthorised(doneBy, PERMISSION)) {
             throw new UnauthorizedPermissionException("User does not have permission to check availability");
         }
-        return shift.getAvailableEmployees().contains(doneBy);
+        Set<Long> availableEmployees = shift.getAvailableEmployees();
+        return availableEmployees.contains(doneBy);
     }
 
     public Map<LocalDate, Map<String, Boolean>> getWeeklyAvailability(List<Shift> weekShifts, long doneBy) {

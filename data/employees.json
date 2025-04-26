@@ -34,11 +34,11 @@
       "PensionFund": "Harel",
       "PensionRate": "6%",
       "HealthInsurance": "Clalit",
-      "Position": "Shift Manager",
+      "Position": "HR Manager",
       "Department": "Management",
       "Store": "Shefa Issachar"
     },
-    "roles": ["Shift Manager"],
+    "roles": ["HR manager"],
     "startOfEmployment": "2019-05-10",
     "isActive": true,
     "creationDate": "2023-01-01",

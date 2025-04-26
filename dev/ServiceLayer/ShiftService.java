@@ -274,16 +274,15 @@ public class ShiftService {
      * Removes an employee's availability for a shift
      * @param doneBy the employee making the change
      * @param shiftId the ID of the shift
-     * @param employeeId the ID of the employee to remove availability for
      * @return a message indicating success or failure
      */
-    public String removeEmployeeAvailability(long doneBy, long shiftId, long employeeId) {
+    public String removeEmployeeAvailability(long doneBy, long shiftId) {
         try {
             Shift shift = shiftController.getShiftByID(doneBy, shiftId);
             if (shift == null) {
                 return "Shift not found";
             }
-            availabilityController.removeAvailability(shift, employeeId);
+            availabilityController.removeAvailability(shift, doneBy);
             return "Employee availability removed successfully";
         } catch (RuntimeException e) {
             return "Error: " + e.getMessage();
@@ -318,12 +317,12 @@ public class ShiftService {
      */
     public Map<LocalDate, Map<String, Boolean>> getEmployeeWeeklyAvailability(long doneBy, long employeeId, Week week) {
         try {
-            Set<Shift> weekShifts = shiftController.getShiftsByWeek(doneBy, week);
+            List<Shift> weekShifts = shiftController.getShiftsByWeek(doneBy, week);
             if (weekShifts.isEmpty()) {
                 return new HashMap<>();
             }
 
-            return availabilityController.getWeeklyAvailability(weekShifts.stream().toList(), employeeId);
+            return availabilityController.getWeeklyAvailability(weekShifts, employeeId);
         } catch (RuntimeException e) {
             return new HashMap<>();
         }
@@ -332,7 +331,7 @@ public class ShiftService {
     public Set<ShiftSL> getShiftsByWeek(long doneBy, Week week) {
         try {
             Set<ShiftSL> shiftSLS = new HashSet<>();
-            Set<Shift> weekShifts = shiftController.getShiftsByWeek(doneBy, week);
+            List<Shift> weekShifts = shiftController.getShiftsByWeek(doneBy, week);
             if (weekShifts == null) {
                 return shiftSLS;
             }

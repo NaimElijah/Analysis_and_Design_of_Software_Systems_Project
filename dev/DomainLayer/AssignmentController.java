@@ -44,7 +44,12 @@ public class AssignmentController {
         if (!employeeController.isEmployeeAuthorised(doneBy, PERMISSION)) {
             throw new UnauthorizedPermissionException("User does not have permission to remove employees");
         }
-        return shift.getAssignedEmployees().get(role).contains(employeeId);
+        Map <String, Set<Long>> assignedEmployees = shift.getAssignedEmployees();
+        Set<Long> employeesInRole = assignedEmployees.get(role);
+        employeesInRole.remove(employeeId);
+        assignedEmployees.put(role, employeesInRole);
+        shift.setAssignedEmployees(assignedEmployees);
+        return true;
     }
 
     public boolean isAssigned(long doneBy, Shift shift, long employeeId) {

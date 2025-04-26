@@ -15,7 +15,7 @@ public class MainCLI {
 
     private final EmployeeCLI employeeCLI;
     private final AssignmentCLI assignmentCLI;
-    private final AvailabillityCLI availabilityCLI;
+    private final AvailabilityCLI availabilityCLI;
     private final ShiftCLI shiftCLI;
 
     public MainCLI(EmployeeService employeeService, ShiftService shiftService, long doneBy) {
@@ -26,7 +26,7 @@ public class MainCLI {
 
         this.employeeCLI = new EmployeeCLI(employeeService, doneBy);
         this.assignmentCLI = new AssignmentCLI(shiftService, employeeService, doneBy);
-        this.availabilityCLI = new AvailabillityCLI(shiftService, doneBy);
+        this.availabilityCLI = new AvailabilityCLI(shiftService, employeeService, doneBy);
         this.shiftCLI = new ShiftCLI(shiftService, employeeService, doneBy);
     }
 

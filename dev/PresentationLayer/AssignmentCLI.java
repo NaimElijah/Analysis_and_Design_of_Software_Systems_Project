@@ -7,6 +7,7 @@ import ServiceLayer.EmployeeSL;
 import ServiceLayer.exception.AuthorizationException;
 import ServiceLayer.exception.ServiceException;
 import DomainLayer.enums.ShiftType;
+import Util.Week;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -70,15 +71,17 @@ public class AssignmentCLI {
         List<String> menuOptions = new ArrayList<>();
         int optionNumber = 1;
 
-        menuOptions.add(YELLOW + optionNumber++ + RESET + ". View All Shifts");
-        menuOptions.add(YELLOW + optionNumber++ + RESET + ". View Shift Details");
-
+//        if (hasPermission("ASSIGN_EMPLOYEE")) {
+//            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Assign Employees to a Shift from Upcoming Week");
+//            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Assign Employees to a Shift by Specific Date");
+//            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Assign Employees from Previous Weeks");
+//            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Back to Main Menu");
+//        }
         if (hasPermission("ASSIGN_EMPLOYEE")) {
-            menuOptions.add(YELLOW + optionNumber++ + RESET + ". Shift Management");
+            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Assign Employees to a Shift");
+            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Remove Employee from Shift");
+            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Back to Main Menu");
         }
-
-        menuOptions.add(YELLOW + optionNumber++ + RESET + ". View Employee Assignments");
-        menuOptions.add(YELLOW + optionNumber++ + RESET + ". Back To Main Menu");
 
         // Add indentation to menu options
         List<String> formattedOptions = new ArrayList<>();
@@ -95,71 +98,68 @@ public class AssignmentCLI {
         CliUtil.printPrompt("Enter your choice: ");
     }
 
-    /**
-     * Processes the user's menu choice
-     * 
-     * @param choice The user's input choice
-     * @return true to continue in the menu, false to return to main menu
-     */
+//    /**
+//     * Processes the user's menu choice
+//     * @return true to continue in the menu, false to return to main menu
+//     */
+//    private boolean processMenuChoice() {
+//        CliUtil.printEmptyLine();
+//        String choice = scanner.nextLine();
+//        try {
+//            int choiceNum = Integer.parseInt(choice);
+//            switch (choiceNum){
+//                case 1 -> assignEmployeeToShift();
+//                case 2 -> removeEmployeeFromShift();
+//                case 3 -> {
+//                    printSuccess("Returning to Main Menu...");
+//                    return false;
+//                }
+//            }
+////                switch (choiceNum) {
+////                    case 1 -> assignFromUpcomingWeek();
+////                    case 2 -> assignBySpecificDate();
+////                    case 3 -> assignFromPreviousWeeks();
+////                    case 4 -> stayInMenu = false;
+////                    default -> printError("Invalid choice. Please enter a number between 1 and 4.");
+////                }
+//        } catch (NumberFormatException e) {
+//            printError("Please enter a valid number.");
+//            return true;
+//        }
+//
+//    }
+
     private boolean processMenuChoice(String choice) {
         CliUtil.printEmptyLine();
 
-        // Calculate the maximum option number based on permissions
-        int maxOption = 4; // Base options: View All Shifts, View Shift Details, View Employee Assignments, Exit
-        if (hasPermission("ASSIGN_EMPLOYEE")) {
-            maxOption = 5; // Add Shift Management option
-        }
-
         try {
             int choiceNum = Integer.parseInt(choice);
-
-            // Validate the choice is within range
-            if (choiceNum < 1 || choiceNum > maxOption) {
-                printError("Invalid choice. Please enter a number between 1 and " + maxOption + ".");
-                return true;
-            }
-
             int currentOption = 1;
 
-            // View All Shifts
             if (choiceNum == currentOption++) {
-                viewAllShifts();
+                assignEmployeeToShift();
                 return true;
             }
 
-            // View Shift Details
             if (choiceNum == currentOption++) {
-                viewShiftDetails();
+                removeEmployeeFromShift();
                 return true;
             }
 
-            // Shift Management
-            if (hasPermission("ASSIGN_EMPLOYEE")) {
-                if (choiceNum == currentOption++) {
-                    shiftManagement();
-                    return true;
-                }
-            }
-
-            // View Employee Assignments
             if (choiceNum == currentOption++) {
-                viewEmployeeAssignments();
-                return true;
-            }
-
-            // Exit
-            if (choiceNum == currentOption++) {
-                CliUtil.printReturnMessage("main menu");
+                printSuccess("Returning to Main Menu...");
                 return false;
             }
 
-            // This should never be reached due to the range check above
+            printError("Invalid choice. Please enter a number between 1 and 3.");
             return true;
+
         } catch (NumberFormatException e) {
             printError("Please enter a valid number.");
             return true;
         }
     }
+
 
     //==========================================================================================
     // UI UTILITY METHODS
@@ -370,6 +370,111 @@ public class AssignmentCLI {
     // ASSIGNMENT MANAGEMENT METHODS
     //==========================================================================================
 
+    private void assignFromUpcomingWeek() {
+        LocalDate today = LocalDate.now();
+        LocalDate nextSunday = Week.getNextSunday(LocalDate.now());
+
+        List<ShiftSL> shifts = getShiftsInRange(nextSunday, nextSunday.plusDays(4));
+        if (shifts.isEmpty()) {
+            printError("No open shifts found for the upcoming week (Sunday-Thursday).");
+            waitForEnter();
+            return;
+        }
+
+        ShiftSL selectedShift = selectShiftFromList(shifts);
+        if (selectedShift != null) {
+            assignEmployeesToSpecificShift(selectedShift);
+        }
+    }
+
+    private void assignBySpecificDate() {
+        LocalDate date = CliUtil.getDateInput("Enter the specific date:", scanner);
+        List<ShiftSL> shifts = getShiftsInRange(date, date);
+
+        if (shifts.isEmpty()) {
+            printError("No open shifts found on selected date.");
+            CliUtil.waitForEnter(scanner);
+            return;
+        }
+
+        ShiftSL selectedShift = selectShiftFromList(shifts);
+        if (selectedShift != null) {
+            assignEmployeesToSpecificShift(selectedShift);
+        }
+    }
+
+    private void assignFromPreviousWeeks() {
+        LocalDate date = CliUtil.getDateInput("Enter a date from the past:", scanner);
+        LocalDate weekStart = date.with(DayOfWeek.SUNDAY);
+        List<ShiftSL> shifts = getShiftsInRange(weekStart, weekStart.plusDays(6));
+
+        if (shifts.isEmpty()) {
+            CliUtil.printError("No open shifts found for that week.");
+            CliUtil.waitForEnter(scanner);
+            return;
+        }
+
+        ShiftSL selectedShift = selectShiftFromList(shifts);
+        if (selectedShift != null) {
+            assignEmployeesToSpecificShift(selectedShift);
+        }
+    }
+
+    private List<ShiftSL> getShiftsInRange(LocalDate start, LocalDate end) {
+        List<ShiftSL> shifts = new ArrayList<>();
+        for (LocalDate date = start; !date.isAfter(end); date = date.plusDays(1)) {
+            try {
+                ShiftSL[] dayShifts = shiftService.getAllShiftsByDate(doneBy, date);
+                for (ShiftSL shift : dayShifts) {
+                    if (shift.isOpen()) {
+                        shifts.add(shift);
+                    }
+                }
+            } catch (ServiceException ignored) {}
+        }
+        shifts.sort(Comparator.comparing(ShiftSL::getShiftDate).thenComparing(ShiftSL::getShiftType));
+        return shifts;
+    }
+
+    private ShiftSL selectShiftFromList(List<ShiftSL> shifts) {
+        CliUtil.printOptionsHeader("Select a shift:");
+        CliUtil.printNumberedListWithInfo(shifts, shift ->
+                String.format("%s %s (ID: %d)", shift.getShiftDate(), shift.getShiftType(), shift.getId()), 1);
+
+        int choice = CliUtil.getMenuChoice("Enter your choice (1-" + shifts.size() + "): ", 1, shifts.size(), scanner);
+        return shifts.get(choice - 1);
+    }
+
+    private void assignEmployeesToSpecificShift(ShiftSL shift) {
+        CliUtil.printEmptyLine();
+        printSectionHeader("Assign Employees to Shift");
+
+        try {
+            Set<Long> availableEmployees = shift.getAvailableEmployees();
+            EmployeeSL[] allEmployees = employeeService.getAllEmployees();
+
+            CliUtil.printSectionWithIcon("Available Employees:", "👥");
+            for (EmployeeSL emp : allEmployees) {
+                boolean isAvailable = availableEmployees.contains(emp.getId());
+                String availability = isAvailable ? CliUtil.greenString("[Available]") : CliUtil.redString("[Unavailable]");
+                String roles = String.join(", ", emp.getRoles());
+                CliUtil.print(String.format("  • %s (ID: %d) %s | Roles: %s", emp.getFullName(), emp.getId(), availability, roles));
+            }
+
+            CliUtil.printInfo("Assignment functionality coming next... (extend here)");
+            CliUtil.waitForEnter(scanner);
+
+        } catch (ServiceException e) {
+            printError("Error retrieving employees: " + e.getMessage());
+            CliUtil.waitForEnter(scanner);
+        }
+    }
+
+
+
+
+
+//==========================================================================================
     /**
      * Displays the shift management submenu and processes user choices
      */

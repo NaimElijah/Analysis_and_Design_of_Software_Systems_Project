@@ -602,7 +602,7 @@
       "Stocker": [222222222],
       "Cleaner": [666666666]
     },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
+    "availableEmployees": [],
     "isAssignedShiftManager": true,
     "isOpen": true,
     "updateDate": "2025-04-06"

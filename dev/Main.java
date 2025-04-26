@@ -1,9 +1,4 @@
-import DomainLayer.AssignmentController;
-import DomainLayer.AuthorisationController;
-import DomainLayer.DataInitializer;
-import DomainLayer.Employee;
-import DomainLayer.EmployeeController;
-import DomainLayer.ShiftController;
+import DomainLayer.*;
 import PresentationLayer.MainCLI;
 import ServiceLayer.EmployeeService;
 import ServiceLayer.ShiftService;
@@ -21,6 +16,7 @@ public class Main {
         EmployeeService employeeService;
         ShiftService shiftService = null;
         AssignmentController assignmentController;
+        AvailabilityController availabilityController;
 
         boolean minimalMode = true;
 
@@ -50,9 +46,10 @@ public class Main {
             employeeController = initData.getEmployeeController();
             ShiftController shiftController = initData.getShiftController();
             assignmentController = new AssignmentController(employeeController);
+            availabilityController = new AvailabilityController(employeeController);
 
             employeeService = new EmployeeService(employeeController, authController);
-            shiftService = new ShiftService(shiftController, assignmentController, null);
+            shiftService = new ShiftService(shiftController, assignmentController,availabilityController);
         } catch (IOException e) {
             System.err.println("Error initializing system: " + e.getMessage());
             System.err.println("Cannot start the system. Please check data files and try again.");

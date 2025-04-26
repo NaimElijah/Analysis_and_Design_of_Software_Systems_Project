@@ -428,13 +428,24 @@ public class ShiftController {
     }
 
 
-    public Set<Shift> getShiftsByWeek(long doneBy,Week week) {
+    public List<Shift> getShiftsByWeek(long doneBy, Week week) {
         String PERMISSION_REQUIRED = "GET_SHIFT";
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to get shifts by week");
         }
-        return weeklyShifts.get(week);
+
+        Set<Shift> shiftsSet = weeklyShifts.get(week);
+        if (shiftsSet == null) {
+            return new ArrayList<>(); // No shifts for this week
+        }
+
+        List<Shift> shiftsList = new ArrayList<>(shiftsSet);
+        shiftsList.sort(Comparator
+                .comparing(Shift::getShiftDate)
+                .thenComparing(Shift::getShiftType)); // optional: morning before evening
+        return shiftsList;
     }
+
 
     public void addShiftsToWeeklyShifts(Set<Shift> shifts) {
         if (shifts == null || shifts.isEmpty()) {

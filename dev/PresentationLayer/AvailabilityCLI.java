@@ -1,23 +1,20 @@
 package PresentationLayer;
 
-import DomainLayer.enums.ShiftType;
 import ServiceLayer.EmployeeService;
 import ServiceLayer.ShiftSL;
 import ServiceLayer.ShiftService;
 import ServiceLayer.exception.AuthorizationException;
 import Util.Week;
 import java.time.*;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-public class AvailabillityCLI {
+public class AvailabilityCLI {
     private final ShiftService shiftService;
     private final EmployeeService employeeService;
     private final Scanner scanner;
     private final long doneBy;
-    private static final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("E dd/MM");
 
-    public AvailabillityCLI(ShiftService shiftService, EmployeeService employeeService , long doneBy) {
+    public AvailabilityCLI(ShiftService shiftService, EmployeeService employeeService , long doneBy) {
         this.shiftService = shiftService;
         this.employeeService = employeeService;
         this.scanner = new Scanner(System.in);
@@ -45,63 +42,94 @@ public class AvailabillityCLI {
 //                return;
 //            }
             LocalDate startDate = Week.getNextSunday(LocalDate.now());
-            Week Week = Util.Week.from(startDate);
-            Set<ShiftSL> weekShifts = shiftService.getShiftsByWeek(doneBy,Week);
+            Week week = Week.from(startDate);
+            Set<ShiftSL> weekShifts = shiftService.getShiftsByWeek(doneBy, week);
+
             if (weekShifts.isEmpty()) {
-                System.out.println("🚫 No shifts available for the upcoming week.");
+                CliUtil.printError("🚫 No shifts available for the upcoming week.");
                 return false;
             }
 
-            System.out.println("🗓️  Employee Weekly Availability");
-            System.out.printf("%-15s| %-13s| %-13s| %-10s%n", "Day", "Type", "Available", "For update Enter Y/N, for exit enter X");
-            System.out.println("---------------------------------------------------------------");
+            List<ShiftSL> shiftsList = new ArrayList<>(weekShifts);
 
-            Map<Long, Boolean> userInputs = new LinkedHashMap<>();
-            for (ShiftSL shift : weekShifts) {
+            CliUtil.printSectionHeader("Employee Weekly Availability", false, "SYSTEM");
+
+            System.out.printf(CliUtil.BOLD + "%-4s %-15s| %-13s| %-13s|\n" + CliUtil.RESET, "No.", "Day", "Type", "Available");
+            System.out.println(CliUtil.GRAY + "--------------------------------------------------" + CliUtil.RESET);
+
+            // Mapping of number to shift
+            Map<Integer, ShiftSL> numberedShifts = new LinkedHashMap<>();
+            int index = 1;
+            for (ShiftSL shift : shiftsList) {
                 LocalDate date = shift.getShiftDate();
                 String dayStr = date.getDayOfWeek().toString().substring(0, 1).toUpperCase() + date.getDayOfWeek().toString().substring(1).toLowerCase();
                 dayStr = dayStr.substring(0, 3); // Sun, Mon...
 
-                for (ShiftType type : ShiftType.values()) {
-                    boolean available = shift.getAvailableEmployees().contains(doneBy);
-                    String availabilityMark = available ? "v" : "";
+                boolean available = shiftService.isEmployeeAvailable(doneBy, shift.getId(), doneBy);
+                String availabilityMark = available ? CliUtil.greenString("✔") : CliUtil.redString("✖");
 
-                    System.out.printf("%-15s| %-13s| %-13s| ", (type == ShiftType.MORNING ? dayStr + " " + date : ""), type, availabilityMark);
+                System.out.printf(CliUtil.YELLOW + "%-3d" + CliUtil.RESET + " %-15s| %-13s| %-13s|\n",
+                        index, dayStr + " " + date, shift.getShiftType(), availabilityMark);
 
-                    boolean validInput = false;
-                    while (!validInput) {
-                        String input = scanner.nextLine().trim().toLowerCase();
+                numberedShifts.put(index, shift);
+                index++;
+            }
 
-                        switch (input) {
-                            case "x" -> {
-                                return false;
-                            }
-                            case "y" -> {
-                                shiftService.markEmployeeAvailable(doneBy, shift.getId());
-                                validInput = true;
-                            }
-                            case "n" -> {
-                                shiftService.removeEmployeeAvailability(doneBy, shift.getId());
-                                validInput = true;
-                            }
-                            default -> {
-                                printError("Invalid input. Please enter 'Y' or 'N'. Try again:");
-                                // Loop again until valid input
-                            }
+            CliUtil.printEmptyLine();
+
+            // Selection loop
+            while (true) {
+                CliUtil.printPrompt("Enter the number of the shift to update (or X to exit): ");
+                String input = scanner.nextLine().trim().toLowerCase();
+
+                if (input.equals("x")) {
+                    break;
+                }
+
+                try {
+                    int selectedNumber = Integer.parseInt(input);
+                    if (!numberedShifts.containsKey(selectedNumber)) {
+                        CliUtil.printError("Invalid shift number. Try again.");
+                        continue;
+                    }
+
+                    ShiftSL selectedShift = numberedShifts.get(selectedNumber);
+
+                    while (true) {
+                        CliUtil.printPrompt("Mark availability (Y for available / N for not available): ");
+                        String availabilityInput = scanner.nextLine().trim().toLowerCase();
+
+                        if (availabilityInput.equals("y")) {
+                            shiftService.markEmployeeAvailable(doneBy, selectedShift.getId());
+                            CliUtil.printSuccessWithCheckmark("Marked as available.");
+                            break;
+                        } else if (availabilityInput.equals("n")) {
+                            shiftService.removeEmployeeAvailability(doneBy, selectedShift.getId());
+                            CliUtil.printSuccessWithCheckmark("Marked as not available.");
+                            break;
+                        } else {
+                            CliUtil.printError("Invalid input. Please enter Y or N.");
                         }
                     }
+
+                } catch (NumberFormatException e) {
+                    CliUtil.printError("Please enter a valid number or X to exit.");
                 }
             }
-            System.out.println("✅ Availability updated!");
+
+            CliUtil.printSuccessWithCheckmark("✅ Availability updated successfully!");
             return false;
-        }
-        catch (Exception e) {
-            printError("An error occurred: " + e.getMessage());
+
+        } catch (Exception e) {
+            CliUtil.printError("An error occurred: " + e.getMessage());
             return true;
         }
+        //System.out.printf("%d. %-15s| %-13s| %-13s|%n", index, (shift.getShiftType() == ShiftType.MORNING ? dayStr + " " + date : ""), shift.getShiftType(), availabilityMark);
+
     }
 
-    private boolean isWeekendBlocked() {
+
+            private boolean isWeekendBlocked() {
         ZonedDateTime now = ZonedDateTime.now(ZoneId.systemDefault());
         DayOfWeek day = now.getDayOfWeek();
         LocalTime time = now.toLocalTime();
