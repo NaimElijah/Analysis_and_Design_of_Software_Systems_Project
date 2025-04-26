@@ -379,7 +379,7 @@ public class EmployeeCLI {
      *
      * @param title - The title of the section to be printed.
      */
-    private void printSectionHeader(String title) {
+    private void  printSectionHeader(String title) {
         boolean isMainMenu = title.equalsIgnoreCase("Main Menu");
         CliUtil.printSectionHeader(title, isMainMenu, "SYSTEM");
     }

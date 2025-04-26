@@ -27,7 +27,7 @@ public class MainCLI {
         this.employeeCLI = new EmployeeCLI(employeeService, doneBy);
         this.assignmentCLI = new AssignmentCLI(shiftService, employeeService, doneBy);
         this.availabilityCLI = new AvailabillityCLI(shiftService, doneBy);
-        this.shiftCLI = new ShiftCLI(shiftService, doneBy);
+        this.shiftCLI = new ShiftCLI(shiftService, employeeService, doneBy);
     }
 
     public void start() {
