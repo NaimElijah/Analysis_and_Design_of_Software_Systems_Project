@@ -6,7 +6,7 @@ The system is preloaded with an Admin user with all the system permissions, the 
 **NEED TO ADD MORE ONCE WE WILL UNITE ALL PARTS TO ONE CLI**
 
 ### Overview
-The employee module is responsible for managing the employees, shifts, and system premissions.
+The employee module is responsible for managing the employees, shifts, and system permissions.
  - The employee management supports viewing, editing, and creating employees.
  - The Assignment management supports viewing, editing, and creating shifts.
  - The Avalibilty ** PLACE HOLDER FOR ROTEM **
@@ -94,7 +94,7 @@ The XXXX Management allows you to manage employees, roles, and permissions withi
 ## General 
 
 ### Data and Massages info
-- Required fields are usually marked with an asterisk (*) or highlighted
+- Required fields are marked with an asterisk (*) or highlighted
 - Error messages appear in red text
 - Success messages appear in green text
 - Warning messages appear in yellow text
