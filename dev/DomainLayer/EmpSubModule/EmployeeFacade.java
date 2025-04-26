@@ -38,6 +38,9 @@ public class EmployeeFacade {
 
 
     public void addDriver(int empId, String fname, String lname, ArrayList<String> licenses) {
+        if (this.employees.containsKey(empId)){
+            throw new KeyAlreadyExistsException("The Employee Id you are trying to add already exists");
+        }
         //TODO
     }
 
