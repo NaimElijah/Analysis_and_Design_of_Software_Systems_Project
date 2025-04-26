@@ -9,7 +9,8 @@ The system is preloaded with an Admin user with all the system permissions, the 
 The employee module is responsible for managing the employees, shifts, and system permissions.
  - The employee management supports viewing, editing, and creating employees.
  - The Shift management supports viewing, editing, and creating shifts.
- - The Avalibilty ** PLACE HOLDER FOR ROTEM **
+ - The Assignment management supports assigning and remove employees to shifts.
+ - The Availability management supports mark employees as available or unavailable for shifts.
 
 ---
 
@@ -50,44 +51,60 @@ The Employee Management allows you to manage employees, roles, and permissions w
 ## Shift Management Instructions
 
 ### Overview
-The Assignment Management allows you to manage shifts and employee assignments. Different options are available based on user permissions.
+The Shift Management System allows you to create, update, and manage shifts for employees. Different actions are available depending on your permissions.
 
 ### Getting Started
-1. When you enter the Assignment Management, you'll see the Assignment Management Menu with numbered options.
-2. Enter the number corresponding to your desired action and press Enter.
+1. From the main menu, select the **Shifts** option by entering the number `2` and pressing Enter.
+2. You will enter the Shift Management System and see a list of shift-related actions.
 
 ### Features
 
-#### Shift Viewing
-- **View All Shifts**: See a list of all shifts in the system
-- **View Shift Details**: Enter a shift ID to see its complete information
-- **View Employee Assignments**: See which shifts an employee is assigned to
-
-#### Shift Management (requires ASSIGN_EMPLOYEE permission)
-When you select "Shift Management," you'll see a submenu with these options:
-
-1. **Assign Employees to Shift**: Add an employee to a specific shift
-2. **Remove Employee from Shift**: Remove an employee from a shift
-3. **Modify Required Roles**: Change the roles required for a shift
-4. **Create Full Week of Shifts**: Create shifts for an entire week (Sunday-Saturday)
-    - You'll need to specify a Sunday start date
-    - Define the roles required for all shifts in the week
-    - The system will create morning and evening shifts for each day
+#### Shift Management
+- **View All Shifts**: Display a list of all scheduled shifts in the system.
+- **View Shift Details**: Enter a shift ID to view the full details of a specific shift.
+- **Add Shift**: Manually create a new shift (requires CREATE_SHIFT permission).
+- **Add Weekly Shifts**: Generate a full week's schedule of shifts automatically (requires CREATE_SHIFT permission).
+- **Edit Shifts**: Modify the details of an existing shift (requires UPDATE_SHIFT permission).
+- **Delete Shifts**: Remove an existing shift from the schedule (requires DELETE_SHIFT permission).
+- **Back to Main Menu**: Return to the Employee Module main menu.
 
 ---
 
-
-## Availability Management Instructions TODO
+## Assignment Management Instructions
 
 ### Overview
-The XXXX Management allows you to manage employees, roles, and permissions within the system. Different options are available based on user permissions.
+The Assignment Management System allows you to assign employees to specific shifts and manage their participation. Different actions are available depending on your permissions.
 
 ### Getting Started
-1. When you start the XXXX Management, you'll see a main menu with numbered options.
-2. Enter the number corresponding to your desired action and press Enter.
+1. From the main menu, select the **Assignment Board** option by entering the number `3` and pressing Enter.
+2. You will enter the Assignment Management System and see a list of assignment-related actions.
 
 ### Features
 
+#### Assignment Management
+- **Assign Employees to a Shift**: Select a shift and assign employees based on their roles and availability (requires ASSIGN_EMPLOYEE permission).
+- **Remove Employee from Shift**: Remove an employee who has already been assigned to a shift (requires REMOVE_EMPLOYEE_FROM_SHIFT permission).
+- **Back to Main Menu**: Return to the Employee Module main menu.
+
+---
+
+## Availability Management Instructions
+
+### Overview
+The Availability Management System allows employees to mark their availability for upcoming shifts. This helps shift managers assign employees according to their availability status.
+
+### Getting Started
+1. From the main menu, select the **Availability Board** option by entering the number `4` and pressing Enter.
+2. You will enter the Availability Management System and see a table listing the shifts for the week.
+3. You can update your availability by selecting a shift number and marking yourself as available or not available.
+
+### Features
+
+#### Availability Management
+- **View Weekly Availability**: See a list of all your upcoming shifts and current availability status.
+- **Update Availability**: Select a shift by its number and mark yourself as Available (`Y`) or Not Available (`N`).
+- **Save Changes**: After updating, availability will be saved automatically.
+- **Back to Main Menu**: Return to the Employee Module main menu.
 
 ---
 
@@ -148,24 +165,34 @@ Enter the number corresponding to your desired action and press Enter.
 
 | Permission | Category | Description |
 |------------|----------|-------------|
-| `CREATE_EMPLOYEE` | Employee Management | Allows creating new employees in the system. Users with this permission can add new employee records with personal details, salary information, and employment terms. |
+| `CREATE_EMPLOYEE` | Employee Management | Allows creating new employees in the system with full details. |
 | `UPDATE_EMPLOYEE` | Employee Management | Allows modifying existing employee information such as name, salary, and employment terms. |
-| `EDIT_EMPLOYEE` | Employee Management | Similar to UPDATE_EMPLOYEE, provides the ability to edit employee information. |
-| `DEACTIVATE_EMPLOYEE` | Employee Management | Allows marking an employee as inactive in the system without deleting their record. |
-| `DELETE_EMPLOYEE` | Employee Management | Allows permanent removal of an employee record from the system. This is different from deactivation. |
+| `EDIT_EMPLOYEE` | Employee Management | Allows editing employee information (alias for updating fields). |
+| `VIEW_EMPLOYEE` | Employee Management | Allows viewing employee information without editing rights. |
+| `DEACTIVATE_EMPLOYEE` | Employee Management | Allows marking an employee as inactive in the system. |
+| `DELETE_EMPLOYEE` | Employee Management | Allows permanent removal of an employee record from the system. |
 | `MANAGE_HR` | Employee Management | Provides general human resources management capabilities. |
-| `CREATE_ROLE` | Role Management | Allows creating new roles in the system. Users with this permission can also clone existing roles. |
-| `ROLE_PERMISSION` | Role Management | Allows assigning roles to employees and removing roles from employees. |
-| `ADD_PERMISSION_TO_ROLE` | Role Management | Allows adding specific permissions to a role, modifying what users with that role can do. |
+| `CREATE_ROLE` | Role Management | Allows creating new roles in the system and cloning existing ones. |
+| `EDIT_ROLE` | Role Management | Allows editing existing role details. |
+| `ROLE_PERMISSION` | Role Management | Allows assigning and removing roles from employees. |
+| `ADD_PERMISSION_TO_ROLE` | Role Management | Allows adding specific permissions to a role. |
 | `REMOVE_PERMISSION_FROM_ROLE` | Role Management | Allows removing specific permissions from a role. |
 | `CREATE_PERMISSION` | Role Management | Allows creating new permission types in the system. |
-| `CREATE_SHIFT` | Shift Management | Allows creating new shifts in the system, including creating a full week of shifts. |
-| `UPDATE_SHIFT` | Shift Management | Allows modifying existing shift information such as date, time, and required roles. |
+| `EDIT_PERMISSION` | Role Management | Allows editing the properties of a permission. |
+| `GET_ROLES` | Role Management | Allows viewing all existing roles in the system. |
+| `ROLE_REQUIRED` | Role Management | Indicates a role requirement for a certain operation (internal system use). |
+| `CREATE_SHIFT` | Shift Management | Allows creating new shifts individually or by week. |
+| `UPDATE_SHIFT` | Shift Management | Allows modifying existing shift information. |
+| `EDIT_SHIFT` | Shift Management | Allows editing shift details (alias for updating fields). |
 | `REMOVE_SHIFT` | Shift Management | Allows deleting shifts from the system. |
-| `GET_SHIFT` | Shift Management | Allows viewing shift details. |
+| `GET_SHIFT` | Shift Management | Allows viewing shift information and shift lists. |
 | `MANAGE_SHIFT` | Shift Management | Provides general shift management capabilities. |
-| `ASSIGN_EMPLOYEE_TO_SHIFT` | Shift Management | Allows assigning employees to specific shifts based on roles and availability. |
-| `MANAGE_INVENTORY` | Operational | Allows managing inventory items, stock levels, and related operations. |
-| `DRIVE_VEHICLE` | Operational | Allows operating company vehicles for deliveries or other purposes. |
-| `STOCK_SHELVES` | Operational | Allows stocking and organizing merchandise on store shelves. |
+| `ASSIGN_EMPLOYEE` | Assignment Management | Allows assigning employees to shifts. |
+| `ASSIGN_EMPLOYEE_TO_SHIFT` | Assignment Management | Allows assigning employees to shifts based on roles and availability. |
+| `UPDATE_AVAILABLE` | Availability Management | Allows marking availability for shifts. |
+| `MANAGE_INVENTORY` | Operational | Allows managing inventory stock and operations. |
+| `HANDLE_CASH` | Operational | Allows handling cash operations (e.g., cashier duties). |
+| `DRIVE_VEHICLE` | Operational | Allows operating company vehicles. |
+| `CLEAN_FACILITY` | Operational | Allows cleaning and maintaining company facilities. |
+| `STOCK_SHELVES` | Operational | Allows stocking merchandise and organizing inventory shelves. |
 ---
