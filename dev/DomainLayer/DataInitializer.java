@@ -240,6 +240,7 @@ public class DataInitializer {
                 LocalDate shiftDate = LocalDate.parse(shiftNode.get("shiftDate").asText());
                 boolean isAssignedShiftManager = shiftNode.get("isAssignedShiftManager").asBoolean();
                 boolean isOpen = shiftNode.get("isOpen").asBoolean();
+                String hours = shiftNode.get("hours").asText();
                 LocalDate updateDate = LocalDate.parse(shiftNode.get("updateDate").asText());
 
                 // Parse roles required
@@ -288,7 +289,7 @@ public class DataInitializer {
 
                 Shift shift = new Shift(
                     id, shiftType, shiftDate, rolesRequired, assignedEmployees,
-                    availableEmployees, isAssignedShiftManager, isOpen, updateDate
+                    availableEmployees, isAssignedShiftManager, isOpen, hours,updateDate
                 );
 
                 shifts.add(shift);

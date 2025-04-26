@@ -504,6 +504,19 @@ public class CliUtil {
         }
     }
 
+    public static String getHoursInput(String prompt, Scanner scanner) {
+        while (true) {
+            System.out.print(BOLD + prompt + RESET);
+            String input = scanner.nextLine();
+            // Match pattern like 9:00-17:00
+            if (input.matches("\\d{1,2}:\\d{2}-\\d{1,2}:\\d{2}")) {
+                return input;
+            } else {
+                printError("Please enter a valid hours range in the format HH:MM-HH:MM (for example 9:00-17:00).");
+            }
+        }
+    }
+
     /**
      * Gets a menu choice from the user within a specified range
      *

@@ -17,9 +17,17 @@
       "Cleaner": [666666666],
       "Driver": [555555555]
     },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
+    "availableEmployees": [
+      111111111,
+      222222222,
+      333333333,
+      444444444,
+      555555555,
+      666666666
+    ],
     "isAssignedShiftManager": true,
     "isOpen": true,
+    "hours": "09:00 - 16:00",
     "updateDate": "2025-04-06"
   },
   {
@@ -38,9 +46,17 @@
       "Stocker": [222222222],
       "Cleaner": [666666666]
     },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
+    "availableEmployees": [
+      111111111,
+      222222222,
+      333333333,
+      444444444,
+      555555555,
+      666666666
+    ],
     "isAssignedShiftManager": true,
     "isOpen": true,
+    "hours": "16:00 - 20:00",
     "updateDate": "2025-04-06"
   },
   {
@@ -61,9 +77,17 @@
       "HR manager": [444444444],
       "Driver": [555555555]
     },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
+    "availableEmployees": [
+      111111111,
+      222222222,
+      333333333,
+      444444444,
+      555555555,
+      666666666
+    ],
     "isAssignedShiftManager": true,
     "isOpen": true,
+    "hours": "09:00 - 16:00",
     "updateDate": "2025-04-06"
   },
   {
@@ -82,9 +106,17 @@
       "Stocker": [222222222],
       "Cleaner": [666666666]
     },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
+    "availableEmployees": [
+      111111111,
+      222222222,
+      333333333,
+      444444444,
+      555555555,
+      666666666
+    ],
     "isAssignedShiftManager": true,
     "isOpen": true,
+    "hours": "16:00 - 20:00",
     "updateDate": "2025-04-06"
   },
   {
@@ -105,9 +137,17 @@
       "Cleaner": [666666666],
       "Driver": [555555555]
     },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
+    "availableEmployees": [
+      111111111,
+      222222222,
+      333333333,
+      444444444,
+      555555555,
+      666666666
+    ],
     "isAssignedShiftManager": true,
     "isOpen": true,
+    "hours": "09:00 - 16:00",
     "updateDate": "2025-04-06"
   },
   {
@@ -126,9 +166,17 @@
       "Stocker": [222222222],
       "Cleaner": [666666666]
     },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
+    "availableEmployees": [
+      111111111,
+      222222222,
+      333333333,
+      444444444,
+      555555555,
+      666666666
+    ],
     "isAssignedShiftManager": true,
     "isOpen": true,
+    "hours": "16:00 - 20:00",
     "updateDate": "2025-04-06"
   },
   {
@@ -149,9 +197,17 @@
       "HR manager": [444444444],
       "Driver": [555555555]
     },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
+    "availableEmployees": [
+      111111111,
+      222222222,
+      333333333,
+      444444444,
+      555555555,
+      666666666
+    ],
     "isAssignedShiftManager": true,
     "isOpen": true,
+    "hours": "09:00 - 16:00",
     "updateDate": "2025-04-06"
   },
   {
@@ -170,9 +226,17 @@
       "Stocker": [222222222],
       "Cleaner": [666666666]
     },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
+    "availableEmployees": [
+      111111111,
+      222222222,
+      333333333,
+      444444444,
+      555555555,
+      666666666
+    ],
     "isAssignedShiftManager": true,
     "isOpen": true,
+    "hours": "16:00 - 20:00",
     "updateDate": "2025-04-06"
   },
   {
@@ -193,9 +257,17 @@
       "Cleaner": [666666666],
       "Driver": [555555555]
     },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
+    "availableEmployees": [
+      111111111,
+      222222222,
+      333333333,
+      444444444,
+      555555555,
+      666666666
+    ],
     "isAssignedShiftManager": true,
     "isOpen": true,
+    "hours": "09:00 - 16:00",
     "updateDate": "2025-04-06"
   },
   {
@@ -214,9 +286,17 @@
       "Stocker": [222222222],
       "Cleaner": [666666666]
     },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
+    "availableEmployees": [
+      111111111,
+      222222222,
+      333333333,
+      444444444,
+      555555555,
+      666666666
+    ],
     "isAssignedShiftManager": true,
     "isOpen": true,
+    "hours": "16:00 - 20:00",
     "updateDate": "2025-04-06"
   },
   {
@@ -235,9 +315,17 @@
       "Stocker": [222222222],
       "HR manager": [444444444]
     },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
+    "availableEmployees": [
+      111111111,
+      222222222,
+      333333333,
+      444444444,
+      555555555,
+      666666666
+    ],
     "isAssignedShiftManager": true,
     "isOpen": true,
+    "hours": "09:00 - 16:00",
     "updateDate": "2025-04-06"
   },
   {
@@ -256,32 +344,47 @@
       "Stocker": [222222222],
       "Cleaner": [666666666]
     },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
+    "availableEmployees": [
+      111111111,
+      222222222,
+      333333333,
+      444444444,
+      555555555,
+      666666666
+    ],
     "isAssignedShiftManager": true,
     "isOpen": true,
+    "hours": "16:00 - 20:00",
     "updateDate": "2025-04-06"
+  }, {
+  "id": 13,
+  "shiftType": "MORNING",
+  "shiftDate": "2025-04-19",
+  "rolesRequired": {
+    "Shift Manager": 1,
+    "Cashier": 2,
+    "Stocker": 1,
+    "Driver": 1
   },
-  {
-    "id": 13,
-    "shiftType": "MORNING",
-    "shiftDate": "2025-04-19",
-    "rolesRequired": {
-      "Shift Manager": 1,
-      "Cashier": 2,
-      "Stocker": 1,
-      "Driver": 1
-    },
-    "assignedEmployees": {
-      "Shift Manager": [111111111],
-      "Cashier": [333333333],
-      "Stocker": [222222222],
-      "Driver": [555555555]
-    },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
-    "isAssignedShiftManager": true,
-    "isOpen": true,
-    "updateDate": "2025-04-06"
+  "assignedEmployees": {
+    "Shift Manager": [111111111],
+    "Cashier": [333333333],
+    "Stocker": [222222222],
+    "Driver": [555555555]
   },
+  "availableEmployees": [
+    111111111,
+    222222222,
+    333333333,
+    444444444,
+    555555555,
+    666666666
+  ],
+  "isAssignedShiftManager": true,
+  "isOpen": true,
+  "hours": "09:00 - 16:00",
+  "updateDate": "2025-04-06"
+},
   {
     "id": 14,
     "shiftType": "EVENING",
@@ -298,9 +401,17 @@
       "Stocker": [222222222],
       "Cleaner": [666666666]
     },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
+    "availableEmployees": [
+      111111111,
+      222222222,
+      333333333,
+      444444444,
+      555555555,
+      666666666
+    ],
     "isAssignedShiftManager": true,
     "isOpen": true,
+    "hours": "16:00 - 20:00",
     "updateDate": "2025-04-06"
   },
   {
@@ -321,9 +432,17 @@
       "Cleaner": [666666666],
       "Driver": [555555555]
     },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
+    "availableEmployees": [
+      111111111,
+      222222222,
+      333333333,
+      444444444,
+      555555555,
+      666666666
+    ],
     "isAssignedShiftManager": true,
     "isOpen": true,
+    "hours": "09:00 - 16:00",
     "updateDate": "2025-04-06"
   },
   {
@@ -342,9 +461,17 @@
       "Stocker": [222222222],
       "Cleaner": [666666666]
     },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
+    "availableEmployees": [
+      111111111,
+      222222222,
+      333333333,
+      444444444,
+      555555555,
+      666666666
+    ],
     "isAssignedShiftManager": true,
     "isOpen": true,
+    "hours": "16:00 - 20:00",
     "updateDate": "2025-04-06"
   },
   {
@@ -365,9 +492,17 @@
       "HR manager": [444444444],
       "Driver": [555555555]
     },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
+    "availableEmployees": [
+      111111111,
+      222222222,
+      333333333,
+      444444444,
+      555555555,
+      666666666
+    ],
     "isAssignedShiftManager": true,
     "isOpen": true,
+    "hours": "09:00 - 16:00",
     "updateDate": "2025-04-06"
   },
   {
@@ -386,164 +521,226 @@
       "Stocker": [222222222],
       "Cleaner": [666666666]
     },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
+    "availableEmployees": [
+      111111111,
+      222222222,
+      333333333,
+      444444444,
+      555555555,
+      666666666
+    ],
     "isAssignedShiftManager": true,
     "isOpen": true,
+    "hours": "16:00 - 20:00",
     "updateDate": "2025-04-06"
+  },  {
+  "id": 19,
+  "shiftType": "MORNING",
+  "shiftDate": "2025-04-22",
+  "rolesRequired": {
+    "Shift Manager": 1,
+    "Cashier": 2,
+    "Stocker": 2,
+    "Cleaner": 1,
+    "Driver": 1
   },
-  {
-    "id": 19,
-    "shiftType": "MORNING",
-    "shiftDate": "2025-04-22",
-    "rolesRequired": {
-      "Shift Manager": 1,
-      "Cashier": 2,
-      "Stocker": 2,
-      "Cleaner": 1,
-      "Driver": 1
-    },
-    "assignedEmployees": {
-      "Shift Manager": [111111111],
-      "Cashier": [333333333],
-      "Stocker": [222222222],
-      "Cleaner": [666666666],
-      "Driver": [555555555]
-    },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
-    "isAssignedShiftManager": true,
-    "isOpen": true,
-    "updateDate": "2025-04-06"
+  "assignedEmployees": {
+    "Shift Manager": [111111111],
+    "Cashier": [333333333],
+    "Stocker": [222222222],
+    "Cleaner": [666666666],
+    "Driver": [555555555]
   },
-  {
-    "id": 20,
-    "shiftType": "EVENING",
-    "shiftDate": "2025-04-22",
-    "rolesRequired": {
-      "Shift Manager": 1,
-      "Cashier": 2,
-      "Stocker": 1,
-      "Cleaner": 1
-    },
-    "assignedEmployees": {
-      "Shift Manager": [111111111],
-      "Cashier": [333333333],
-      "Stocker": [222222222],
-      "Cleaner": [666666666]
-    },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
-    "isAssignedShiftManager": true,
-    "isOpen": true,
-    "updateDate": "2025-04-06"
+  "availableEmployees": [
+    111111111,
+    222222222,
+    333333333,
+    444444444,
+    555555555,
+    666666666
+  ],
+  "isAssignedShiftManager": true,
+  "isOpen": true,
+  "hours": "09:00 - 16:00",
+  "updateDate": "2025-04-06"
+},
+{
+  "id": 20,
+  "shiftType": "EVENING",
+  "shiftDate": "2025-04-22",
+  "rolesRequired": {
+    "Shift Manager": 1,
+    "Cashier": 2,
+    "Stocker": 1,
+    "Cleaner": 1
   },
-  {
-    "id": 21,
-    "shiftType": "MORNING",
-    "shiftDate": "2025-04-23",
-    "rolesRequired": {
-      "Shift Manager": 1,
-      "Cashier": 2,
-      "Stocker": 2,
-      "HR manager": 1,
-      "Driver": 1
-    },
-    "assignedEmployees": {
-      "Shift Manager": [111111111],
-      "Cashier": [333333333],
-      "Stocker": [222222222],
-      "HR manager": [444444444],
-      "Driver": [555555555]
-    },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
-    "isAssignedShiftManager": true,
-    "isOpen": true,
-    "updateDate": "2025-04-06"
+  "assignedEmployees": {
+    "Shift Manager": [111111111],
+    "Cashier": [333333333],
+    "Stocker": [222222222],
+    "Cleaner": [666666666]
   },
-  {
-    "id": 22,
-    "shiftType": "EVENING",
-    "shiftDate": "2025-04-23",
-    "rolesRequired": {
-      "Shift Manager": 1,
-      "Cashier": 2,
-      "Stocker": 1,
-      "Cleaner": 1
-    },
-    "assignedEmployees": {
-      "Shift Manager": [111111111],
-      "Cashier": [333333333],
-      "Stocker": [222222222],
-      "Cleaner": [666666666]
-    },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
-    "isAssignedShiftManager": true,
-    "isOpen": true,
-    "updateDate": "2025-04-06"
+  "availableEmployees": [
+    111111111,
+    222222222,
+    333333333,
+    444444444,
+    555555555,
+    666666666
+  ],
+  "isAssignedShiftManager": true,
+  "isOpen": true,
+  "hours": "16:00 - 20:00",
+  "updateDate": "2025-04-06"
+},
+{
+  "id": 21,
+  "shiftType": "MORNING",
+  "shiftDate": "2025-04-23",
+  "rolesRequired": {
+    "Shift Manager": 1,
+    "Cashier": 2,
+    "Stocker": 2,
+    "HR manager": 1,
+    "Driver": 1
   },
-  {
-    "id": 23,
-    "shiftType": "MORNING",
-    "shiftDate": "2025-04-24",
-    "rolesRequired": {
-      "Shift Manager": 1,
-      "Cashier": 2,
-      "Stocker": 2,
-      "Cleaner": 1,
-      "Driver": 1
-    },
-    "assignedEmployees": {
-      "Shift Manager": [111111111],
-      "Cashier": [333333333],
-      "Stocker": [222222222],
-      "Cleaner": [666666666],
-      "Driver": [555555555]
-    },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
-    "isAssignedShiftManager": true,
-    "isOpen": true,
-    "updateDate": "2025-04-06"
+  "assignedEmployees": {
+    "Shift Manager": [111111111],
+    "Cashier": [333333333],
+    "Stocker": [222222222],
+    "HR manager": [444444444],
+    "Driver": [555555555]
   },
-  {
-    "id": 24,
-    "shiftType": "EVENING",
-    "shiftDate": "2025-04-24",
-    "rolesRequired": {
-      "Shift Manager": 1,
-      "Cashier": 2,
-      "Stocker": 1,
-      "Cleaner": 1
-    },
-    "assignedEmployees": {
-      "Shift Manager": [111111111],
-      "Cashier": [333333333],
-      "Stocker": [222222222],
-      "Cleaner": [666666666]
-    },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
-    "isAssignedShiftManager": true,
-    "isOpen": true,
-    "updateDate": "2025-04-06"
+  "availableEmployees": [
+    111111111,
+    222222222,
+    333333333,
+    444444444,
+    555555555,
+    666666666
+  ],
+  "isAssignedShiftManager": true,
+  "isOpen": true,
+  "hours": "09:00 - 16:00",
+  "updateDate": "2025-04-06"
+},
+{
+  "id": 22,
+  "shiftType": "EVENING",
+  "shiftDate": "2025-04-23",
+  "rolesRequired": {
+    "Shift Manager": 1,
+    "Cashier": 2,
+    "Stocker": 1,
+    "Cleaner": 1
   },
-  {
-    "id": 25,
-    "shiftType": "MORNING",
-    "shiftDate": "2025-04-25",
-    "rolesRequired": {
-      "Shift Manager": 1,
-      "Cashier": 2,
-      "Stocker": 2,
-      "HR manager": 1
-    },
-    "assignedEmployees": {
-      "Shift Manager": [111111111],
-      "Cashier": [333333333],
-      "Stocker": [222222222],
-      "HR manager": [444444444]
-    },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
-    "isAssignedShiftManager": true,
-    "isOpen": true,
-    "updateDate": "2025-04-06"
+  "assignedEmployees": {
+    "Shift Manager": [111111111],
+    "Cashier": [333333333],
+    "Stocker": [222222222],
+    "Cleaner": [666666666]
   },
+  "availableEmployees": [
+    111111111,
+    222222222,
+    333333333,
+    444444444,
+    555555555,
+    666666666
+  ],
+  "isAssignedShiftManager": true,
+  "isOpen": true,
+  "hours": "16:00 - 20:00",
+  "updateDate": "2025-04-06"
+},
+{
+  "id": 23,
+  "shiftType": "MORNING",
+  "shiftDate": "2025-04-24",
+  "rolesRequired": {
+    "Shift Manager": 1,
+    "Cashier": 2,
+    "Stocker": 2,
+    "Cleaner": 1,
+    "Driver": 1
+  },
+  "assignedEmployees": {
+    "Shift Manager": [111111111],
+    "Cashier": [333333333],
+    "Stocker": [222222222],
+    "Cleaner": [666666666],
+    "Driver": [555555555]
+  },
+  "availableEmployees": [
+    111111111,
+    222222222,
+    333333333,
+    444444444,
+    555555555,
+    666666666
+  ],
+  "isAssignedShiftManager": true,
+  "isOpen": true,
+  "hours": "09:00 - 16:00",
+  "updateDate": "2025-04-06"
+},
+{
+  "id": 24,
+  "shiftType": "EVENING",
+  "shiftDate": "2025-04-24",
+  "rolesRequired": {
+    "Shift Manager": 1,
+    "Cashier": 2,
+    "Stocker": 1,
+    "Cleaner": 1
+  },
+  "assignedEmployees": {
+    "Shift Manager": [111111111],
+    "Cashier": [333333333],
+    "Stocker": [222222222],
+    "Cleaner": [666666666]
+  },
+  "availableEmployees": [
+    111111111,
+    222222222,
+    333333333,
+    444444444,
+    555555555,
+    666666666
+  ],
+  "isAssignedShiftManager": true,
+  "isOpen": true,
+  "hours": "16:00 - 20:00",
+  "updateDate": "2025-04-06"
+},  {
+"id": 25,
+"shiftType": "MORNING",
+"shiftDate": "2025-04-25",
+"rolesRequired": {
+  "Shift Manager": 1,
+  "Cashier": 2,
+  "Stocker": 2,
+  "HR manager": 1
+},
+"assignedEmployees": {
+  "Shift Manager": [111111111],
+  "Cashier": [333333333],
+  "Stocker": [222222222],
+  "HR manager": [444444444]
+},
+"availableEmployees": [
+  111111111,
+  222222222,
+  333333333,
+  444444444,
+  555555555,
+  666666666
+],
+"isAssignedShiftManager": true,
+"isOpen": true,
+"hours": "09:00 - 16:00",
+"updateDate": "2025-04-06"
+},
   {
     "id": 26,
     "shiftType": "EVENING",
@@ -560,9 +757,17 @@
       "Stocker": [222222222],
       "Cleaner": [666666666]
     },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
+    "availableEmployees": [
+      111111111,
+      222222222,
+      333333333,
+      444444444,
+      555555555,
+      666666666
+    ],
     "isAssignedShiftManager": true,
     "isOpen": true,
+    "hours": "16:00 - 20:00",
     "updateDate": "2025-04-06"
   },
   {
@@ -581,9 +786,17 @@
       "Stocker": [222222222],
       "Driver": [555555555]
     },
-    "availableEmployees": [111111111, 222222222, 333333333, 444444444, 555555555, 666666666],
+    "availableEmployees": [
+      111111111,
+      222222222,
+      333333333,
+      444444444,
+      555555555,
+      666666666
+    ],
     "isAssignedShiftManager": true,
     "isOpen": true,
+    "hours": "09:00 - 16:00",
     "updateDate": "2025-04-06"
   },
   {
@@ -605,6 +818,8 @@
     "availableEmployees": [],
     "isAssignedShiftManager": true,
     "isOpen": true,
+    "hours": "16:00 - 20:00",
     "updateDate": "2025-04-06"
   }
 ]
+

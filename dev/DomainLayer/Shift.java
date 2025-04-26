@@ -29,6 +29,7 @@ public class Shift {
         this.AvailableEmployees = AvailableEmployees;
         this.isAssignedShitManager = isAssignedShitManager;
         this.isOpen = isOpen;
+        this.hours = hours;
         this.createDate = LocalDate.now();
         this.updateDate = updateDate;
     }

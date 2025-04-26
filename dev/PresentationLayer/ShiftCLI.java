@@ -326,6 +326,10 @@ public class ShiftCLI {
         return CliUtil.getDateInput(prompt, scanner);
     }
 
+    private String getHoursInput(String prompt) {
+        return CliUtil.getHoursInput(prompt, scanner);
+    }
+
 
     /**
      * Waits for the user to press Enter to continue
@@ -455,6 +459,7 @@ public class ShiftCLI {
             shiftInfo.add(new String[]{"ID:", String.valueOf(shift.getId())});
             shiftInfo.add(new String[]{"Date:", shift.getShiftDate().toString()});
             shiftInfo.add(new String[]{"Type:", shift.getShiftType().toString()});
+            shiftInfo.add(new String[]{"Hours:", shift.getHours()});
 
             String status = shift.isOpen()
                     ? CliUtil.greenString("Open")
@@ -542,11 +547,14 @@ public class ShiftCLI {
             table.add(new String[]{"ID", String.valueOf(shift.getId())});
             table.add(new String[]{"Date", shift.getShiftDate().toString()});
             table.add(new String[]{"Type", shift.getShiftType().toString()});
+            table.add(new String[]{"Hours", shift.getHours()});
 
             String openStatus = shift.isOpen() 
                 ? CliUtil.greenString("Open") 
                 : CliUtil.redString("Closed");
             table.add(new String[]{"Status", openStatus});
+
+
 
             String managerStatus = shift.isAssignedShiftManager() 
                 ? CliUtil.greenString("Assigned") 
@@ -561,6 +569,7 @@ public class ShiftCLI {
             boolean hasManager = shift.isAssignedShiftManager();
             ShiftType shiftType = shift.getShiftType();
             LocalDate date = shift.getShiftDate();
+            String hours = shift.getHours();
 
             // Option to change shift type
             if (confirm("Do you want to change the shift type?")) {
@@ -572,6 +581,12 @@ public class ShiftCLI {
             if (confirm("Do you want to change the shift date?")) {
                 CliUtil.printInfo("Current date: " + date.format(dateFormatter));
                 date = getDateInput("Select new date:");
+            }
+
+            if (confirm("Do you want to change the shift hours?")) {
+                CliUtil.printInfo("Current hours: " + shift.getHours());
+                String newHours = scanner.nextLine().trim();
+                hours = getHoursInput("Select new hours:");
             }
 
             // Option to change open status
@@ -637,7 +652,7 @@ public class ShiftCLI {
             // Confirm all changes
             CliUtil.printEmptyLine();
             if (confirm("Apply all changes to this shift?")) {
-                String result = shiftService.updateShift(doneBy, shift.getId(), shiftType, date, isOpen, hasManager, LocalDate.now());
+                String result = shiftService.updateShift(doneBy, shift.getId(), shiftType, date, isOpen, hasManager, hours,LocalDate.now());
                 if (result.contains("successfully")) {
                     printSuccess(result);
                 } else {
@@ -749,6 +764,10 @@ public class ShiftCLI {
                 // No shift exists, continue with creation
             }
 
+            // Get shift hours
+            String hours = getHoursInput("Enter shift hours (e.g., 9:00-17:00):");
+
+
             // Get roles required
             CliUtil.printEmptyLine();
             CliUtil.printSectionWithIcon("ROLES REQUIRED", "👥");
@@ -818,7 +837,8 @@ public class ShiftCLI {
                     assignedEmployees, 
                     availableEmployees, 
                     isManagerShift, 
-                    isOpen, 
+                    isOpen,
+                    hours,
                     LocalDate.now()
                 );
                 if (result.contains("successfully")) {

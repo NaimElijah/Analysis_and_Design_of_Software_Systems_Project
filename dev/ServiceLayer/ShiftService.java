@@ -65,9 +65,9 @@ public class ShiftService {
     }
 
     public String updateShift(long doneBy, long shiftId, ShiftType shiftType, LocalDate date,
-                              boolean isAssignedShiftManager, boolean isOpen, LocalDate updateDate) {
+                              boolean isAssignedShiftManager, boolean isOpen,String hours, LocalDate updateDate) {
         try {
-            boolean result = shiftController.updateShift(doneBy, shiftId, shiftType, date, isAssignedShiftManager, isOpen, updateDate);
+            boolean result = shiftController.updateShift(doneBy, shiftId, shiftType, date, isAssignedShiftManager, isOpen,hours, updateDate);
             if (result) {
                 return "Shift updated successfully";
             } else {
