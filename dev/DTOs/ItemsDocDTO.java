@@ -1,4 +1,4 @@
-package PresentationLayer.DTOs;
+package DTOs;
 
 import java.util.HashMap;
 
@@ -12,7 +12,6 @@ public class ItemsDocDTO {
     private HashMap<ItemDTO, Integer> itemDTOs;
 
     public ItemsDocDTO() {}
-
     public ItemsDocDTO(int itemsDoc_num, SiteDTO src_siteDTO, SiteDTO dest_siteDTO, HashMap<ItemDTO, Integer> itemDTOs) {
         this.itemsDoc_num = itemsDoc_num;
         this.src_siteDTO = src_siteDTO;
@@ -37,4 +36,5 @@ public class ItemsDocDTO {
         }
         return res;
     }
+
 }

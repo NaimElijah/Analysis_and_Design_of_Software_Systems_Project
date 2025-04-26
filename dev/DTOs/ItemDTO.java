@@ -1,4 +1,4 @@
-package PresentationLayer.DTOs;
+package DTOs;
 
 public class ItemDTO {
     private String name;
@@ -6,13 +6,11 @@ public class ItemDTO {
     private Boolean condition;
 
     public ItemDTO() {}
-
     public ItemDTO(String name, int weight, Boolean condition){
         this.name = name;
         this.weight = weight;
         this.condition = condition;
     }
-
     public ItemDTO(String name, int weight){
         this.name = name;
         this.weight = weight;

@@ -27,7 +27,7 @@ public class TransportDoc {
     public TransportDoc(enumTranStatus status, int tran_Doc_ID, Truck transportTruck, Driver transportDriver, Site src_site) {
         this.status = status;
         this.tran_Doc_ID = tran_Doc_ID;
-        this.departure_dt = LocalDateTime.now();   //TODO:  look more into this   // when really departing after the check, set this to departure datetime
+        this.departure_dt = LocalDateTime.now();   // In the code, if it doesn't depart immediately, this always updates right before genuine departure.
         this.transportTruck = transportTruck;
         this.transportDriver = transportDriver;
         this.truck_Depart_Weight = -1;   //  Initialization, calculated before being sent
@@ -50,7 +50,9 @@ public class TransportDoc {
             this.transportTruck.setInTransportID(-1);  // unassign old one
         }
         this.transportTruck = transportTruck;
-        this.transportTruck.setInTransportID(this.tran_Doc_ID);
+        if (this.status == enumTranStatus.InTransit || this.status == enumTranStatus.BeingAssembled || this.status == enumTranStatus.BeingDelayed) {
+            this.transportTruck.setInTransportID(this.tran_Doc_ID);   ///  only if the current Transport is active
+        }
     }
 
     public Driver getTransportDriver() {return transportDriver;}
@@ -60,7 +62,9 @@ public class TransportDoc {
             this.transportDriver.setInTransportID(-1);  // unassign old one
         }
         this.transportDriver = transportDriver;
-        this.transportDriver.setInTransportID(this.tran_Doc_ID);
+        if (this.status == enumTranStatus.InTransit || this.status == enumTranStatus.BeingAssembled || this.status == enumTranStatus.BeingDelayed) {
+            this.transportDriver.setInTransportID(this.tran_Doc_ID);   ///  only if the current Transport is active
+        }
     }
 
 

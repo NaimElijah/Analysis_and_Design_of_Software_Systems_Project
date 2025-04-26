@@ -17,21 +17,22 @@ public class StartUpStateService {
 
     public String loadData() {
         try {
-            //TODO:  loading starting data with the other services services
-            //TODO:  loading starting data with the other services services
-            //TODO:  loading starting data with the other services services
-            //TODO:  loading starting data with the other services services
-            //TODO:  loading starting data with the other services services
-            //TODO:  loading starting data with the other services services
-            //TODO:  loading starting data with the other services services
-            //TODO:  loading starting data with the other services services
-            //TODO:  loading starting data with the other services services
-            //TODO:  loading starting data with the other services services
-            //TODO:  loading starting data with the other services services
-            //TODO:  loading starting data with the other services services
-            //TODO:  loading starting data with the other services services
-            //TODO:  loading starting data with the other services services
-            //TODO:  loading starting data with the other services services
+            //TODO:  loading starting data with the other services services:
+            //TODO: add shipping area:
+            this.siteSer.addShippingArea(1, "Central District");
+
+            //TODO: add sites:
+
+
+            //TODO: add trucks:
+
+
+            //TODO: add employees, drivers:
+
+
+            //TODO: add some Transports
+
+
             //TODO:  loading starting data with the other services services
         } catch (Exception e) {
             e.printStackTrace();

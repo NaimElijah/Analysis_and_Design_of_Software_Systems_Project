@@ -1,8 +1,4 @@
-package PresentationLayer.DTOs;
-
-import DomainLayer.TranSubModule.ItemsDoc;
-import DomainLayer.TranSubModule.enumTranProblem;
-import com.fasterxml.jackson.databind.ObjectMapper;
+package DTOs;
 
 import java.util.ArrayList;
 
@@ -13,7 +9,6 @@ public class TransportDTO {
     private ArrayList<ItemsDocDTO> dests_Docs;    ///  <<<--------------  In Order of visit   <<<--------------------
 
     public TransportDTO() {}
-
     public TransportDTO(int transportTruckNum, int transportDriverID, SiteDTO src_site, ArrayList<ItemsDocDTO> dests_Docs) {
         this.transportTruckNum = transportTruckNum;
         this.transportDriverID = transportDriverID;
@@ -30,7 +25,6 @@ public class TransportDTO {
     public ArrayList<ItemsDocDTO> getDests_Docs() {return dests_Docs;}
     public void setDests_Docs(ArrayList<ItemsDocDTO> dests_Docs) {this.dests_Docs = dests_Docs;}
 
-
     public String showAllTransportItemsDocs() {
         String res = "Transport Sites & Items: Source Site: " + this.src_site.toString() + "\n";
         for (ItemsDocDTO itemsDocDTO : dests_Docs) {
@@ -38,4 +32,5 @@ public class TransportDTO {
         }
         return res;
     }
+
 }

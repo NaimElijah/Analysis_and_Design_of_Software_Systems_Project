@@ -1,9 +1,7 @@
 package ServiceLayer;
 
 import DomainLayer.TranSubModule.TransportFacade;
-import PresentationLayer.DTOs.TransportDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 import javax.naming.CommunicationException;
@@ -56,9 +54,11 @@ public class TransportService {
         } catch (FileNotFoundException e) {
             return "The Transport ID you have entered doesn't exist.";
         } catch (FileAlreadyExistsException e) {
-            return "The problem you are trying to add already exists in this Transport";
-        } catch (ClassNotFoundException e) {
-            return "cannot change status to InTransit because the driver or the truck aren't free, maybe change the, and try again.";
+            return "The status you are trying to set already is the status of this Transport";
+        } catch (CommunicationException e) {
+            return "cannot change Transport Status because it wants to change to an active one, but the Driver is already active in another Transport.";
+        } catch (CloneNotSupportedException e) {
+            return "cannot change Transport Status because it wants to change to an active one, but the Truck is already active in another Transport.";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -75,8 +75,16 @@ public class TransportService {
         if (TranDocID < 0 || truckNum < 0){ return "Transport Document number, Truck number values cannot be negative."; }
         try {
             this.tran_f.setTransportTruck(TranDocID, truckNum);
-        } catch (FileAlreadyExistsException e) {  //TODO: catch all exception being thrown from the Domain Layer.
-            return "";
+        } catch (FileNotFoundException e) {
+            return "The Transport ID you have entered doesn't exist.";
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return "The Truck number you have entered doesn't exist.";
+        } catch (FileAlreadyExistsException e) {
+            return "This Truck is already the Truck of this Transport";
+        } catch (CloneNotSupportedException e) {
+            return "The Transport you are trying to set to is Active and The Truck you are trying to set is already Occupied with another Active Transport right now";
+        } catch (CommunicationException e) {
+            return "The transport's driver doesn't have the fitting license for the new Truck you want to set.";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -90,8 +98,16 @@ public class TransportService {
         if (TranDocID < 0 || DriverID < 0){ return "Transport Document number, Driver ID values cannot be negative."; }
         try {
             this.tran_f.setTransportDriver(TranDocID, DriverID);
-        } catch (FileAlreadyExistsException e) {  //TODO: catch all exception being thrown from the Domain Layer.
-            return "";
+        } catch (FileNotFoundException e) {
+            return "The Transport ID you have entered doesn't exist.";
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return "The Driver ID you have entered doesn't exist.";
+        } catch (FileAlreadyExistsException e) {
+            return "This Driver is already the Driver of this Transport";
+        } catch (CloneNotSupportedException e) {
+            return "The Transport you are trying to set to is Active and The Driver you are trying to set is already Occupied with another Active Transport right now";
+        } catch (CommunicationException e) {
+            return "The New Driver you are trying to set doesn't have the fitting license for the Truck that is in the Transport.";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -105,7 +121,7 @@ public class TransportService {
 
 
 
-    public String checkTransportValidity(String transportDTO) {  ///  returns: "Valid", "BadLicenses", "<overallWeight-truckMaxCarryWeight>", "Queue"
+    public String checkTransportValidity(String transportDTO) {  ///  returns: "Valid", "BadLicenses", "<overallWeight-truckMaxCarryWeight>", "Queue", "Occupied"
         String res = "";
         try {
             res = this.tran_f.checkTransportValidity(transportDTO);
@@ -124,16 +140,16 @@ public class TransportService {
 
 
     public String checkIfFirstQueuedTransportsCanGo(){
-        // TODO: check basic validity
+        String res = "";
         try {
-            //TODO
+            res = this.tran_f.checkIfFirstQueuedTransportsCanGo();
         } catch (FileAlreadyExistsException e) {
             return "";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
         }
-        return "Success";  //  if All Good
+        return res;
     }
 
 

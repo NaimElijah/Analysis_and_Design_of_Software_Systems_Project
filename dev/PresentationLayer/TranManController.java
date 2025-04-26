@@ -1,10 +1,9 @@
 package PresentationLayer;
 
-import DomainLayer.TranSubModule.enumTranStatus;
-import PresentationLayer.DTOs.ItemDTO;
-import PresentationLayer.DTOs.ItemsDocDTO;
-import PresentationLayer.DTOs.SiteDTO;
-import PresentationLayer.DTOs.TransportDTO;
+import DTOs.ItemDTO;
+import DTOs.ItemsDocDTO;
+import DTOs.SiteDTO;
+import DTOs.TransportDTO;
 import ServiceLayer.EmployeeService;
 import ServiceLayer.SiteService;
 import ServiceLayer.TransportService;
@@ -14,7 +13,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class TranManController {
@@ -256,40 +254,12 @@ public class TranManController {
         ////////////////////////////////////////////////    NOW WE HAVE THE WHOLE TRANSPORT's DTO     <<<-----------------------------------------
 
 
-        System.out.println("Checking Transport Validity...");
 
 
         /// ////////////////////////////////////////////    NOW WE'LL DO THE CHECKS          <<<-----------------------------------------
 
-        String resOfTransportCheck = "";
-        try {
-            resOfTransportCheck = this.tra_ser.checkTransportValidity(objectMapper.writeValueAsString(transportDTO));
-            ///  returns: "Valid", "BadLicenses", "overallWeight-truckMaxCarryWeight", "Queue"  //TODO: add a "Occupied" return string as well   <<---------------
-        } catch (Exception e) {
-            System.out.println("Serialization's fault");
-            e.printStackTrace();
-        }
 
-        while (!resOfTransportCheck.equals("Valid")){
-            if (resOfTransportCheck.equals("Queue")){
-                System.out.println("This Transport doesn't have a proper Truck-Driver matching available at all right now, so this Transport will now go automatically into the Queued Transports.");
-                System.out.println("We save the Queued Transports in order of creation, so when you want to, you can go to (Transports Options Menu)->((3)  Check if a Queued Transport Can Be Sent) "); //TODO: add path
-                System.out.println("And try to send out the next transport to be sent, in the Queued Transports order, you can of course also delete that transport Using the Menu.\n");
-                break;
-            }
-
-            System.out.println("It seems There is a problem with The Transport you're trying to create: ");
-            transportRePlanning(transportDTO, resOfTransportCheck);///"BadLicenses"&"overallWeight-truckMaxCarryWeight" Cases //TODO:  should only be "overallWeight-truckMaxCarryWeight" here.
-
-            try {
-                resOfTransportCheck = this.tra_ser.checkTransportValidity(objectMapper.writeValueAsString(transportDTO));  //  check Transport Validity again
-                ///  returns: "Valid", "BadLicenses", "overallWeight-truckMaxCarryWeight", "Queue"  //TODO: add a "Occupied" return string as well   <<---------------
-            } catch (Exception e) {
-                System.out.println("Serialization's fault");
-                e.printStackTrace();
-            }
-        }
-
+        checkIfTransportDTOIsValid(transportDTO);
 
         System.out.println("Okay, Transport is Valid :)");
 
@@ -315,139 +285,135 @@ public class TranManController {
 
 
 
-    private void transportRePlanning(TransportDTO transportDTO, String issue){
+    private void transportPairingRePlanning(TransportDTO transportDTO) {
+        //  Note: if we got to here it seems there is a possible pairing in the system right now. (because we didn't automatically go to the "Queue")
+        System.out.println("The Good news is that we've Detected that a Driver-Truck Pairing for this Transport is Available, so let's try and choose a matching pair:");
+        System.out.println("These are the available Trucks and the available Drivers, from them, let's choose a new Truck-Driver pairing for your Transport:\n");
+        System.out.println("Available Trucks:\n" + this.tru_ser.showTrucks() + "\n");
+        System.out.println("Available Drivers: \n" + this.emp_ser.showDrivers() + "\n");
+        System.out.println("Please Enter the New Truck-Driver pairing you want:");
+        System.out.println("Enter Truck number:");
+        int truckNum = Integer.parseInt(scanner.nextLine());
+        System.out.println("Enter Driver ID:");
+        int driverID = Integer.parseInt(scanner.nextLine());
 
-        if (issue.equals("BadLicenses")){  ///  Truck and Driver aren't compatible //TODO:  this if is not needed becasue this isn't part offff the replanning, only return error print <<----
-            System.out.println("The problem seems to be that the Driver's Driving License indicates that he cannot Drive the selected Truck for this Transport.");
-            //  Note: if we got to here it seems there is a possible pairing in the system (because we didn't automatically go to the "Queue")
-            System.out.println("These are the available Trucks and the available Drivers, from them, let's choose a new Truck-Driver pairing for your Transport:\n");
-            System.out.println("Available Trucks:\n" + this.tru_ser.showTrucks() + "\n");
-            System.out.println("Available Drivers: \n" + this.emp_ser.showDrivers() + "\n");
-            System.out.println("Please Enter the New Truck-Driver pairing you want:");
-            System.out.println("Enter Truck number:");
-            int truckNum = Integer.parseInt(scanner.nextLine());
-            System.out.println("Enter Driver ID:");
-            int driverID = Integer.parseInt(scanner.nextLine());
-
-            transportDTO.setTransportTruckNum(truckNum);
-            transportDTO.setTransportDriverID(driverID);
+        transportDTO.setTransportTruckNum(truckNum);
+        transportDTO.setTransportDriverID(driverID);
+        // and then it will check validity again in the caller function
+    }
 
 
-        } else {   ///  overweight Transport, choose if to remove Items or to change Truck
-            System.out.println("The problem seems to be that the Transport's overall weight exceeds the feasible possible weight that can travel on this Truck");
 
-            String[] parts = issue.split("-");
-            int overallWeight = Integer.parseInt(parts[0]);
-            int truckMaxCarryWeight = Integer.parseInt(parts[1]);
 
-            boolean stillLoopingInReplanningChiceLoop = true;
-            while (stillLoopingInReplanningChiceLoop){
-                System.out.println("The current overall weight of the truck is: " + overallWeight + ", and the truck's Max. Carry Weight is: " + truckMaxCarryWeight);
-                System.out.println("Please Choose an Option from the Possible RePlanning Options below:");
-                System.out.println(".1. Remove Items from a specific destination Site in the Transport");
-                System.out.println(".2. Remove a Destination Site from the Transport (and all of it's Items)");
-                System.out.println(".3. Choose a Different Truck");
-                System.out.println(" Enter your choice: ");
-                String choice = scanner.nextLine();
+    private void transportWeightRePlanning(TransportDTO transportDTO, String issue){
+        System.out.println("The problem seems to be that the Transport's overall weight exceeds the feasible possible weight that can travel on this Truck");
 
-                if(choice.equals("1")){
-                    System.out.println("Here are all the Site Items in the Transport:");
-                    System.out.println(transportDTO.showAllTransportItemsDocs());
+        String[] parts = issue.split("-");
+        int overallWeight = Integer.parseInt(parts[0]);
+        int truckMaxCarryWeight = Integer.parseInt(parts[1]);
 
-                    boolean stillSearching = true;
-                    while (stillSearching){
-                        System.out.println("\nLet's now Remove an Item from an existing Transport:");
-                        System.out.println("Enter the Item's Site's area number: ");
-                        int itemsSiteArea = Integer.parseInt(scanner.nextLine());
-                        System.out.println("Enter the Item's Site's address string: ");
-                        String itemsSiteAddress = scanner.nextLine();
-                        System.out.println("Enter the Item's name:");
-                        String itemsName = scanner.nextLine();
-                        System.out.println("Enter the Item's weight:");
-                        int itemsWeight = Integer.parseInt(scanner.nextLine());
-                        System.out.println("Enter the condition of the Item you want to remove: ( ( 'Good' ) / ( 'Bad'(or any other key) )");
-                        boolean condition = scanner.nextLine().equals("Good");
-                        System.out.println("Enter the Item's amount you want to remove:");
-                        int itemsAmountToRemove = Integer.parseInt(scanner.nextLine());
+        boolean stillLoopingInReplanningChiceLoop = true;
+        while (stillLoopingInReplanningChiceLoop){
+            System.out.println("The current overall weight of the truck is: " + overallWeight + ", and the truck's Max. Carry Weight is: " + truckMaxCarryWeight);
+            System.out.println("Please Choose an Option from the Possible RePlanning Options below:");
+            System.out.println(".1. Remove Items from a specific destination Site in the Transport");
+            System.out.println(".2. Remove a Destination Site from the Transport (and all of it's Items)");
+            System.out.println(".3. Choose a Different Truck");
+            System.out.println(" Enter your choice: ");
+            String choice = scanner.nextLine();
 
-                        ItemDTO itemToRemove = null;
-                        boolean searchingItemToRemove = true;
-                        for (ItemsDocDTO itemsDocDTO : transportDTO.getDests_Docs()){
-                            if (itemsDocDTO.getDest_siteDTO().getSiteAreaNum() == itemsSiteArea && itemsDocDTO.getDest_siteDTO().getAddressString().equals(itemsSiteAddress)){
-                                // found the Site from which we will deduct the item's amount
-                                for (ItemDTO itemDTO : itemsDocDTO.getItemDTOs().keySet()){
-                                    if (itemDTO.getName().equals(itemsName) && itemDTO.getWeight() == itemsWeight && itemDTO.getCondition() == condition){
-                                        stillSearching = false;  // because found
-                                        if(itemsDocDTO.getItemDTOs().get(itemDTO) <= itemsAmountToRemove){
-                                            itemToRemove = itemDTO;  // remove after the break
-                                            searchingItemToRemove = false;  //  because found
-                                        }else {
-                                            itemsDocDTO.getItemDTOs().put(itemDTO, itemsDocDTO.getItemDTOs().get(itemDTO) - itemsAmountToRemove);
-                                        }
-                                        break;
+            if(choice.equals("1")){
+                System.out.println("Here are all the Site Items in the Transport:");
+                System.out.println(transportDTO.showAllTransportItemsDocs());
+
+                boolean stillSearching = true;
+                while (stillSearching){
+                    System.out.println("\nLet's now Remove an Item from an existing Transport:");
+                    System.out.println("Enter the Item's Site's area number: ");
+                    int itemsSiteArea = Integer.parseInt(scanner.nextLine());
+                    System.out.println("Enter the Item's Site's address string: ");
+                    String itemsSiteAddress = scanner.nextLine();
+                    System.out.println("Enter the Item's name:");
+                    String itemsName = scanner.nextLine();
+                    System.out.println("Enter the Item's weight:");
+                    int itemsWeight = Integer.parseInt(scanner.nextLine());
+                    System.out.println("Enter the condition of the Item you want to remove: ( ( 'Good' ) / ( 'Bad'(or any other key) )");
+                    boolean condition = scanner.nextLine().equals("Good");
+                    System.out.println("Enter the Item's amount you want to remove:");
+                    int itemsAmountToRemove = Integer.parseInt(scanner.nextLine());
+
+                    ItemDTO itemToRemove = null;
+                    boolean searchingItemToRemove = true;
+                    for (ItemsDocDTO itemsDocDTO : transportDTO.getDests_Docs()){
+                        if (itemsDocDTO.getDest_siteDTO().getSiteAreaNum() == itemsSiteArea && itemsDocDTO.getDest_siteDTO().getAddressString().equals(itemsSiteAddress)){
+                            // found the Site from which we will deduct the item's amount
+                            for (ItemDTO itemDTO : itemsDocDTO.getItemDTOs().keySet()){
+                                if (itemDTO.getName().equals(itemsName) && itemDTO.getWeight() == itemsWeight && itemDTO.getCondition() == condition){
+                                    stillSearching = false;  // because found
+                                    if(itemsDocDTO.getItemDTOs().get(itemDTO) <= itemsAmountToRemove){
+                                        itemToRemove = itemDTO;  // remove after the break
+                                        searchingItemToRemove = false;  //  because found
+                                    }else {
+                                        itemsDocDTO.getItemDTOs().put(itemDTO, itemsDocDTO.getItemDTOs().get(itemDTO) - itemsAmountToRemove);
                                     }
-                                }
-                                if (!stillSearching){
-                                    if(!searchingItemToRemove){  // because was found
-                                        itemsDocDTO.getItemDTOs().remove(itemToRemove);
-                                    }
-                                    break;  //  becasue found already
+                                    break;
                                 }
                             }
-                        }
-
-                        if (stillSearching){
-                            System.out.println("couldn't find any item matching the Details you've put in, try again");
+                            if (!stillSearching){
+                                if(!searchingItemToRemove){  // because was found
+                                    itemsDocDTO.getItemDTOs().remove(itemToRemove);
+                                }
+                                break;  //  becasue found already
+                            }
                         }
                     }
 
-                    System.out.println("Removed Entered Item's desired quantity from this Transport.");
-                    stillLoopingInReplanningChiceLoop = false;
-
-
-                }else if(choice.equals("2")){
-                    System.out.println("Here are all the Sites and their Items in the Transport:");
-                    System.out.println(transportDTO.showAllTransportItemsDocs());
-
-                    System.out.println("Ok, let's remove a destination Site from this Transport.");
-                    System.out.println("Enter the area number of the Destination Site to remove: ");
-                    int areaNum = Integer.parseInt(scanner.nextLine());
-                    System.out.println("Enter the address string of the Destination Site to remove: ");
-                    String address = scanner.nextLine();
-
-                    int indexToRemoveFromItemsDocs = 0;
-                    for (ItemsDocDTO itemsDocDTO : transportDTO.getDests_Docs()){
-                        if (itemsDocDTO.getDest_siteDTO().getSiteAreaNum() == areaNum && itemsDocDTO.getDest_siteDTO().getAddressString().equals(address)){ break ;}
-                        indexToRemoveFromItemsDocs++;
+                    if (stillSearching){
+                        System.out.println("couldn't find any item matching the Details you've put in, try again");
                     }
-                    transportDTO.getDests_Docs().remove(indexToRemoveFromItemsDocs);
-                    System.out.println("Removed Entered Destination Site from this Transport (and all of it's items).");
-                    stillLoopingInReplanningChiceLoop = false;
-
-
-                }else if(choice.equals("3")){
-                    System.out.println("These are the available Trucks in the WareHouse, let's choose a new Truck for your Transport:\n");
-                    System.out.println("Available Trucks:\n" + this.tru_ser.showTrucks() + "\n");
-                    System.out.println("Please Enter the New Truck-Driver pairing you want:");
-                    System.out.println("Please Enter desired Truck number:");
-                    int truckNum = Integer.parseInt(scanner.nextLine());
-                    transportDTO.setTransportTruckNum(truckNum);
-                    System.out.println("Changed Transport Truck");
-                    stillLoopingInReplanningChiceLoop = false;
-
-
-                } else {
-                    System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
-                    //  not changing stillLoopingInReplanningChiceLoop (boolean) so it remains true and will ask for an option choice again.
                 }
 
+                System.out.println("Removed Entered Item's desired quantity from this Transport.");
+                stillLoopingInReplanningChiceLoop = false;
+
+
+            }else if(choice.equals("2")){
+                System.out.println("Here are all the Sites and their Items in the Transport:");
+                System.out.println(transportDTO.showAllTransportItemsDocs());
+
+                System.out.println("Ok, let's remove a destination Site from this Transport.");
+                System.out.println("Enter the area number of the Destination Site to remove: ");
+                int areaNum = Integer.parseInt(scanner.nextLine());
+                System.out.println("Enter the address string of the Destination Site to remove: ");
+                String address = scanner.nextLine();
+
+                int indexToRemoveFromItemsDocs = 0;
+                for (ItemsDocDTO itemsDocDTO : transportDTO.getDests_Docs()){
+                    if (itemsDocDTO.getDest_siteDTO().getSiteAreaNum() == areaNum && itemsDocDTO.getDest_siteDTO().getAddressString().equals(address)){ break ;}
+                    indexToRemoveFromItemsDocs++;
+                }
+                transportDTO.getDests_Docs().remove(indexToRemoveFromItemsDocs);
+                System.out.println("Removed Entered Destination Site from this Transport (and all of it's items).");
+                stillLoopingInReplanningChiceLoop = false;
+
+
+            }else if(choice.equals("3")){
+                System.out.println("These are the available Trucks in the WareHouse, let's choose a new Truck for your Transport:\n");
+                System.out.println("Available Trucks:\n" + this.tru_ser.showTrucks() + "\n");
+                System.out.println("Please Enter the New Truck-Driver pairing you want:");
+                System.out.println("Please Enter desired Truck number:");
+                int truckNum = Integer.parseInt(scanner.nextLine());
+                transportDTO.setTransportTruckNum(truckNum);
+                System.out.println("Changed Transport Truck");
+                stillLoopingInReplanningChiceLoop = false;
+
+
+            } else {
+                System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
+                //  not changing stillLoopingInReplanningChiceLoop (boolean) so it remains true and will ask for an option choice again.
             }
-
         }
-
-        // and then it will check again in the caller function
-        System.out.println("Okay, Let's Check Transport Validity again...");
-
+        // and then it will check validity again in the caller function
     }
 
 
@@ -457,10 +423,61 @@ public class TranManController {
 
 
 
+
+    private void checkIfTransportDTOIsValid(TransportDTO transportDTO){
+        System.out.println("Checking Transport Validity...");
+
+        String resOfTransportCheck = "";
+        try {
+            resOfTransportCheck = this.tra_ser.checkTransportValidity(objectMapper.writeValueAsString(transportDTO));  //  check Transport Validity
+            ///  returns: "Valid", "BadLicenses", "overallWeight-truckMaxCarryWeight", "Queue", "Occupied"
+        } catch (Exception e) {
+            System.out.println("Serialization's fault");
+            e.printStackTrace();
+        }
+
+        while (!resOfTransportCheck.equals("Valid")){
+            System.out.println("There seems There is a problem with The Transport you're trying to create:\n");
+            if (resOfTransportCheck.equals("Queue")){
+                System.out.println("This Transport doesn't have a proper Truck-Driver matching available at all right now, so this Transport will now go automatically into the Queued Transports.");
+                System.out.println("We save the Queued Transports in order of creation, so when you want to, you can go to (Transports Options Menu)->((3)  Check if a Queued Transport Can Be Sent) "); //TODO: add path
+                System.out.println("And try to send out the next transport to be sent, in the Queued Transports order, you can of course also delete that transport Using the Menu.\n");
+                break;
+
+            } else if (resOfTransportCheck.equals("Occupied")){
+                System.out.println("The Driver or/and the Truck you designated for this Transport are Occupied with another Active Transport/s");
+                transportPairingRePlanning(transportDTO);
+
+            } else if (resOfTransportCheck.equals("BadLicenses")) {
+                System.out.println("The Driver you designated doesn't have a License that matches the License required for the Truck you selected");
+                transportPairingRePlanning(transportDTO);
+
+            } else {    ///  "overallWeight-truckMaxCarryWeight" Case
+                transportWeightRePlanning(transportDTO, resOfTransportCheck);
+            }
+
+            System.out.println("Okay, Let's Check Transport Validity again...");
+            try {
+                resOfTransportCheck = this.tra_ser.checkTransportValidity(objectMapper.writeValueAsString(transportDTO));  //  check Transport Validity again
+                ///  returns: "Valid", "BadLicenses", "overallWeight-truckMaxCarryWeight", "Queue", "Occupied"
+            } catch (Exception e) {
+                System.out.println("Serialization's fault");
+                e.printStackTrace();
+            }
+        }
+
+
+    }
+
+
+
+
+
+
     private void checkIfQueuedTransportCanBeSent(){
         System.out.println("   --------    Transport Queue Checkup    --------\n");
-        System.out.println("(1)  View All Queued Transports");
-        System.out.println("(2)  Try Sending Head Queued Transport");
+        System.out.println("(1)  View All Queued Transports (In Queue Order)");
+        System.out.println("(2)  Try Sending Head (1) Queued Transport");
         System.out.println("(3)  Back to Transports Options Menu");
         System.out.println();
         System.out.println(" Select Option: ");
@@ -468,8 +485,52 @@ public class TranManController {
         String choice = scanner.nextLine();
         if(choice.equals("1")){
             System.out.println(this.tra_ser.showAllQueuedTransports());
+
+
+
+
         }else if(choice.equals("2")){
-            this.tra_ser.checkIfFirstQueuedTransportsCanGo();   //TODO      <<<-------------------------------------------
+
+            String resOfcheckIfCanGo = this.tra_ser.checkIfFirstQueuedTransportsCanGo();
+
+            //TODO:  so we basically do exactly as we did before when we created a Transport.
+            //TODO: also use the checkIfTransportDTOIsValid function.
+
+            TransportDTO transport_DTO = null;
+            try {
+                transport_DTO = this.objectMapper.readValue(resOfcheckIfCanGo, TransportDTO.class);   //  see what to do about the return value of the resOfcheckIfCanGo
+            } catch (Exception e) {
+                System.out.println("Serialization's fault");
+                e.printStackTrace();
+            }
+
+            checkIfTransportDTOIsValid(transport_DTO);
+
+            System.out.println("Okay, Transport is Valid :)");
+
+            String resOfNewTransportAddition = "";
+            try {
+                resOfNewTransportAddition = this.tra_ser.createTransport(objectMapper.writeValueAsString(transport_DTO));  /// <<------  HERE WE CREATE THE TRANSPORT AFTER THE CHECKS
+            } catch (Exception e) {
+                System.out.println("Serialization's fault");
+                e.printStackTrace();
+            }
+
+            if(resOfNewTransportAddition.equals("Success")){
+                System.out.println("Successfully Added Transport, You can view the Transport's Details (and it's given ID) using the Menu.\n");
+            } else if(resOfNewTransportAddition.equals("Exception")){
+                System.out.println("Failed to add Transport due to technical machine error\n");
+            }else { System.out.println(resOfNewTransportAddition + "\n"); }
+
+
+//            if (resOfcheckIfCanGo.equals("Queue")){
+//                System.out.println("Seems that the First Transport in the Queued Transports still can't go, you can keep it there, or you can edit and delete it if you'd like");
+//            }else if (resOfcheckIfCanGo.equals("Valid")){
+//                System.out.println("Hurray, The First ");
+//            }
+
+
+
 
         }else if (choice.equals("3")) {
             System.out.println("\n\n");
@@ -480,6 +541,8 @@ public class TranManController {
         System.out.println();
         checkIfQueuedTransportCanBeSent();
     }
+
+
 
 
 

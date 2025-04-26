@@ -1,19 +1,21 @@
 package DomainLayer.TranSubModule;
 
+import DTOs.SiteDTO;
 import DomainLayer.EmpSubModule.Driver;
-import DomainLayer.EmpSubModule.Employee;
 import DomainLayer.EmpSubModule.EmployeeFacade;
 import DomainLayer.SiteSubModule.Address;
 import DomainLayer.SiteSubModule.Site;
 import DomainLayer.SiteSubModule.SiteFacade;
 import DomainLayer.TruSubModule.Truck;
 import DomainLayer.TruSubModule.TruckFacade;
-import PresentationLayer.DTOs.ItemDTO;
-import PresentationLayer.DTOs.ItemsDocDTO;
-import PresentationLayer.DTOs.TransportDTO;
+import DomainLayer.enumDriLicense;
+import DTOs.ItemDTO;
+import DTOs.ItemsDocDTO;
+import DTOs.TransportDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import javax.management.AttributeNotFoundException;
 import javax.management.openmbean.KeyAlreadyExistsException;
 import javax.naming.CommunicationException;
 import java.io.FileNotFoundException;
@@ -21,6 +23,7 @@ import java.nio.file.FileAlreadyExistsException;
 import java.time.LocalDateTime;
 
 import java.util.ArrayList;
+import java.util.EmptyStackException;
 import java.util.HashMap;
 
 public class TransportFacade {
@@ -87,14 +90,15 @@ public class TransportFacade {
         }
 
         /// finishing touches before adding Transport
+        newTransportBeingCreated.setStatus(enumTranStatus.InTransit);
         newTransportBeingCreated.getTransportTruck().setInTransportID(newTransportBeingCreated.getTran_Doc_ID());
         newTransportBeingCreated.getTransportDriver().setInTransportID(newTransportBeingCreated.getTran_Doc_ID());
-        newTransportBeingCreated.setStatus(enumTranStatus.InTransit);
         newTransportBeingCreated.setTruck_Depart_Weight(newTransportBeingCreated.calculateTransportItemsWeight());
+        newTransportBeingCreated.setDeparture_dt(LocalDateTime.now());  //  the time is set already in the constructor of the Transport, but just to be accurate :)
+
         for (ItemsDoc itemsDoc : newTransportBeingCreated.getDests_Docs()){
             this.itemsDocs.put(itemsDoc.getItemDoc_num(), itemsDoc);
         }
-        //  the time is set already in the constructor of the Transport
         this.transports.put(newTransportBeingCreated.getTran_Doc_ID(), newTransportBeingCreated);
     }
 
@@ -127,13 +131,16 @@ public class TransportFacade {
         for (ItemsDoc itemsDocInRemovingOne : toRemoveDoc.getDests_Docs()){
             this.itemsDocs.remove(itemsDocInRemovingOne.getItemDoc_num());
         }
-        if (toRemoveDoc.getTransportDriver().getInTransportID() != -1 && (toRemoveDoc.getStatus().equals(enumTranStatus.InTransit) || toRemoveDoc.getStatus().equals(enumTranStatus.BeingDelayed))){
-            toRemoveDoc.getTransportDriver().setInTransportID(-1);  //TODO:  change up according to the NEW  format of the inTransportID new field  !!!!!!     <<<--------------------------------------   TODO
-        }
-        if (toRemoveDoc.getTransportTruck().getInTransportID() != -1 && (toRemoveDoc.getStatus().equals(enumTranStatus.InTransit) || toRemoveDoc.getStatus().equals(enumTranStatus.BeingDelayed))){
-            toRemoveDoc.getTransportTruck().setInTransportID(-1);  //TODO:  change up according to the NEW  format of the inTransportID new field  !!!!!!     <<<--------------------------------------   TODO
+
+        if (toRemoveDoc.getTransportDriver().getInTransportID() == toRemoveDoc.getTran_Doc_ID()){
+            toRemoveDoc.getTransportDriver().setInTransportID(-1);  //  releasing the Driver if he's with this Transport
         }
 
+        if (toRemoveDoc.getTransportTruck().getInTransportID() == toRemoveDoc.getTran_Doc_ID()){
+            toRemoveDoc.getTransportTruck().setInTransportID(-1);  //  releasing the Truck if it's with this Transport
+        }
+
+        toRemoveDoc.setStatus(enumTranStatus.Canceled);   ///  not needed, but just because
         transports.remove(transportID);
     }
 
@@ -141,42 +148,71 @@ public class TransportFacade {
 
 
 
-    public void setTransportStatus(int TranDocID, int menu_status_option) throws FileNotFoundException, FileAlreadyExistsException, ClassNotFoundException {
+    public void setTransportStatus(int TranDocID, int menu_status_option) throws FileNotFoundException, FileAlreadyExistsException, CommunicationException, CloneNotSupportedException {
         if(!transports.containsKey(TranDocID)){
             throw new FileNotFoundException("The Transport ID you have entered doesn't exist.");
         }
-        enumTranStatus status = null;
+        TransportDoc transport = transports.get(TranDocID);
+
+        enumTranStatus currStatus = transports.get(TranDocID).getStatus();
+        enumTranStatus newStatus = null;
         if (menu_status_option == 1){
-            status = enumTranStatus.BeingAssembled;
+            newStatus = enumTranStatus.BeingAssembled;
         } else if (menu_status_option == 2) {
-            status = enumTranStatus.Queued;
+            newStatus = enumTranStatus.Queued;
         } else if (menu_status_option == 3) {
-            status = enumTranStatus.InTransit;
+            newStatus = enumTranStatus.InTransit;
         } else if (menu_status_option == 4) {
-            status = enumTranStatus.Completed;
+            newStatus = enumTranStatus.Completed;
         } else if (menu_status_option == 5) {
-            status = enumTranStatus.Canceled;
+            newStatus = enumTranStatus.Canceled;
         } else if (menu_status_option == 6) {
-            status = enumTranStatus.BeingDelayed;
+            newStatus = enumTranStatus.BeingDelayed;
         }
 
-        if (transports.get(TranDocID).getStatus().equals(status)) {
-            throw new FileAlreadyExistsException("The status you are trying to set already is the status of this Transport");
+        if (currStatus == newStatus) { throw new FileAlreadyExistsException("The status you are trying to set already is the status of this Transport"); }
+
+
+        ///   scenario 1
+        if (currStatus == enumTranStatus.Canceled || currStatus == enumTranStatus.Completed || currStatus == enumTranStatus.Queued) {  // if currStatus is Not Active
+            if (newStatus == enumTranStatus.BeingDelayed || newStatus == enumTranStatus.BeingAssembled || newStatus == enumTranStatus.InTransit) {  // if newStatus is Active
+
+                if (transport.getTransportDriver().getInTransportID() != -1 && transport.getTransportDriver().getInTransportID() != TranDocID) {  // if it belongs to another Transport
+                    TransportDoc otherTransport = transports.get(transport.getTransportDriver().getInTransportID());
+                    if (otherTransport.getStatus() == enumTranStatus.BeingDelayed || otherTransport.getStatus() == enumTranStatus.BeingAssembled || otherTransport.getStatus() == enumTranStatus.InTransit) {  // if the other Transport is Active
+                        throw new CommunicationException("cannot change Transport Status because it wants to change to an active one, but the Driver is already active in another Transport.");
+                    }
+                }
+
+                if (transport.getTransportTruck().getInTransportID() != -1 && transport.getTransportTruck().getInTransportID() != TranDocID) {  // if it belongs to another Transport
+                    TransportDoc otherTransport = transports.get(transport.getTransportTruck().getInTransportID());
+                    if (otherTransport.getStatus() == enumTranStatus.BeingDelayed || otherTransport.getStatus() == enumTranStatus.BeingAssembled || otherTransport.getStatus() == enumTranStatus.InTransit) {  // if the other Transport is Active
+                        throw new CloneNotSupportedException("cannot change Transport Status because it wants to change to an active one, but the Truck is already active in another Transport.");
+                    }
+                }
+
+                // if got to here in this case (the first 2 outer if's), then we can make these actions:
+                transport.getTransportTruck().setInTransportID(TranDocID);
+                transport.getTransportDriver().setInTransportID(TranDocID);
+                transport.setStatus(newStatus);
+                return;
+            }
         }
 
-        if(status.equals(enumTranStatus.InTransit)){
-            if(this.transports.get(TranDocID).getStatus() == enumTranStatus.Canceled || this.transports.get(TranDocID).getStatus() == enumTranStatus.Completed){
-                if((this.transports.get(TranDocID).getTransportTruck().getInTransportID() != -1) || (this.transports.get(TranDocID).getTransportDriver().getInTransportID() != -1)){
-                    throw new ClassNotFoundException("cannot change status to InTransit because the driver or the truck aren't free, maybe change them, and try again.");
-                }       //TODO:  change up according to the NEW  format of the inTransportID new field  !!!!!!     <<<--------------------------------------   TODO
-            }     //TODO:  take care of the situation where we set to InTransit, but Driver or Truck are not free
-            this.transports.get(TranDocID).getTransportDriver().setInTransportID(TranDocID);
-            this.transports.get(TranDocID).getTransportTruck().setInTransportID(TranDocID);     //TODO:  take care of the Driver, and the Truck's Statuses
-        } else if (status.equals(enumTranStatus.Canceled) || status.equals(enumTranStatus.Completed)) {
-            this.transports.get(TranDocID).getTransportDriver().setInTransportID(-1);
-            this.transports.get(TranDocID).getTransportTruck().setInTransportID(-1);
+
+        /// scenario 2 & 3
+        if (newStatus == enumTranStatus.Canceled || newStatus == enumTranStatus.Completed || newStatus == enumTranStatus.Queued) {  // if newStatus is Not Active
+            if (currStatus == enumTranStatus.BeingDelayed || currStatus == enumTranStatus.BeingAssembled || currStatus == enumTranStatus.InTransit) {  // if currStatus is Active
+                if (transport.getTransportDriver().getInTransportID() == TranDocID) {   // if he is active in the transport
+                    transport.getTransportDriver().setInTransportID(-1);  //  release him
+                }
+                if (transport.getTransportTruck().getInTransportID() == TranDocID) {   // if it is active in the transport
+                    transport.getTransportTruck().setInTransportID(-1);  //  release it
+                }
+            }
         }
-        this.transports.get(TranDocID).setStatus(status);
+
+        transport.setStatus(newStatus);  //  if it wants to change from Active to Active OR from Non Active to Non Active.
     }
 
 
@@ -204,21 +240,19 @@ public class TransportFacade {
         /// Note:  a Truck cannot be in more than 1 active Transport
 
         Truck truck = this.truckFacade.getTrucksWareHouse().get(truckNum);  // the truck in contention to be set in the Transport
-        if(truck.getInTransportID() != -1){    // so it belong to another Transport Active right now, We take care of the Transport's status in the setTransportStatus() function
+        if(truck.getInTransportID() != -1){    // so it belong to another Transport Active right now, ----->>  We take care of the Transport's status in the setTransportStatus() function
             if (this.transports.get(TranDocID).getStatus() == enumTranStatus.InTransit || this.transports.get(TranDocID).getStatus() == enumTranStatus.BeingDelayed || this.transports.get(TranDocID).getStatus() == enumTranStatus.BeingAssembled) {
                 throw new CloneNotSupportedException("The Transport you are trying to set to is Active and The Truck you are trying to set is already Occupied with another Active Transport right now");
             }
         }
-
         // if we got to here so the truck is not in an active transport OR/AND the Transport we are trying to set is not active
+
         // check NewTruck - Driver Compatability
         if (!this.transports.get(TranDocID).getTransportDriver().getLicenses().contains(truck.getValid_license())){
             throw new CommunicationException("The transport's driver doesn't have the fitting license for the new Truck you want to set.");
         }
 
-        this.transports.get(TranDocID).setTransportTruck(truck);
-
-        //TODO: also, DON'T UPDATE ANY STATUSES !!!!           <<<---------------------------------------     <<------------------------------
+        this.transports.get(TranDocID).setTransportTruck(truck);  // more logic inside this function
     }
 
 
@@ -243,28 +277,14 @@ public class TransportFacade {
         }
 
         // if we got to here so the driver is not in an active transport OR/AND the Transport we are trying to set is not active
+
         // check Truck - NewDriver Compatability
         if (!driver.getLicenses().contains(this.transports.get(TranDocID).getTransportTruck().getValid_license())){
             throw new CommunicationException("The New Driver you are trying to set doesn't have the fitting license for the Truck that is in the Transport.");
         }
 
         this.transports.get(TranDocID).setTransportDriver(driver);
-
-        //TODO: also, DON'T UPDATE ANY STATUSES !!!!           <<<---------------------------------------     <<------------------------------
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -283,31 +303,35 @@ public class TransportFacade {
 
 
     public void addTransportToWaitQueue(TransportDoc tempTransport){
-        tempTransport.setTran_Doc_ID(this.transportIDCounter);
-        this.transportIDCounter++;
-        tempTransport.setStatus(enumTranStatus.Queued);
-        this.queuedTransports.add(tempTransport);
+        if (tempTransport.getTran_Doc_ID() == -99){  // so it will add only new ones, not ones that have gotten checked again
+            tempTransport.setTran_Doc_ID(this.transportIDCounter);
+            this.transportIDCounter++;
+            tempTransport.setStatus(enumTranStatus.Queued);
+            this.queuedTransports.add(tempTransport);
+        }
     }
 
 
 
 
 
-    public String checkTransportValidity(String DTO_OfTransport) throws JsonProcessingException {  ///  returns: "Valid", "BadLicenses", "overallWeight-truckMaxCarryWeight", "Queue"
+
+
+
+    public String checkTransportValidity(String DTO_OfTransport) throws JsonProcessingException {  ///  returns: "Valid", "BadLicenses", "overallWeight-truckMaxCarryWeight", "Queue", "Occupied"
         TransportDTO transport_DTO = this.objectMapper.readValue(DTO_OfTransport, TransportDTO.class);
-        String res = "Valid";
 
         Driver driver = (Driver) this.employeeFacade.getEmployees().get(transport_DTO.getTransportDriverID());
         Truck truck = this.truckFacade.getTrucksWareHouse().get(transport_DTO.getTransportTruckNum());
         Site srcSite = this.siteFacade.getShippingAreas().get(transport_DTO.getSrc_site().getSiteAreaNum()).getSites().get(transport_DTO.getSrc_site().getAddressString());
 
-        TransportDoc tempTransport = new TransportDoc(enumTranStatus.BeingAssembled, -1, truck, driver, srcSite);
+        TransportDoc tempTransport = new TransportDoc(enumTranStatus.BeingAssembled, -99, truck, driver, srcSite);
 
         for (ItemsDocDTO itemsDocDTO : transport_DTO.getDests_Docs()){
             Site destSiteTemp = this.siteFacade.getShippingAreas().get(itemsDocDTO.getDest_siteDTO().getSiteAreaNum()).getSites().get(itemsDocDTO.getDest_siteDTO().getAddressString());
             String tempCName = destSiteTemp.getcName();
             long tempCNumber = destSiteTemp.getcNumber();
-            tempTransport.addDestSite(itemsDocDTO.getItemsDoc_num(), destSiteTemp);     ///    parameters were switched      <<<----------------------------------
+            tempTransport.addDestSite(itemsDocDTO.getItemsDoc_num(), destSiteTemp);
 
             for (ItemDTO itemDTO : itemsDocDTO.getItemDTOs().keySet()){
                 tempTransport.addItem(itemsDocDTO.getItemsDoc_num(), itemDTO.getName(), itemDTO.getWeight(), itemsDocDTO.getItemDTOs().get(itemDTO), itemDTO.getCondition());
@@ -315,19 +339,18 @@ public class TransportFacade {
         }    ///  adding every site and every item for each site
 
         int overallTransportWeight = tempTransport.calculateTransportItemsWeight();
+        String res = "Valid";
 
+        /// /////////////////////////////////    <<-------------------------------------   checking if there's a Driver-Truck Pairing At All Right Now, from the Free ones
 
-
-        /// /////////////////////////////////    <<-------------------------------------   checking if there's a Driver-Truck Pairing At All
-
-        ///  checking if there is a match at all
+        ///  checking if there is a match at all, from those who are free right now
         boolean isThereMatchAtAllBetweenLicenses = false;
         for (Driver driv : this.employeeFacade.getDrivers().values()){
-            for (String drivers_license : driv.getLicenses()){
+            for (enumDriLicense drivers_license : driv.getLicenses()){
                 for (Truck truc : this.truckFacade.getTrucksWareHouse().values()){
-                    if (truc.getValid_license().equals(drivers_license) && driv.getInTransportID() == -1 && truc.getInTransportID() == -1){
-                        isThereMatchAtAllBetweenLicenses = true;  // if already found
-                        break;
+                    if (truc.getValid_license().equals(drivers_license) && (!isDriverActive(driv)) && (!isTruckActive(truc))){  // searching only the free ones, like in the Requirements
+                        isThereMatchAtAllBetweenLicenses = true;  // if found
+                        break;   // because already found
                     }
                 }
                 if (isThereMatchAtAllBetweenLicenses){break;}  // if already found
@@ -339,41 +362,32 @@ public class TransportFacade {
             // send to Queue
             this.addTransportToWaitQueue(tempTransport);
             return "Queue";
-            //TODO:  NOTE: it'll be a problem if when we can send it there will be a problem with the weight, so when checking if can go, then prompt the rePlanning
-            //TODO:  NOTE: after checking with checkTransportValidity again.     (DO IN THE checkIfFirstQueuedTransportsCanGo FUNCTION BELOW !!!)
         }
+
         // else: continue to check other stuff
-
-
-        /// /////////////////////////////////    <<-------------------------------------   checking if the Driver-Truck pairing is free
-
-
-
-
-
-        //TODO   <<----------------------  add  "Occupied"
-        add
-
-
-
-
-
 
 
         /// /////////////////////////////////    <<-------------------------------------   checking if the Driver-Truck pairing is compatible
 
         boolean driver_has_correct_license = false;
-        for (String drivers_license : driver.getLicenses()){
-            if (truck.getValid_license().equals(drivers_license) && driver.getInTransportID() == -1 && truck.getInTransportID() == -1){  // also checking if these driver are free
-                driver_has_correct_license = true;                      //TODO split the if free ? and if compatible checks, and add another return string type "Occupied"
+        for (enumDriLicense drivers_license : tempTransport.getTransportDriver().getLicenses()){
+            if (tempTransport.getTransportTruck().getValid_license().equals(drivers_license)){
+                driver_has_correct_license = true;
                 break;
             }
         }
         if (!driver_has_correct_license){
             return "BadLicenses";
         }
+
         // else: continue to check another thing
 
+        /// /////////////////////////////////    <<-------------------------------------   checking if the Driver-Truck pairing are both free
+
+        if (isDriverActive(tempTransport.getTransportDriver())){ return "Occupied"; }
+        if (isTruckActive(tempTransport.getTransportTruck())){ return "Occupied"; }
+
+        // else: continue to check another thing
         /// /////////////////////////////////    <<-------------------------------------   checking Overall Weight
 
         if (tempTransport.getTransportTruck().getMax_carry_weight() < overallTransportWeight){
@@ -386,31 +400,102 @@ public class TransportFacade {
 
 
 
-
-
-
-
-
-
-
-
-
-    public void checkIfFirstQueuedTransportsCanGo(){
-        //TODO:  it'll be a problem if when we can send it there will be a problem with the weight, so when checking if can go, then prompt the rePlanning
-        //TODO:  after checking with checkTransportValidity again.
-
-        if(!this.queuedTransports.isEmpty()){
-            if(this.checkTransportValidity(queuedTransports.get(0).getTran_Doc_ID()).equals("Valid")){  // build a DTO for the check
-                queuedTransports.get(0).setDeparture_dt(LocalDateTime.now());
-                //TODO: send the transport at index 0 and return to upper layers that this happened
-
+    private boolean isDriverActive(Driver driver){
+        if (driver.getInTransportID() != -1) {  // if driver is in another transport
+            TransportDoc otherTransport = transports.get(driver.getInTransportID());
+            if(otherTransport.getStatus() == enumTranStatus.BeingAssembled || otherTransport.getStatus() == enumTranStatus.InTransit || otherTransport.getStatus() == enumTranStatus.BeingDelayed){  // if other Transport is Active
+                return true;   // because the driver is Occupied in another Active Transport
             }
         }
+        return false;
+    }
 
-        //TODO: if can be sent, then: change driver's and truck's isFrees and TransportDoc Status
+
+    private boolean isTruckActive(Truck truck){
+        if (truck.getInTransportID() != -1) {  // if truck is in another transport
+            TransportDoc otherTransport = transports.get(truck.getInTransportID());
+            if(otherTransport.getStatus() == enumTranStatus.BeingAssembled || otherTransport.getStatus() == enumTranStatus.InTransit || otherTransport.getStatus() == enumTranStatus.BeingDelayed){  // if other Transport is Active
+                return true;   // because the truck is Occupied in another Active Transport
+            }
+        }
+        return false;
+    }
+
+
+
+
+
+
+
+
+
+
+
+    public String checkIfFirstQueuedTransportsCanGo() throws AttributeNotFoundException, JsonProcessingException {
+        if(!this.queuedTransports.isEmpty()){
+
+            TransportDoc firstTransport = queuedTransports.get(0);
+            TransportDTO transportDTO = convertTransportDocToTransportDTO(firstTransport);
+            String res = this.checkTransportValidity(objectMapper.writeValueAsString(transportDTO));
+            if(res.equals("Valid")){
+                this.queuedTransports.remove(0);  // becasue in the caller function we are going to create that Transport as a regular one, not a queued one.
+            }
+            return res;
+        }else {
+            throw new AttributeNotFoundException("The Queued Transports Queue is empty.");
+        }
+
+        //TODO:  it'll be a problem if when we can send it there will be a problem with the weight, so when checking if can go, then prompt the rePlanning
+        //TODO:  after checking with checkTransportValidity again.
+        //TODO: if can be sent, then: change driver's and truck's inTransportID's and TransportDoc Status
         //TODO: also make the departure_datetime of the Transport up to date (to now).
         //TODO: also make the truck_depart_weight of the Transport up to date (with the calculation function I made).
     }
+
+
+
+
+
+
+
+    private TransportDTO convertTransportDocToTransportDTO(TransportDoc transportDoc) throws JsonProcessingException {
+        ArrayList<ItemsDocDTO> listOfItemsDocDTOs = new ArrayList<ItemsDocDTO>();
+        Site srcSite = transportDoc.getSrc_site();
+        SiteDTO srcSiteDTO = new SiteDTO(srcSite.getAddress().getArea(), srcSite.getAddress().getAddress());
+
+        for (ItemsDoc itemsDoc : transportDoc.getDests_Docs()){
+            Site destSite = itemsDoc.getDest_site();
+            SiteDTO destSiteDTO = new SiteDTO(destSite.getAddress().getArea(), destSite.getAddress().getAddress());
+
+            HashMap<ItemDTO, Integer> itemDTOs = new HashMap();
+
+            for (Item item : itemsDoc.getBadItems().keySet()){
+                ItemDTO itemDTO = new ItemDTO(item.getName(), item.getWeight(), item.getCondition());
+                itemDTOs.put(itemDTO, itemsDoc.getBadItems().get(item));
+            }
+            for (Item item : itemsDoc.getGoodItems().keySet()){
+                ItemDTO itemDTO = new ItemDTO(item.getName(), item.getWeight(), item.getCondition());
+                itemDTOs.put(itemDTO, itemsDoc.getGoodItems().get(item));
+            }
+
+            //TODO: add to the itemDTOs    <<<---------------------------------     <<<---------------------------
+            //TODO: add to the itemDTOs    <<<---------------------------------     <<<---------------------------
+            //TODO: add to the itemDTOs    <<<---------------------------------     <<<---------------------------
+
+
+            listOfItemsDocDTOs.add(new ItemsDocDTO(itemsDoc.getItemDoc_num(), srcSiteDTO, destSiteDTO, itemDTOs));
+        }
+
+        TransportDTO transportDTO = new TransportDTO(transportDoc.getTransportTruck().getTruck_num(), transportDoc.getTransportDriver().getId(), srcSiteDTO, listOfItemsDocDTOs);
+        return transportDTO;
+    }
+
+
+
+
+
+
+
 
 
 
@@ -475,10 +560,6 @@ public class TransportFacade {
             throw new FileAlreadyExistsException("The problem you entered already doesn't exists in this Transport");
         }
     }
-
-
-
-
 
 
 
@@ -590,13 +671,6 @@ public class TransportFacade {
 
 
 
-
-
-
-
-
-
-
     public void addItem(int itemsDoc_num, String itemName, int itemWeight, int amount, boolean cond) throws FileNotFoundException {
         if (!this.itemsDocs.containsKey(itemsDoc_num)) { throw new FileNotFoundException("Item's Document ID not found"); }
 
@@ -632,9 +706,12 @@ public class TransportFacade {
 
 
     public String showAllQueuedTransports() {
-        String resOfQueuedTransports = "Queued Transports (Values of Drivers/Trucks/Time in the Queued Transports are not final, these are the values set when first trying to create the Transport):\n";
+        String resOfQueuedTransports = "Queued Transports (Values of Drivers/Trucks/Time are the values that were set when first trying to create the Transport):\n";
+        resOfQueuedTransports += "(1)-oldest entry ...... (" + this.queuedTransports.size() + ")-latest entry\n";
+        int counter = 1;
         for (TransportDoc transportDoc : this.queuedTransports) {
-            resOfQueuedTransports += transportDoc.toString() + "\n";
+            resOfQueuedTransports += "" + counter + ")" + transportDoc.toString() + "\n";
+            counter++;
         }
         resOfQueuedTransports += "\n";
         return resOfQueuedTransports;
