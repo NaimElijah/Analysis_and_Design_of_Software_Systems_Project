@@ -20,6 +20,7 @@ import javax.management.openmbean.KeyAlreadyExistsException;
 import javax.naming.CommunicationException;
 import java.io.FileNotFoundException;
 import java.nio.file.FileAlreadyExistsException;
+import java.rmi.server.ServerCloneException;
 import java.time.LocalDateTime;
 
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ import java.util.HashMap;
 
 public class TransportFacade {
     private HashMap<Integer, TransportDoc> transports;
-//    private HashMap<Integer, TransportDoc> providing_transports;   //TODO:    <<<---------------------------   maybe do 2 hash maps like this (prividing & collecting)
+//    private HashMap<Integer, TransportDoc> providing_transports;   //TODO:    <<<---------------------------    do 2 hash maps like this (prividing & collecting)
     private int transportIDCounter;     ///   <<<---------------------------------    for the transport Docs ID's
     private HashMap<Integer, ItemsDoc> itemsDocs;  // to know an ItemsDoc's num is unique like required.
     private ArrayList<TransportDoc> queuedTransports;
@@ -157,7 +158,7 @@ public class TransportFacade {
 
 
 
-    public void setTransportStatus(int TranDocID, int menu_status_option) throws FileNotFoundException, FileAlreadyExistsException, CommunicationException, CloneNotSupportedException {
+    public void setTransportStatus(int TranDocID, int menu_status_option) throws FileNotFoundException, FileAlreadyExistsException, CommunicationException, CloneNotSupportedException, IndexOutOfBoundsException {
         if(!transports.containsKey(TranDocID)){
             throw new FileNotFoundException("The Transport ID you have entered doesn't exist.");
         }
@@ -182,9 +183,15 @@ public class TransportFacade {
         if (currStatus == newStatus) { throw new FileAlreadyExistsException("The status you are trying to set already is the status of this Transport"); }
 
 
+
         ///   scenario 1
         if (currStatus == enumTranStatus.Canceled || currStatus == enumTranStatus.Completed || currStatus == enumTranStatus.Queued) {  // if currStatus is Not Active
             if (newStatus == enumTranStatus.BeingDelayed || newStatus == enumTranStatus.BeingAssembled || newStatus == enumTranStatus.InTransit) {  // if newStatus is Active
+
+                // if the Truck or/and the Driver have been deleted
+                if (transport.getTransportDriver().getIsDeleted() || transport.getTransportTruck().getIsDeleted()) {
+                    throw new IndexOutOfBoundsException("the Truck or/and Driver of this Transport have been Deleted, you can view available Trucks or/and Drivers using the menu and set appropriately");
+                }
 
                 if (transport.getTransportDriver().getInTransportID() != -1 && transport.getTransportDriver().getInTransportID() != TranDocID) {  // if it belongs to another Transport
                     TransportDoc otherTransport = transports.get(transport.getTransportDriver().getInTransportID());
@@ -237,13 +244,15 @@ public class TransportFacade {
 
 
 
-    public void setTransportTruck(int TranDocID, int truckNum) throws FileNotFoundException, ArrayIndexOutOfBoundsException, CommunicationException, FileAlreadyExistsException, CloneNotSupportedException {
+    public void setTransportTruck(int TranDocID, int truckNum) throws FileNotFoundException, ArrayIndexOutOfBoundsException, CommunicationException, FileAlreadyExistsException, CloneNotSupportedException, AbstractMethodError, ClassNotFoundException {
         if(!transports.containsKey(TranDocID)){
             throw new FileNotFoundException("The Transport ID you have entered doesn't exist.");
         } else if (!this.truckFacade.getTrucksWareHouse().containsKey(truckNum)){
             throw new ArrayIndexOutOfBoundsException("The Truck number you have entered doesn't exist.");
         } else if (this.transports.get(TranDocID).getTransportTruck().getTruck_num() == truckNum) {
             throw new FileAlreadyExistsException("This Truck is already the Truck of this Transport");
+        } else if (truckFacade.getTrucksWareHouse().get(truckNum).getIsDeleted()) {   // if the Truck has been deleted
+            throw new ClassNotFoundException("the Truck of this Transport have been Deleted, you can view available Trucks using the menu and set appropriately");
         }
 
         /// Note:  a Truck cannot be in more than 1 active Transport
@@ -261,19 +270,26 @@ public class TransportFacade {
             throw new CommunicationException("The transport's driver doesn't have the fitting license for the new Truck you want to set.");
         }
 
+        //  CHECK IF THE TRUCK CAN CARRY THE WEIGHT OF THAT TRANSPORT   <<-----------------------
+        if (this.transports.get(TranDocID).calculateTransportItemsWeight() > truck.getMax_carry_weight()){
+            throw new AbstractMethodError("The Truck you are trying to set to this Transport can't carry this Transport's Weight.");
+        }
+
         this.transports.get(TranDocID).setTransportTruck(truck);  // more logic inside this function
     }
 
 
 
 
-    public void setTransportDriver(int TranDocID, int DriverID) throws FileNotFoundException, ArrayIndexOutOfBoundsException, FileAlreadyExistsException, CloneNotSupportedException, CommunicationException {
+    public void setTransportDriver(int TranDocID, int DriverID) throws FileNotFoundException, ArrayIndexOutOfBoundsException, FileAlreadyExistsException, CloneNotSupportedException, CommunicationException, ClassNotFoundException {
         if(!transports.containsKey(TranDocID)){
             throw new FileNotFoundException("The Transport ID you have entered doesn't exist.");
         } else if (!this.employeeFacade.getDrivers().containsKey(DriverID)){
             throw new ArrayIndexOutOfBoundsException("The Driver ID you have entered doesn't exist.");
         } else if (this.transports.get(TranDocID).getTransportDriver().getId() == DriverID) {
             throw new FileAlreadyExistsException("This Driver is already the Driver of this Transport");
+        } else if (employeeFacade.getDrivers().get(DriverID).getIsDeleted()) {   // if the Driver has been deleted
+            throw new ClassNotFoundException("the Driver of this Transport have been Deleted, you can view available Drivers using the menu and set appropriately");
         }
 
         /// Note:  a Driver cannot be in more than 1 active Transport
@@ -305,7 +321,25 @@ public class TransportFacade {
 
 
 
+    public void isTruckDriverPairingGood(int truckNum, int driverID) throws FileNotFoundException, ArrayIndexOutOfBoundsException, ClassNotFoundException, CloneNotSupportedException {
+        if (!this.truckFacade.getTrucksWareHouse().containsKey(truckNum)) {
+            throw new FileNotFoundException("Truck Number entered doesn't exist");
+        } else if (!this.employeeFacade.getDrivers().containsKey(driverID)) {
+            throw new ArrayIndexOutOfBoundsException("The Driver ID you have entered doesn't exist");
+        } else if (this.truckFacade.getTrucksWareHouse().get(truckNum).getInTransportID() != -1){
+            throw new CloneNotSupportedException("The Truck you chose is partaking in another Active Transport right now");
+        }
 
+        boolean isThereAvailableDriverMatchingThisTruck = false;
+        for (Driver driver : this.employeeFacade.getDrivers().values()){
+            if (driver.getLicenses().contains(this.truckFacade.getTrucksWareHouse().get(truckNum).getValid_license()) && driver.getInTransportID() == -1){  // if driver compatible and free
+                isThereAvailableDriverMatchingThisTruck = true;
+            }
+        }
+        if (!isThereAvailableDriverMatchingThisTruck){
+            throw new ClassNotFoundException("There isn't a Driver that is available right now and compatible, license wise, with the Truck you chose");
+        }
+    }
 
 
 
@@ -347,7 +381,7 @@ public class TransportFacade {
             }
         }    ///  adding every site and every item for each site
 
-        int overallTransportWeight = tempTransport.calculateTransportItemsWeight();
+        double overallTransportWeight = tempTransport.calculateTransportItemsWeight();
         String res = "Valid";
 
         /// /////////////////////////////////    <<-------------------------------------   checking if there's a Driver-Truck Pairing At All Right Now, from the Free ones
@@ -670,14 +704,14 @@ public class TransportFacade {
 
 
 
-    public void addItem(int itemsDoc_num, String itemName, int itemWeight, int amount, boolean cond) throws FileNotFoundException {
+    public void addItem(int itemsDoc_num, String itemName, double itemWeight, int amount, boolean cond) throws FileNotFoundException {
         if (!this.itemsDocs.containsKey(itemsDoc_num)) { throw new FileNotFoundException("Item's Document ID not found"); }
 
         int res = this.itemsDocs.get(itemsDoc_num).addItem(itemName, itemWeight, cond, amount);
         //Note: Right now there is no other error when adding an Item
     }
 
-    public void removeItem(int itemsDoc_num, String itemName, int itemWeight, int amount, boolean cond) throws FileNotFoundException, ClassNotFoundException {
+    public void removeItem(int itemsDoc_num, String itemName, double itemWeight, int amount, boolean cond) throws FileNotFoundException, ClassNotFoundException {
         if (!this.itemsDocs.containsKey(itemsDoc_num)) { throw new FileNotFoundException("Item's Document ID not found"); }
 
         int res = this.itemsDocs.get(itemsDoc_num).removeItem(itemName, itemWeight, cond, amount);
@@ -686,7 +720,7 @@ public class TransportFacade {
         }
     }
 
-    public void setItemCond(int itemsDoc_num, String itemName, int itemWeight, int amount, boolean newCond) throws FileNotFoundException, ClassNotFoundException {
+    public void setItemCond(int itemsDoc_num, String itemName, double itemWeight, int amount, boolean newCond) throws FileNotFoundException, ClassNotFoundException {
         if (!this.itemsDocs.containsKey(itemsDoc_num)) { throw new FileNotFoundException("Item's Document ID not found"); }
 
         int res = this.itemsDocs.get(itemsDoc_num).setItemCond(itemName, itemWeight, amount, newCond);

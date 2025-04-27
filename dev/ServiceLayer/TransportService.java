@@ -61,7 +61,9 @@ public class TransportService {
             return "cannot change Transport Status because it wants to change to an active one, but the Driver is already active in another Transport.";
         } catch (CloneNotSupportedException e) {
             return "cannot change Transport Status because it wants to change to an active one, but the Truck is already active in another Transport.";
-        } catch (Exception e) {
+        } catch (IndexOutOfBoundsException e) {
+            return "the Truck or/and Driver of this Transport have been Deleted, you can view available Trucks or/and Drivers using the menu and set appropriately";
+        }catch (Exception e) {
             e.printStackTrace();
             return "Exception";
         }
@@ -87,7 +89,11 @@ public class TransportService {
             return "The Transport you are trying to set to is Active and The Truck you are trying to set is already Occupied with another Active Transport right now";
         } catch (CommunicationException e) {
             return "The transport's driver doesn't have the fitting license for the new Truck you want to set.";
-        } catch (Exception e) {
+        } catch (AbstractMethodError e) {
+            return "The Truck you are trying to set to this Transport can't carry this Transport's Weight.";
+        } catch (ClassNotFoundException e) {
+            return "the Truck of this Transport have been Deleted, you can view available Trucks using the menu and set appropriately";
+        }catch (Exception e) {
             e.printStackTrace();
             return "Exception";
         }
@@ -110,12 +116,41 @@ public class TransportService {
             return "The Transport you are trying to set to is Active and The Driver you are trying to set is already Occupied with another Active Transport right now";
         } catch (CommunicationException e) {
             return "The New Driver you are trying to set doesn't have the fitting license for the Truck that is in the Transport.";
+        } catch (ClassNotFoundException e) {
+            return "the Driver of this Transport have been Deleted, you can view available Drivers using the menu and set appropriately";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
         }
         return "Success";  //  if All Good
     }
+
+
+
+
+
+
+
+    public String isTruckDriverPairingGood(int truckNum, int driverID) {
+        if (truckNum < 0 || driverID < 0){ return "Truck number/Driver ID values cannot be negative."; }
+        try {
+            this.tran_f.isTruckDriverPairingGood(truckNum, driverID);
+        } catch (FileNotFoundException e) {
+            return "Truck Number entered doesn't exist";
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return "The Driver ID you have entered doesn't exist";
+        } catch (CloneNotSupportedException e) {
+            return "The Truck you chose is partaking in another Active Transport right now";
+        } catch (ClassNotFoundException e) {
+            return "There isn't a Driver that is available right now and compatible, license wise, with the Truck you chose";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Exception";
+        }
+        return "Success";  //  if All Good
+    }
+
+
 
 
 
@@ -342,7 +377,7 @@ public class TransportService {
 
 
 
-    public String addItem(int itemsDocNum, String itemName, int itemWeight, int amount, boolean cond){
+    public String addItem(int itemsDocNum, String itemName, double itemWeight, int amount, boolean cond){
         if (itemName.isEmpty() || itemName.isBlank()){ return "Item's name cannot be empty"; }
         if (itemsDocNum < 0 || itemWeight < 0 || amount < 0){ return "Item's document number/weight/amount cannot be negative"; }
         try {
@@ -357,7 +392,7 @@ public class TransportService {
     }
 
 
-    public String removeItem(int itemsDocNum, String itemName, int itemWeight, int amount, boolean cond){
+    public String removeItem(int itemsDocNum, String itemName, double itemWeight, int amount, boolean cond){
         if (itemName.isEmpty() || itemName.isBlank()){ return "Item's name cannot be empty"; }
         if (itemsDocNum < 0 || itemWeight < 0 || amount < 0){ return "Item's document number/weight/amount cannot be negative"; }
         try {
@@ -374,7 +409,7 @@ public class TransportService {
     }
 
 
-    public String setItemCond(int itemsDocNum, String itemName, int itemWeight, int amount, boolean cond){
+    public String setItemCond(int itemsDocNum, String itemName, double itemWeight, int amount, boolean cond){
         if (itemName.isEmpty() || itemName.isBlank()){ return "Item's name cannot be empty"; }
         if (itemsDocNum < 0 || itemWeight < 0 || amount < 0){ return "Item's document number/weight/amount cannot be negative"; }
         try {
@@ -389,8 +424,6 @@ public class TransportService {
         }
         return "Success";  //  if All Good
     }
-
-
 
 
 

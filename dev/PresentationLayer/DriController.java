@@ -17,42 +17,48 @@ public class DriController {
     }
 
 
-    void driverMainMenu(){
+    void driverMainMenu(int id){
         //TODO:  make a quick menu before this and ask for Driver ID, so we can see data related to a specified driver only
         //TODO:  also according to the ID we'll know what are his permmissions and acoording to that we will give him the appropriate menu options.
-        System.out.println("   --------    Welcome, Transport Driver.    -------");
-        System.out.println("   Select Action:\n");
+        System.out.println("   --------    Welcome, Transport Driver.    -------\n");
+        System.out.println("     --------   Transport Manager Menu    -------");
         System.out.println("(1)  View All Transports Related to me");
         System.out.println("(2)  Edit Item's Condition in my Transport");
-        System.out.println("(3)  ...");
+        System.out.println("(3)  View My Details");
         System.out.println("(4)  Disconnect and Go Back to Main Program Menu");
         System.out.println();
+        System.out.println("   Select Action:\n");
 
         String choice = scanner.nextLine();
         if(choice.equals("1")){
-            viewAllTransportsRelatedtome();
+            viewAllTransportsRelatedtome(id);
             driverMainMenu();
         }else if(choice.equals("2")){
-            editItemsConditioninmyTransport();
+            editItemsConditioninmyTransport(id);
             driverMainMenu();
         }else if(choice.equals("3")){
-            // TODO if needed
+            this.emp_s.showEmployee(id);
         } else if (choice.equals("4")) {
-            System.out.println("\nExiting The System, Goodbye.\n");
+            System.out.println("\nGoing Back to Main Program Menu.\n");
         } else {
             System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
             driverMainMenu();
         }
     }
 
-    private void viewAllTransportsRelatedtome(){
-        //TODO (I think that if we log in as a Role, then here first ask for the id and then do the rest according to that Id, so now we'll know who is the driver)
+    private void viewAllTransportsRelatedtome(int id){
+        //TODO
     }
 
-    private void editItemsConditioninmyTransport(){
-        //TODO (I think that if we log in as a Role, then here first ask for the id and then do the rest according to that Id, so now we'll know who is the driver)
+    private void editItemsConditioninmyTransport(int id){
+        //TODO
     }
 
+
+
+    public int getEmployeePermissionsRank(int id){
+        return this.emp_s.getEmployeePermissionsRank(id);
+    }
 
 
 

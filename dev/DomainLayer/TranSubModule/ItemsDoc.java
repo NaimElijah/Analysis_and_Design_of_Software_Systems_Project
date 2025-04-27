@@ -30,7 +30,7 @@ public class ItemsDoc {
     public HashMap<Item, Integer> getBadItems() {return badItems;}
     public void setBadItems(HashMap<Item, Integer> badItems) {this.badItems = badItems;}
 
-    public int addItem(String itemName, int itemWeight, boolean cond, int amount) {
+    public int addItem(String itemName, double itemWeight, boolean cond, int amount) {
         HashMap<Item, Integer> items = cond ? goodItems : badItems;
         for (Item item : items.keySet()) {
             if (item.getName().equals(itemName) && item.getWeight() == itemWeight) {
@@ -47,7 +47,7 @@ public class ItemsDoc {
         return 0;  // all good
     }
 
-    public int removeItem(String itemName, int itemWeight, boolean cond, int amount) {
+    public int removeItem(String itemName, double itemWeight, boolean cond, int amount) {
         HashMap<Item, Integer> items = cond ? goodItems : badItems;
         for (Item item : items.keySet()) {
             if (item.getName().equals(itemName) && item.getWeight() == itemWeight) {
@@ -62,7 +62,7 @@ public class ItemsDoc {
         return -1;  // item to remove not found
     }
 
-    public int setItemCond(String itemName, int itemWeight, int amount, boolean newCond){
+    public int setItemCond(String itemName, double itemWeight, int amount, boolean newCond){
         HashMap<Item, Integer> itemsFrom = newCond ? badItems : goodItems;
         for (Item item : itemsFrom.keySet()) {
             if (item.getName().equals(itemName) && item.getWeight() == itemWeight) {
@@ -74,8 +74,8 @@ public class ItemsDoc {
         return -1;  //  item to change cond to was not found
     }
 
-    public int calculateItemsWeight(){
-        int sum = 0;
+    public double calculateItemsWeight(){
+        double sum = 0;
         for (Item item : goodItems.keySet()) {
             sum += item.getWeight();
         }

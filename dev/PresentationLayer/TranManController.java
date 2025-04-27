@@ -32,12 +32,15 @@ public class TranManController {
         this.objectMapper = new ObjectMapper();
     }
 
+
+
     void transportManagerMainMenu(){   ////////////////////////////////   Main Menu   <<<--------------------------------------------
-        System.out.println("   --------    Transport Manager Menu    -------\n");
+        System.out.println("   --------    Welcome, Transport Manager    -------\n");
+        System.out.println("       --------    Transport Manager Menu    -------");
         System.out.println("(1)  Transports Options Menu");
         System.out.println("(2)  Shipping Areas Options Menu");
         System.out.println("(3)  Sites Options Menu");
-        System.out.println("(4)  Drivers Options Menu");
+        System.out.println("(4)  Employees Options Menu");
         System.out.println("(5)  Trucks Options Menu");
         System.out.println("(6)  Disconnect and Go Back to Main Program Menu");
         System.out.println();
@@ -54,7 +57,7 @@ public class TranManController {
                 sitesOptionsMenu();
                 break;
             case "4":
-                driversOptionsMenu();
+                EmployeesOptionsMenu();
                 break;
             case "5":
                 trucksOptionsMenu();
@@ -109,6 +112,7 @@ public class TranManController {
             System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
             transportsOptionsMenu();
         }
+        transportsOptionsMenu();   //  if we return from a function
     }
 
     //////////////////////          HELPER FUNCTIONS FOR THE Transports Options Menu
@@ -139,11 +143,59 @@ public class TranManController {
         System.out.println("Enter Desired Driver ID: ");
         int driverID = scanner.nextInt();
 
+        String resForNow = this.tra_ser.isTruckDriverPairingGood(truckNum, driverID);   //  first check
+        if(resForNow.equals("Success")){
+            System.out.println("The Truck-Driver pairing you chose is Compatible and Available right now :)\n");
+        } else if(resForNow.equals("Exception")){
+            System.out.println("Exception due to technical machine error\n");
+        } else { System.out.println(resForNow + "\n"); }
+
+        if (!resForNow.equals("Success")){
+            System.out.println("The Truck-Driver pairing you chose is not possible right now.");
+            System.out.println("Tip: Use the Menu to View All Trucks and All Drivers, so You'd find a matching pair for you're Transport");
+
+            System.out.println("Would you like to continue setting up the Sites and Items for your Transport and configure a Truck-Driver pairing later ? (Y/N(or any other key))");
+            String choice = scanner.nextLine();
+            if(!choice.equals("Y")){
+                System.out.println("returning to Transports Options Menu...\n");
+                return;
+            } else {
+                System.out.println("Okay, continuing Transport creation with that Truck-Driver pairing for now...\n");
+            }
+        }
+
+
+
+        //TODO    <<<----------------------------------------------------   continue Logic After this in ALL FUNCTION WHERE THIS IS NEEDED (Providing/Collecting)
+        ///    choosing the Transport's Purpose
+        boolean isProviding = false, keepAskingPurpose = true;
+        while (keepAskingPurpose){
+            System.out.println("First of all, this Transport is a:");
+            System.out.println("(1)  Items Providing Transport");
+            System.out.println("(2)  Items Collecting Transport");
+            System.out.println("Choose Transport Purpose:");
+            String choicePurpose = scanner.nextLine();
+            if(choicePurpose.equals("1")){
+                isProviding = true;
+                keepAskingPurpose = false; // breaking the loop
+            } else if (choicePurpose.equals("2")){
+                isProviding = false;
+                keepAskingPurpose = false; // breaking the loop
+            } else {
+                System.out.println("Please choose a purpose for this Transport from the 2 options.");
+            }
+        }              //TODO    <<<----------------------------------------------------   continue Logic After this in ALL FUNCTION WHERE THIS IS NEEDED (Providing/Collecting)
+        //TODO    <<<----------------------------------------------------   continue Logic After this in ALL FUNCTION WHERE THIS IS NEEDED (Providing/Collecting)
+        //TODO    <<<----------------------------------------------------   continue Logic After this in ALL FUNCTION WHERE THIS IS NEEDED (Providing/Collecting)
+        //TODO    <<<----------------------------------------------------   continue Logic After this in ALL FUNCTION WHERE THIS IS NEEDED (Providing/Collecting)
+
+
+        ///  Starting with the Sites and Items for the Transport
         ArrayList<ItemsDocDTO> dests_Docs_for_Transport = new ArrayList<ItemsDocDTO>();  //  for the Transport's field
 
-        System.out.println("We'll now add the Sites(and the items from each site).");
+        System.out.println("We'll now add the Sites(and the items in each site).");
         System.out.println("\nThe Transport's Site Arrival Order will be based on the order of Sites you add (first added -> first arrived to)");
-        System.out.println("\n- Now Enter Each Site and for Each Site enter the Items Desired from there: ");
+        System.out.println("\n- Now Enter Each Site and for Each Site enter the Items of that site: ");
 
         boolean continueAnotherSite = true, continueAnotherItem = true, continueAskingDifferentAreaNum = true, siteExists = false;
         Integer currSiteAreaNum = -99;
@@ -193,7 +245,7 @@ public class TranManController {
 
             SiteDTO destSitedto = new SiteDTO(currSiteAreaNum, currDestinationAddress);
 
-            System.out.println("\n- Now let's add the Items you want to get from this destination Site back to the Source Site:\n");
+            System.out.println("\n- Now let's add the Items in that Destination Site:\n");
 
             HashMap<ItemDTO, Integer> itemsListFromCurrDestSite = new HashMap<ItemDTO, Integer>();  // for the ItemsDoc's field
 
@@ -211,7 +263,7 @@ public class TranManController {
                 System.out.println("Enter Item Name: ");
                 String itemName = scanner.next();
                 System.out.println("Enter Item Weight: ");
-                int itemWeight = scanner.nextInt();
+                double itemWeight  = scanner.nextDouble();
                 System.out.println("Enter Item Amount: ");
                 int itemAmount = scanner.nextInt();
                 System.out.println("Enter these Items Condition: ( Enter 'Good' / 'Bad'(or any other key) )");
@@ -256,9 +308,7 @@ public class TranManController {
         ////////////////////////////////////////////////    NOW WE HAVE THE WHOLE TRANSPORT's DTO     <<<-----------------------------------------
 
 
-
         /// ////////////////////////////////////////////    NOW WE'LL DO THE CHECKS          <<<-----------------------------------------
-
 
         String resValid = checkIfTransportDTOIsValid(transportDTO);
 
@@ -312,16 +362,16 @@ public class TranManController {
         System.out.println("The problem seems to be that the Transport's overall weight exceeds the feasible possible weight that can travel on this Truck");
 
         String[] parts = issue.split("-");
-        int overallWeight = Integer.parseInt(parts[0]);
-        int truckMaxCarryWeight = Integer.parseInt(parts[1]);
+        double overallWeight = Double.parseDouble(parts[0]);
+        double truckMaxCarryWeight = Double.parseDouble(parts[1]);
 
         boolean stillLoopingInReplanningChiceLoop = true;
         while (stillLoopingInReplanningChiceLoop){
             System.out.println("The current overall weight of the truck is: " + overallWeight + ", and the truck's Max. Carry Weight is: " + truckMaxCarryWeight);
             System.out.println("Please Choose an Option from the Possible RePlanning Options below:");
-            System.out.println(".1. Remove Items from a specific destination Site in the Transport");
-            System.out.println(".2. Remove a Destination Site from the Transport (and all of it's Items)");
-            System.out.println(".3. Choose a Different Truck");
+            System.out.println("(1)  Remove Items from a specific destination Site in the Transport");
+            System.out.println("(2)  Remove a Destination Site from the Transport (and all of it's Items)");
+            System.out.println("(3)  Choose a Different Truck");
             System.out.println(" Enter your choice: ");
             String choice = scanner.nextLine();
 
@@ -339,7 +389,7 @@ public class TranManController {
                     System.out.println("Enter the Item's name:");
                     String itemsName = scanner.nextLine();
                     System.out.println("Enter the Item's weight:");
-                    int itemsWeight = Integer.parseInt(scanner.nextLine());
+                    double itemsWeight = Double.parseDouble(scanner.nextLine());
                     System.out.println("Enter the condition of the Item you want to remove: ( ( 'Good' ) / ( 'Bad'(or any other key) )");
                     boolean condition = scanner.nextLine().equals("Good");
                     System.out.println("Enter the Item's amount you want to remove:");
@@ -666,12 +716,12 @@ public class TranManController {
             System.out.println("Enter the Transport ID of the Transport you want to change it's status:");
             int transportId = Integer.parseInt(scanner.nextLine());
             System.out.println(" To which status do you want to change that Transport's Status ?");
-            System.out.println(".1. Being Assembled");
-            System.out.println(".2. Queued");
-            System.out.println(".3. In Transit");
-            System.out.println(".4. Completed");
-            System.out.println(".5. Canceled");
-            System.out.println(".6. Being Delayed");
+            System.out.println("(1)  Being Assembled");
+            System.out.println("(2)  Queued");
+            System.out.println("(3)  In Transit");
+            System.out.println("(4)  Completed");
+            System.out.println("(5)  Canceled");
+            System.out.println("(6)  Being Delayed");
             System.out.println(" Select Option: ");
             String statusChoice = scanner.nextLine();
 
@@ -713,12 +763,12 @@ public class TranManController {
             System.out.println("Enter the Transport ID of the Transport you want to add a problem to:");
             int transportId1 = Integer.parseInt(scanner.nextLine());
             System.out.println(" Which Problem do you want to add to that Transport's Document ?");
-            System.out.println(".1. Puncture");
-            System.out.println(".2. HeavyTraffic");
-            System.out.println(".3. RoadAccident");
-            System.out.println(".4. UnresponsiveContact");
-            System.out.println(".5. TruckVehicleProblem");
-            System.out.println(".6. EmptyTruckGasTank");
+            System.out.println("(1)  Puncture");
+            System.out.println("(2)  HeavyTraffic");
+            System.out.println("(3)  RoadAccident");
+            System.out.println("(4)  UnresponsiveContact");
+            System.out.println("(5)  TruckVehicleProblem");
+            System.out.println("(6)  EmptyTruckGasTank");
             System.out.println(" Select Option: ");
             String statusChoice1 = scanner.nextLine();
 
@@ -734,12 +784,12 @@ public class TranManController {
             System.out.println("Enter the Transport ID of the Transport you want to remove a problem from:");
             int transportId2 = Integer.parseInt(scanner.nextLine());
             System.out.println(" Which Problem do you want to remove from that Transport's Document ?");
-            System.out.println(".1. Puncture");
-            System.out.println(".2. HeavyTraffic");
-            System.out.println(".3. RoadAccident");
-            System.out.println(".4. UnresponsiveContact");
-            System.out.println(".5. TruckVehicleProblem");
-            System.out.println(".6. EmptyTruckGasTank");
+            System.out.println("(1)  Puncture");
+            System.out.println("(2)  HeavyTraffic");
+            System.out.println("(3)  RoadAccident");
+            System.out.println("(4)  UnresponsiveContact");
+            System.out.println("(5)  TruckVehicleProblem");
+            System.out.println("(6)  EmptyTruckGasTank");
             System.out.println(" Select Option: ");
             String statusChoice2 = scanner.nextLine();
 
@@ -769,8 +819,8 @@ public class TranManController {
 
     private void editATransportsSites(){
         System.out.println("   --------    Transport's Sites Edition Menu    --------\n");
-        System.out.println("(1)  Add a New Site's Items Document to a Transport");
-        System.out.println("(2)  Remove a Site's Items Document from a Transport");
+        System.out.println("(1)  Create and Add a New Site's Items Document to a Transport");
+        System.out.println("(2)  Delete a Site's Items Document from a Transport");
         System.out.println("(3)  Edit a Transport's Site's Items Document ID");
         System.out.println("(4)  Set a Site's Arrival order in it's Transport");
         System.out.println("(5)  Back to Transport Edition Menu");
@@ -888,9 +938,9 @@ public class TranManController {
             System.out.println("Enter Item Name:");
             String itemName = scanner.nextLine();
             System.out.println("Enter Item Weight:");
-            int itemWeight = Integer.parseInt(scanner.nextLine());
+            double itemWeight = Double.parseDouble(scanner.nextLine());
             System.out.println("Enter Item Condition: ( ('Good') / ('Bad'/or any other key) )");
-            boolean itemCondition = (scanner.nextLine().equals("Good") ? true : false);
+            boolean itemCondition = scanner.nextLine().equals("Good");
             System.out.println("Enter Item Amount you want to add:");
             int itemAmount = Integer.parseInt(scanner.nextLine());
 
@@ -909,7 +959,7 @@ public class TranManController {
             System.out.println("Enter Item Name:");
             String itemName = scanner.nextLine();
             System.out.println("Enter Item Weight:");
-            int itemWeight = Integer.parseInt(scanner.nextLine());
+            double itemWeight = Double.parseDouble(scanner.nextLine());
             System.out.println("Enter Item Condition: ( ('Good') / ('Bad'/or any other key) )");
             boolean itemCondition = (scanner.nextLine().equals("Good"));
             System.out.println("Enter Item Amount you want to remove:");
@@ -931,7 +981,7 @@ public class TranManController {
             System.out.println("Enter Item Name:");
             String itemName = scanner.nextLine();
             System.out.println("Enter Item Weight:");
-            int itemWeight = Integer.parseInt(scanner.nextLine());
+            double itemWeight = Double.parseDouble(scanner.nextLine());
             System.out.println("Enter the New Item Condition you want to set to that Item: ( ('Good') / ('Bad'/or any other key) )");
             boolean itemCondition = (scanner.nextLine().equals("Good"));
             System.out.println("Enter Item Amount you want to change condition to:");
@@ -953,15 +1003,6 @@ public class TranManController {
         System.out.println();
         editATransportsItems();
     }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1156,16 +1197,20 @@ public class TranManController {
 
     private void editaShippingAreasDetails(){
         System.out.println("   --------    Editing a Shipping Area Menu    -------\n");
-        System.out.println("Enter Data of Shipping Area to Edit:");
-        System.out.println("Enter Area Number: ");
-        int areaNum = Integer.parseInt(scanner.nextLine());
-
         System.out.println("\nWhat information would you like to edit?: ");
-        System.out.println("1. Area Number");
-        System.out.println("2. Area Name");
+        System.out.println("(1)  Area Number");
+        System.out.println("(2)  Area Name");
+        System.out.println("(3)  Go Back to Shipping Areas Options Menu");
         System.out.println(" Select Option: ");
-
         int infoType = Integer.parseInt(scanner.nextLine());
+
+        if (infoType == 3){
+            System.out.println("\n\n");
+            shippingAreasOptionsMenu();
+        }
+
+        System.out.println("Enter Area Number of Shipping Area to Edit: ");
+        int areaNum = Integer.parseInt(scanner.nextLine());
 
         System.out.println("Enter Updated Data: ");
         String res = "";
@@ -1175,6 +1220,9 @@ public class TranManController {
         } else if (infoType == 2) {
             String NewareaName = scanner.nextLine();
             res = site_ser.setShippingAreaName(areaNum, NewareaName);
+        } else {
+            System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
+            editaShippingAreasDetails();
         }
 
         if(res.equals("Success")){
@@ -1274,20 +1322,26 @@ public class TranManController {
 
     private void editaSitesDetails(){
         System.out.println("   --------    Editing a Site Menu    -------\n");
+
+        System.out.println("\nWhat information would you like to edit?: ");
+        System.out.println("(1)  Site Area Number");
+        System.out.println("(2)  Site Address String");
+        System.out.println("(3)  Site Contact Name");
+        System.out.println("(4)  Site Contact Number");
+        System.out.println("(5)  Go Back to Sites Options Menu");
+        System.out.println(" Select Option: ");
+        int infoType = Integer.parseInt(scanner.nextLine());
+
+        if (infoType == 5) {
+            System.out.println("\n\n");
+            sitesOptionsMenu();
+        }
+
         System.out.println("Enter Data of Site to Edit:");
         System.out.println("Enter Area Number: ");
         int areaNum = Integer.parseInt(scanner.nextLine());
         System.out.println("Enter Address: ");
         String address = scanner.nextLine();
-
-        System.out.println("\nWhat information would you like to edit?: ");
-        System.out.println("1. Site Area Number");
-        System.out.println("2. Site Address String");
-        System.out.println("3. Site Contact Name");
-        System.out.println("4. Site Contact Number");
-        System.out.println(" Select Option: ");
-
-        int infoType = Integer.parseInt(scanner.nextLine());
 
         System.out.println("Enter Updated Data: ");
         String res = "";
@@ -1303,6 +1357,9 @@ public class TranManController {
         } else if (infoType == 4) {
             long NewContnum = Long.parseLong(scanner.nextLine());
             res = site_ser.setSiteContNum(areaNum, address, NewContnum);
+        } else {
+            System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
+            editaSitesDetails();
         }
 
         if(res.equals("Success")){
@@ -1336,66 +1393,175 @@ public class TranManController {
 
 
 
-    private void driversOptionsMenu(){   ////////////////////////////////    Drivers Menu   <<<--------------------------------------------
-        System.out.println("   --------    Drivers Options Menu    -------\n");
-        System.out.println("(1)  View All Drivers");
-        System.out.println("(2)  Add a Driver");
-        System.out.println("(3)  Delete a Driver");  //TODO: I just copied to here the relavent Features for the Menu here
-        System.out.println("(4)  Edit a Driver's Details");
-        System.out.println("(5)  Back to Transport Manager Menu");
+    private void EmployeesOptionsMenu(){   ////////////////////////////////    Drivers Menu   <<<--------------------------------------------
+        System.out.println("   --------    Employees Options Menu    -------\n");
+        System.out.println("(1)  View All Employees");
+        System.out.println("(2)  View All Managers");
+        System.out.println("(3)  View All Drivers");
+        System.out.println("(4)  Add a Driver");
+        System.out.println("(5)  Delete a Driver");
+        System.out.println("(6)  Edit a Driver's Details");
+        System.out.println("(7)  Back to Transport Manager Menu");
         System.out.println();
         System.out.println(" Select Option: ");
 
         String choice = scanner.nextLine();
         if(choice.equals("1")){
-            viewAllDrivers();
+            viewAllEmployees();
         }else if(choice.equals("2")){
-            addaDriver();
+            viewAllManagers();
         }else if(choice.equals("3")){
+            viewAllDrivers();
+        }else if(choice.equals("4")){
+            addaDriver();
+        }else if(choice.equals("5")){
             deleteaDriver();
-        } else if (choice.equals("4")) {
+        } else if (choice.equals("6")) {
             editaDriversDetails();
-        } else if (choice.equals("5")) {
+        } else if (choice.equals("7")) {
             System.out.println("\n\n");
             transportManagerMainMenu();
         } else {
             System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
-            driversOptionsMenu();
+            EmployeesOptionsMenu();
         }
     }
 
     //////////////////////          HELPER FUNCTIONS FOR THE Drivers Options Menu
 
+
+    private void viewAllEmployees(){
+        System.out.println("   --------    Showing All Employees    --------\n");
+        System.out.println(emp_ser.showEmployees());
+        System.out.println();
+        EmployeesOptionsMenu();
+    }
+
+    private void viewAllManagers(){
+        System.out.println("   --------    Showing All Managers    --------\n");
+        System.out.println(emp_ser.showManagers());
+        System.out.println();
+        EmployeesOptionsMenu();
+    }
+
     private void viewAllDrivers(){
         System.out.println("   --------    Showing All Drivers    --------\n");
         System.out.println(emp_ser.showDrivers());
         System.out.println();
-        driversOptionsMenu();
+        EmployeesOptionsMenu();
     }
+
+
 
     private void addaDriver(){
         System.out.println("   --------    Driver Addition    --------\n");
-        //TODO
+        System.out.println("Let's add a Driver.");
+        System.out.println("Enter Driver ID:");
+        int id = Integer.parseInt(scanner.nextLine());
+        System.out.println("Enter Driver First Name:");
+        String firstName = scanner.nextLine();
+        System.out.println("Enter Driver Last Name:");
+        String lastName = scanner.nextLine();
+
+        System.out.println("Now Let's add the Driver's Licenses:");
+        ArrayList<String> licenses = new ArrayList<>();
+        boolean anotherLicense = true;
+        while (anotherLicense){
+            System.out.println("Enter Driver's License: (Type: 'A'/'B'/'C'/'D'/'E')");
+            licenses.add(scanner.nextLine());
+            System.out.println("Do you want To add another License? (Y/N(or any other key))");
+            anotherLicense = scanner.nextLine().equals("Y");
+        }
+
+        String res = this.emp_ser.addDriver(id, firstName, lastName, licenses);
+        if(res.equals("Success")){
+            System.out.println("Successfully added Driver.\n");
+        } else if(res.equals("Exception")){
+            System.out.println("Failed to add Driver due to technical machine error.\n");
+        }else { System.out.println(res + "\n"); }
 
         System.out.println();
-        driversOptionsMenu();
+        EmployeesOptionsMenu();
     }
 
     private void deleteaDriver(){
         System.out.println("   --------    Driver Deletion    --------\n");
-        //TODO
+        System.out.println("Let's delete a Driver.");
+        System.out.println("Enter Driver ID:");
+        int id = Integer.parseInt(scanner.nextLine());
+
+        String res = this.emp_ser.removeEmployeeByManager(id);
+        if(res.equals("Success")){
+            System.out.println("Successfully removed Driver.\n");
+        } else if(res.equals("Exception")){
+            System.out.println("Failed to remove Driver due to technical machine error.\n");
+        }else { System.out.println(res + "\n"); }
 
         System.out.println();
-        driversOptionsMenu();
+        EmployeesOptionsMenu();
     }
+
+
 
     private void editaDriversDetails(){
         System.out.println("   --------    Driver Details Edition Menu    --------\n");
-        //TODO
+        System.out.println("Enter Driver's ID (The Driver you want to edit):");
+        int driverId = Integer.parseInt(scanner.nextLine());
+        System.out.println("In Which Criteria would you want to edit a Driver at ?");
+        System.out.println("(1)  Add a License to a Driver");
+        System.out.println("(2)  remove a License from a Driver");
+        System.out.println("(3)  Set a The Driver's Permission's Rank to Manager Rank (Rank Promotion)");
+        System.out.println("(4)  Back to Employees Options Menu");
+        System.out.println("Enter your Choice:");
+        String choice = scanner.nextLine();
+
+        if(choice.equals("1")){
+            System.out.println("Enter a Driver's License to add ('A'/'B'/'C'/'D'/'E') :");
+            String license = scanner.nextLine();
+
+            String res = this.emp_ser.addLicense(driverId, license);
+            if(res.equals("Success")){
+                System.out.println("Successfully added License to Driver.\n");
+            } else if(res.equals("Exception")){
+                System.out.println("Failed to add License to Driver due to technical machine error.\n");
+            }else { System.out.println(res + "\n"); }
+
+
+        } else if (choice.equals("2")) {
+            System.out.println("Enter a Driver's License to remove ('A'/'B'/'C'/'D'/'E') :");
+            String license = scanner.nextLine();
+
+            String res = this.emp_ser.removeLicense(driverId, license);
+            if(res.equals("Success")){
+                System.out.println("Successfully removed License from Driver.\n");
+            } else if(res.equals("Exception")){
+                System.out.println("Failed to remove License from Driver due to technical machine error.\n");
+            }else { System.out.println(res + "\n"); }
+
+
+        } else if (choice.equals("3")) {
+            String res = this.emp_ser.giveADriverAManagersPermissionRank(driverId);
+            if(res.equals("Success")){
+                System.out.println("Successfully Gave the Driver a Manager's Permission Rank.\n");
+            } else if(res.equals("Exception")){
+                System.out.println("Failed to Give the Driver a Manager's Permission Rank due to technical machine error.\n");
+            }else { System.out.println(res + "\n"); }
+
+
+        } else if (choice.equals("4")) {
+            System.out.println("\n\n");
+            EmployeesOptionsMenu();
+        } else {
+            System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
+            editaDriversDetails();
+        }
 
         System.out.println();
-        driversOptionsMenu();
+        EmployeesOptionsMenu();
     }
+
+
+
 
 
 
@@ -1419,9 +1585,8 @@ public class TranManController {
         System.out.println("   --------    Trucks Options Menu    -------\n");
         System.out.println("(1)  View All Trucks");
         System.out.println("(2)  Add a Truck");
-        System.out.println("(3)  Delete a Truck");  //TODO: I just copied to here the relavent Features for the Menu here
-        System.out.println("(4)  Edit a Truck's Details");
-        System.out.println("(5)  Back to Transport Manager Menu");
+        System.out.println("(3)  Delete a Truck");
+        System.out.println("(4)  Back to Transport Manager Menu");
         System.out.println();
         System.out.println(" Select Option: ");
 
@@ -1433,14 +1598,12 @@ public class TranManController {
         }else if(choice.equals("3")){
             deleteaTruck();
         } else if (choice.equals("4")) {
-            editaTrucksDetails();
-        } else if (choice.equals("5")) {
             System.out.println("\n\n");
             transportManagerMainMenu();
         } else {
             System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
-            trucksOptionsMenu();
         }
+        trucksOptionsMenu();
     }
 
     //////////////////////          HELPER FUNCTIONS FOR THE Trucks Options Menu
@@ -1449,36 +1612,51 @@ public class TranManController {
         System.out.println("   --------    Showing All Trucks    --------\n");
         System.out.println(tru_ser.showTrucks());
         System.out.println();
-        trucksOptionsMenu();  //  returning to the menu after the action
     }
 
 
     private void addaTruck(){
         System.out.println("   --------    Truck Addition    --------\n");
-        //TODO
+        System.out.println("Let's add a Truck:");
+        System.out.println("Enter Truck Number:");
+        int truck_num = Integer.parseInt(scanner.nextLine());
+        System.out.println("Enter Truck Model:");
+        String model = scanner.nextLine();
+        System.out.println("Enter the Truck's Net. Weight (of the Truck itself):");
+        double net_wei = Double.parseDouble(scanner.nextLine());
+        System.out.println("Enter the Truck's Max Carry Weight:");
+        double max_carry = Double.parseDouble(scanner.nextLine());
+        System.out.println("Enter Truck's Required License:");
+        String license = scanner.nextLine();
+
+        String res = this.tru_ser.addTruck(truck_num, model, net_wei, max_carry, license);
+        if(res.equals("Success")){
+            System.out.println("Successfully added Truck.\n");
+        } else if(res.equals("Exception")){
+            System.out.println("Failed to add Truck due to technical machine error.\n");
+        }else { System.out.println(res + "\n"); }
 
         System.out.println();
-        trucksOptionsMenu();  //  returning to the menu after the action
     }
+
+
 
 
     private void deleteaTruck(){
         System.out.println("   --------    Truck Deletion    --------\n");
-        //TODO
+        System.out.println("Let's Remove a Truck:");
+        System.out.println("Enter Truck Number:");
+        int truck_num = Integer.parseInt(scanner.nextLine());
+
+        String res = this.tru_ser.removeTruck(truck_num);
+        if(res.equals("Success")){
+            System.out.println("Successfully removed Truck.\n");
+        } else if(res.equals("Exception")){
+            System.out.println("Failed to remove Truck due to technical machine error.\n");
+        }else { System.out.println(res + "\n"); }
 
         System.out.println();
-        trucksOptionsMenu();  //  returning to the menu after the action
     }
-
-
-    private void editaTrucksDetails(){
-        System.out.println("   --------    Truck Details Edition Menu    --------\n");
-        //TODO
-
-        System.out.println();
-        trucksOptionsMenu();  //  returning to the menu after the action
-    }
-
 
 
 

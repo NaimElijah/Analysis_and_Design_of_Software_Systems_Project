@@ -18,7 +18,7 @@ public class TransportDoc {
     private LocalDateTime departure_dt;
     private Truck transportTruck;
     private Driver transportDriver;
-    private int truck_Depart_Weight;
+    private double truck_Depart_Weight;
     private Site src_site;
     private ArrayList<ItemsDoc> dests_Docs;  ///  <<<--------------  In Order of visit   <<<--------------------
     private ArrayList<enumTranProblem> problems;
@@ -69,8 +69,8 @@ public class TransportDoc {
     }
 
 
-    public int getTruck_Depart_Weight() {return truck_Depart_Weight;}
-    public void setTruck_Depart_Weight(int truck_Depart_Weight) {this.truck_Depart_Weight = truck_Depart_Weight;}
+    public double getTruck_Depart_Weight() {return truck_Depart_Weight;}
+    public void setTruck_Depart_Weight(double truck_Depart_Weight) {this.truck_Depart_Weight = truck_Depart_Weight;}
     public Site getSrc_site() {return src_site;}
     public void setSrc_site(Site src_site) {this.src_site = src_site;}
     public ArrayList<ItemsDoc> getDests_Docs() {return dests_Docs;}
@@ -127,8 +127,8 @@ public class TransportDoc {
 
 
 
-    public int calculateTransportItemsWeight(){
-        int sum = 0;
+    public double calculateTransportItemsWeight(){
+        double sum = 0;
         for (ItemsDoc itemsDoc : dests_Docs) {
             sum += itemsDoc.calculateItemsWeight();
         }
@@ -159,7 +159,7 @@ public class TransportDoc {
 
 
 
-    public int addItem(int itemsDoc_Num, String ItemName, int itemWeight, int amount, boolean cond){
+    public int addItem(int itemsDoc_Num, String ItemName, double itemWeight, int amount, boolean cond){
         int res = 0;
         for (ItemsDoc itemsDoc : dests_Docs) {
             if (itemsDoc.getItemDoc_num() == itemsDoc_Num){
@@ -169,7 +169,7 @@ public class TransportDoc {
         return res;
     }
 
-    public int removeItem(int itemsDoc_Num, String ItemName, int itemWeight, int amount, boolean cond){
+    public int removeItem(int itemsDoc_Num, String ItemName, double itemWeight, int amount, boolean cond){
         int res = 0;
         for (ItemsDoc itemsDoc : dests_Docs) {
             if (itemsDoc.getItemDoc_num() == itemsDoc_Num){
@@ -179,7 +179,7 @@ public class TransportDoc {
         return res;
     }
 
-    public int setItemCond(int itemsDoc_Num, String ItemName, int itemWeight, int amount, boolean newCond){
+    public int setItemCond(int itemsDoc_Num, String ItemName, double itemWeight, int amount, boolean newCond){
         int res = 0;
         for (ItemsDoc itemsDoc : dests_Docs) {
             if (itemsDoc.getItemDoc_num() == itemsDoc_Num){

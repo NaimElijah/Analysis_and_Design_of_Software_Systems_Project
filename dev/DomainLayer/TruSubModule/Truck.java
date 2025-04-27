@@ -6,32 +6,36 @@ import DomainLayer.enumDriLicense;
 public class Truck {
     private int truck_num;
     private String model;
-    private int net_weight;
-    private int max_carry_weight;
+    private double net_weight;  // in kilos
+    private double max_carry_weight;  // in kilos
     private enumDriLicense valid_license;
     private int inTransportID;
+    private boolean isDeleted;
 
-    public Truck(int truck_num, String model, int net_weight, int max_carry_weight, enumDriLicense valid_license) {
+    public Truck(int truck_num, String model, double net_weight, double max_carry_weight, enumDriLicense valid_license) {
         this.truck_num = truck_num;
         this.model = model;
         this.net_weight = net_weight;
         this.max_carry_weight = max_carry_weight;
         this.valid_license = valid_license;
         this.inTransportID = -1;  // not assigned yet
+        this.isDeleted = false;
     }
 
     public void setTruck_num(int truck_num) {this.truck_num = truck_num;}
     public void setModel(String model) {this.model = model;}
-    public void setNet_weight(int net_weight) {this.net_weight = net_weight;}
-    public void setMax_carry_weight(int max_carry_weight) {this.max_carry_weight = max_carry_weight;}
+    public void setNet_weight(double net_weight) {this.net_weight = net_weight;}
+    public void setMax_carry_weight(double max_carry_weight) {this.max_carry_weight = max_carry_weight;}
     public void setValid_license(enumDriLicense valid_license) {this.valid_license = valid_license;}
     public int getTruck_num() {return truck_num;}
     public String getModel() {return model;}
-    public int getNet_weight() {return net_weight;}
-    public int getMax_carry_weight() {return max_carry_weight;}
+    public double getNet_weight() {return net_weight;}
+    public double getMax_carry_weight() {return max_carry_weight;}
     public enumDriLicense getValid_license() {return valid_license;}
     public int getInTransportID() {return inTransportID;}
     public void setInTransportID(int inTransportID) {this.inTransportID = inTransportID;}
+    public boolean getIsDeleted() {return isDeleted;}
+    public void setIsDeleted(boolean deleted) {isDeleted = deleted;}
 
 
     public String toString(){

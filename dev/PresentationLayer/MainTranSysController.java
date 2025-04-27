@@ -5,11 +5,12 @@ import ServiceLayer.*;
 import java.util.Scanner;
 
 public class MainTranSysController {
-    DriController drCont;
-    SysAdController sysAdCont;
-    TranManController tranManCont;
-    StartUpController startUpCont;
+    private DriController drCont;
+    private SysAdController sysAdCont;
+    private TranManController tranManCont;
+    private StartUpController startUpCont;
     private Scanner scanner;
+    private int currLoggedID;
 
     public MainTranSysController(TruckService ts, TransportService trs, SiteService sis, EmployeeService es, StartUpStateService starUpStService) {
         this.scanner = new Scanner(System.in);
@@ -17,11 +18,38 @@ public class MainTranSysController {
         this.sysAdCont = new SysAdController(trs, es, this.scanner);
         this.tranManCont = new TranManController(ts, trs, sis, es, this.scanner);
         this.startUpCont = new StartUpController(starUpStService, this.scanner);
+        this.currLoggedID = -1;
     }
 
     public void transportModuleStartup(){
-        startUpCont.startUpDataMenu();
+        startUpCont.startUpData();
         MainMenu();
+    }
+
+    private boolean idAuth(int loggedInAs) {
+        System.out.println("    --------    ID Authentication Screen    -------    (Secure Login)");
+        System.out.println("  Enter Your ID:");
+        this.currLoggedID = scanner.nextInt();
+
+        int permission = this.drCont.getEmployeePermissionsRank(this.currLoggedID);
+        if (permission == 0){  // System Admin
+            System.out.println("Welcome System Admin,\n");
+
+        } else if (permission == 1) {  // Transport Manager
+            //
+        } else if (permission == 2) {  // Driver
+            //
+        } else {
+            System.out.println("ID not in the System, Do you want to:");
+            System.out.println("(1)  Try Authentication again");
+            System.out.println("(any other key)  Exit The System");
+            int choice = scanner.nextInt();
+            if (choice == 1) {
+                idAuth();
+            } else {
+                System.out.println("\nExiting The System, Goodbye.\n");
+            }
+        }
     }
 
     void MainMenu(){
@@ -37,13 +65,13 @@ public class MainTranSysController {
         String choice = scanner.nextLine();
 
         if(choice.equals("1")){
-            sysAdCont.systemAdminMainMenu();
+            if (idAuth(0)){ sysAdCont.systemAdminMainMenu(); }
             MainMenu();
         }else if(choice.equals("2")){
-            tranManCont.transportManagerMainMenu();
+            if (idAuth(1)){ tranManCont.transportManagerMainMenu(); }
             MainMenu();
         }else if(choice.equals("3")){
-            drCont.driverMainMenu();
+            if (idAuth(2)){ drCont.driverMainMenu(); }
             MainMenu();
         } else if (choice.equals("4")) {
             System.out.println("\nExiting The System, Goodbye.\n");

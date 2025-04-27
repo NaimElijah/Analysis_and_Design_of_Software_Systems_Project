@@ -2,16 +2,16 @@ package DomainLayer.TranSubModule;
 
 public class Item {
     private String name;
-    private int weight;   // In whole numbers, in grams.
+    private double weight;   // In Kilos
     private Boolean condition;
 
-    public Item(String name, int weight, Boolean condition){
+    public Item(String name, double weight, Boolean condition){
         this.name = name;
         this.weight = weight;
         this.condition = condition;
     }
 
-    public Item(String name, int weight){
+    public Item(String name, double weight){
         this.name = name;
         this.weight = weight;
         this.condition = true;
@@ -19,8 +19,8 @@ public class Item {
 
     public String getName() {return name;}
     public void setName(String name) {this.name = name;}
-    public int getWeight() {return weight;}
-    public void setWeight(int weight) {this.weight = weight;}
+    public double getWeight() {return weight;}
+    public void setWeight(double weight) {this.weight = weight;}
     public Boolean getCondition() {return condition;}
     public void setCondition(Boolean condition) {this.condition = condition;}
 
