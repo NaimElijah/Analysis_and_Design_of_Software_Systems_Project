@@ -23,10 +23,10 @@ public class StartUpStateService {
             this.siteSer.addShippingArea(1, "Central District");
 
             //TODO: add sites:
-
+            this.siteSer.addSite(1, "Rose St. 4, Tel Aviv", "bob", 0524561234);
 
             //TODO: add trucks:
-
+            this.truckSer.addTruck(1, "Toyota", 1200, 50, "C");
 
             //TODO: add employees, drivers:
 
