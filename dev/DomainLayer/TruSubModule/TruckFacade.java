@@ -1,9 +1,6 @@
 package DomainLayer.TruSubModule;
 
-import DomainLayer.EmpSubModule.Driver;
-import DomainLayer.EmpSubModule.EmployeeFacade;
-import DomainLayer.TranSubModule.TransportFacade;
-import DomainLayer.enumDriLicense;
+import DomainLayer.enums.enumDriLicense;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 import java.util.HashMap;

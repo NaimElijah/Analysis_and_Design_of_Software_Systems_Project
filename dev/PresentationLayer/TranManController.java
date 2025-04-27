@@ -16,6 +16,7 @@ import java.util.Scanner;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class TranManController {
+    private MainTranSysController main;
     private TruckService tru_ser;
     private TransportService tra_ser;
     private SiteService site_ser;
@@ -23,7 +24,8 @@ public class TranManController {
     private Scanner scanner;
     private ObjectMapper objectMapper;
 
-    public TranManController(TruckService ts, TransportService trs, SiteService sis, EmployeeService es, Scanner sc) {
+    public TranManController(MainTranSysController m, TruckService ts, TransportService trs, SiteService sis, EmployeeService es, Scanner sc) {
+        this.main = m;
         this.tru_ser = ts;
         this.tra_ser = trs;
         this.site_ser = sis;
@@ -35,14 +37,13 @@ public class TranManController {
 
 
     void transportManagerMainMenu(){   ////////////////////////////////   Main Menu   <<<--------------------------------------------
-        System.out.println("   --------    Welcome, Transport Manager    -------\n");
-        System.out.println("       --------    Transport Manager Menu    -------");
+        System.out.println("\n       --------    Transport Manager Menu    -------");
         System.out.println("(1)  Transports Options Menu");
         System.out.println("(2)  Shipping Areas Options Menu");
         System.out.println("(3)  Sites Options Menu");
         System.out.println("(4)  Employees Options Menu");
         System.out.println("(5)  Trucks Options Menu");
-        System.out.println("(6)  Disconnect and Go Back to Main Program Menu");
+        System.out.println("(6)  Disconnect");
         System.out.println();
         System.out.println(" Select Options Menu: ");
         String choice = scanner.nextLine();
@@ -63,7 +64,8 @@ public class TranManController {
                 trucksOptionsMenu();
                 break;
             case "6":
-                System.out.println("\nGoing Back to Main Program Menu.\n");
+                System.out.println("\nGoing Back to Main Program Authentication Screen.\n");
+                this.main.idAuthAccess();
                 break;
             default:
                 System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
@@ -121,7 +123,6 @@ public class TranManController {
         System.out.println("   --------    Showing All Transports    --------\n");
         System.out.println(tra_ser.showAllTransports());
         System.out.println();
-        transportManagerMainMenu();
     }
 
 
@@ -143,6 +144,7 @@ public class TranManController {
         System.out.println("Enter Desired Driver ID: ");
         int driverID = scanner.nextInt();
 
+        ///   checking the Truck-Driver pairing as the first check
         String resForNow = this.tra_ser.isTruckDriverPairingGood(truckNum, driverID);   //  first check
         if(resForNow.equals("Success")){
             System.out.println("The Truck-Driver pairing you chose is Compatible and Available right now :)\n");
@@ -165,37 +167,12 @@ public class TranManController {
         }
 
 
-
-        //TODO    <<<----------------------------------------------------   continue Logic After this in ALL FUNCTION WHERE THIS IS NEEDED (Providing/Collecting)
-        ///    choosing the Transport's Purpose
-        boolean isProviding = false, keepAskingPurpose = true;
-        while (keepAskingPurpose){
-            System.out.println("First of all, this Transport is a:");
-            System.out.println("(1)  Items Providing Transport");
-            System.out.println("(2)  Items Collecting Transport");
-            System.out.println("Choose Transport Purpose:");
-            String choicePurpose = scanner.nextLine();
-            if(choicePurpose.equals("1")){
-                isProviding = true;
-                keepAskingPurpose = false; // breaking the loop
-            } else if (choicePurpose.equals("2")){
-                isProviding = false;
-                keepAskingPurpose = false; // breaking the loop
-            } else {
-                System.out.println("Please choose a purpose for this Transport from the 2 options.");
-            }
-        }              //TODO    <<<----------------------------------------------------   continue Logic After this in ALL FUNCTION WHERE THIS IS NEEDED (Providing/Collecting)
-        //TODO    <<<----------------------------------------------------   continue Logic After this in ALL FUNCTION WHERE THIS IS NEEDED (Providing/Collecting)
-        //TODO    <<<----------------------------------------------------   continue Logic After this in ALL FUNCTION WHERE THIS IS NEEDED (Providing/Collecting)
-        //TODO    <<<----------------------------------------------------   continue Logic After this in ALL FUNCTION WHERE THIS IS NEEDED (Providing/Collecting)
-
-
         ///  Starting with the Sites and Items for the Transport
         ArrayList<ItemsDocDTO> dests_Docs_for_Transport = new ArrayList<ItemsDocDTO>();  //  for the Transport's field
 
-        System.out.println("We'll now add the Sites(and the items in each site).");
+        System.out.println("We'll now add the Sites(and the items for each site).");
         System.out.println("\nThe Transport's Site Arrival Order will be based on the order of Sites you add (first added -> first arrived to)");
-        System.out.println("\n- Now Enter Each Site and for Each Site enter the Items of that site: ");
+        System.out.println("\n- Now Enter Each Site and for Each Site enter the Items for that site: ");
 
         boolean continueAnotherSite = true, continueAnotherItem = true, continueAskingDifferentAreaNum = true, siteExists = false;
         Integer currSiteAreaNum = -99;
@@ -245,7 +222,7 @@ public class TranManController {
 
             SiteDTO destSitedto = new SiteDTO(currSiteAreaNum, currDestinationAddress);
 
-            System.out.println("\n- Now let's add the Items in that Destination Site:\n");
+            System.out.println("\n- Now let's add the Items for that Destination Site:\n");
 
             HashMap<ItemDTO, Integer> itemsListFromCurrDestSite = new HashMap<ItemDTO, Integer>();  // for the ItemsDoc's field
 
@@ -258,7 +235,7 @@ public class TranManController {
             }
             System.out.println("Valid Items Document Number :)\n");
 
-            System.out.println("Now let's add the Items you want from this destination Site, one by one:");
+            System.out.println("Now let's add the Items you want for this destination Site, one by one:");
             while (continueAnotherItem){   ///   site's Items WHILE(TRUE) LOOP
                 System.out.println("Enter Item Name: ");
                 String itemName = scanner.next();
@@ -290,7 +267,7 @@ public class TranManController {
             System.out.println("Ok, Finished adding the current destination Site's items");
             dests_Docs_for_Transport.add(itemsDocAddition);   //  adding new ItemsDoc to the destSitesDocs
 
-            System.out.println("Items Wanted from that Site added.\nDo you want to Add another Site and it's Items ? ( Enter 'Y' / 'N'(or any other key) )");
+            System.out.println("Items for that Site added.\nDo you want to Add another Site and it's Items ? ( Enter 'Y' / 'N'(or any other key) )");
             String choice = scanner.nextLine();
             if(!choice.equals("Y")){
                 continueAnotherSite = false;  ///  breaks from this Site Addition Loop
@@ -331,7 +308,6 @@ public class TranManController {
         }
 
         System.out.println();
-        transportsOptionsMenu();
     }
 
 
@@ -369,9 +345,9 @@ public class TranManController {
         while (stillLoopingInReplanningChiceLoop){
             System.out.println("The current overall weight of the truck is: " + overallWeight + ", and the truck's Max. Carry Weight is: " + truckMaxCarryWeight);
             System.out.println("Please Choose an Option from the Possible RePlanning Options below:");
-            System.out.println("(1)  Remove Items from a specific destination Site in the Transport");
+            System.out.println("(1)  Remove Items for a specific destination Site from the Transport");
             System.out.println("(2)  Remove a Destination Site from the Transport (and all of it's Items)");
-            System.out.println("(3)  Choose a Different Truck");
+            System.out.println("(3)  Choose a Different Truck for the Transport");
             System.out.println(" Enter your choice: ");
             String choice = scanner.nextLine();
 
@@ -620,7 +596,6 @@ public class TranManController {
         }else { System.out.println(res + "\n"); }
 
         System.out.println();
-        transportsOptionsMenu();
     }
 
 
@@ -828,6 +803,7 @@ public class TranManController {
         System.out.println(" Select Option: ");
 
         String choice = scanner.nextLine();
+
         if(choice.equals("1")){
             System.out.println("Enter the Transport ID of the Transport you want to add a New Site's Items Document to:");
             int transportId1 = Integer.parseInt(scanner.nextLine());
@@ -849,6 +825,9 @@ public class TranManController {
                 System.out.println("Failed to remove the Transport's Site's Items Document due to technical machine error.\n");
             }else { System.out.println(res1 + "\n"); }
 
+
+
+
         }else if(choice.equals("2")){
             System.out.println("Enter the Transport ID of the Transport you want to remove a Site's Items Document from:");
             int transportId2 = Integer.parseInt(scanner.nextLine());
@@ -861,6 +840,9 @@ public class TranManController {
             } else if(res2.equals("Exception")){
                 System.out.println("Failed to remove the Transport's Site's Items Document due to technical machine error.\n");
             }else { System.out.println(res2 + "\n"); }
+
+
+
 
         }else if(choice.equals("3")){
             System.out.println("Let's change a Transport's Site's Items Document ID.");
@@ -875,6 +857,9 @@ public class TranManController {
             } else if(res3.equals("Exception")){
                 System.out.println("Failed to change Items Documents ID due to technical machine error.\n");
             }else { System.out.println(res3 + "\n"); }
+
+
+
 
         } else if (choice.equals("4")) {
             System.out.println("Enter the Transport ID:");
@@ -1143,9 +1128,8 @@ public class TranManController {
             transportManagerMainMenu();
         } else {
             System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
-            shippingAreasOptionsMenu();
         }
-
+        shippingAreasOptionsMenu();
     }
 
     //////////////////////          HELPER FUNCTIONS FOR THE Shipping Areas Options Menu
@@ -1154,7 +1138,6 @@ public class TranManController {
         System.out.println("   --------    Showing All Shipping Areas    --------\n");
         System.out.println(site_ser.showAllShippingAreas());
         System.out.println();
-        shippingAreasOptionsMenu();
     }
 
     private void addaShippingArea(){
@@ -1173,7 +1156,6 @@ public class TranManController {
         }else { System.out.println(res + "\n"); }
 
         System.out.println();
-        shippingAreasOptionsMenu();
     }
 
 
@@ -1192,11 +1174,12 @@ public class TranManController {
         }else { System.out.println(res + "\n"); }
 
         System.out.println();
-        shippingAreasOptionsMenu();
     }
 
     private void editaShippingAreasDetails(){
         System.out.println("   --------    Editing a Shipping Area Menu    -------\n");
+        System.out.println("Enter Area Number of Shipping Area to Edit: ");
+        int areaNum = Integer.parseInt(scanner.nextLine());
         System.out.println("\nWhat information would you like to edit?: ");
         System.out.println("(1)  Area Number");
         System.out.println("(2)  Area Name");
@@ -1208,9 +1191,6 @@ public class TranManController {
             System.out.println("\n\n");
             shippingAreasOptionsMenu();
         }
-
-        System.out.println("Enter Area Number of Shipping Area to Edit: ");
-        int areaNum = Integer.parseInt(scanner.nextLine());
 
         System.out.println("Enter Updated Data: ");
         String res = "";
@@ -1232,7 +1212,6 @@ public class TranManController {
         }else { System.out.println(res + "\n"); }
 
         System.out.println();
-        shippingAreasOptionsMenu();
     }
 
 
@@ -1266,8 +1245,8 @@ public class TranManController {
             transportManagerMainMenu();
         } else {
             System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
-            sitesOptionsMenu();
         }
+        sitesOptionsMenu();
     }
 
     //////////////////////          HELPER FUNCTIONS FOR THE Sites Options Menu
@@ -1276,7 +1255,6 @@ public class TranManController {
         System.out.println("   --------    Showing All Sites    --------\n");
         System.out.println(site_ser.showAllSites());
         System.out.println();
-        sitesOptionsMenu();
     }
 
     private void addaSite(){
@@ -1298,7 +1276,6 @@ public class TranManController {
         }else { System.out.println(res + "\n"); }
 
         System.out.println();
-        sitesOptionsMenu();
     }
 
     private void deleteaSite(){
@@ -1317,11 +1294,15 @@ public class TranManController {
         }else { System.out.println(res + "\n"); }
 
         System.out.println();
-        sitesOptionsMenu();
     }
 
     private void editaSitesDetails(){
         System.out.println("   --------    Editing a Site Menu    -------\n");
+        System.out.println("Enter Data of Site to Edit:");
+        System.out.println("Enter Area Number: ");
+        int areaNum = Integer.parseInt(scanner.nextLine());
+        System.out.println("Enter Address: ");
+        String address = scanner.nextLine();
 
         System.out.println("\nWhat information would you like to edit?: ");
         System.out.println("(1)  Site Area Number");
@@ -1336,12 +1317,6 @@ public class TranManController {
             System.out.println("\n\n");
             sitesOptionsMenu();
         }
-
-        System.out.println("Enter Data of Site to Edit:");
-        System.out.println("Enter Area Number: ");
-        int areaNum = Integer.parseInt(scanner.nextLine());
-        System.out.println("Enter Address: ");
-        String address = scanner.nextLine();
 
         System.out.println("Enter Updated Data: ");
         String res = "";
@@ -1369,7 +1344,6 @@ public class TranManController {
         }else { System.out.println(res + "\n"); }
 
         System.out.println();
-        sitesOptionsMenu();
     }
 
 
@@ -1423,8 +1397,8 @@ public class TranManController {
             transportManagerMainMenu();
         } else {
             System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
-            EmployeesOptionsMenu();
         }
+        EmployeesOptionsMenu();
     }
 
     //////////////////////          HELPER FUNCTIONS FOR THE Drivers Options Menu
@@ -1434,21 +1408,18 @@ public class TranManController {
         System.out.println("   --------    Showing All Employees    --------\n");
         System.out.println(emp_ser.showEmployees());
         System.out.println();
-        EmployeesOptionsMenu();
     }
 
     private void viewAllManagers(){
         System.out.println("   --------    Showing All Managers    --------\n");
         System.out.println(emp_ser.showManagers());
         System.out.println();
-        EmployeesOptionsMenu();
     }
 
     private void viewAllDrivers(){
         System.out.println("   --------    Showing All Drivers    --------\n");
         System.out.println(emp_ser.showDrivers());
         System.out.println();
-        EmployeesOptionsMenu();
     }
 
 
@@ -1481,8 +1452,9 @@ public class TranManController {
         }else { System.out.println(res + "\n"); }
 
         System.out.println();
-        EmployeesOptionsMenu();
     }
+
+
 
     private void deleteaDriver(){
         System.out.println("   --------    Driver Deletion    --------\n");
@@ -1498,7 +1470,6 @@ public class TranManController {
         }else { System.out.println(res + "\n"); }
 
         System.out.println();
-        EmployeesOptionsMenu();
     }
 
 
@@ -1507,10 +1478,11 @@ public class TranManController {
         System.out.println("   --------    Driver Details Edition Menu    --------\n");
         System.out.println("Enter Driver's ID (The Driver you want to edit):");
         int driverId = Integer.parseInt(scanner.nextLine());
+
         System.out.println("In Which Criteria would you want to edit a Driver at ?");
         System.out.println("(1)  Add a License to a Driver");
         System.out.println("(2)  remove a License from a Driver");
-        System.out.println("(3)  Set a The Driver's Permission's Rank to Manager Rank (Rank Promotion)");
+        System.out.println("(3)  Set The Driver's Permission's Rank to Manager Rank (Rank Promotion)");
         System.out.println("(4)  Back to Employees Options Menu");
         System.out.println("Enter your Choice:");
         String choice = scanner.nextLine();
@@ -1553,11 +1525,10 @@ public class TranManController {
             EmployeesOptionsMenu();
         } else {
             System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
-            editaDriversDetails();
         }
 
         System.out.println();
-        EmployeesOptionsMenu();
+        editaDriversDetails();
     }
 
 

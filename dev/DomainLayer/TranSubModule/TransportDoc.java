@@ -3,14 +3,11 @@ package DomainLayer.TranSubModule;
 import DomainLayer.EmpSubModule.Driver;
 import DomainLayer.SiteSubModule.Site;
 import DomainLayer.TruSubModule.Truck;
+import DomainLayer.enums.enumTranProblem;
+import DomainLayer.enums.enumTranStatus;
 
-import java.sql.Time;
-import java.time.chrono.ChronoLocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.time.LocalDateTime;
-import java.time.*;
-import java.util.HashMap;
 
 public class TransportDoc {
     private enumTranStatus status;
@@ -22,11 +19,9 @@ public class TransportDoc {
     private Site src_site;
     private ArrayList<ItemsDoc> dests_Docs;  ///  <<<--------------  In Order of visit   <<<--------------------
     private ArrayList<enumTranProblem> problems;
-//    private boolean isProviding;   // TODO  !!!!!!  if true then roles in this class change(src is gonna from where we get the items and ....  <<--------
 
     public TransportDoc(enumTranStatus status, int tran_Doc_ID, Truck transportTruck, Driver transportDriver, Site src_site) {
         this.status = status;
-//        this.isProviding = arggg;
         this.tran_Doc_ID = tran_Doc_ID;
         this.departure_dt = LocalDateTime.now();   // In the code, if it doesn't depart immediately, this always updates right before genuine departure.
         this.transportTruck = transportTruck;
@@ -202,11 +197,9 @@ public class TransportDoc {
 
         for (enumTranProblem problem : problems) { res += problem.toString() + ", "; }
         res = res.substring(0, res.length() - 2);
-        res += "), Transport Sites & Items:\n";
+        res += "), Destination Sites & Items:\n";
 
-        for (ItemsDoc itemsdoc : dests_Docs) {
-            res += itemsdoc.toString() + "\n";
-        }
+        for (ItemsDoc itemsdoc : dests_Docs) { res += itemsdoc.toString() + "\n"; }
 
         return res;
     }

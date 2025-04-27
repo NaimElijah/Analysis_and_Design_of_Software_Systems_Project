@@ -1,3 +1,3 @@
-package DomainLayer.EmpSubModule;
+package DomainLayer.enums;
 
 public enum enumPermissionRank { Admin, Manager, Driver; }

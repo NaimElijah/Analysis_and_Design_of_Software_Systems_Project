@@ -38,11 +38,6 @@ public class ItemsDoc {
                 return 0;  // all good
             }
         }
-//        for (Item item : items.keySet()) {    //  if there was an ID
-//            if (item.getItemID() == itemId || (item.getName().equals(itemName) && item.getWeight() == itemWeight)) {
-//                return -1;   /////// can't add an item with a duplicate itemID   <<-----------------   Ambiguous Item can't be added   <<-------  if there was Item ID
-//            }
-//        }
         items.put(new Item(itemName, itemWeight, cond), amount);
         return 0;  // all good
     }

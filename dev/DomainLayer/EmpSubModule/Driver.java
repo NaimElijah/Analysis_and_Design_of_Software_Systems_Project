@@ -1,6 +1,7 @@
 package DomainLayer.EmpSubModule;
 
-import DomainLayer.enumDriLicense;
+import DomainLayer.enums.enumDriLicense;
+import DomainLayer.enums.enumPermissionRank;
 
 import java.util.ArrayList;
 
@@ -28,7 +29,7 @@ public class Driver extends Employee{
 
     @Override
     public String toString() {
-        String res = super.toString() + ", Availability: " + (this.inTransportID == -1 ? "Free" : "Occupied with Transport ID:" + this.inTransportID);
+        String res = "Driver " + super.toString() + ", Driver Availability: " + (this.inTransportID == -1 ? "Free" : "Occupied with Transport ID:" + this.inTransportID);
         res += "\nDriver Driving Licenses: ";
         for(int i = 0; i<licenses.size(); i++){
             res += licenses.get(i).toString();

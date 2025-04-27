@@ -1,10 +1,6 @@
 package ServiceLayer;
 
-import DomainLayer.EmpSubModule.Driver;
-import DomainLayer.EmpSubModule.Employee;
 import DomainLayer.EmpSubModule.EmployeeFacade;
-import DomainLayer.EmpSubModule.enumPermissionRank;
-import DomainLayer.TranSubModule.enumTranStatus;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 import javax.xml.transform.TransformerException;
@@ -52,6 +48,26 @@ public class EmployeeService {
         }
         return "Success";
     }
+
+
+
+    public String initializeAdmin(int empId, String fname, String lname) throws KeyAlreadyExistsException, IllegalAccessException {
+        if (empId < 0 || fname.isEmpty() || lname.isEmpty() || fname.isBlank() || lname.isBlank()) { return "Manager Details cannot be negative or empty or blank"; }
+        try {
+            ef.initializeAdmin(empId, fname, lname);
+        } catch (KeyAlreadyExistsException e) {
+            return "The Employee Id you are trying to add as Admin already exists";
+        } catch (IllegalAccessException e) {
+            return "Cannot create another Admin, only one Admin Exists.";
+        }catch (Exception e) {
+            e.printStackTrace();
+            return "Exception";
+        }
+        return "Success";
+    }
+
+
+
 
 
 
@@ -142,6 +158,22 @@ public class EmployeeService {
 
 
 
+    public int getEmployeePermissionsRank(int loginIDGiven) {
+        int res = 0;
+        if (loginIDGiven < 0) { return -1; }
+        try {
+            res = ef.getEmployeePermissionsRank(loginIDGiven);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return -1;
+        }
+        return res;
+    }
+
+
+
+
+
 
 
 
@@ -201,6 +233,19 @@ public class EmployeeService {
 
 
 
+    public String showEmployee(int id) {
+        if (id < 0){ return "ID cannot be negative"; }
+        String res = "";
+        try {
+            res = ef.showEmployee(id);
+        } catch (ArrayStoreException e) {
+            return "The Employee(ID) you want to show, doesn't exist";
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+        return res;
+    }
+
 
     public String showDrivers(){
         String res = "";
@@ -234,7 +279,6 @@ public class EmployeeService {
         }
         return res;
     }
-
 
 
 }

@@ -1,7 +1,6 @@
 package DomainLayer.TruSubModule;
 
-import DomainLayer.TranSubModule.TransportDoc;
-import DomainLayer.enumDriLicense;
+import DomainLayer.enums.enumDriLicense;
 
 public class Truck {
     private int truck_num;

@@ -10,66 +10,62 @@ public class MainTranSysController {
     private TranManController tranManCont;
     private StartUpController startUpCont;
     private Scanner scanner;
-    private int currLoggedID;
 
     public MainTranSysController(TruckService ts, TransportService trs, SiteService sis, EmployeeService es, StartUpStateService starUpStService) {
         this.scanner = new Scanner(System.in);
-        this.drCont = new DriController(trs, es, this.scanner);
-        this.sysAdCont = new SysAdController(trs, es, this.scanner);
-        this.tranManCont = new TranManController(ts, trs, sis, es, this.scanner);
-        this.startUpCont = new StartUpController(starUpStService, this.scanner);
-        this.currLoggedID = -1;
+        this.drCont = new DriController(this, trs, es, this.scanner);
+        this.sysAdCont = new SysAdController(this, es, this.scanner);
+        this.tranManCont = new TranManController(this, ts, trs, sis, es, this.scanner);
+        this.startUpCont = new StartUpController(starUpStService, es);
     }
 
     public void transportModuleStartup(){
         startUpCont.startUpData();
-        MainMenu();
+        idAuthAccess();
     }
 
-    private boolean idAuth(int tryingTologInAs) {
-        System.out.println("    --------    ID Authentication Screen    -------    (Secure Login)");
-        System.out.println("  Enter Your ID:");
-        this.currLoggedID = scanner.nextInt();
-
-        int permission = this.drCont.getEmployeePermissionsRank(this.currLoggedID);
-        if (permission == tryingTologInAs){  // System Admin
-            return true;
-        } else {
-            System.out.println("ID not in the System for that Role.\n");
-            return false;
-        }
-    }
-
-    void MainMenu(){
-        System.out.println("         --------    Main Program Menu    -------");
-        System.out.println("             Welcome to the Transport System !");
-        System.out.println("   What would you like to login as ?\n");
-        System.out.println("(1)  System Admin");
-        System.out.println("(2)  Transport Manager");
-        System.out.println("(3)  Transport Driver");
-        System.out.println("(4)  Exit The System");
-        System.out.println();
-
+    void idAuthAccess(){
+        System.out.println("              Welcome to the Transport System !\n");
+        System.out.println("What would you like to do ?\n");
+        System.out.println("(1)  Log In");
+        System.out.println("(2)  Exit The System");
+        System.out.println("Enter your choice : ");
         String choice = scanner.nextLine();
 
         if(choice.equals("1")){
-            if (idAuth(0)){ sysAdCont.systemAdminMainMenu(); }
-            MainMenu();
-        }else if(choice.equals("2")){
-            if (idAuth(1)){ tranManCont.transportManagerMainMenu(); }
-            MainMenu();
-        }else if(choice.equals("3")){
-            if (idAuth(2)){ drCont.driverMainMenu(this.currLoggedID); }
-            MainMenu();
-        } else if (choice.equals("4")) {
+            System.out.println("\n    --------    ID Authentication Screen    -------    (Secure Login)");
+            System.out.println("Enter Your ID:");
+            int loginID = scanner.nextInt();
+
+            int permission = this.startUpCont.getEmployeePermissionsRank(loginID);
+
+            /// For each Permissions Rank there is a Different Options Menu
+            if(permission == 0){
+                System.out.println("\n   --------    Welcome, System Administrator.    -------\n");  // welcome message upon login
+                sysAdCont.systemAdminMainMenu();
+
+            } else if(permission == 1){
+                System.out.println("\n   --------    Welcome, Transport Manager    -------\n");  // welcome message upon login
+                tranManCont.transportManagerMainMenu();
+
+            } else if(permission == 2){
+                System.out.println("\n   --------    Welcome, Transport Driver.    -------\n");  // welcome message upon login
+                drCont.driverMainMenu(loginID);
+            } else {   // returns -1
+                System.out.println("ID not in the System, Access Denied.\n");
+            }
+
+        } else if (choice.equals("2")){
             System.out.println("\nExiting The System, Goodbye.\n");
-            System.exit(0);  // exit with code 0
+            System.exit(0);  // exiting the Transport Module Program
+
         } else {
             System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
-            MainMenu();
         }
+        idAuthAccess();
 
     }
+
 
 
 }

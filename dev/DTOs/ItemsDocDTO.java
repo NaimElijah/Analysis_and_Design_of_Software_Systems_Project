@@ -4,11 +4,8 @@ import java.util.HashMap;
 
 public class ItemsDocDTO {
     private int itemsDoc_num;
-    /// we want to take to here
     private SiteDTO src_siteDTO;
-    ///  we want to take from there
     private SiteDTO dest_siteDTO;
-    //    private boolean isDestaStore;
     private HashMap<ItemDTO, Integer> itemDTOs;
 
     public ItemsDocDTO() {}

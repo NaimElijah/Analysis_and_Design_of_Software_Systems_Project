@@ -300,13 +300,34 @@ public class TransportService {
 
 
     public boolean checkValidItemsDocID(int currItemsDocNum) {  // very basic check
-        if (currItemsDocNum < 0){  // very basic check
-            return false;
+        if (currItemsDocNum < 0){ return false; }
+        boolean res = false;
+        try {
+            res = this.tran_f.checkValidItemsDocID(currItemsDocNum);  // return what the business layer said
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        return this.tran_f.checkValidItemsDocID(currItemsDocNum);  // return what the business layer said
+        return res;
     }
 
 
+
+    public String checkIfDriverDrivesThisItemsDoc(int id, int itemsDocId) {
+        if (id < 0 || itemsDocId < 0){ return "The IDs you enter cannot be negative"; }
+        try {
+            tran_f.checkIfDriverDrivesThisItemsDoc(id, itemsDocId);
+        } catch (FileNotFoundException e) {
+            return "Items Document ID not found.";
+        }catch (ClassNotFoundException e) {
+            return "Driver ID doesn't exist.";
+        }catch (IllegalAccessException e) {
+            return "Driver doesn't drive this Items Document's Transport";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "Exception";
+        }
+        return "Yes";  //  if Yes
+    }
 
 
 
@@ -349,6 +370,8 @@ public class TransportService {
         }
         return "Success";  //  if All Good
     }
+
+
 
 
 
@@ -433,6 +456,19 @@ public class TransportService {
 
 
 
+
+    public String showTransportsOfDriver(int id) {
+        if (id < 0){ return "The Driver(ID) you want to show is invalid (it's negative)"; }
+        String res = "";
+        try {
+            res = tran_f.showTransportsOfDriver(id);
+        } catch (ArrayStoreException e) {
+            return "The Driver(ID) to show Transports for was not found";
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return res;
+    }
 
 
     public String showAllQueuedTransports() {

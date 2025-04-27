@@ -8,10 +8,12 @@ import DomainLayer.SiteSubModule.Site;
 import DomainLayer.SiteSubModule.SiteFacade;
 import DomainLayer.TruSubModule.Truck;
 import DomainLayer.TruSubModule.TruckFacade;
-import DomainLayer.enumDriLicense;
+import DomainLayer.enums.enumDriLicense;
 import DTOs.ItemDTO;
 import DTOs.ItemsDocDTO;
 import DTOs.TransportDTO;
+import DomainLayer.enums.enumTranProblem;
+import DomainLayer.enums.enumTranStatus;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -20,17 +22,14 @@ import javax.management.openmbean.KeyAlreadyExistsException;
 import javax.naming.CommunicationException;
 import java.io.FileNotFoundException;
 import java.nio.file.FileAlreadyExistsException;
-import java.rmi.server.ServerCloneException;
 import java.time.LocalDateTime;
 
 import java.util.ArrayList;
-import java.util.EmptyStackException;
 import java.util.HashMap;
 
 public class TransportFacade {
     private HashMap<Integer, TransportDoc> transports;
-//    private HashMap<Integer, TransportDoc> providing_transports;   //TODO:    <<<---------------------------    do 2 hash maps like this (prividing & collecting)
-    private int transportIDCounter;     ///   <<<---------------------------------    for the transport Docs ID's
+    private int transportIDCounter;
     private HashMap<Integer, ItemsDoc> itemsDocs;  // to know an ItemsDoc's num is unique like required.
     private ArrayList<TransportDoc> queuedTransports;
 
@@ -346,7 +345,7 @@ public class TransportFacade {
 
 
     public void addTransportToWaitQueue(TransportDoc tempTransport){
-        if (tempTransport.getTran_Doc_ID() == -99){  // so it will add only new ones, not ones that have gotten checked again
+        if (tempTransport.getTran_Doc_ID() == -99){  // so it will add only new ones, not ones that have gotten checked again and were already added to the queue
             tempTransport.setTran_Doc_ID(this.transportIDCounter);
             this.transportIDCounter++;
             tempTransport.setStatus(enumTranStatus.Queued);
@@ -688,6 +687,28 @@ public class TransportFacade {
 
 
 
+    public void checkIfDriverDrivesThisItemsDoc(int id, int itemsDocId) throws FileNotFoundException, IllegalAccessException, ClassNotFoundException {
+        if (!this.itemsDocs.containsKey(itemsDocId)) { throw new FileNotFoundException("Items Document ID not found."); }
+        if (!this.employeeFacade.getDrivers().containsKey(id)) { throw new ClassNotFoundException("Driver ID doesn't exist."); }
+
+        boolean driverDrivesThisItemsDoc = false;
+        for (TransportDoc transportDoc : this.transports.values()) {
+            if (transportDoc.getTransportDriver().getId() == id){
+                for (ItemsDoc itemsDoc : transportDoc.getDests_Docs()) {
+                    if (itemsDoc.getItemDoc_num() == itemsDocId) {
+                        driverDrivesThisItemsDoc = true;
+                        break; // because found
+                    }
+                }
+            }
+            if (driverDrivesThisItemsDoc){ break;}   // because found
+        }
+
+        if (!driverDrivesThisItemsDoc) { throw new IllegalAccessException("Driver doesn't drive this Items Document's Transport"); }
+    }
+
+
+
 
 
 
@@ -738,8 +759,29 @@ public class TransportFacade {
 
 
 
+    public String showTransportsOfDriver(int id) throws ArrayStoreException {
+        if (!this.employeeFacade.getDrivers().containsKey(id)) { throw new ArrayStoreException("The Driver(ID) to show Transports for was not found"); }
+        String res = "All Transports (all statuses) That Driver with id " + id + " is written in:\n";
+
+        for (TransportDoc t : transports.values()){
+            if (t.getTransportDriver().getId() == id){
+                res += t.toString() + "\n";
+            }
+        }
+        res += "\nQueued Transports (Values of Drivers/Trucks/Time here are the values that were set when first trying to create the Transport):\n";
+        for (TransportDoc t : this.queuedTransports){
+            if (t.getTransportDriver().getId() == id){
+                res += "(Queued Transport) " + t.toString() + "\n";
+            }
+        }
+        res += "\n";
+        return res;
+    }
+
+
+
     public String showAllQueuedTransports() {
-        String resOfQueuedTransports = "Queued Transports (Values of Drivers/Trucks/Time are the values that were set when first trying to create the Transport):\n";
+        String resOfQueuedTransports = "Queued Transports (Values of Drivers/Trucks/Time here are the values that were set when first trying to create the Transport):\n";
         resOfQueuedTransports += "(1)-oldest entry ...... (" + this.queuedTransports.size() + ")-latest entry\n";
         int counter = 1;
         for (TransportDoc transportDoc : this.queuedTransports) {
@@ -756,13 +798,14 @@ public class TransportFacade {
         for (TransportDoc t : transports.values()){
             resOfAllTransports += t.toString() + "\n";
         }
-        resOfAllTransports += "Queued Transports (Values of Drivers/Trucks/Time in the Queued Transports are not final, these are the values set when first trying to create the Transport):\n";
+        resOfAllTransports += "Queued Transports (Values of Drivers/Trucks/Time here are the values set when first trying to create the Transport):\n";
         for (TransportDoc t : this.queuedTransports){
-            resOfAllTransports += t.toString() + "\n";
+            resOfAllTransports += "(Queued Transport) " + t.toString() + "\n";
         }
         resOfAllTransports += "\n";
         return resOfAllTransports;
     }
+
 
 
 }

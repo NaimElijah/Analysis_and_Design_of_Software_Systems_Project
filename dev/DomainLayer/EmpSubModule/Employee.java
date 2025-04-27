@@ -1,5 +1,7 @@
 package DomainLayer.EmpSubModule;
 
+import DomainLayer.enums.enumPermissionRank;
+
 public class Employee {
     private int id;
     private String fname;

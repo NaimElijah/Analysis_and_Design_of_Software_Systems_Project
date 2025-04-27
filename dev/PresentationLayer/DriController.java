@@ -6,11 +6,13 @@ import ServiceLayer.TransportService;
 import java.util.Scanner;
 
 public class DriController {
+    private MainTranSysController main;
     private TransportService tran_s;
     private EmployeeService emp_s;
     private Scanner scanner;
 
-    public DriController(TransportService trs, EmployeeService es, Scanner sc) {
+    public DriController(MainTranSysController m, TransportService trs, EmployeeService es, Scanner sc) {
+        this.main = m;
         this.tran_s = trs;
         this.emp_s = es;
         this.scanner = sc;
@@ -18,46 +20,68 @@ public class DriController {
 
 
     void driverMainMenu(int id){
-        //TODO:  make a quick menu before this and ask for Driver ID, so we can see data related to a specified driver only
-        //TODO:  also according to the ID we'll know what are his permmissions and acoording to that we will give him the appropriate menu options.
-        System.out.println("   --------    Welcome, Transport Driver.    -------\n");
-        System.out.println("     --------   Transport Manager Menu    -------");
-        System.out.println("(1)  View All Transports Related to me");
-        System.out.println("(2)  Edit Item's Condition in my Transport");
-        System.out.println("(3)  View My Details");
-        System.out.println("(4)  Disconnect and Go Back to Main Program Menu");
+        System.out.println("\n           --------    Driver Menu    -------");
+        System.out.println("(1)  View My Details");
+        System.out.println("(2)  View All Transports Related to me (all Statuses)");
+        System.out.println("(3)  Edit an Item's Condition in a Transport that I'm a Driver in");
+        System.out.println("(4)  Disconnect");
         System.out.println();
         System.out.println("   Select Action:\n");
 
         String choice = scanner.nextLine();
         if(choice.equals("1")){
-            viewAllTransportsRelatedtome(id);
-            driverMainMenu();
+            System.out.println(this.emp_s.showEmployee(id));
+            System.out.println();
+
         }else if(choice.equals("2")){
-            editItemsConditioninmyTransport(id);
-            driverMainMenu();
+            System.out.println("All Transports Related to me: ");
+            System.out.println(this.tran_s.showTransportsOfDriver(id));
+            System.out.println();
+
         }else if(choice.equals("3")){
-            this.emp_s.showEmployee(id);
+            editItemsConditionInMyTransport(id);
+
         } else if (choice.equals("4")) {
-            System.out.println("\nGoing Back to Main Program Menu.\n");
+            System.out.println("\nGoing Back to Main Program Authentication Screen.\n");
+            this.main.idAuthAccess();
         } else {
             System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
-            driverMainMenu();
         }
-    }
-
-    private void viewAllTransportsRelatedtome(int id){
-        //TODO
-    }
-
-    private void editItemsConditioninmyTransport(int id){
-        //TODO
+        driverMainMenu(id);
     }
 
 
 
-    public int getEmployeePermissionsRank(int id){
-        return this.emp_s.getEmployeePermissionsRank(id);
+    private void editItemsConditionInMyTransport(int id){
+        System.out.println("Ok, let's Edit an Item's Condition in a Transport that You're a Driver in:");
+        System.out.println("Enter Items Document ID, that that Item is in:");
+        int itemsDoc_id = this.scanner.nextInt();
+
+        // check if the itemsDoc_id is really in a Transport he is involved in
+        String resCheckIfHeIsInvolved = this.tran_s.checkIfDriverDrivesThisItemsDoc(id, itemsDoc_id);
+        if (!resCheckIfHeIsInvolved.equals("Yes")){
+            System.out.println("You are not involved in a Transport that handles the Items Document with that ID, therefore, you can't edit in that Items Document(ID).\n");
+            System.out.println("Returning to Driver Menu...");
+            return;
+        }
+
+        System.out.println("Enter Item Name:");
+        String item_name = this.scanner.nextLine();
+        System.out.println("Enter Item Weight:");
+        double item_weight = this.scanner.nextDouble();
+        System.out.println("Enter the amount of Items of that kind, that you'd like to change their condition:");
+        int item_amount_to_change = this.scanner.nextInt();
+        System.out.println("Enter the New Item Condition you want to set: ( 'Good' / 'Bad'(or any other String) )");
+        boolean new_item_condition = this.scanner.nextLine().equals("Good");
+
+        String res = this.tran_s.setItemCond(itemsDoc_id, item_name, item_weight, item_amount_to_change, new_item_condition);
+        if(res.equals("Success")){
+            System.out.println("Successfully Changed Item's Condition.\n");
+        } else if(res.equals("Exception")){
+            System.out.println("Failed to Change Item's Condition due to technical machine error\n");
+        }else { System.out.println(res + "\n"); }
+
+        System.out.println();
     }
 
 
