@@ -26,29 +26,17 @@ public class MainTranSysController {
         MainMenu();
     }
 
-    private boolean idAuth(int loggedInAs) {
+    private boolean idAuth(int tryingTologInAs) {
         System.out.println("    --------    ID Authentication Screen    -------    (Secure Login)");
         System.out.println("  Enter Your ID:");
         this.currLoggedID = scanner.nextInt();
 
         int permission = this.drCont.getEmployeePermissionsRank(this.currLoggedID);
-        if (permission == 0){  // System Admin
-            System.out.println("Welcome System Admin,\n");
-
-        } else if (permission == 1) {  // Transport Manager
-            //
-        } else if (permission == 2) {  // Driver
-            //
+        if (permission == tryingTologInAs){  // System Admin
+            return true;
         } else {
-            System.out.println("ID not in the System, Do you want to:");
-            System.out.println("(1)  Try Authentication again");
-            System.out.println("(any other key)  Exit The System");
-            int choice = scanner.nextInt();
-            if (choice == 1) {
-                idAuth();
-            } else {
-                System.out.println("\nExiting The System, Goodbye.\n");
-            }
+            System.out.println("ID not in the System for that Role.\n");
+            return false;
         }
     }
 
@@ -71,10 +59,11 @@ public class MainTranSysController {
             if (idAuth(1)){ tranManCont.transportManagerMainMenu(); }
             MainMenu();
         }else if(choice.equals("3")){
-            if (idAuth(2)){ drCont.driverMainMenu(); }
+            if (idAuth(2)){ drCont.driverMainMenu(this.currLoggedID); }
             MainMenu();
         } else if (choice.equals("4")) {
             System.out.println("\nExiting The System, Goodbye.\n");
+            System.exit(0);  // exit with code 0
         } else {
             System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
             MainMenu();

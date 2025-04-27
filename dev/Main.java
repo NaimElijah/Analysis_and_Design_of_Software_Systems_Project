@@ -12,8 +12,6 @@ public class Main {
       EmployeeFacade eff = new EmployeeFacade();
       SiteFacade sf = new SiteFacade();
       TransportFacade tran_f = new TransportFacade(eff, sf, tru_f);
-      eff.setTransportFacade(tran_f);
-      tru_f.setTransportFacade(tran_f);
 
       TransportService tran_s = new TransportService(tran_f);
       TruckService tru_s = new TruckService(tru_f);
