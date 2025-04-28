@@ -54,10 +54,8 @@ public class TransportFacade {
     public void setTransports(HashMap<Integer, TransportDoc> transports) {this.transports = transports;}
     public HashMap<Integer, ItemsDoc> getItemsDocs() {return itemsDocs;}
     public void setItemsDocs(HashMap<Integer, ItemsDoc> itemsDocs) {this.itemsDocs = itemsDocs;}
-
-
-
-
+    public ArrayList<TransportDoc> getQueuedTransports() {return queuedTransports;}
+    public void setQueuedTransports(ArrayList<TransportDoc> queuedTransports) {this.queuedTransports = queuedTransports;}
 
     public void createTransport(String DTO_OfTransport, int queuedIndexIfWasQueued) throws JsonProcessingException {  // time is decided when the Transport departs
         ///  NOTE: I already did all of the checks beforehand, so if we get to here, then we can successfully and legitimately create the Transport
@@ -453,7 +451,7 @@ public class TransportFacade {
     }
 
 
-    private boolean isTruckActive(Truck truck){
+    public boolean isTruckActive(Truck truck){
         if (truck.getInTransportID() != -1) {  // if truck is in another transport
             TransportDoc otherTransport = transports.get(truck.getInTransportID());
             if(otherTransport.getStatus() == enumTranStatus.BeingAssembled || otherTransport.getStatus() == enumTranStatus.InTransit || otherTransport.getStatus() == enumTranStatus.BeingDelayed){  // if other Transport is Active

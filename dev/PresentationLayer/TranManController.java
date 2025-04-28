@@ -140,7 +140,9 @@ public class TranManController {
         String sourceAddressString = scanner.next();
         SiteDTO srcSitedto = new SiteDTO(sourceAreaNum, sourceAddressString);
         System.out.println("Enter Desired Truck Number: ");
+//        String trucknumstr = scanner.next();
         int truckNum = scanner.nextInt();
+//        int truckNum = Integer.parseInt(trucknumstr);
         System.out.println("Enter Desired Driver ID: ");
         int driverID = scanner.nextInt();
 
