@@ -191,13 +191,13 @@ public class TransportDoc {
 
     @Override
     public String toString() {
-        String res = "Transport Document ID: " + tran_Doc_ID + ", Status: " + status + ", Departure Time: " + this.departure_dt.toString() + ", \n";
-        res += "Truck: " + this.transportTruck.toString() + ", Driver: " + this.transportDriver.toString() + ",\nTruck departure weight: " + this.truck_Depart_Weight;
+        String res = "Transport Document ID #: " + tran_Doc_ID + ", Status: " + status + ", Departure Time: " + this.departure_dt.toString() + ", \n";
+        res += "Truck: " + this.transportTruck.toString() + ".\nDriver: " + this.transportDriver.toString() + ",\nTruck departure weight: " + this.truck_Depart_Weight;
         res += ", Source Site: " + this.src_site.toString() + ", Transport Problems: (";
 
         for (enumTranProblem problem : problems) { res += problem.toString() + ", "; }
         res = res.substring(0, res.length() - 2);
-        res += "), Destination Sites & Items:\n";
+        res += "), Destination Sites & Items (In order of arrival):\n";
 
         for (ItemsDoc itemsdoc : dests_Docs) { res += itemsdoc.toString() + "\n"; }
 

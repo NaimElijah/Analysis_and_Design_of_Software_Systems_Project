@@ -225,7 +225,11 @@ public class TransportService {
             return "The Site's Items Document Number you are trying to add already exists.";
         } catch (CommunicationException e) {
             return "Destination Site already in this Transport, you can add items to that site instead.";
-        } catch (Exception e) {
+        } catch (IndexOutOfBoundsException e) {
+            return "Cannot add a Site with a non existent area number.";
+        } catch (ClassNotFoundException e) {
+            return "Cannot add a site with a not found address String in its area.";
+        }catch (Exception e) {
             e.printStackTrace();
             return "Exception";
         }
@@ -407,7 +411,9 @@ public class TransportService {
             this.tran_f.addItem(itemsDocNum, itemName, itemWeight, amount, cond);
         } catch (FileNotFoundException e) {
             return "Item's Document ID not found";
-        } catch (Exception e) {
+        } catch (IndexOutOfBoundsException e) {
+            return "Cannot add Item to transport because the new weight exceeds the maximum carry weight";
+        }catch (Exception e) {
             e.printStackTrace();
             return "Exception";
         }

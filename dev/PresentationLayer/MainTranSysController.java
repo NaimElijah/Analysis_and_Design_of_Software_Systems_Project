@@ -36,6 +36,7 @@ public class MainTranSysController {
             System.out.println("\n    --------    ID Authentication Screen    -------    (Secure Login)");
             System.out.println("Enter Your ID:");
             int loginID = scanner.nextInt();
+            scanner.nextLine(); // consume the leftover newline
 
             int permission = this.startUpCont.getEmployeePermissionsRank(loginID);
 

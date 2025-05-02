@@ -1,9 +1,6 @@
 package ServiceLayer;
 
-import DTOs.ItemDTO;
-import DTOs.ItemsDocDTO;
-import DTOs.SiteDTO;
-import DTOs.TransportDTO;
+import DTOs.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
@@ -42,7 +39,7 @@ public class StartUpStateService {
             // trucks:
             this.truckSer.addTruck(1010, "Toyota K8", 1200, 100, "D");
             this.truckSer.addTruck(2020, "Hyundai R6", 1000, 100, "C");
-            this.truckSer.addTruck(3030, "Yamaha Lite", 100, 10, "A");
+            this.truckSer.addTruck(3030, "Yamaha Lite", 200, 20, "A");
 
 
             //  Admin, Managers, Drivers:
@@ -66,24 +63,25 @@ public class StartUpStateService {
             maxLicenses.add("E");
             this.empSer.addDriver(444, "Tom", "Hat", tomsLicenses);
             this.empSer.addDriver(555, "Xavier", "Hernandez", xaviersLicenses);
-            this.empSer.addDriver(444, "Max", "Turner", maxLicenses);
+            this.empSer.addDriver(666, "Max", "Turner", maxLicenses);
 
             // Transport
-            ArrayList<ItemsDocDTO> itemsDocDTOS = new ArrayList<>();
+            ArrayList<ItemsDocDTO> itemsDocDTOs = new ArrayList<>();
 
-            HashMap< ItemDTO, Integer> itemDTOs1 = new HashMap<>();
-            itemDTOs1.put(new ItemDTO("Water", 0.5, true), 5);
-            itemDTOs1.put(new ItemDTO("Rice", 1, true), 10);
-            ItemsDocDTO itemsDocDTO1 = new ItemsDocDTO(1, new SiteDTO(1,"Tel Aviv"), new SiteDTO(1, "Rishonim"), itemDTOs1);
-            HashMap< ItemDTO, Integer> itemDTOs2 = new HashMap<>();
-            itemDTOs2.put(new ItemDTO("Shampoo", 0.75, true), 10);
-            itemDTOs2.put(new ItemDTO("Toothpaste", 0.2, true), 15);
-            ItemsDocDTO itemsDocDTO2 = new ItemsDocDTO(2, new SiteDTO(1,"Tel Aviv"), new SiteDTO(2, "Dimona"), itemDTOs2);
+            ArrayList<ItemQuantityDTO> itemQuantityDTOs1 = new ArrayList<>();
+            itemQuantityDTOs1.add(new ItemQuantityDTO(new ItemDTO("Water", 0.5, true), 5));
+            itemQuantityDTOs1.add(new ItemQuantityDTO(new ItemDTO("Rice", 1, true), 10));
+            ItemsDocDTO itemsDocDTO1 = new ItemsDocDTO(1, new SiteDTO(1,"Ramla"), new SiteDTO(1, "Rishonim"), itemQuantityDTOs1);
 
-            itemsDocDTOS.add(itemsDocDTO1);
-            itemsDocDTOS.add(itemsDocDTO2);
+            ArrayList<ItemQuantityDTO> itemQuantityDTOs2 = new ArrayList<>();
+            itemQuantityDTOs2.add(new ItemQuantityDTO(new ItemDTO("Shampoo", 0.75, true), 10));
+            itemQuantityDTOs2.add(new ItemQuantityDTO(new ItemDTO("Toothpaste", 0.2, true), 15));
+            ItemsDocDTO itemsDocDTO2 = new ItemsDocDTO(2, new SiteDTO(1,"Ramla"), new SiteDTO(2, "Dimona"), itemQuantityDTOs2);
 
-            TransportDTO transportDTO = new TransportDTO(1010, 555, new SiteDTO(1,"Tel Aviv"), itemsDocDTOS);
+            itemsDocDTOs.add(itemsDocDTO1);
+            itemsDocDTOs.add(itemsDocDTO2);
+
+            TransportDTO transportDTO = new TransportDTO(1010, 555, new SiteDTO(1,"Ramla"), itemsDocDTOs);
             this.tranSer.createTransport(objectMapper.writeValueAsString(transportDTO), -100);
 
         } catch (Exception e) {
@@ -91,6 +89,11 @@ public class StartUpStateService {
             return "ERROR";
         }
         return "SUCCESS";
+    }
+
+
+    public int getEmployeePermissionsRank(int loginIDGiven) {
+        return empSer.getEmployeePermissionsRank(loginIDGiven);
     }
 
 

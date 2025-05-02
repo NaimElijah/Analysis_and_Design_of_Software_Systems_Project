@@ -41,11 +41,15 @@ public class SysAdController {
         } else if (choice.equals("4")) {
             System.out.println("Let's add a New Manager.");
             System.out.println("Enter New Manager's Employee ID:");
-            int empId = scanner.nextInt();
+            int empId = -2;
+            try {
+                empId = scanner.nextInt();
+            } catch (Exception e) {}
+            scanner.nextLine(); // consume the leftover newline
             System.out.println("Enter New Manager's First Name:");
-            String fname = scanner.next();
+            String fname = scanner.nextLine();
             System.out.println("Enter New Manager's Last Name:");
-            String lname = scanner.next();
+            String lname = scanner.nextLine();
 
             String res = this.emp_s.addManager(empId, fname, lname);
             if(res.equals("Success")){
@@ -60,7 +64,11 @@ public class SysAdController {
         } else if (choice.equals("5")) {
             System.out.println("Let's remove an Employee.");
             System.out.println("Enter Employee ID of the Employee you want to remove:");
-            int empId = scanner.nextInt();
+            int empId = -2;
+            try {
+                empId = scanner.nextInt();
+            } catch (Exception e) {}
+            scanner.nextLine(); // consume the leftover newline
 
             String res = this.emp_s.removeEmployeeByAdmin(empId);
             if(res.equals("Success")){
@@ -74,6 +82,7 @@ public class SysAdController {
         } else if (choice.equals("6")) {
             System.out.println("Enter the Driver's ID:");
             int driverId = scanner.nextInt();
+            scanner.nextLine(); // consume the leftover newline
 
             String res = this.emp_s.giveADriverAManagersPermissionRank(driverId);
             if(res.equals("Success")){

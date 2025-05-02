@@ -1,19 +1,20 @@
 package DTOs;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class ItemsDocDTO {
     private int itemsDoc_num;
     private SiteDTO src_siteDTO;
     private SiteDTO dest_siteDTO;
-    private HashMap<ItemDTO, Integer> itemDTOs;
+    private ArrayList<ItemQuantityDTO> itemQuantityDTOs;
 
     public ItemsDocDTO() {}
-    public ItemsDocDTO(int itemsDoc_num, SiteDTO src_siteDTO, SiteDTO dest_siteDTO, HashMap<ItemDTO, Integer> itemDTOs) {
+    public ItemsDocDTO(int itemsDoc_num, SiteDTO src_siteDTO, SiteDTO dest_siteDTO, ArrayList<ItemQuantityDTO> itemQuantityDTOs) {
         this.itemsDoc_num = itemsDoc_num;
         this.src_siteDTO = src_siteDTO;
         this.dest_siteDTO = dest_siteDTO;
-        this.itemDTOs = itemDTOs;
+        this.itemQuantityDTOs = itemQuantityDTOs;
     }
 
     public int getItemsDoc_num() {return itemsDoc_num;}
@@ -22,14 +23,14 @@ public class ItemsDocDTO {
     public void setSrc_siteDTO(SiteDTO src_siteDTO) {this.src_siteDTO = src_siteDTO;}
     public SiteDTO getDest_siteDTO() {return dest_siteDTO;}
     public void setDest_siteDTO(SiteDTO dest_siteDTO) {this.dest_siteDTO = dest_siteDTO;}
-    public HashMap<ItemDTO, Integer> getItemDTOs() {return itemDTOs;}
-    public void setItemDTOs(HashMap<ItemDTO, Integer> itemDTOs) {this.itemDTOs = itemDTOs;}
+    public ArrayList<ItemQuantityDTO> getItemQuantityDTOs() {return itemQuantityDTOs;}
+    public void setItemQuantityDTOs(ArrayList<ItemQuantityDTO> itemQuantityDTOs) {this.itemQuantityDTOs = itemQuantityDTOs;}
 
     @Override
     public String toString() {
         String res = "ItemsDocNum: " + this.itemsDoc_num + ", Source Site: " + this.src_siteDTO.toString() + ", Destination Site: " + this.dest_siteDTO.toString() + "\n";
-        for (ItemDTO itemDTO : this.itemDTOs.keySet()) {
-            res += itemDTO.toString() + "\n";
+        for (ItemQuantityDTO itemQuantityDTO : this.itemQuantityDTOs) {
+            res += itemQuantityDTO.getItem().toString() + ", amount: "+ itemQuantityDTO.getQuantity() + ".\n";
         }
         return res;
     }

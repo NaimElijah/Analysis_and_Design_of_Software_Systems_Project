@@ -1,6 +1,6 @@
 package DomainLayer.TranSubModule;
 
-import DTOs.SiteDTO;
+import DTOs.*;
 import DomainLayer.EmpSubModule.Driver;
 import DomainLayer.EmpSubModule.EmployeeFacade;
 import DomainLayer.SiteSubModule.Address;
@@ -9,9 +9,6 @@ import DomainLayer.SiteSubModule.SiteFacade;
 import DomainLayer.TruSubModule.Truck;
 import DomainLayer.TruSubModule.TruckFacade;
 import DomainLayer.enums.enumDriLicense;
-import DTOs.ItemDTO;
-import DTOs.ItemsDocDTO;
-import DTOs.TransportDTO;
 import DomainLayer.enums.enumTranProblem;
 import DomainLayer.enums.enumTranStatus;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -67,7 +64,7 @@ public class TransportFacade {
         /// finding the srcSite
         Site srcSite = null;
         for (Site site : this.siteFacade.getShippingAreas().get(transport_DTO.getSrc_site().getSiteAreaNum()).getSites().values()){
-            if (site.getAddress().getArea() == transport_DTO.getSrc_site().getSiteAreaNum() && site.getAddress().getAddress().equals(transport_DTO.getSrc_site().getAddressString())){
+            if (site.getAddress().getArea() == transport_DTO.getSrc_site().getSiteAreaNum() && site.getAddress().getAddress().equals(transport_DTO.getSrc_site().getSiteAddressString())){
                 srcSite = site;
             }
         }
@@ -77,8 +74,8 @@ public class TransportFacade {
             tra_id = this.queuedTransports.get(queuedIndexIfWasQueued-1).getTran_Doc_ID();  // getting his already allocated Transport ID
             this.queuedTransports.remove(queuedIndexIfWasQueued - 1);   // removing him from the queue
         } else {   // if new Transport
-            tra_id = this.transportIDCounter;
             this.transportIDCounter++;
+            tra_id = this.transportIDCounter;
         }
 
         TransportDoc newTransportBeingCreated = new TransportDoc(enumTranStatus.BeingAssembled, tra_id, truck, driver, srcSite);
@@ -86,13 +83,13 @@ public class TransportFacade {
         /// add the ItemsDocs and the Items that should be in them from the itemsDocDTOs:
         for (ItemsDocDTO itemsDocDTO : transport_DTO.getDests_Docs()){
             /// finding the current destSite
-            Site destSite = this.siteFacade.getShippingAreas().get(itemsDocDTO.getDest_siteDTO().getSiteAreaNum()).getSites().get(itemsDocDTO.getDest_siteDTO().getAddressString());
+            Site destSite = this.siteFacade.getShippingAreas().get(itemsDocDTO.getDest_siteDTO().getSiteAreaNum()).getSites().get(itemsDocDTO.getDest_siteDTO().getSiteAddressString());
 
             ItemsDoc addition = newTransportBeingCreated.addDestSite(itemsDocDTO.getItemsDoc_num(), destSite);
-            this.itemsDocs.put(itemsDocDTO.getItemsDoc_num(), addition);
+//            this.itemsDocs.put(itemsDocDTO.getItemsDoc_num(), addition);
 
-            for (ItemDTO itemDTO : itemsDocDTO.getItemDTOs().keySet()){  /// add each item of that site from the DTO's data
-                newTransportBeingCreated.addItem(itemsDocDTO.getItemsDoc_num(), itemDTO.getName(), itemDTO.getWeight(), itemsDocDTO.getItemDTOs().get(itemDTO), itemDTO.getCondition());
+            for (ItemQuantityDTO itemQuantityDTO : itemsDocDTO.getItemQuantityDTOs()){  /// add each item of that site from the DTO's data
+                newTransportBeingCreated.addItem(itemsDocDTO.getItemsDoc_num(), itemQuantityDTO.getItem().getName(), itemQuantityDTO.getItem().getWeight(), itemQuantityDTO.getQuantity(), itemQuantityDTO.getItem().getCondition());
             }
         }
 
@@ -142,13 +139,16 @@ public class TransportFacade {
         if (toRemoveDoc.getTransportDriver().getInTransportID() == toRemoveDoc.getTran_Doc_ID()){
             toRemoveDoc.getTransportDriver().setInTransportID(-1);  //  releasing the Driver if he's with this Transport
         }
-
         if (toRemoveDoc.getTransportTruck().getInTransportID() == toRemoveDoc.getTran_Doc_ID()){
             toRemoveDoc.getTransportTruck().setInTransportID(-1);  //  releasing the Truck if it's with this Transport
         }
+        toRemoveDoc.setStatus(enumTranStatus.Canceled);
 
-        toRemoveDoc.setStatus(enumTranStatus.Canceled);   ///  not needed, but just because
-        transports.remove(transportID);
+        if (containedInQueued){
+            this.queuedTransports.remove(indexOfTransport);
+        } else {
+            transports.remove(transportID);
+        }
     }
 
 
@@ -157,7 +157,7 @@ public class TransportFacade {
 
     public void setTransportStatus(int TranDocID, int menu_status_option) throws FileNotFoundException, FileAlreadyExistsException, CommunicationException, CloneNotSupportedException, IndexOutOfBoundsException {
         if(!transports.containsKey(TranDocID)){
-            throw new FileNotFoundException("The Transport ID you have entered doesn't exist.");
+            throw new FileNotFoundException("The Transport ID you have entered doesn't exist in the Transports.");
         }
         TransportDoc transport = transports.get(TranDocID);
 
@@ -344,8 +344,8 @@ public class TransportFacade {
 
     public void addTransportToWaitQueue(TransportDoc tempTransport){
         if (tempTransport.getTran_Doc_ID() == -99){  // so it will add only new ones, not ones that have gotten checked again and were already added to the queue
-            tempTransport.setTran_Doc_ID(this.transportIDCounter);
             this.transportIDCounter++;
+            tempTransport.setTran_Doc_ID(this.transportIDCounter);
             tempTransport.setStatus(enumTranStatus.Queued);
             this.queuedTransports.add(tempTransport);
         }
@@ -363,18 +363,18 @@ public class TransportFacade {
 
         Driver driver = (Driver) this.employeeFacade.getEmployees().get(transport_DTO.getTransportDriverID());
         Truck truck = this.truckFacade.getTrucksWareHouse().get(transport_DTO.getTransportTruckNum());
-        Site srcSite = this.siteFacade.getShippingAreas().get(transport_DTO.getSrc_site().getSiteAreaNum()).getSites().get(transport_DTO.getSrc_site().getAddressString());
+        Site srcSite = this.siteFacade.getShippingAreas().get(transport_DTO.getSrc_site().getSiteAreaNum()).getSites().get(transport_DTO.getSrc_site().getSiteAddressString());
 
         TransportDoc tempTransport = new TransportDoc(enumTranStatus.BeingAssembled, -99, truck, driver, srcSite);
 
         for (ItemsDocDTO itemsDocDTO : transport_DTO.getDests_Docs()){
-            Site destSiteTemp = this.siteFacade.getShippingAreas().get(itemsDocDTO.getDest_siteDTO().getSiteAreaNum()).getSites().get(itemsDocDTO.getDest_siteDTO().getAddressString());
+            Site destSiteTemp = this.siteFacade.getShippingAreas().get(itemsDocDTO.getDest_siteDTO().getSiteAreaNum()).getSites().get(itemsDocDTO.getDest_siteDTO().getSiteAddressString());
             String tempCName = destSiteTemp.getcName();
             long tempCNumber = destSiteTemp.getcNumber();
             tempTransport.addDestSite(itemsDocDTO.getItemsDoc_num(), destSiteTemp);
 
-            for (ItemDTO itemDTO : itemsDocDTO.getItemDTOs().keySet()){
-                tempTransport.addItem(itemsDocDTO.getItemsDoc_num(), itemDTO.getName(), itemDTO.getWeight(), itemsDocDTO.getItemDTOs().get(itemDTO), itemDTO.getCondition());
+            for (ItemQuantityDTO itemQuantityDTO : itemsDocDTO.getItemQuantityDTOs()){
+                tempTransport.addItem(itemsDocDTO.getItemsDoc_num(), itemQuantityDTO.getItem().getName(), itemQuantityDTO.getItem().getWeight(), itemQuantityDTO.getQuantity(), itemQuantityDTO.getItem().getCondition());
             }
         }    ///  adding every site and every item for each site
 
@@ -475,7 +475,7 @@ public class TransportFacade {
 
 
 
-
+    // used for the checkIfATransportCanGo function
     public String getAQueuedTransportAsDTOJson(int index) throws IndexOutOfBoundsException, AttributeNotFoundException, JsonProcessingException {
         if(!this.queuedTransports.isEmpty()){
             if (index > this.queuedTransports.size()) {   //  the index is going to be 1, 2...
@@ -503,17 +503,17 @@ public class TransportFacade {
             Site destSite = itemsDoc.getDest_site();
             SiteDTO destSiteDTO = new SiteDTO(destSite.getAddress().getArea(), destSite.getAddress().getAddress());
 
-            HashMap<ItemDTO, Integer> itemDTOs = new HashMap();
+            ArrayList<ItemQuantityDTO> itemQuantityDTOS = new ArrayList<>();
 
             for (Item item : itemsDoc.getBadItems().keySet()){
                 ItemDTO itemDTO = new ItemDTO(item.getName(), item.getWeight(), item.getCondition());
-                itemDTOs.put(itemDTO, itemsDoc.getBadItems().get(item));
+                itemQuantityDTOS.add(new ItemQuantityDTO(itemDTO, itemsDoc.getBadItems().get(item)));
             }
             for (Item item : itemsDoc.getGoodItems().keySet()){
                 ItemDTO itemDTO = new ItemDTO(item.getName(), item.getWeight(), item.getCondition());
-                itemDTOs.put(itemDTO, itemsDoc.getGoodItems().get(item));
+                itemQuantityDTOS.add(new ItemQuantityDTO(itemDTO, itemsDoc.getGoodItems().get(item)));
             }
-            listOfItemsDocDTOs.add(new ItemsDocDTO(itemsDoc.getItemDoc_num(), srcSiteDTO, destSiteDTO, itemDTOs));
+            listOfItemsDocDTOs.add(new ItemsDocDTO(itemsDoc.getItemDoc_num(), srcSiteDTO, destSiteDTO, itemQuantityDTOS));
         }
 
         TransportDTO transportDTO = new TransportDTO(transportDoc.getTransportTruck().getTruck_num(), transportDoc.getTransportDriver().getId(), srcSiteDTO, listOfItemsDocDTOs);
@@ -542,7 +542,7 @@ public class TransportFacade {
 
     public void addTransportProblem(int TransportID, int menu_Problem_option) throws FileNotFoundException, FileAlreadyExistsException {
         if (!this.transports.containsKey(TransportID)) {
-            throw new FileNotFoundException("Transport ID doesn't exist.");
+            throw new FileNotFoundException("Transport ID doesn't exist in the Transports.");
         }
 
         enumTranProblem probEnum = null;
@@ -603,18 +603,21 @@ public class TransportFacade {
 
 
 
-    public void addDestSiteToTransport(int tran_ID, int itemsDoc_num, int destSiteArea, String destSiteAddress, String contName, long contNum) throws FileNotFoundException, FileAlreadyExistsException, CommunicationException {
+    public void addDestSiteToTransport(int tran_ID, int itemsDoc_num, int destSiteArea, String destSiteAddress, String contName, long contNum) throws FileNotFoundException, FileAlreadyExistsException, CommunicationException, IndexOutOfBoundsException, ClassNotFoundException {
         if (!transports.containsKey(tran_ID)) {
-            throw new FileNotFoundException("The Transport ID you've entered doesn't exist.");
+            throw new FileNotFoundException("The Transport ID you've entered doesn't exist in the Transports.");
         } else if (this.itemsDocs.containsKey(itemsDoc_num)) {
             throw new FileAlreadyExistsException("The Site's Items Document Number you are trying to add already exists.");
+        } else if (!this.siteFacade.getShippingAreas().containsKey(destSiteArea)) {
+            throw new IndexOutOfBoundsException("Cannot add a Site with a non existent area number.");
+        } else if (!this.siteFacade.getShippingAreas().get(destSiteArea).getSites().containsKey(destSiteAddress)) {
+            throw new ClassNotFoundException("Cannot add a site with a not found address String in its area.");
         }
 
         ItemsDoc addition = this.transports.get(tran_ID).addDestSite(itemsDoc_num, new Site(new Address(destSiteArea, destSiteAddress), contName, contNum));
         if (addition == null){
             throw new CommunicationException("Destination Site already in this Transport, you can add items to that site instead.");
         }
-
         this.itemsDocs.put(itemsDoc_num, addition);
     }
 
@@ -634,9 +637,7 @@ public class TransportFacade {
 
 
     public void setSiteArrivalIndexInTransport(int transportID, int siteArea, String siteAddress, int index) throws FileNotFoundException, ClassNotFoundException, AbstractMethodError {
-        if (!this.transports.containsKey(transportID)){
-            throw new FileNotFoundException("The transport ID given was not found");
-        }
+        if (!this.transports.containsKey(transportID)){ throw new FileNotFoundException("The transport ID given was not found"); }
 
         boolean siteResidesInTransport = false;
         ItemsDoc itemsDocToMove = null;
@@ -669,7 +670,6 @@ public class TransportFacade {
         this.itemsDocs.put(newItemsDocNum, temp);
         this.itemsDocs.get(newItemsDocNum).setItemDoc_num(newItemsDocNum);
         this.itemsDocs.remove(oldItemsDocNum);
-        /// bonus function as well
     }
 
 
@@ -723,21 +723,51 @@ public class TransportFacade {
 
 
 
-    public void addItem(int itemsDoc_num, String itemName, double itemWeight, int amount, boolean cond) throws FileNotFoundException {
-        if (!this.itemsDocs.containsKey(itemsDoc_num)) { throw new FileNotFoundException("Item's Document ID not found"); }
+    public void addItem(int itemsDoc_num, String itemName, double itemWeight, int amount, boolean cond) throws FileNotFoundException, IndexOutOfBoundsException {
+        if (!this.itemsDocs.containsKey(itemsDoc_num)) {
+            throw new FileNotFoundException("Item's Document ID not found");
+        }
+
+        for (TransportDoc transportDoc : this.transports.values()) {
+            for (ItemsDoc itemsDoc : transportDoc.getDests_Docs()) {
+                if (itemsDoc.getItemDoc_num() == itemsDoc_num) {
+                    if (transportDoc.getTruck_Depart_Weight() + (itemWeight*amount) > transportDoc.getTransportTruck().getMax_carry_weight()){
+                        throw new IndexOutOfBoundsException("Cannot add Item to transport because the new weight exceeds the maximum carry weight");
+                    }
+                }
+            }
+        }
 
         int res = this.itemsDocs.get(itemsDoc_num).addItem(itemName, itemWeight, cond, amount);
-        //Note: Right now there is no other error when adding an Item
+
+        for (TransportDoc transportDoc : this.transports.values()) {
+            for (ItemsDoc itemsDoc : transportDoc.getDests_Docs()) {
+                if (itemsDoc.getItemDoc_num() == itemsDoc_num) {
+                    transportDoc.setTruck_Depart_Weight(transportDoc.getTruck_Depart_Weight() + (itemWeight*amount));  // updating the weight
+                }
+            }
+        }
+
     }
+
+
 
     public void removeItem(int itemsDoc_num, String itemName, double itemWeight, int amount, boolean cond) throws FileNotFoundException, ClassNotFoundException {
         if (!this.itemsDocs.containsKey(itemsDoc_num)) { throw new FileNotFoundException("Item's Document ID not found"); }
 
         int res = this.itemsDocs.get(itemsDoc_num).removeItem(itemName, itemWeight, cond, amount);
-        if (res == -1){
-            throw new ClassNotFoundException("Item to remove not found in that Items Document");
+        if (res == -1){ throw new ClassNotFoundException("Item to remove not found in that Items Document"); }
+
+        for (TransportDoc transportDoc : this.transports.values()) {
+            for (ItemsDoc itemsDoc : transportDoc.getDests_Docs()) {
+                if (itemsDoc.getItemDoc_num() == itemsDoc_num) {
+                    transportDoc.setTruck_Depart_Weight(transportDoc.getTruck_Depart_Weight() - (itemWeight*amount));  // updating the weight
+                }
+            }
         }
+
     }
+
 
     public void setItemCond(int itemsDoc_num, String itemName, double itemWeight, int amount, boolean newCond) throws FileNotFoundException, ClassNotFoundException {
         if (!this.itemsDocs.containsKey(itemsDoc_num)) { throw new FileNotFoundException("Item's Document ID not found"); }
@@ -766,7 +796,7 @@ public class TransportFacade {
                 res += t.toString() + "\n";
             }
         }
-        res += "\nQueued Transports (Values of Drivers/Trucks/Time here are the values that were set when first trying to create the Transport):\n";
+        res += "\nQueued Transports of Driver(Values of Drivers/Trucks/Time here are the values that were set when first trying to create the Transport):\n";
         for (TransportDoc t : this.queuedTransports){
             if (t.getTransportDriver().getId() == id){
                 res += "(Queued Transport) " + t.toString() + "\n";

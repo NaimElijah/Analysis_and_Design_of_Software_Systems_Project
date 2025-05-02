@@ -7,11 +7,9 @@ import java.util.Scanner;
 
 public class StartUpController {
     private StartUpStateService startUpStateService;
-    private EmployeeService empService;
 
     public StartUpController(StartUpStateService startUpStateService, EmployeeService employeeService) {
         this.startUpStateService = startUpStateService;
-        this.empService = employeeService;
     }
 
     public void startUpData(){
@@ -28,7 +26,7 @@ public class StartUpController {
 
 
     public int getEmployeePermissionsRank(int loginIDGiven) {   //  return the permission of that ID (0, 1, 2)
-        return this.empService.getEmployeePermissionsRank(loginIDGiven);
+        return this.startUpStateService.getEmployeePermissionsRank(loginIDGiven);
     }
 
 

@@ -25,6 +25,7 @@ public class TransportDTO {
     public ArrayList<ItemsDocDTO> getDests_Docs() {return dests_Docs;}
     public void setDests_Docs(ArrayList<ItemsDocDTO> dests_Docs) {this.dests_Docs = dests_Docs;}
 
+
     public String showAllTransportItemsDocs() {
         String res = "Transport Sites & Items: Source Site: " + this.src_site.toString() + "\n";
         for (ItemsDocDTO itemsDocDTO : dests_Docs) {

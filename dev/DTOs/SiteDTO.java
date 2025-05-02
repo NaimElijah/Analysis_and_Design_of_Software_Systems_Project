@@ -12,8 +12,8 @@ public class SiteDTO {
 
     public int getSiteAreaNum() {return siteAreaNum;}
     public void setSiteAreaNum(int siteAreaNum) {this.siteAreaNum = siteAreaNum;}
-    public String getAddressString() {return siteAddressString;}
-    public void setAddressString(String addressString) {this.siteAddressString = addressString;}
+    public String getSiteAddressString() {return siteAddressString;}
+    public void setSiteAddressString(String siteAddressString) {this.siteAddressString = siteAddressString;}
 
     @Override
     public String toString() {

@@ -1,9 +1,6 @@
 package PresentationLayer;
 
-import DTOs.ItemDTO;
-import DTOs.ItemsDocDTO;
-import DTOs.SiteDTO;
-import DTOs.TransportDTO;
+import DTOs.*;
 import ServiceLayer.EmployeeService;
 import ServiceLayer.SiteService;
 import ServiceLayer.TransportService;
@@ -12,7 +9,6 @@ import ServiceLayer.TruckService;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class TranManController {
@@ -33,7 +29,6 @@ public class TranManController {
         this.scanner = sc;
         this.objectMapper = new ObjectMapper();
     }
-
 
 
     void transportManagerMainMenu(){   ////////////////////////////////   Main Menu   <<<--------------------------------------------
@@ -136,15 +131,29 @@ public class TranManController {
         System.out.println("\n- Enter the following information:");
         System.out.println("Enter Source Area Number: ");
         int sourceAreaNum = scanner.nextInt();
+        scanner.nextLine(); // consume the leftover newline
         System.out.println("Enter Source Address String: ");
-        String sourceAddressString = scanner.next();
+        String sourceAddressString = scanner.nextLine();
+
+        boolean siteExists1 = this.site_ser.doesSiteExist(sourceAreaNum, sourceAddressString);
+        while (!siteExists1){
+            System.out.println("Site Doesn't Exist, please choose a site that actually exists.\n");
+            System.out.println("Enter Source Area Number:");
+            sourceAreaNum = scanner.nextInt();
+            scanner.nextLine(); // consume the leftover newline
+            System.out.println("Enter Source Address String:");
+            sourceAddressString = scanner.nextLine();
+            siteExists1 = this.site_ser.doesSiteExist(sourceAreaNum, sourceAddressString);
+        }
         SiteDTO srcSitedto = new SiteDTO(sourceAreaNum, sourceAddressString);
+
+
         System.out.println("Enter Desired Truck Number: ");
-//        String trucknumstr = scanner.next();
         int truckNum = scanner.nextInt();
-//        int truckNum = Integer.parseInt(trucknumstr);
+        scanner.nextLine(); // consume the leftover newline
         System.out.println("Enter Desired Driver ID: ");
         int driverID = scanner.nextInt();
+        scanner.nextLine(); // consume the leftover newline
 
         ///   checking the Truck-Driver pairing as the first check
         String resForNow = this.tra_ser.isTruckDriverPairingGood(truckNum, driverID);   //  first check
@@ -174,21 +183,22 @@ public class TranManController {
 
         System.out.println("We'll now add the Sites(and the items for each site).");
         System.out.println("\nThe Transport's Site Arrival Order will be based on the order of Sites you add (first added -> first arrived to)");
-        System.out.println("\n- Now Enter Each Site and for Each Site enter the Items for that site: ");
+        System.out.println("\n- Now Enter Each Site and for Each Site enter the Items for that site.");
 
         boolean continueAnotherSite = true, continueAnotherItem = true, continueAskingDifferentAreaNum = true, siteExists = false;
         Integer currSiteAreaNum = -99;
         String currDestinationAddress = "";
         ArrayList<Integer> areasNumsUptoNow = new ArrayList<Integer>();  //  for the area numbers in this Transport
-
+        areasNumsUptoNow.add(sourceAreaNum);
 
         while (continueAnotherSite){   ///   Sites WHILE(TRUE) LOOP
-
             siteExists = false;
             while (!siteExists){
+                continueAskingDifferentAreaNum = true;
                 while (continueAskingDifferentAreaNum){
                     System.out.println("Enter Destination Site Area Number: ");
                     currSiteAreaNum = scanner.nextInt();
+                    scanner.nextLine(); // consume the leftover newline
                     if(!areasNumsUptoNow.contains(currSiteAreaNum)){
                         if(areasNumsUptoNow.isEmpty()){   //  if first site
                             areasNumsUptoNow.add(currSiteAreaNum);
@@ -202,15 +212,13 @@ public class TranManController {
                         }
                         areasNumsUptoNow.add(currSiteAreaNum);
                         continueAskingDifferentAreaNum = false;  ///  breaks from this Loop
-//                    break;
-                        // and then a choice of continuing adding this dest_site or not (because it's in another shipping area)
                     }else {
                         continueAskingDifferentAreaNum = false;  ///  breaks from this Loop
                     }
                 }
 
                 System.out.println("Enter Destination Site Address String: ");
-                currDestinationAddress = scanner.next();
+                currDestinationAddress = scanner.nextLine();
 
                 siteExists = this.site_ser.doesSiteExist(currSiteAreaNum, currDestinationAddress);
                 if (!siteExists){
@@ -226,34 +234,43 @@ public class TranManController {
 
             System.out.println("\n- Now let's add the Items for that Destination Site:\n");
 
-            HashMap<ItemDTO, Integer> itemsListFromCurrDestSite = new HashMap<ItemDTO, Integer>();  // for the ItemsDoc's field
-
+            ArrayList<ItemQuantityDTO> itemsListToCurrDestSite = new ArrayList<>();  // for the ItemsDoc's field
 
             System.out.println("Enter Unique Items Document Number: ");
             int currItemsDocNum = scanner.nextInt();
-            if(!tra_ser.checkValidItemsDocID(currItemsDocNum)){
+            scanner.nextLine(); // consume the leftover newline
+            while (!tra_ser.checkValidItemsDocID(currItemsDocNum)){
                 System.out.println("Please Enter a *Unique* and Valid Items Document Number: ");
                 currItemsDocNum = scanner.nextInt();
+                scanner.nextLine(); // consume the leftover newline
             }
             System.out.println("Valid Items Document Number :)\n");
 
             System.out.println("Now let's add the Items you want for this destination Site, one by one:");
+            continueAnotherItem = true;
             while (continueAnotherItem){   ///   site's Items WHILE(TRUE) LOOP
                 System.out.println("Enter Item Name: ");
-                String itemName = scanner.next();
+                String itemName = scanner.nextLine();
                 System.out.println("Enter Item Weight: ");
                 double itemWeight  = scanner.nextDouble();
                 System.out.println("Enter Item Amount: ");
                 int itemAmount = scanner.nextInt();
+                scanner.nextLine(); // consume the leftover newline
                 System.out.println("Enter these Items Condition: ( Enter 'Good' / 'Bad'(or any other key) )");
-                String condition = scanner.next();
+                String condition = scanner.nextLine();
 
                 ItemDTO itemAddition = new ItemDTO(itemName, itemWeight, condition.equals("Good"));
 
-                if(itemsListFromCurrDestSite.containsKey(itemAddition)){  // so items numbers won't get overridden if we add the same Item.
-                    itemsListFromCurrDestSite.put(itemAddition, itemsListFromCurrDestSite.get(itemAddition) + itemAmount);  ///  adding new Item to the items list
-                }else {
-                    itemsListFromCurrDestSite.put(itemAddition, itemAmount);  ///  adding new Item to the items list
+                boolean itemExistsInCurrDestSite = false;
+                for (ItemQuantityDTO itemQuantityDTO : itemsListToCurrDestSite){
+                    if (itemQuantityDTO.getItem().equals(itemAddition)){
+                        itemExistsInCurrDestSite = true;
+                        itemQuantityDTO.setQuantity(itemQuantityDTO.getQuantity() + itemAmount);
+                        break;
+                    }
+                }
+                if (!itemExistsInCurrDestSite){
+                    itemsListToCurrDestSite.add(new ItemQuantityDTO(itemAddition, itemAmount));
                 }
 
                 System.out.println("Item Added to listed items associated with current Site, do you want to add another Item ? ( Enter 'Y' / 'N'(or any other key) )");
@@ -263,9 +280,7 @@ public class TranManController {
 
 
 
-
-
-            ItemsDocDTO itemsDocAddition = new ItemsDocDTO(currItemsDocNum, srcSitedto, destSitedto, itemsListFromCurrDestSite);
+            ItemsDocDTO itemsDocAddition = new ItemsDocDTO(currItemsDocNum, srcSitedto, destSitedto, itemsListToCurrDestSite);
             System.out.println("Ok, Finished adding the current destination Site's items");
             dests_Docs_for_Transport.add(itemsDocAddition);   //  adding new ItemsDoc to the destSitesDocs
 
@@ -276,7 +291,10 @@ public class TranManController {
             }
         }
 
-
+        //TODO:   when adding twice to an itemsDoc with the same number here, it adds twice   <<----------------   <<--------
+        //TODO:   when adding twice to an itemsDoc with the same number here, it adds twice   <<----------------   <<--------
+        //TODO:   when adding twice to an itemsDoc with the same number here, it adds twice   <<<---------------   <<--------
+        //TODO:   when adding twice to an itemsDoc with the same number here, it adds twice   <<----------------   <<--------
 
 
         System.out.println("Ok, Finished adding the Sites & Items to the Transport");
@@ -373,34 +391,34 @@ public class TranManController {
                     System.out.println("Enter the Item's amount you want to remove:");
                     int itemsAmountToRemove = Integer.parseInt(scanner.nextLine());
 
-                    ItemDTO itemToRemove = null;
+                    ItemQuantityDTO itemToRemove = null;
                     boolean searchingItemToRemove = true;
                     for (ItemsDocDTO itemsDocDTO : transportDTO.getDests_Docs()){
-                        if (itemsDocDTO.getDest_siteDTO().getSiteAreaNum() == itemsSiteArea && itemsDocDTO.getDest_siteDTO().getAddressString().equals(itemsSiteAddress)){
+                        if (itemsDocDTO.getDest_siteDTO().getSiteAreaNum() == itemsSiteArea && itemsDocDTO.getDest_siteDTO().getSiteAddressString().equals(itemsSiteAddress)){
                             // found the Site from which we will deduct the item's amount
-                            for (ItemDTO itemDTO : itemsDocDTO.getItemDTOs().keySet()){
-                                if (itemDTO.getName().equals(itemsName) && itemDTO.getWeight() == itemsWeight && itemDTO.getCondition() == condition){
+                            for (ItemQuantityDTO itemQuantityDTO : itemsDocDTO.getItemQuantityDTOs()){
+                                if (itemQuantityDTO.getItem().getName().equals(itemsName) && itemQuantityDTO.getItem().getWeight() == itemsWeight && itemQuantityDTO.getItem().getCondition() == condition){
                                     stillSearching = false;  // because found
-                                    if(itemsDocDTO.getItemDTOs().get(itemDTO) <= itemsAmountToRemove){
-                                        itemToRemove = itemDTO;  // remove after the break
+                                    if(itemQuantityDTO.getQuantity() <= itemsAmountToRemove){
+                                        itemToRemove = itemQuantityDTO;  // remove after the break
                                         searchingItemToRemove = false;  //  because found
-                                    }else {
-                                        itemsDocDTO.getItemDTOs().put(itemDTO, itemsDocDTO.getItemDTOs().get(itemDTO) - itemsAmountToRemove);
+                                    } else {
+                                        itemQuantityDTO.setQuantity(itemQuantityDTO.getQuantity() - itemsAmountToRemove);
                                     }
-                                    break;
+                                    break;  // because found
                                 }
                             }
-                            if (!stillSearching){
-                                if(!searchingItemToRemove){  // because was found
-                                    itemsDocDTO.getItemDTOs().remove(itemToRemove);
+                            if (!stillSearching){  // so found item to remove amount from
+                                if(!searchingItemToRemove){  // because item to remove completely was found
+                                    itemsDocDTO.getItemQuantityDTOs().remove(itemToRemove);
                                 }
-                                break;  //  becasue found already
+                                break;  //  because found already
                             }
                         }
                     }
 
                     if (stillSearching){
-                        System.out.println("couldn't find any item matching the Details you've put in, try again");
+                        System.out.println("couldn't find any item matching the Details you've put in, try again.\n");
                     }
                 }
 
@@ -420,7 +438,7 @@ public class TranManController {
 
                 int indexToRemoveFromItemsDocs = 0;
                 for (ItemsDocDTO itemsDocDTO : transportDTO.getDests_Docs()){
-                    if (itemsDocDTO.getDest_siteDTO().getSiteAreaNum() == areaNum && itemsDocDTO.getDest_siteDTO().getAddressString().equals(address)){ break ;}
+                    if (itemsDocDTO.getDest_siteDTO().getSiteAreaNum() == areaNum && itemsDocDTO.getDest_siteDTO().getSiteAddressString().equals(address)){ break ;}
                     indexToRemoveFromItemsDocs++;
                 }
                 transportDTO.getDests_Docs().remove(indexToRemoveFromItemsDocs);
@@ -620,29 +638,6 @@ public class TranManController {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     private void editaTransportMenu(){
         System.out.println("   --------    Transport Edition Menu    --------\n");
         System.out.println("(1)  Edit a Transport's Status");
@@ -820,11 +815,12 @@ public class TranManController {
             System.out.println("Enter that contact's number:");
             long contactNumber1 = Long.parseLong(scanner.nextLine());
 
+
             String res1 = this.tra_ser.addDestSite(transportId1, newItemsDocId1, destAreaNumber1, destSiteAddress1, contactName1, contactNumber1);
             if(res1.equals("Success")){
-                System.out.println("Successfully removed from Transport's Site's Items Documents.\n");
+                System.out.println("Successfully Created and Added a New Site's Items Document to a Transport.\n");
             } else if(res1.equals("Exception")){
-                System.out.println("Failed to remove the Transport's Site's Items Document due to technical machine error.\n");
+                System.out.println("Failed to create and add a New Site's Items Document to a Transport due to technical machine error.\n");
             }else { System.out.println(res1 + "\n"); }
 
 
@@ -1524,13 +1520,11 @@ public class TranManController {
 
         } else if (choice.equals("4")) {
             System.out.println("\n\n");
-            EmployeesOptionsMenu();
         } else {
             System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
         }
 
         System.out.println();
-        editaDriversDetails();
     }
 
 

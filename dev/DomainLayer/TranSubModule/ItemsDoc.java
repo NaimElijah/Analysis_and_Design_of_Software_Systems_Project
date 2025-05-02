@@ -47,8 +47,9 @@ public class ItemsDoc {
         for (Item item : items.keySet()) {
             if (item.getName().equals(itemName) && item.getWeight() == itemWeight) {
                 if(amount >= items.get(item)){
+                    int amount_removed = items.get(item);
                     items.remove(item);
-                    return items.get(item); // return how many items removed
+                    return amount_removed; // return how many items removed
                 }
                 items.put(item, items.get(item) - amount);
                 return amount; // return how many items removed
@@ -72,10 +73,10 @@ public class ItemsDoc {
     public double calculateItemsWeight(){
         double sum = 0;
         for (Item item : goodItems.keySet()) {
-            sum += item.getWeight();
+            sum += item.getWeight()*goodItems.get(item);
         }
         for (Item item : badItems.keySet()) {
-            sum += item.getWeight();
+            sum += item.getWeight()*badItems.get(item);
         }
         return sum;
     }
@@ -85,13 +86,12 @@ public class ItemsDoc {
         String res = "Items Document #" + itemsDoc_num + " Details: from Source Site: " + src_site + " to Destination Site: " + dest_site + ". Items Included:\n";
         res += "- Good Items:\n";
         for (Item item : goodItems.keySet()) {
-            res += item.toString() + ".\n";
+            res += item.toString() + ", Amount: " + goodItems.get(item) + ".\n";
         }
         res += "- Bad Items:\n";
         for (Item item : badItems.keySet()) {
-            res += item.toString() + ".\n";
+            res += item.toString() + ", Amount: " + badItems.get(item) + ".\n";
         }
-        res += "\n";
         return res;
     }
 }

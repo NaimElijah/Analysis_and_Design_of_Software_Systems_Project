@@ -56,6 +56,7 @@ public class DriController {
         System.out.println("Ok, let's Edit an Item's Condition in a Transport that You're a Driver in:");
         System.out.println("Enter Items Document ID, that that Item is in:");
         int itemsDoc_id = this.scanner.nextInt();
+        scanner.nextLine(); // consume the leftover newline
 
         // check if the itemsDoc_id is really in a Transport he is involved in
         String resCheckIfHeIsInvolved = this.tran_s.checkIfDriverDrivesThisItemsDoc(id, itemsDoc_id);
@@ -71,6 +72,7 @@ public class DriController {
         double item_weight = this.scanner.nextDouble();
         System.out.println("Enter the amount of Items of that kind, that you'd like to change their condition:");
         int item_amount_to_change = this.scanner.nextInt();
+        scanner.nextLine(); // consume the leftover newline
         System.out.println("Enter the New Item Condition you want to set: ( 'Good' / 'Bad'(or any other String) )");
         boolean new_item_condition = this.scanner.nextLine().equals("Good");
 
