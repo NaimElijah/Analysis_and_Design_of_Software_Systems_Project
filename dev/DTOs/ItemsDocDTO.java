@@ -28,7 +28,7 @@ public class ItemsDocDTO {
 
     @Override
     public String toString() {
-        String res = "ItemsDocNum: " + this.itemsDoc_num + ", Source Site: " + this.src_siteDTO.toString() + ", Destination Site: " + this.dest_siteDTO.toString() + "\n";
+        String res = "-- ItemsDocNum: " + this.itemsDoc_num + ", Source Site: " + this.src_siteDTO.toString() + ", Destination Site: " + this.dest_siteDTO.toString() + "\n";
         for (ItemQuantityDTO itemQuantityDTO : this.itemQuantityDTOs) {
             res += itemQuantityDTO.getItem().toString() + ", amount: "+ itemQuantityDTO.getQuantity() + ".\n";
         }

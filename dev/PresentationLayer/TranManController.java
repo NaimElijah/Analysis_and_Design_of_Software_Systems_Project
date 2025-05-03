@@ -189,6 +189,7 @@ public class TranManController {
         Integer currSiteAreaNum = -99;
         String currDestinationAddress = "";
         ArrayList<Integer> areasNumsUptoNow = new ArrayList<Integer>();  //  for the area numbers in this Transport
+        ArrayList<Integer> ItemsDocsNumsUsed = new ArrayList<>();  // for the items Docs numbers in this Transport
         areasNumsUptoNow.add(sourceAreaNum);
 
         while (continueAnotherSite){   ///   Sites WHILE(TRUE) LOOP
@@ -239,11 +240,12 @@ public class TranManController {
             System.out.println("Enter Unique Items Document Number: ");
             int currItemsDocNum = scanner.nextInt();
             scanner.nextLine(); // consume the leftover newline
-            while (!tra_ser.checkValidItemsDocID(currItemsDocNum)){
+            while ((!tra_ser.checkValidItemsDocID(currItemsDocNum)) || ItemsDocsNumsUsed.contains(currItemsDocNum)){
                 System.out.println("Please Enter a *Unique* and Valid Items Document Number: ");
                 currItemsDocNum = scanner.nextInt();
                 scanner.nextLine(); // consume the leftover newline
             }
+            ItemsDocsNumsUsed.add(currItemsDocNum);
             System.out.println("Valid Items Document Number :)\n");
 
             System.out.println("Now let's add the Items you want for this destination Site, one by one:");
@@ -291,16 +293,11 @@ public class TranManController {
             }
         }
 
-        //TODO:   when adding twice to an itemsDoc with the same number here, it adds twice   <<----------------   <<--------
-        //TODO:   when adding twice to an itemsDoc with the same number here, it adds twice   <<----------------   <<--------
-        //TODO:   when adding twice to an itemsDoc with the same number here, it adds twice   <<<---------------   <<--------
-        //TODO:   when adding twice to an itemsDoc with the same number here, it adds twice   <<----------------   <<--------
-
 
         System.out.println("Ok, Finished adding the Sites & Items to the Transport");
 
         // And create the DTO object (The Package to send downwards):
-        TransportDTO transportDTO = new TransportDTO(truckNum, driverID, srcSitedto, dests_Docs_for_Transport);
+        TransportDTO transportDTO = new TransportDTO(-99, truckNum, driverID, srcSitedto, dests_Docs_for_Transport);
 
         ////////////////////////////////////////////////    NOW WE HAVE THE WHOLE TRANSPORT's DTO     <<<-----------------------------------------
 
@@ -565,7 +562,7 @@ public class TranManController {
                     e.printStackTrace();
                 }
 
-                String resValid = checkIfTransportDTOIsValid(transport_DTO);   //  checking loop
+                String resValid = checkIfTransportDTOIsValid(transport_DTO);   //  checking loop function
 
                 if (resValid.equals("Valid")){
                     System.out.println("Hurray, the Queued Transport you chose is now Valid :)");  //  because got to this line

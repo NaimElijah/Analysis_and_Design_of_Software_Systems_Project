@@ -81,7 +81,7 @@ public class StartUpStateService {
             itemsDocDTOs.add(itemsDocDTO1);
             itemsDocDTOs.add(itemsDocDTO2);
 
-            TransportDTO transportDTO = new TransportDTO(1010, 555, new SiteDTO(1,"Ramla"), itemsDocDTOs);
+            TransportDTO transportDTO = new TransportDTO(-99, 1010, 555, new SiteDTO(1,"Ramla"), itemsDocDTOs);
             this.tranSer.createTransport(objectMapper.writeValueAsString(transportDTO), -100);
 
         } catch (Exception e) {

@@ -86,7 +86,6 @@ public class TransportFacade {
             Site destSite = this.siteFacade.getShippingAreas().get(itemsDocDTO.getDest_siteDTO().getSiteAreaNum()).getSites().get(itemsDocDTO.getDest_siteDTO().getSiteAddressString());
 
             ItemsDoc addition = newTransportBeingCreated.addDestSite(itemsDocDTO.getItemsDoc_num(), destSite);
-//            this.itemsDocs.put(itemsDocDTO.getItemsDoc_num(), addition);
 
             for (ItemQuantityDTO itemQuantityDTO : itemsDocDTO.getItemQuantityDTOs()){  /// add each item of that site from the DTO's data
                 newTransportBeingCreated.addItem(itemsDocDTO.getItemsDoc_num(), itemQuantityDTO.getItem().getName(), itemQuantityDTO.getItem().getWeight(), itemQuantityDTO.getQuantity(), itemQuantityDTO.getItem().getCondition());
@@ -365,7 +364,7 @@ public class TransportFacade {
         Truck truck = this.truckFacade.getTrucksWareHouse().get(transport_DTO.getTransportTruckNum());
         Site srcSite = this.siteFacade.getShippingAreas().get(transport_DTO.getSrc_site().getSiteAreaNum()).getSites().get(transport_DTO.getSrc_site().getSiteAddressString());
 
-        TransportDoc tempTransport = new TransportDoc(enumTranStatus.BeingAssembled, -99, truck, driver, srcSite);
+        TransportDoc tempTransport = new TransportDoc(enumTranStatus.BeingAssembled, transport_DTO.getTransport_ID(), truck, driver, srcSite);
 
         for (ItemsDocDTO itemsDocDTO : transport_DTO.getDests_Docs()){
             Site destSiteTemp = this.siteFacade.getShippingAreas().get(itemsDocDTO.getDest_siteDTO().getSiteAreaNum()).getSites().get(itemsDocDTO.getDest_siteDTO().getSiteAddressString());
@@ -516,7 +515,7 @@ public class TransportFacade {
             listOfItemsDocDTOs.add(new ItemsDocDTO(itemsDoc.getItemDoc_num(), srcSiteDTO, destSiteDTO, itemQuantityDTOS));
         }
 
-        TransportDTO transportDTO = new TransportDTO(transportDoc.getTransportTruck().getTruck_num(), transportDoc.getTransportDriver().getId(), srcSiteDTO, listOfItemsDocDTOs);
+        TransportDTO transportDTO = new TransportDTO(transportDoc.getTran_Doc_ID(), transportDoc.getTransportTruck().getTruck_num(), transportDoc.getTransportDriver().getId(), srcSiteDTO, listOfItemsDocDTOs);
         return transportDTO;
     }
 
