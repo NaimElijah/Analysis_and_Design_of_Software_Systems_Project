@@ -819,7 +819,7 @@ public class ShiftCLI {
             CliUtil.printEmptyLine();
             CliUtil.printSectionWithIcon("SHIFT SETTINGS", "⚙️");
 
-            boolean isManagerShift = confirm("Is this a manager shift?");
+            boolean isManagerShift = false;
             boolean isOpen = confirm("Is the shift open for assignments?");
 
             // Initialize empty collections for new shift

@@ -15,9 +15,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class AssignmentCLI {
-    // ANSI color codes
-    private static final String RESET = CliUtil.RESET;
-    private static final String YELLOW = CliUtil.YELLOW;
 
     // Properties
     private final ShiftService shiftService;
@@ -175,6 +172,23 @@ public class AssignmentCLI {
         try {
             EmployeeSL employee = employeeService.getEmployeeById(employeeId);
             return employee.getFullName() + " (#" + employeeId + ")";
+        } catch (ServiceException e) {
+            // If we can't get the employee name, just return the ID
+            return "Employee #" + employeeId;
+        }
+    }
+
+    /**
+     * Formats employee display with name and number and color to show availability
+     *
+     * @param employeeId The ID of the employee
+     * @return A formatted string with the employee name and number
+     */
+    private String formatUnassignedEmployeeDisplay(long employeeId) {
+        try {
+            EmployeeSL employee = employeeService.getEmployeeById(employeeId);
+                return employee.getFullName() + " (#" + employeeId + ")" + "{" + employee.getRoles() + "}" + CliUtil.RESET ;
+
         } catch (ServiceException e) {
             // If we can't get the employee name, just return the ID
             return "Employee #" + employeeId;
@@ -943,6 +957,7 @@ public class AssignmentCLI {
                 int assignChoice = CliUtil.getMenuChoice("Enter your choice (1-2): ", 1, 2, scanner);
 
                 if (assignChoice == 2) {
+                    shiftService.isAssignedManager(doneBy, shiftId);
                     CliUtil.printInfo("Finishing assignments.");
                     continuingAssignments = false;
                     continue;
@@ -979,13 +994,15 @@ public class AssignmentCLI {
                 }
 
                 // Display available employees for this shift
-                Set<Long> availableEmployees = shift.getAvailableEmployees();
+                List<Set<Long>> unAssignedEmployees = shiftService.getUnassignedManager(doneBy,shiftId);
+                Set<Long> availableEmployees = unAssignedEmployees.get(1);
+                Set<Long> unavailableEmployees = unAssignedEmployees.get(0);
                 CliUtil.printEmptyLine();
-                CliUtil.printSectionWithIcon("AVAILABLE EMPLOYEES FOR THIS SHIFT", "👥");
+                CliUtil.printSectionWithIcon("UNASSIGNED EMPLOYEES FOR THIS SHIFT", "👥");
 
                 long employeeId;
 
-                if (availableEmployees.isEmpty()) {
+                if (availableEmployees.isEmpty() && unavailableEmployees.isEmpty()) {
                     CliUtil.printInfo("  No employees are available for this shift.");
                     CliUtil.printEmptyLine();
                     CliUtil.printOptionsHeader("Would you like to:");
@@ -1004,13 +1021,27 @@ public class AssignmentCLI {
                     employeeId = getLongInput("Enter Employee ID to assign: ");
                 } else {
                     // Convert set to list for indexed access
-                    List<Long> employeeList = new ArrayList<>(availableEmployees);
+                    List<Long> availableEmployeesList = new ArrayList<>(availableEmployees);
+                    List<Long> unavailableEmployeesList = new ArrayList<>(unavailableEmployees);
 
+                    CliUtil.printOptionsHeader("Available employees:");
                     // Display employees as numbered options
-                    CliUtil.printNumberedListWithInfo(employeeList, this::formatEmployeeDisplay, 1);
-
+                    if (availableEmployeesList.isEmpty()) {
+                        CliUtil.printInfo("  No employees are available for this shift.");
+                    }else {
+                        CliUtil.printNumberedListWithInfo(availableEmployeesList, this::formatUnassignedEmployeeDisplay, 1);
+                    }
+                    CliUtil.printEmptyLine();
+                    CliUtil.printOptionsHeader("Unavailable employees:");
+                    if (unavailableEmployees.isEmpty()) {
+                        CliUtil.printInfo("  No employees are unavailable for this shift.");
+                    }else {
+                        CliUtil.printNumberedListWithInfo(unavailableEmployeesList, this::formatUnassignedEmployeeDisplay, availableEmployeesList.size() + 1);
+                    }
                     CliUtil.printEmptyLine();
                     CliUtil.printOptionsHeader("Options:");
+                    List<Long> employeeList = new ArrayList<>(availableEmployeesList);
+                    employeeList.addAll(unavailableEmployees);
                     List<String> empOptions = new ArrayList<>();
                     empOptions.add("1-" + employeeList.size() + ". Select an employee from the list");
                     empOptions.add((employeeList.size() + 1) + ". Enter an employee ID manually");

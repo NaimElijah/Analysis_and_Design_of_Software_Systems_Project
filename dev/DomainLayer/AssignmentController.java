@@ -60,4 +60,37 @@ public class AssignmentController {
         return shift.getAssignedEmployees().values().stream()
                 .anyMatch(set -> set.contains(employeeId));
     }
+
+    public boolean isAssignedManager(long doneBy, Shift shift) {
+        String PERMISSION = "ASSIGN_EMPLOYEE";
+        if (!employeeController.isEmployeeAuthorised(doneBy, PERMISSION)) {
+            throw new UnauthorizedPermissionException("User does not have permission to assign employees");
+        }
+        if (!shift.isAssignedShiftManager()){
+            throw new RuntimeException("Shift Manager is not assigned to this shift");
+        }
+        return shift.isAssignedShiftManager();
+    }
+
+    public List<Set<Long>> getUnassignedEmployees(long doneBy, Shift shift){
+        String PERMISSION = "ASSIGN_EMPLOYEE";
+        if(!employeeController.isEmployeeAuthorised(doneBy,PERMISSION)){
+            throw new UnauthorizedPermissionException("User does not have permission to assign employees");
+        }
+        List<Set<Long>> unAssignedEmployees = new ArrayList<>();
+        Set<Long> employees = employeeController.getAllEmployees().keySet();
+        employees.removeIf(employee -> isAssigned(doneBy, shift, employee)); // All the employees that are not assigned to the shi
+        Set<Long> availableEmployees = shift.getAvailableEmployees();
+        Set<Long> availableEmployeesAndUnassigned = new HashSet<>(availableEmployees);
+        availableEmployeesAndUnassigned.retainAll(employees);
+        employees.removeAll(availableEmployees);
+
+
+        unAssignedEmployees.add(employees);
+        unAssignedEmployees.add(availableEmployeesAndUnassigned);
+
+        return unAssignedEmployees;
+    }
+
+
 }

@@ -546,11 +546,12 @@ public class EmployeeCLI {
         CliUtil.printEmptyLine();
         CliUtil.printSectionWithIcon("AVAILABLE ROLES", "🔑");
         List<String> rolesList = Arrays.asList(allRoles);
-        CliUtil.printHierarchicalList(rolesList, "•", 2);
+        CliUtil.printNumberedList(rolesList, 1);
 
         CliUtil.printEmptyLine();
-        CliUtil.printBold("Role Name to Add: ");
-        String roleName = scanner.nextLine();
+        CliUtil.printBold("Role Number to Add: ");
+        int roleNumber = scanner.nextInt();
+        String roleName = rolesList.get(roleNumber - 1);
 
         // Confirm
         if (confirm("Confirm adding role '" + roleName + "' to employee #" + israeliId + "?")) {

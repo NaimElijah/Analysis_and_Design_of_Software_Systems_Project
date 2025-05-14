@@ -345,4 +345,27 @@ public class ShiftService {
         }
     }
 
+    public String isAssignedManager(long doneBy, long shiftId){
+        try{
+            Shift shift = shiftController.getShiftByID(doneBy, shiftId);
+            if (shift == null) {
+                return "Shift not found";
+            }
+            assignmentController.isAssignedManager(doneBy, shift);
+                return "success to check if assigned manager";
+        } catch (RuntimeException e) {
+            return "Error: " + e.getMessage();
+        }
+    }
+
+    public List<Set<Long>> getUnassignedManager(long doneBy, long shiftId){
+        try {
+            Shift shift = shiftController.getShiftByID(doneBy, shiftId);
+            return assignmentController.getUnassignedEmployees(doneBy, shift);
+        }
+        catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

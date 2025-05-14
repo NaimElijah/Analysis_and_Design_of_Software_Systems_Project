@@ -7,6 +7,7 @@ import ServiceLayer.exception.AuthorizationException;
 import Util.Week;
 import java.time.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class AvailabilityCLI {
     private final ShiftService shiftService;
@@ -37,6 +38,7 @@ public class AvailabilityCLI {
 
     public boolean process() {
         try {
+            // TODO:
             //        if (isWeekendBlocked()) {
 //                System.out.println("🚫 Availability update is blocked on weekends.");
 //                return;
@@ -51,6 +53,7 @@ public class AvailabilityCLI {
             }
 
             List<ShiftSL> shiftsList = new ArrayList<>(weekShifts);
+            shiftsList.sort(Comparator.comparing(ShiftSL::getShiftDate));
 
             CliUtil.printSectionHeader("Employee Weekly Availability", false, "SYSTEM");
 

@@ -1,6 +1,7 @@
 package DomainLayer;
 
 import DomainLayer.enums.ShiftType;
+import DomainLayer.exception.InvalidInputException;
 import DomainLayer.exception.UnauthorizedPermissionException;
 import Util.Week;
 
@@ -17,6 +18,9 @@ public class ShiftController {
     private final AuthorisationController authorizationController;
     private final EmployeeController empCon;
     private long shiftIdCounter = 1;
+
+    // Magic Number
+    private final String ShiftManagerStr = "Shift Manager";
 
     public ShiftController(Set<Shift> shifts, AuthorisationController authorizationController, EmployeeController employeeController) {
         this.shifts = shifts;
@@ -49,9 +53,12 @@ public class ShiftController {
         if (shiftType == null || date == null || rolesRequired == null || assignedEmployees == null) {
             throw new IllegalArgumentException("Shift type, date, roles required, and assigned employees cannot be null");
         }
-//        if (date.isBefore(LocalDate.now())) {
-//            throw new IllegalArgumentException("Date cannot be in the past");
-//        }
+        // Checks if a shift manager is assigned as a required role
+        // TODO: test that in case of no shift manager there is no exception thrown
+        if (!rolesRequired.containsKey(ShiftManagerStr) || rolesRequired.get(ShiftManagerStr) <= 0) {
+            throw new InvalidInputException("At least one shift manager is required for every shift");
+        }
+
         Shift newShift = new Shift(shiftIdCounter, shiftType, date, rolesRequired, assignedEmployees, availableEmployees, isAssignedShiftManager, isOpen, hours, updateDate);
         shiftIdCounter++;
         boolean addedToWeekly = addShiftToWeekly(newShift);
@@ -95,7 +102,7 @@ public class ShiftController {
             }
 
             // Evening shift for Sunday to Thursday and Saturday (not Friday)
-            if (dayOfWeek != DayOfWeek.FRIDAY && dayOfWeek != DayOfWeek.SATURDAY) {
+            if (dayOfWeek != DayOfWeek.FRIDAY) {
                 if (!AddNewShift(date, ShiftType.EVENING, rolesRequired)) return false;
             }
         }
@@ -114,6 +121,10 @@ public class ShiftController {
         // Check if a shift of this type already exists for the date
         if (shifts.stream().anyMatch(s -> s.getShiftDate().equals(date) && s.getShiftType() == type)) {
             throw new RuntimeException(type + " shift already exists for " + date);
+        }
+        // Checks if a shift manager is assigned as a required role
+        if (!rolesRequired.containsKey(ShiftManagerStr)) {
+            throw new InvalidInputException("Shift manager is required for every shift");
         }
 
         Set<Long> availableEmployees = new HashSet<>();
@@ -315,6 +326,10 @@ public class ShiftController {
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to update shifts (roles required)");
         }
+        // Check if its not removing the shift manager role
+        if (role.equals(ShiftManagerStr) && rolesRequired <= 0) {
+            throw new IllegalArgumentException("Shift manager role cannot be removed, at least 1 shift manager in the shift is required");
+        }
         if (rolesRequired == null) {
             throw new IllegalArgumentException("Roles required cannot be null");
         }
@@ -394,6 +409,7 @@ public class ShiftController {
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to update Role required");
         }
+
         Shift shiftToUpdate = shifts.stream()
                 .filter(shift -> shift.getId() == shiftId)
                 .findFirst()
@@ -401,6 +417,10 @@ public class ShiftController {
 
         if (shiftToUpdate == null) {
             throw new RuntimeException("Shift does not exist");
+        }
+        // Check if its not removing the shift manager role
+        if (role.equals(ShiftManagerStr)) {
+            throw new IllegalArgumentException("Shift manager role cannot be removed.");
         }
         if (role == null || role.isEmpty()) {
             throw new IllegalArgumentException("Role cannot be null or empty");
