@@ -7,9 +7,9 @@ import javax.xml.transform.TransformerException;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
-public class EmployeeService {
+public class TranEmployeeService {
     private EmployeeFacade ef;
-    public EmployeeService(EmployeeFacade ef) {
+    public TranEmployeeService(EmployeeFacade ef) {
         this.ef = ef;
     }
 

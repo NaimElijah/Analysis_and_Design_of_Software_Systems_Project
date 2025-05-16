@@ -1,6 +1,6 @@
 package PresentationLayer;
 
-import ServiceLayer.EmployeeService;
+import ServiceLayer.TranEmployeeService;
 import ServiceLayer.TransportService;
 
 import java.util.Scanner;
@@ -8,10 +8,10 @@ import java.util.Scanner;
 public class DriController {
     private MainTranSysController main;
     private TransportService tran_s;
-    private EmployeeService emp_s;
+    private TranEmployeeService emp_s;
     private Scanner scanner;
 
-    public DriController(MainTranSysController m, TransportService trs, EmployeeService es, Scanner sc) {
+    public DriController(MainTranSysController m, TransportService trs, TranEmployeeService es, Scanner sc) {
         this.main = m;
         this.tran_s = trs;
         this.emp_s = es;

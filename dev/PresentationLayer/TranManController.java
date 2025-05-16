@@ -1,13 +1,12 @@
 package PresentationLayer;
 
 import DTOs.*;
-import ServiceLayer.EmployeeService;
+import ServiceLayer.TranEmployeeService;
 import ServiceLayer.SiteService;
 import ServiceLayer.TransportService;
 import ServiceLayer.TruckService;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Scanner;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -16,11 +15,11 @@ public class TranManController {
     private TruckService tru_ser;
     private TransportService tra_ser;
     private SiteService site_ser;
-    private EmployeeService emp_ser;
+    private TranEmployeeService emp_ser;
     private Scanner scanner;
     private ObjectMapper objectMapper;
 
-    public TranManController(MainTranSysController m, TruckService ts, TransportService trs, SiteService sis, EmployeeService es, Scanner sc) {
+    public TranManController(MainTranSysController m, TruckService ts, TransportService trs, SiteService sis, TranEmployeeService es, Scanner sc) {
         this.main = m;
         this.tru_ser = ts;
         this.tra_ser = trs;

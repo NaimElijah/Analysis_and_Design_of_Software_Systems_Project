@@ -15,7 +15,7 @@ public class Main {
 
       TransportService tran_s = new TransportService(tran_f);
       TruckService tru_s = new TruckService(tru_f);
-      EmployeeService es = new EmployeeService(eff);
+      TranEmployeeService es = new TranEmployeeService(eff);
       SiteService site_s = new SiteService(sf);
 
       StartUpStateService start = new StartUpStateService(tran_s, tru_s, es, site_s);

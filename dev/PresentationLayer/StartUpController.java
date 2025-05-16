@@ -1,14 +1,12 @@
 package PresentationLayer;
 
-import ServiceLayer.EmployeeService;
+import ServiceLayer.TranEmployeeService;
 import ServiceLayer.StartUpStateService;
-
-import java.util.Scanner;
 
 public class StartUpController {
     private StartUpStateService startUpStateService;
 
-    public StartUpController(StartUpStateService startUpStateService, EmployeeService employeeService) {
+    public StartUpController(StartUpStateService startUpStateService, TranEmployeeService tranEmployeeService) {
         this.startUpStateService = startUpStateService;
     }
 

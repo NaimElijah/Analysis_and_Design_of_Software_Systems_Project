@@ -1,16 +1,15 @@
 package PresentationLayer;
 
-import ServiceLayer.EmployeeService;
-import ServiceLayer.TransportService;
+import ServiceLayer.TranEmployeeService;
 
 import java.util.Scanner;
 
 public class SysAdController {
     private MainTranSysController main;
-    private EmployeeService emp_s;
+    private TranEmployeeService emp_s;
     private Scanner scanner;
 
-    public SysAdController(MainTranSysController m, EmployeeService es, Scanner sc) {
+    public SysAdController(MainTranSysController m, TranEmployeeService es, Scanner sc) {
         this.main = m;
         this.emp_s = es;
         this.scanner = sc;

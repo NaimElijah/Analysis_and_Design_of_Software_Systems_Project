@@ -11,7 +11,7 @@ public class MainTranSysController {
     private StartUpController startUpCont;
     private Scanner scanner;
 
-    public MainTranSysController(TruckService ts, TransportService trs, SiteService sis, EmployeeService es, StartUpStateService starUpStService) {
+    public MainTranSysController(TruckService ts, TransportService trs, SiteService sis, TranEmployeeService es, StartUpStateService starUpStService) {
         this.scanner = new Scanner(System.in);
         this.drCont = new DriController(this, trs, es, this.scanner);
         this.sysAdCont = new SysAdController(this, es, this.scanner);

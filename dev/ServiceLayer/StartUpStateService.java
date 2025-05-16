@@ -4,17 +4,15 @@ import DTOs.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Scanner;
 
 public class StartUpStateService {
     private TransportService tranSer;
     private TruckService truckSer;
-    private EmployeeService empSer;
+    private TranEmployeeService empSer;
     private SiteService siteSer;
     private ObjectMapper objectMapper;
 
-    public StartUpStateService(TransportService tranSer, TruckService truckSer, EmployeeService empSer, SiteService siteSer) {
+    public StartUpStateService(TransportService tranSer, TruckService truckSer, TranEmployeeService empSer, SiteService siteSer) {
         this.tranSer = tranSer;
         this.truckSer = truckSer;
         this.empSer = empSer;
