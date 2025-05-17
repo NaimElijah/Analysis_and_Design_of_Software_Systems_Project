@@ -1,5 +1,6 @@
 package DomainLayer.EmpSubModule;
 
+import DomainLayer.Driver;
 import DomainLayer.enums.enumPermissionRank;
 import DomainLayer.enums.enumDriLicense;
 

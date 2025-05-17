@@ -1,7 +1,7 @@
 package DomainLayerTests;
 
 import DTOs.*;
-import DomainLayer.EmpSubModule.Driver;
+import DomainLayer.Driver;
 import DomainLayer.EmpSubModule.Employee;
 import DomainLayer.EmpSubModule.EmployeeFacade;
 import DomainLayer.SiteSubModule.Address;
@@ -9,7 +9,6 @@ import DomainLayer.SiteSubModule.ShippingArea;
 import DomainLayer.SiteSubModule.Site;
 import DomainLayer.SiteSubModule.SiteFacade;
 import DomainLayer.TranSubModule.Item;
-import DomainLayer.TranSubModule.ItemsDoc;
 import DomainLayer.TranSubModule.TransportDoc;
 import DomainLayer.TranSubModule.TransportFacade;
 import DomainLayer.TruSubModule.Truck;
@@ -20,7 +19,6 @@ import DomainLayer.enums.enumTranProblem;
 import DomainLayer.enums.enumTranStatus;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -29,7 +27,6 @@ import javax.naming.CommunicationException;
 import java.io.FileNotFoundException;
 import java.nio.file.FileAlreadyExistsException;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
 

@@ -1,17 +1,20 @@
-package DomainLayer.EmpSubModule;
+package DomainLayer;
 
+//import DomainLayer.EmpSubModule.Employee;
+import DomainLayer.Employee;
 import DomainLayer.enums.enumDriLicense;
 import DomainLayer.enums.enumPermissionRank;
 
 import java.util.ArrayList;
 
-public class Driver extends Employee{
+public class Driver {
     private ArrayList<enumDriLicense> licenses;
     private int inTransportID;
 
 
-    public Driver(int id, String fname, String lname, enumPermissionRank permissions, ArrayList<enumDriLicense> licenses) {
-        super(id, fname, lname, permissions);
+    // TODO: refactor this constructor to be the same as the super class constructor (Employee).
+    public Driver(long id, enumPermissionRank permissions, ArrayList<enumDriLicense> licenses) {
+        this.employeeID = id;  //  <<<------  refactor
         this.licenses = licenses;
         this.inTransportID = -1;  // not assigned yet
     }

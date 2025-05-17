@@ -1,7 +1,7 @@
 package DomainLayer.TranSubModule;
 
 import DTOs.*;
-import DomainLayer.EmpSubModule.Driver;
+import DomainLayer.Driver;
 import DomainLayer.EmpSubModule.EmployeeFacade;
 import DomainLayer.SiteSubModule.Address;
 import DomainLayer.SiteSubModule.Site;

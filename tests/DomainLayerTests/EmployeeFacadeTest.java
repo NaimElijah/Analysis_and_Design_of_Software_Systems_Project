@@ -1,5 +1,5 @@
 package DomainLayerTests;
-import DomainLayer.EmpSubModule.Driver;
+import DomainLayer.Driver;
 import DomainLayer.EmpSubModule.EmployeeFacade;
 import DomainLayer.enums.enumDriLicense;
 import DomainLayer.enums.enumPermissionRank;
@@ -7,7 +7,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
-import javax.xml.transform.TransformerException;
 import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
