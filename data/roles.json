@@ -1,0 +1,95 @@
+{
+  "Admin": [
+    "EDIT_ROLE",
+    "EDIT_PERMISSION",
+    "EDIT_EMPLOYEE",
+    "VIEW_EMPLOYEE",
+    "EDIT_SHIFT",
+    "VIEW_SHIFT",
+    "ROLE_REQUIRED",
+    "GET_ROLES",
+    "ASSIGN_EMPLOYEE",
+    "UPDATE_AVAILABLE",
+
+    "CREATE_EMPLOYEE",
+    "UPDATE_EMPLOYEE",
+    "DEACTIVATE_EMPLOYEE",
+    "DELETE_EMPLOYEE",
+    "ROLE_PERMISSION",
+    "CREATE_ROLE",
+    "ADD_PERMISSION_TO_ROLE",
+    "REMOVE_PERMISSION_FROM_ROLE",
+    "CREATE_PERMISSION",
+    "EDIT_EMPLOYEE",
+    "CREATE_SHIFT",
+    "UPDATE_SHIFT",
+    "REMOVE_SHIFT",
+    "GET_SHIFT",
+    "ROLE_REQUIRED",
+    "GET_ROLES",
+    "ASSIGN_EMPLOYEE",
+    "UPDATE_AVAILABLE",
+
+    "MANAGE_INVENTORY",
+    "HANDLE_CASH",
+    "DRIVE_VEHICLE",
+    "CLEAN_FACILITY",
+    "MANAGE_HR",
+    "MANAGE_SHIFT",
+    "STOCK_SHELVES",
+    "ASSIGN_EMPLOYEE_TO_SHIFT"
+  ],
+  "HR manager": [
+    "EDIT_EMPLOYEE",
+    "VIEW_EMPLOYEE",
+    "EDIT_SHIFT",
+    "VIEW_SHIFT",
+    "ROLE_REQUIRED",
+    "GET_ROLES",
+    "ASSIGN_EMPLOYEE",
+    "UPDATE_AVAILABLE",
+
+    "CREATE_SHIFT",
+    "UPDATE_SHIFT",
+    "REMOVE_SHIFT",
+    "CREATE_EMPLOYEE",
+    "UPDATE_EMPLOYEE",
+    "DEACTIVATE_EMPLOYEE",
+    "EDIT_EMPLOYEE",
+    "GET_SHIFT",
+    "MANAGE_HR"
+  ],
+  "Shift Manager": [
+    "VIEW_SHIFT",
+    "UPDATE_AVAILABLE",
+
+    "GET_SHIFT",
+    "MANAGE_SHIFT"
+  ],
+  "Cashier": [
+    "VIEW_SHIFT",
+    "UPDATE_AVAILABLE",
+    "GET_SHIFT",
+    "HANDLE_CASH"
+  ],
+  "Driver": [
+    "VIEW_SHIFT",
+    "DRIVE_VEHICLE",
+    "UPDATE_AVAILABLE",
+    "GET_SHIFT"
+  ],
+  "Stocker": [
+    "VIEW_SHIFT",
+    "UPDATE_AVAILABLE",
+    "STOCK_SHELVES",
+    "MANAGE_INVENTORY",
+    "GET_SHIFT"
+  ],
+  "Cleaner": [
+    "VIEW_SHIFT",
+    "UPDATE_AVAILABLE",
+    "GET_SHIFT",
+    "CLEAN_FACILITY"
+  ]
+
+}
