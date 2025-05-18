@@ -11,12 +11,12 @@ public class MainTranSysCLI {
     private StartUpController startUpCont;
     private Scanner scanner;
 
-    public MainTranSysCLI(TruckService ts, TransportService trs, SiteService sis, TranEmployeeService es, StartUpStateService starUpStService) {
+    public MainTranSysCLI(TruckService ts, TransportService trs, SiteService sis, StartUpStateService starUpStService) {
         this.scanner = new Scanner(System.in);
-        this.drCont = new DriverCLI(this, trs, es, this.scanner);
-        this.sysAdCont = new TranSysAdCLI(this, es, this.scanner);
-        this.tranManCont = new TranManCLI(this, ts, trs, sis, es, this.scanner);
-        this.startUpCont = new StartUpController(starUpStService, es);
+//        this.drCont = new DriverCLI(this, trs, es, this.scanner);
+//        this.sysAdCont = new TranSysAdCLI(this, es, this.scanner);
+//        this.tranManCont = new TranManCLI(this, ts, trs, sis, es, this.scanner);
+//        this.startUpCont = new StartUpController(starUpStService, es);
     }
 
     public void transportModuleStartup(){
@@ -38,23 +38,23 @@ public class MainTranSysCLI {
             int loginID = scanner.nextInt();
             scanner.nextLine(); // consume the leftover newline
 
-            int permission = this.startUpCont.getEmployeePermissionsRank(loginID);
-
-            /// For each Permissions Rank there is a Different Options Menu
-            if(permission == 0){
-                System.out.println("\n   --------    Welcome, System Administrator.    -------\n");  // welcome message upon login
-                sysAdCont.systemAdminMainMenu();
-
-            } else if(permission == 1){
-                System.out.println("\n   --------    Welcome, Transport Manager    -------\n");  // welcome message upon login
-                tranManCont.transportManagerMainMenu();
-
-            } else if(permission == 2){
-                System.out.println("\n   --------    Welcome, Transport Driver.    -------\n");  // welcome message upon login
-                drCont.driverMainMenu(loginID);
-            } else {   // returns -1
-                System.out.println("ID not in the System, Access Denied.\n");
-            }
+//            int permission = this.startUpCont.getEmployeePermissionsRank(loginID);
+//
+//            /// For each Permissions Rank there is a Different Options Menu
+//            if(permission == 0){
+//                System.out.println("\n   --------    Welcome, System Administrator.    -------\n");  // welcome message upon login
+//                sysAdCont.systemAdminMainMenu();
+//
+//            } else if(permission == 1){
+//                System.out.println("\n   --------    Welcome, Transport Manager    -------\n");  // welcome message upon login
+//                tranManCont.transportManagerMainMenu();
+//
+//            } else if(permission == 2){
+//                System.out.println("\n   --------    Welcome, Transport Driver.    -------\n");  // welcome message upon login
+//                drCont.driverMainMenu(loginID);
+//            } else {   // returns -1
+//                System.out.println("ID not in the System, Access Denied.\n");
+//            }
 
         } else if (choice.equals("2")){
             System.out.println("\nExiting The System, Goodbye.\n");

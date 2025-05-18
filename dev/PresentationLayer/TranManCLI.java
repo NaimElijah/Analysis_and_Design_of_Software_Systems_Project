@@ -1,7 +1,7 @@
 package PresentationLayer;
 
 import DTOs.*;
-import ServiceLayer.TranEmployeeService;
+//import ServiceLayer.TranEmployeeService;
 import ServiceLayer.SiteService;
 import ServiceLayer.TransportService;
 import ServiceLayer.TruckService;
@@ -15,16 +15,16 @@ public class TranManCLI {
     private TruckService tru_ser;
     private TransportService tra_ser;
     private SiteService site_ser;
-    private TranEmployeeService emp_ser;
+//    private TranEmployeeService emp_ser;
     private Scanner scanner;
     private ObjectMapper objectMapper;
 
-    public TranManCLI(MainTranSysCLI m, TruckService ts, TransportService trs, SiteService sis, TranEmployeeService es, Scanner sc) {
+    public TranManCLI(MainTranSysCLI m, TruckService ts, TransportService trs, SiteService sis, Scanner sc) {
         this.main = m;
         this.tru_ser = ts;
         this.tra_ser = trs;
         this.site_ser = sis;
-        this.emp_ser = es;
+//        this.emp_ser = es;
         this.scanner = sc;
         this.objectMapper = new ObjectMapper();
     }
@@ -335,7 +335,7 @@ public class TranManCLI {
         System.out.println("The Good news is that we've Detected that a Compatible Driver-Truck Pairing is Available, try and choose a matching pair:");
         System.out.println("These are the available Trucks and the available Drivers, from them, let's choose a new Truck-Driver pairing for your Transport:\n");
         System.out.println("Available Trucks:\n" + this.tru_ser.showTrucks() + "\n");
-        System.out.println("Available Drivers: \n" + this.emp_ser.showDrivers() + "\n");
+///        System.out.println("Available Drivers: \n" + this.emp_ser.showDrivers() + "\n");    ////   commented
         System.out.println("Please Enter the New Truck-Driver pairing you want:");
         System.out.println("Enter Truck number:");
         int truckNum = Integer.parseInt(scanner.nextLine());
@@ -1400,19 +1400,19 @@ public class TranManCLI {
 
     private void viewAllEmployees(){
         System.out.println("   --------    Showing All Employees    --------\n");
-        System.out.println(emp_ser.showEmployees());
+//        System.out.println(emp_ser.showEmployees());
         System.out.println();
     }
 
     private void viewAllManagers(){
         System.out.println("   --------    Showing All Managers    --------\n");
-        System.out.println(emp_ser.showManagers());
+//        System.out.println(emp_ser.showManagers());
         System.out.println();
     }
 
     private void viewAllDrivers(){
         System.out.println("   --------    Showing All Drivers    --------\n");
-        System.out.println(emp_ser.showDrivers());
+//        System.out.println(emp_ser.showDrivers());
         System.out.println();
     }
 
@@ -1438,12 +1438,12 @@ public class TranManCLI {
             anotherLicense = scanner.nextLine().equals("Y");
         }
 
-        String res = this.emp_ser.addDriver(id, firstName, lastName, licenses);
-        if(res.equals("Success")){
-            System.out.println("Successfully added Driver.\n");
-        } else if(res.equals("Exception")){
-            System.out.println("Failed to add Driver due to technical machine error.\n");
-        }else { System.out.println(res + "\n"); }
+//        String res = this.emp_ser.addDriver(id, firstName, lastName, licenses);
+//        if(res.equals("Success")){
+//            System.out.println("Successfully added Driver.\n");
+//        } else if(res.equals("Exception")){
+//            System.out.println("Failed to add Driver due to technical machine error.\n");
+//        }else { System.out.println(res + "\n"); }
 
         System.out.println();
     }
@@ -1456,12 +1456,12 @@ public class TranManCLI {
         System.out.println("Enter Driver ID:");
         int id = Integer.parseInt(scanner.nextLine());
 
-        String res = this.emp_ser.removeEmployeeByManager(id);
-        if(res.equals("Success")){
-            System.out.println("Successfully removed Driver.\n");
-        } else if(res.equals("Exception")){
-            System.out.println("Failed to remove Driver due to technical machine error.\n");
-        }else { System.out.println(res + "\n"); }
+//        String res = this.emp_ser.removeEmployeeByManager(id);
+//        if(res.equals("Success")){
+//            System.out.println("Successfully removed Driver.\n");
+//        } else if(res.equals("Exception")){
+//            System.out.println("Failed to remove Driver due to technical machine error.\n");
+//        }else { System.out.println(res + "\n"); }
 
         System.out.println();
     }
@@ -1485,33 +1485,33 @@ public class TranManCLI {
             System.out.println("Enter a Driver's License to add ('A'/'B'/'C'/'D'/'E') :");
             String license = scanner.nextLine();
 
-            String res = this.emp_ser.addLicense(driverId, license);
-            if(res.equals("Success")){
-                System.out.println("Successfully added License to Driver.\n");
-            } else if(res.equals("Exception")){
-                System.out.println("Failed to add License to Driver due to technical machine error.\n");
-            }else { System.out.println(res + "\n"); }
+//            String res = this.emp_ser.addLicense(driverId, license);
+//            if(res.equals("Success")){
+//                System.out.println("Successfully added License to Driver.\n");
+//            } else if(res.equals("Exception")){
+//                System.out.println("Failed to add License to Driver due to technical machine error.\n");
+//            }else { System.out.println(res + "\n"); }
 
 
         } else if (choice.equals("2")) {
             System.out.println("Enter a Driver's License to remove ('A'/'B'/'C'/'D'/'E') :");
             String license = scanner.nextLine();
 
-            String res = this.emp_ser.removeLicense(driverId, license);
-            if(res.equals("Success")){
-                System.out.println("Successfully removed License from Driver.\n");
-            } else if(res.equals("Exception")){
-                System.out.println("Failed to remove License from Driver due to technical machine error.\n");
-            }else { System.out.println(res + "\n"); }
+//            String res = this.emp_ser.removeLicense(driverId, license);
+//            if(res.equals("Success")){
+//                System.out.println("Successfully removed License from Driver.\n");
+//            } else if(res.equals("Exception")){
+//                System.out.println("Failed to remove License from Driver due to technical machine error.\n");
+//            }else { System.out.println(res + "\n"); }
 
 
         } else if (choice.equals("3")) {
-            String res = this.emp_ser.giveADriverAManagersPermissionRank(driverId);
-            if(res.equals("Success")){
-                System.out.println("Successfully Gave the Driver a Manager's Permission Rank.\n");
-            } else if(res.equals("Exception")){
-                System.out.println("Failed to Give the Driver a Manager's Permission Rank due to technical machine error.\n");
-            }else { System.out.println(res + "\n"); }
+//            String res = this.emp_ser.giveADriverAManagersPermissionRank(driverId);
+//            if(res.equals("Success")){
+//                System.out.println("Successfully Gave the Driver a Manager's Permission Rank.\n");
+//            } else if(res.equals("Exception")){
+//                System.out.println("Failed to Give the Driver a Manager's Permission Rank due to technical machine error.\n");
+//            }else { System.out.println(res + "\n"); }
 
 
         } else if (choice.equals("4")) {

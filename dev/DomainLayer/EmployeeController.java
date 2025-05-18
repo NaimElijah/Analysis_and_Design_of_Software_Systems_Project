@@ -374,6 +374,14 @@ public class EmployeeController {
         return authorisationController.hasPermission(employee, permission);
     }
 
+    public boolean isActive(long employeeId) {
+        return true;   //TODO     <<---------------------------------------    <<------------------
+    }
+
+    public boolean hasRole(String role, long employeeId){
+        return true;   //TODO     <<---------------------------------------    <<------------------
+    }
+
 //    public String getHighestRole(long israeliId) {
 //        Employee employee = getEmployeeByIsraeliId(israeliId);
 //        if (employee == null) {

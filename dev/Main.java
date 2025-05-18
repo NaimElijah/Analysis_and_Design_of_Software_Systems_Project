@@ -1,5 +1,5 @@
 import DomainLayer.*;
-import DomainLayer.EmpSubModule.EmployeeFacade;
+//import DomainLayer.EmpSubModule.EmployeeFacade;
 import DomainLayer.SiteSubModule.SiteFacade;
 import DomainLayer.TranSubModule.TransportController;
 import DomainLayer.TruSubModule.TruckFacade;
@@ -15,20 +15,20 @@ public class Main {
    public static void main(String[] args) {
 
       TruckFacade tru_f = new TruckFacade();
-      EmployeeFacade eff = new EmployeeFacade();
+//      EmployeeFacade eff = new EmployeeFacade();
       SiteFacade sf = new SiteFacade();
-      TransportController tran_f = new TransportController(eff, sf, tru_f);
+//      TransportController tran_f = new TransportController(eff, sf, tru_f);
 
-      TransportService tran_s = new TransportService(tran_f);
+//      TransportService tran_s = new TransportService(tran_f);
       TruckService tru_s = new TruckService(tru_f);
-      TranEmployeeService es = new TranEmployeeService(eff);
+//      TranEmployeeService es = new TranEmployeeService(eff);
       SiteService site_s = new SiteService(sf);
 
-      StartUpStateService start = new StartUpStateService(tran_s, tru_s, es, site_s);
+//      StartUpStateService start = new StartUpStateService(tran_s, tru_s, site_s);
 
-      MainTranSysCLI mtsc = new MainTranSysCLI(tru_s, tran_s, site_s, es, start);
+//      MainTranSysCLI mtsc = new MainTranSysCLI(tru_s, tran_s, site_s, start);
 
-      mtsc.transportModuleStartup();      ///         <<<-----------------------   starts the whole Transport Module System
+//      mtsc.transportModuleStartup();      ///         <<<-----------------------   starts the whole Transport Module System
 
 
 

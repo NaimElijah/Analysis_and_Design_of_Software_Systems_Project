@@ -1,6 +1,6 @@
 package PresentationLayer;
 
-import ServiceLayer.TranEmployeeService;
+//import ServiceLayer.TranEmployeeService;
 import ServiceLayer.TransportService;
 
 import java.util.Scanner;
@@ -8,13 +8,13 @@ import java.util.Scanner;
 public class DriverCLI {
     private MainTranSysCLI main;
     private TransportService tran_s;
-    private TranEmployeeService emp_s;
+//    private TranEmployeeService emp_s;
     private Scanner scanner;
 
-    public DriverCLI(MainTranSysCLI m, TransportService trs, TranEmployeeService es, Scanner sc) {
+    public DriverCLI(MainTranSysCLI m, TransportService trs, Scanner sc) {
         this.main = m;
         this.tran_s = trs;
-        this.emp_s = es;
+//        this.emp_s = es;
         this.scanner = sc;
     }
 
@@ -30,7 +30,7 @@ public class DriverCLI {
 
         String choice = scanner.nextLine();
         if(choice.equals("1")){
-            System.out.println(this.emp_s.showEmployee(id));
+//            System.out.println(this.emp_s.showEmployee(id));
             System.out.println();
 
         }else if(choice.equals("2")){
