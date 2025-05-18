@@ -59,6 +59,26 @@
     "GET_SHIFT",
     "MANAGE_HR"
   ],
+  "Transport manager": [
+    "CREATE_TRANSPORT",
+    "DELETE_TRANSPORT",
+    "EDIT_TRANSPORT",
+    "VIEW_TRANSPORT",
+
+    "ADD_SHIPPING_AREA",
+    "DELETE_SHIPPING_AREA",
+    "EDIT_SHIPPING_AREA",
+    "ADD_SITE",
+    "DELETE_SITE",
+    "EDIT_SITE",
+
+    "ADD_ITEM_TO_TRANSPORT",
+    "DELETE_ITEM_FROM_TRANSPORT",
+    "EDIT_ITEM_IN_TRANSPORT",
+
+    "ADD_TRUCK",
+    "DELETE_TRUCK"
+  ],
   "Shift Manager": [
     "VIEW_SHIFT",
     "UPDATE_AVAILABLE",
@@ -76,7 +96,9 @@
     "VIEW_SHIFT",
     "DRIVE_VEHICLE",
     "UPDATE_AVAILABLE",
-    "GET_SHIFT"
+    "GET_SHIFT",
+    "VIEW_RELEVANT_TRANSPORTS",
+    "EDIT_TRANSPORT_ITEM_CONDITION"
   ],
   "Stocker": [
     "VIEW_SHIFT",

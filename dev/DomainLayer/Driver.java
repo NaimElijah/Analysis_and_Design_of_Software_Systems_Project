@@ -11,8 +11,6 @@ public class Driver {
     private ArrayList<enumDriLicense> licenses;
     private int inTransportID;
 
-
-    // TODO: refactor this constructor to be the same as the super class constructor (Employee).
     public Driver(long id, enumPermissionRank permissions, ArrayList<enumDriLicense> licenses) {
         this.employeeID = id;  //  <<<------  refactor
         this.licenses = licenses;
