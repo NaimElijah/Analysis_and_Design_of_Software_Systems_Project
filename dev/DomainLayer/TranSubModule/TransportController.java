@@ -142,6 +142,7 @@ public class TransportController {
             this.itemsDocs.remove(itemsDocInRemovingOne.getItemDoc_num());
         }
 
+
         if (this.driverIdToInTransportID.get(toRemoveDoc.getTransportDriverId()) == toRemoveDoc.getTran_Doc_ID()){
 //            toRemoveDoc.getTransportDriver().setInTransportID(-1);  //  releasing the Driver if he's with this Transport
             this.driverIdToInTransportID.put(toRemoveDoc.getTransportDriverId(), -1);
