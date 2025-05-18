@@ -1,8 +1,9 @@
-package DomainLayer;
+package DomainLayer.EmployeeSubModule;
 
 import DomainLayer.enums.ShiftType;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,11 +17,12 @@ public class Shift {
     private Set<Long> AvailableEmployees;  // e.g., [123456789, 555444333]
     private boolean isAssignedShitManager;
     private boolean isOpen;
-    private String hours;
+    private LocalTime startHour;
+    private LocalTime endHour;
     private LocalDate createDate;
     private LocalDate updateDate;
 
-    public Shift(long id,ShiftType shiftType, LocalDate shiftDate, Map<String, Integer> rolesRequired, Map<String, Set<Long>> assignedEmployees, Set<Long> AvailableEmployees, boolean isAssignedShitManager, boolean isOpen ,String hours, LocalDate updateDate) {
+    public Shift(long id,ShiftType shiftType, LocalDate shiftDate, Map<String, Integer> rolesRequired, Map<String, Set<Long>> assignedEmployees, Set<Long> AvailableEmployees, boolean isAssignedShitManager, boolean isOpen ,LocalTime startHour , LocalTime endHour, LocalDate updateDate) {
         this.id = id;
         this.shiftType = shiftType;
         this.shiftDate = shiftDate;
@@ -29,7 +31,8 @@ public class Shift {
         this.AvailableEmployees = AvailableEmployees;
         this.isAssignedShitManager = isAssignedShitManager;
         this.isOpen = isOpen;
-        this.hours = hours;
+        this.startHour = startHour;
+        this.endHour = endHour;
         this.createDate = LocalDate.now();
         this.updateDate = updateDate;
     }
@@ -106,16 +109,20 @@ public class Shift {
         return updateDate;
     }
 
-    public void setUpdateDate(LocalDate updateDate) {
-        this.updateDate = updateDate;
+    public void setUpdateDate(LocalDate updateDate) {this.updateDate = updateDate;}
+
+    public LocalTime getStartHour() {
+        return startHour;
     }
+
+    public void setStartHour(LocalTime startHour) {this.startHour = startHour;}
+
+    public LocalTime getEndHour() {return endHour;}
+
+    public void setEndHour(LocalTime endHour) {this.endHour = endHour;}
 
     public String getHours() {
-        return hours;
-    }
-
-    public void setHours(String hours) {
-        this.hours = hours;
+        return startHour + " - " + endHour;
     }
 }
 

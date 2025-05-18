@@ -1,9 +1,13 @@
 package ServiceLayer;
 
-import DomainLayer.*;
+import DTOs.EmployeeDTO;
+import DTOs.RoleDTO;
+import DomainLayer.EmployeeSubModule.AuthorisationController;
+import DomainLayer.EmployeeSubModule.BankAccount;
+import DomainLayer.EmployeeSubModule.Employee;
+import DomainLayer.EmployeeSubModule.EmployeeController;
 import ServiceLayer.exception.AuthorizationException;
 import ServiceLayer.exception.EmployeeNotFoundException;
-import ServiceLayer.exception.ValidationException;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -75,7 +79,7 @@ class EmployeeServiceTest {
         assertEquals("Employee created successfully", result);
 
         // Verify the employee was created
-        EmployeeSL employee = employeeService.getEmployeeById(TEST_EMPLOYEE_ID);
+        EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(TEST_EMPLOYEE_ID);
         assertNotNull(employee);
         assertEquals(firstName, employee.getFirstName());
         assertEquals(lastName, employee.getLastName());
@@ -102,7 +106,7 @@ class EmployeeServiceTest {
         assertEquals("Employee updated successfully", result);
 
         // Verify the employee was updated
-        EmployeeSL employee = employeeService.getEmployeeById(TEST_EMPLOYEE_ID);
+        EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(TEST_EMPLOYEE_ID);
         assertNotNull(employee);
         assertEquals(newFirstName, employee.getFirstName());
         assertEquals(newLastName, employee.getLastName());
@@ -121,7 +125,7 @@ class EmployeeServiceTest {
         assertEquals("Employee deactivated successfully", result);
 
         // Verify the employee was deactivated
-        EmployeeSL employee = employeeService.getEmployeeById(TEST_EMPLOYEE_ID);
+        EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(TEST_EMPLOYEE_ID);
         assertNotNull(employee);
         assertFalse(employee.isActive());
     }
@@ -160,9 +164,9 @@ class EmployeeServiceTest {
         assertTrue(result.contains("added successfully"));
 
         // Verify the role was added
-        EmployeeSL employee = employeeService.getEmployeeById(TEST_EMPLOYEE_ID);
+        EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(TEST_EMPLOYEE_ID);
         assertNotNull(employee);
-        assertTrue(employee.hasRole("TEST_ROLE"));
+        assertTrue(employee.getRoles().contains("TEST_ROLE"));
     }
 
     @Test
@@ -178,9 +182,9 @@ class EmployeeServiceTest {
         assertTrue(result.contains("removed successfully"));
 
         // Verify the role was removed
-        EmployeeSL employee = employeeService.getEmployeeById(TEST_EMPLOYEE_ID);
+        EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(TEST_EMPLOYEE_ID);
         assertNotNull(employee);
-        assertFalse(employee.hasRole("TEST_ROLE"));
+        assertFalse(employee.getRoles().contains("TEST_ROLE"));
     }
 
     @Test
@@ -194,9 +198,9 @@ class EmployeeServiceTest {
         assertTrue(result.contains("added successfully"));
 
         // Verify the permission was added
-        Map<String, HashSet<String>> roleDetails = employeeService.getRoleDetails("TEST_ROLE");
-        assertNotNull(roleDetails);
-        assertTrue(roleDetails.get("TEST_ROLE").contains("CREATE_EMPLOYEE"));
+        RoleDTO roleDTO = employeeService.getRoleDetailsAsDTO("TEST_ROLE");
+        assertNotNull(roleDTO);
+        assertTrue(roleDTO.getPermissions().contains("CREATE_EMPLOYEE"));
     }
 
     @Test
@@ -211,9 +215,9 @@ class EmployeeServiceTest {
         assertTrue(result.contains("removed successfully"));
 
         // Verify the permission was removed
-        Map<String, HashSet<String>> roleDetails = employeeService.getRoleDetails("TEST_ROLE");
-        assertNotNull(roleDetails);
-        assertFalse(roleDetails.get("TEST_ROLE").contains("CREATE_EMPLOYEE"));
+        RoleDTO roleDTO = employeeService.getRoleDetailsAsDTO("TEST_ROLE");
+        assertNotNull(roleDTO);
+        assertFalse(roleDTO.getPermissions().contains("CREATE_EMPLOYEE"));
     }
 
     @Test
@@ -222,10 +226,10 @@ class EmployeeServiceTest {
         createTestEmployee();
 
         // Test getting the employee by ID
-        EmployeeSL employee = employeeService.getEmployeeById(TEST_EMPLOYEE_ID);
+        EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(TEST_EMPLOYEE_ID);
 
         assertNotNull(employee);
-        assertEquals(TEST_EMPLOYEE_ID, employee.getId());
+        assertEquals(TEST_EMPLOYEE_ID, employee.getIsraeliId());
         assertEquals("David", employee.getFirstName());
         assertEquals("Ben-Gurion", employee.getLastName());
     }
@@ -234,7 +238,7 @@ class EmployeeServiceTest {
     void getEmployeeByIdNotFound() {
         // Test getting a non-existent employee
         assertThrows(EmployeeNotFoundException.class, () -> {
-            employeeService.getEmployeeById(999999999L);
+            employeeService.getEmployeeByIdAsDTO(999999999L);
         });
     }
 

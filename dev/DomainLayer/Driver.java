@@ -1,7 +1,6 @@
 package DomainLayer;
 
 //import DomainLayer.EmpSubModule.Employee;
-import DomainLayer.Employee;
 import DomainLayer.enums.enumDriLicense;
 import DomainLayer.enums.enumPermissionRank;
 

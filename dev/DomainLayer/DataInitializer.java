@@ -1,21 +1,21 @@
 package DomainLayer;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import DomainLayer.EmployeeSubModule.*;
 import DomainLayer.enums.ShiftType;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.sun.jdi.LocalVariable;
 
 
 public class DataInitializer {
@@ -259,6 +259,8 @@ public class DataInitializer {
                 boolean isAssignedShiftManager = shiftNode.get("isAssignedShiftManager").asBoolean();
                 boolean isOpen = shiftNode.get("isOpen").asBoolean();
                 String hours = shiftNode.get("hours").asText();
+                LocalTime startHours = LocalTime.of(13, 0);
+                LocalTime endHours = LocalTime.of(20, 0);
                 LocalDate updateDate = LocalDate.parse(shiftNode.get("updateDate").asText());
 
                 // Parse roles required
@@ -307,7 +309,7 @@ public class DataInitializer {
 
                 Shift shift = new Shift(
                     id, shiftType, shiftDate, rolesRequired, assignedEmployees,
-                    availableEmployees, isAssignedShiftManager, isOpen, hours,updateDate
+                    availableEmployees, isAssignedShiftManager, isOpen, startHours, endHours,updateDate
                 );
 
                 shifts.add(shift);

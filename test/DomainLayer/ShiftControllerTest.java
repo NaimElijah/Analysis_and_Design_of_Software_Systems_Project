@@ -1,5 +1,6 @@
 package DomainLayer;
 
+import DomainLayer.EmployeeSubModule.*;
 import DomainLayer.enums.ShiftType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,9 +71,11 @@ class ShiftControllerTest {
 
         authorisationController = new AuthorisationController(Strings, permissions);
         employeeController = new EmployeeController(employees, authorisationController);
-        assignmentController = new AssignmentController(employeeController);
-        availabilityController = new AvailabilityController(employeeController);
         shiftController = new ShiftController(shifts, authorisationController, employeeController);
+        assignmentController = new AssignmentController(employeeController, shiftController);
+        availabilityController = new AvailabilityController(employeeController, shiftController);
+
+
     }
 
     @Test

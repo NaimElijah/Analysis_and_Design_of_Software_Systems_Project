@@ -1,4 +1,4 @@
-package DomainLayer;
+package DomainLayer.EmployeeSubModule;
 
 public class BankAccount {
     private long employeeId;
@@ -44,5 +44,15 @@ public class BankAccount {
 
     public void setBankAccountNumber(long bankAccountNumber) {
         this.bankAccountNumber = bankAccountNumber;
+    }
+
+    @Override
+    public String toString() {
+        return "BankAccount{" +
+                "employeeId=" + employeeId +
+                ", bankNumber=" + bankNumber +
+                ", bankBranchNumber=" + bankBranchNumber +
+                ", bankAccountNumber=" + bankAccountNumber +
+                '}';
     }
 }

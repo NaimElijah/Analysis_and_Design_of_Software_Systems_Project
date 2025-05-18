@@ -1,4 +1,4 @@
-package DomainLayer;
+package DomainLayer.EmployeeSubModule;
 
 import DomainLayer.exception.InvalidInputException;
 
@@ -149,5 +149,8 @@ public class Employee {
             throw new InvalidInputException("Update date cannot be null");
         }
         this.updateDate = updateDate;
+    }
+    public String getFullName() {
+        return firstName + " " + lastName;
     }
 }

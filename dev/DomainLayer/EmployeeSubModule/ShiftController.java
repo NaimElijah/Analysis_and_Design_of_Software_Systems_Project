@@ -1,21 +1,24 @@
-package DomainLayer;
+package DomainLayer.EmployeeSubModule;
 
+import DTOs.ShiftDTO;
 import DomainLayer.enums.ShiftType;
 import DomainLayer.exception.InvalidInputException;
 import DomainLayer.exception.UnauthorizedPermissionException;
 import Util.Week;
+import Util.config;
 
 
 import java.time.DayOfWeek;
 import java.util.*;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ShiftController {
     private final Set<Shift> shifts;
     private final Map<Week, Set<Shift>> weeklyShifts = new TreeMap<>();
-    private final AuthorisationController authorizationController;
+    //private final AuthorisationController authorizationController;
     private final EmployeeController empCon;
     private long shiftIdCounter = 1;
 
@@ -24,9 +27,93 @@ public class ShiftController {
 
     public ShiftController(Set<Shift> shifts, AuthorisationController authorizationController, EmployeeController employeeController) {
         this.shifts = shifts;
-        this.authorizationController = authorizationController;
+        //this.authorizationController = authorizationController;
         this.empCon = employeeController;
         addShiftsToWeeklyShifts(shifts);
+    }
+
+    /**
+     * Serialize a single shift to a string format.
+     * Shift -> ShiftDTO -> String
+     * @param shift - the shift to serialize
+     * @return the serialized string representation of the shift
+     */
+    public String serializeShift(Shift shift) {
+        if (shift == null) {
+            throw new IllegalArgumentException("Shift cannot be null");
+        }
+        ShiftDTO dto = new ShiftDTO(shift.getId(), shift.getShiftType(), shift.getShiftDate(), shift.getRolesRequired(), shift.getAssignedEmployees(), shift.getAvailableEmployees(), shift.isAssignedShiftManager(), shift.isOpen(), shift.getStartHour(), shift.getEndHour(), shift.getCreateDate(), shift.getUpdateDate());
+        return dto.serialize();
+    }
+
+    /**
+     * Serialize a set of shifts to a string format.
+     * Set<Shift> -> Set<ShiftDTO> -> String
+     * Each shift is serialized to a new line.
+     * @param shifts - the set of shifts to serialize
+     * @return the serialized string representation of the shifts
+     */
+    public String serializeSetShifts(Set<Shift> shifts) {
+        StringBuilder sb = new StringBuilder();
+        for (Shift shift : shifts) {
+            String serializedShift = serializeShift(shift);
+            sb.append(serializedShift).append("\n");
+        }
+        return sb.toString();
+    }
+    /**
+     * Serialize a set of shifts to a string format.
+     * List<Shift> -> List<ShiftDTO> -> String
+     * Each shift is serialized to a new line.
+     * @param shifts - the set of shifts to serialize
+     * @return the serialized string representation of the shifts
+     */
+    public String serializeArrayShifts(List<Shift> shifts) {
+        StringBuilder sb = new StringBuilder();
+        for (Shift shift : shifts) {
+            String serializedShift = serializeShift(shift);
+            sb.append(serializedShift).append("\n");
+        }
+        return sb.toString();
+    }
+    public String deserializeShift(String serializedShift) {
+        if (serializedShift == null || serializedShift.isEmpty()) {
+            throw new IllegalArgumentException("Serialized shift cannot be null or empty");
+        }
+        ShiftDTO dto = ShiftDTO.deserialize(serializedShift);
+        return dto.toString();
+    }
+
+    /**
+     * Deserialize a string representation of shifts to a list of Shift objects.
+     * Each line in the string represents a serialized ShiftDTO.
+     * String -> ShiftDTO -> Shift
+     * @param serializedShifts - the serialized shifts as String
+     * @return a list of Shift objects
+     */
+    public List<Shift> deserializeArrayShifts(String serializedShifts) {
+        if (serializedShifts == null || serializedShifts.isEmpty()) {
+            throw new IllegalArgumentException("Serialized shifts cannot be null or empty");
+        }
+        String[] serializedShiftArray = serializedShifts.split("\n");
+        List<Shift> shiftsList = new ArrayList<>();
+        for (String serializedShift : serializedShiftArray) {
+            ShiftDTO dto = ShiftDTO.deserialize(serializedShift);
+            Shift shift = new Shift(dto.getId(), dto.getShiftType(), dto.getShiftDate(), dto.getRolesRequired(), dto.getAssignedEmployees(), dto.getAvailableEmployees(), dto.isAssignedShiftManager(), dto.isOpen(),dto.getStartHour(),dto.getEndHour(),dto.getUpdateDate());
+            shiftsList.add(shift);
+        }
+        return shiftsList;
+    }
+
+    protected Shift getShiftByIdAsShift(long doneBy, long shiftId) {
+        String PERMISSION_REQUIRED = "GET_SHIFT";
+        if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
+            throw new UnauthorizedPermissionException("User does not have permission to get shift");
+        }
+        if (shiftId <= 0) {
+            throw new IllegalArgumentException("Shift ID must be a positive number");
+        }
+        return shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
     }
 
     /**
@@ -38,11 +125,12 @@ public class ShiftController {
      * @param assignedEmployees      employees assigned to the shift
      * @param isAssignedShiftManager true if the shift has a shift manager assigned, false otherwise
      * @param isOpen                 true if the place is open
-     * @param hours                  the hours of the shift
+     * @param startHour              the hours of the shift
+     * @param endHour                the end hour of the shift
      * @param updateDate             the date of the last update
      * @return true if the shift was created successfully, false otherwise
      */
-    public boolean createShift(long doneBy,ShiftType shiftType, LocalDate date, Map<String, Integer> rolesRequired, Map<String, Set<Long>> assignedEmployees, Set<Long> availableEmployees, boolean isAssignedShiftManager, boolean isOpen,String hours ,LocalDate updateDate) {
+    public boolean createShift(long doneBy,ShiftType shiftType, LocalDate date, Map<String, Integer> rolesRequired, Map<String, Set<Long>> assignedEmployees, Set<Long> availableEmployees, boolean isAssignedShiftManager, boolean isOpen,LocalTime startHour , LocalTime endHour ,LocalDate updateDate) {
         String PERMISSION_REQUIRED = "CREATE_SHIFT";
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to create shift");
@@ -59,7 +147,7 @@ public class ShiftController {
             throw new InvalidInputException("At least one shift manager is required for every shift");
         }
 
-        Shift newShift = new Shift(shiftIdCounter, shiftType, date, rolesRequired, assignedEmployees, availableEmployees, isAssignedShiftManager, isOpen, hours, updateDate);
+        Shift newShift = new Shift(shiftIdCounter, shiftType, date, rolesRequired, assignedEmployees, availableEmployees, isAssignedShiftManager, isOpen, startHour,endHour, updateDate);
         shiftIdCounter++;
         boolean addedToWeekly = addShiftToWeekly(newShift);
         boolean added = shifts.add(newShift);
@@ -132,8 +220,9 @@ public class ShiftController {
         boolean isOpen = (type == ShiftType.MORNING && date.getDayOfWeek() != DayOfWeek.SATURDAY)
                 || (type == ShiftType.EVENING && date.getDayOfWeek() != DayOfWeek.FRIDAY && date.getDayOfWeek() != DayOfWeek.SATURDAY);
 
-        String hours = type == ShiftType.MORNING ? "9:00 AM - 4:00 PM" : "4:00 PM - 8:00 PM";
-        Shift shift = new Shift(shiftIdCounter++, type, date, rolesRequired, assignedEmployees, availableEmployees, false, isOpen,hours, LocalDate.now());
+        LocalTime startHour = type == ShiftType.MORNING ? config.START_HOUR_MORNING : config.START_HOUR_EVENING;
+        LocalTime endHour = type == ShiftType.MORNING ? config.END_HOUR_MORNING : config.END_HOUR_EVENING;
+        Shift shift = new Shift(shiftIdCounter++, type, date, rolesRequired, assignedEmployees, availableEmployees, false, isOpen, startHour,endHour, LocalDate.now());
 
         boolean added = shifts.add(shift);
         // Even if the shift wasn't added to the weekly shifts map, it's still in the shifts set
@@ -190,7 +279,7 @@ public class ShiftController {
      * @param updateDate             the date of the last update
      * @return true if the shift was updated successfully, false otherwise
      */
-    public boolean updateShift(long doneBy, long shiftId,ShiftType shiftType, LocalDate date, boolean isAssignedShiftManager, boolean isOpen,String hours, LocalDate updateDate) {
+    public boolean updateShift(long doneBy, long shiftId,ShiftType shiftType, LocalDate date, boolean isAssignedShiftManager, boolean isOpen,LocalTime startHour , LocalTime endHour, LocalDate updateDate) {
         String PERMISSION_REQUIRED = "UPDATE_SHIFT";
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to update shift");
@@ -224,7 +313,8 @@ public class ShiftController {
         shiftToUpdate.setShiftDate(date);
         shiftToUpdate.setAssignedShiftManager(isAssignedShiftManager);
         shiftToUpdate.setOpen(isOpen);
-        shiftToUpdate.setHours(hours);
+        shiftToUpdate.setStartHour(startHour);
+        shiftToUpdate.setEndHour(endHour);
         shiftToUpdate.setUpdateDate(updateDate);
         return true;
     }
@@ -235,7 +325,7 @@ public class ShiftController {
      * @param shiftId id of the shift to get
      * @return the shift if it exists, null otherwise
      */
-    public Shift getShiftByID(long doneBy, long shiftId) {
+    public String getShiftByID(long doneBy, long shiftId) {
         String PERMISSION_REQUIRED = "GET_SHIFT";
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to get shift");
@@ -243,7 +333,12 @@ public class ShiftController {
         if (shiftId <= 0) {
             throw new IllegalArgumentException("Shift ID must be a positive number");
         }
-        return shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
+        Shift shiftToGet = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
+        if (shiftToGet == null) {
+            throw new RuntimeException("Shift does not exist");
+        }
+        ShiftDTO dto = new ShiftDTO(shiftToGet.getId(), shiftToGet.getShiftType(), shiftToGet.getShiftDate(), shiftToGet.getRolesRequired(), shiftToGet.getAssignedEmployees(), shiftToGet.getAvailableEmployees(), shiftToGet.isAssignedShiftManager(), shiftToGet.isOpen(), shiftToGet.getStartHour(), shiftToGet.getEndHour(), shiftToGet.getCreateDate(), shiftToGet.getUpdateDate());
+        return dto.serialize();
     }
 
     /**
@@ -251,15 +346,16 @@ public class ShiftController {
      * @param doneBy employee who is requesting the shifts
      * @return all shifts
      */
-    public Set<Shift> getAllShifts(long doneBy) {
+    public String getAllShifts(long doneBy) {
         String PERMISSION_REQUIRED = "GET_SHIFT";
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
-            throw new UnauthorizedPermissionException("User does not have permission to get all shifts");
+            throw new UnauthorizedPermissionException("User does not have permission to get all dtos");
         }
         if (shifts.isEmpty()) {
-            throw new RuntimeException("No shifts found");
+            throw new RuntimeException("No Shifts were found");
         }
-        return shifts;
+        // return all dtos as strings DTO serialized
+        return serializeSetShifts(shifts);
     }
 
     /**
@@ -268,7 +364,7 @@ public class ShiftController {
      * @param date date of the shifts
      * @return all shifts for the date
      */
-    public Set<Shift> getAllShiftsByDate(long doneBy, LocalDate date) {
+    public String getAllShiftsByDate(long doneBy, LocalDate date) {
         String PERMISSION_REQUIRED = "GET_SHIFT";
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to get shifts by date");
@@ -276,7 +372,12 @@ public class ShiftController {
         if (date == null) {
             throw new IllegalArgumentException("Date cannot be null");
         }
-        return shifts.stream().filter(shift -> shift.getShiftDate().equals(date)).collect(Collectors.toSet());
+        // return all shifts for the date as strings DTO serialized
+        Set<Shift> shiftsByDate = shifts.stream().filter(shift -> shift.getShiftDate().equals(date)).collect(Collectors.toSet());
+        if (shiftsByDate.isEmpty()) {
+            throw new RuntimeException("No shifts found for the date");
+        }
+        return serializeSetShifts(shiftsByDate);
     }
 
     /**
@@ -285,7 +386,7 @@ public class ShiftController {
      * @param employeeID employee to get shifts for
      * @return all shifts for the employee
      */
-    public Set<Shift> getShiftsByEmployee(long doneBy, long employeeID) {
+    public String getShiftsByEmployee(long doneBy, long employeeID) {
         String PERMISSION_REQUIRED = "GET_SHIFT";
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to get shifts by employee");
@@ -293,7 +394,13 @@ public class ShiftController {
         if (employeeID <= 0) {
             throw new IllegalArgumentException("Employee ID must be a positive number");
         }
-        return shifts.stream().filter(shift -> shift.getAssignedEmployees().values().stream().anyMatch(employees -> employees.contains(employeeID))).collect(Collectors.toSet());
+        // return all shifts for the employee as strings DTO serialized
+        Set<Shift> shiftsByEmployee = shifts.stream().filter(shift -> shift.getAssignedEmployees().values().stream().anyMatch(set -> set.contains(employeeID))).collect(Collectors.toSet());
+        if (shiftsByEmployee.isEmpty()) {
+            throw new RuntimeException("No shifts found for the employee");
+        }
+
+        return serializeSetShifts(shiftsByEmployee);
     }
 
     /**
@@ -303,7 +410,7 @@ public class ShiftController {
      * @param shiftType morning or evening
      * @return the shift if it exists, null otherwise
      */
-    public Shift getshift(long doneBy, LocalDate date,ShiftType shiftType) {
+    public String getshift(long doneBy, LocalDate date,ShiftType shiftType) {
         String PERMISSION_REQUIRED = "GET_SHIFT";
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to get shifts by date and type");
@@ -311,7 +418,11 @@ public class ShiftController {
         if (date == null || shiftType == null) {
             throw new IllegalArgumentException("Date and shift type cannot be null");
         }
-        return shifts.stream().filter(shift -> shift.getShiftDate().equals(date) && shift.getShiftType().equals(shiftType)).findFirst().orElse(null);
+        return shifts.stream()
+                .filter(shift -> shift.getShiftDate().equals(date) && shift.getShiftType().equals(shiftType))
+                .findFirst()
+                .map(this::serializeShift)
+                .orElseThrow(() -> new RuntimeException("Shift does not exist"));
     }
 
     /**
@@ -439,7 +550,7 @@ public class ShiftController {
         return requiredRoles.remove(role) != null;
     }
 
-    public Set<String> getRoles(long doneBy) {
+    public String getRoles(long doneBy) {
         String PERMISSION_REQUIRED = "GET_ROLES";
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to get all roles");
@@ -447,11 +558,14 @@ public class ShiftController {
         if (doneBy <= 0) {
             throw new IllegalArgumentException("Employee ID must be a positive number");
         }
-        return authorizationController.getAllRoles();
+        return shifts.stream()
+                .flatMap(shift -> shift.getRolesRequired().keySet().stream())
+                .distinct()
+                .collect(Collectors.joining(", "));
     }
 
 
-    public List<Shift> getShiftsByWeek(long doneBy, Week week) {
+    public String getShiftsByWeek(long doneBy, Week week) {
         String PERMISSION_REQUIRED = "GET_SHIFT";
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to get shifts by week");
@@ -459,14 +573,17 @@ public class ShiftController {
 
         Set<Shift> shiftsSet = weeklyShifts.get(week);
         if (shiftsSet == null) {
-            return new ArrayList<>(); // No shifts for this week
+            return null; // No shifts for this week
         }
 
         List<Shift> shiftsList = new ArrayList<>(shiftsSet);
-        shiftsList.sort(Comparator
-                .comparing(Shift::getShiftDate)
-                .thenComparing(Shift::getShiftType)); // optional: morning before evening
-        return shiftsList;
+        List<ShiftDTO> dtos = shiftsList.stream()
+                .map(shift -> new ShiftDTO(shift.getId(), shift.getShiftType(), shift.getShiftDate(), shift.getRolesRequired(), shift.getAssignedEmployees(), shift.getAvailableEmployees(), shift.isAssignedShiftManager(), shift.isOpen(), shift.getStartHour(), shift.getEndHour(), shift.getCreateDate(), shift.getUpdateDate()))
+                .collect(Collectors.toList());
+
+        dtos.sort(Comparator.comparing(ShiftDTO::getShiftDate).thenComparing(ShiftDTO::getShiftType)); // optional: morning before evening
+
+        return serializeArrayShifts(shiftsList);
     }
 
 
@@ -489,4 +606,22 @@ public class ShiftController {
         Comparator<Shift> byDate = Comparator.comparing(Shift::getShiftDate);
         return weeklyShifts.computeIfAbsent(week, k -> new TreeSet<>(byDate)).add(shift);
     }
+
+    public Shift getShiftbyDateAndTime(long doneBy, LocalDate date, LocalTime hour) {
+        String PERMISSION_REQUIRED = "GET_SHIFT";
+        if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
+            throw new UnauthorizedPermissionException("User does not have permission to get shifts by date and time");
+        }
+        if (date == null || hour == null) {
+            throw new IllegalArgumentException("Date and hour cannot be null");
+        }
+
+        return shifts.stream()
+                .filter(shift -> shift.getShiftDate().equals(date)
+                        && !hour.isBefore(shift.getStartHour())
+                        && hour.isBefore(shift.getEndHour()))
+                .findFirst()
+                .orElse(null);
+    }
+
 }
