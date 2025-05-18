@@ -4,18 +4,18 @@ import ServiceLayer.*;
 
 import java.util.Scanner;
 
-public class MainTranSysController {
-    private DriController drCont;
-    private SysAdController sysAdCont;
-    private TranManController tranManCont;
+public class MainTranSysCLI {
+    private DriverCLI drCont;
+    private TranSysAdCLI sysAdCont;
+    private TranManCLI tranManCont;
     private StartUpController startUpCont;
     private Scanner scanner;
 
-    public MainTranSysController(TruckService ts, TransportService trs, SiteService sis, TranEmployeeService es, StartUpStateService starUpStService) {
+    public MainTranSysCLI(TruckService ts, TransportService trs, SiteService sis, TranEmployeeService es, StartUpStateService starUpStService) {
         this.scanner = new Scanner(System.in);
-        this.drCont = new DriController(this, trs, es, this.scanner);
-        this.sysAdCont = new SysAdController(this, es, this.scanner);
-        this.tranManCont = new TranManController(this, ts, trs, sis, es, this.scanner);
+        this.drCont = new DriverCLI(this, trs, es, this.scanner);
+        this.sysAdCont = new TranSysAdCLI(this, es, this.scanner);
+        this.tranManCont = new TranManCLI(this, ts, trs, sis, es, this.scanner);
         this.startUpCont = new StartUpController(starUpStService, es);
     }
 

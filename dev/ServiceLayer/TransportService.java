@@ -1,6 +1,6 @@
 package ServiceLayer;
 
-import DomainLayer.TranSubModule.TransportFacade;
+import DomainLayer.TranSubModule.TransportController;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import javax.management.AttributeNotFoundException;
@@ -8,11 +8,10 @@ import javax.management.openmbean.KeyAlreadyExistsException;
 import javax.naming.CommunicationException;
 import java.io.FileNotFoundException;
 import java.nio.file.FileAlreadyExistsException;
-import java.util.ArrayList;
 
 public class TransportService {
-    private TransportFacade tran_f;
-    public TransportService(TransportFacade tf) { this.tran_f = tf; }
+    private TransportController tran_f;
+    public TransportService(TransportController tf) { this.tran_f = tf; }
 
 
     public String createTransport(String transportDTO, int queuedIndexIfWasQueued){

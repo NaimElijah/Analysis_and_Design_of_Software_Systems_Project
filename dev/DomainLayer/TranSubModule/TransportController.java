@@ -3,6 +3,7 @@ package DomainLayer.TranSubModule;
 import DTOs.*;
 import DomainLayer.Driver;
 import DomainLayer.EmpSubModule.EmployeeFacade;
+import DomainLayer.EmployeeController;
 import DomainLayer.SiteSubModule.Address;
 import DomainLayer.SiteSubModule.Site;
 import DomainLayer.SiteSubModule.SiteFacade;
@@ -24,25 +25,29 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class TransportFacade {
+public class TransportController {
     private HashMap<Integer, TransportDoc> transports;
     private int transportIDCounter;
     private HashMap<Integer, ItemsDoc> itemsDocs;  // to know an ItemsDoc's num is unique like required.
     private ArrayList<TransportDoc> queuedTransports;
 
-    private EmployeeFacade employeeFacade;
+//    private EmployeeFacade employeeFacade;   ///  DELETEEEEE: using the new EmployeeController
+    private EmployeeController employeeController;
+    private HashMap<Long, Integer> driverIdToInTransportID;  // TODO: mapping between a Drier to his inTransportID variable
+
     private SiteFacade siteFacade;
     private TruckFacade truckFacade;
 
     private ObjectMapper objectMapper;
 
-    public TransportFacade(EmployeeFacade eF, SiteFacade sF, TruckFacade tF) {
+    public TransportController(EmployeeController eC, SiteFacade sF, TruckFacade tF) {
         this.transportIDCounter = 0;
         this.objectMapper = new ObjectMapper();
         this.transports = new HashMap<Integer, TransportDoc>();
         this.itemsDocs = new HashMap<Integer, ItemsDoc>();
         this.queuedTransports = new ArrayList<TransportDoc>();
-        this.employeeFacade = eF;
+        this.employeeController = eC;
+        this.driverIdToInTransportID = new HashMap<>();
         this.siteFacade = sF;
         this.truckFacade = tF;
     }
@@ -58,7 +63,8 @@ public class TransportFacade {
         ///  NOTE: I already did all of the checks beforehand, so if we get to here, then we can successfully and legitimately create the Transport
 
         TransportDTO transport_DTO = this.objectMapper.readValue(DTO_OfTransport, TransportDTO.class);
-        Driver driver = this.employeeFacade.getDrivers().get(transport_DTO.getTransportDriverID());
+//        Driver driver = this.employeeFacade.getDrivers().get(transport_DTO.getTransportDriverID());
+        long driverId = transport_DTO.getTransportDriverID();  ///  NEW
         Truck truck = this.truckFacade.getTrucksWareHouse().get(transport_DTO.getTransportTruckNum());
 
         /// finding the srcSite
@@ -78,7 +84,7 @@ public class TransportFacade {
             tra_id = this.transportIDCounter;
         }
 
-        TransportDoc newTransportBeingCreated = new TransportDoc(enumTranStatus.BeingAssembled, tra_id, truck, driver, srcSite);
+        TransportDoc newTransportBeingCreated = new TransportDoc(enumTranStatus.BeingAssembled, tra_id, truck, driverId, srcSite);
 
         /// add the ItemsDocs and the Items that should be in them from the itemsDocDTOs:
         for (ItemsDocDTO itemsDocDTO : transport_DTO.getDests_Docs()){
@@ -95,7 +101,8 @@ public class TransportFacade {
         /// finishing touches before adding Transport
         newTransportBeingCreated.setStatus(enumTranStatus.InTransit);
         newTransportBeingCreated.getTransportTruck().setInTransportID(newTransportBeingCreated.getTran_Doc_ID());
-        newTransportBeingCreated.getTransportDriver().setInTransportID(newTransportBeingCreated.getTran_Doc_ID());
+        this.driverIdToInTransportID.put(driverId, newTransportBeingCreated.getTran_Doc_ID());   ///  NEW
+//        newTransportBeingCreated.getTransportDriver().setInTransportID(newTransportBeingCreated.getTran_Doc_ID());
         newTransportBeingCreated.setTruck_Depart_Weight(newTransportBeingCreated.calculateTransportItemsWeight());
         newTransportBeingCreated.setDeparture_dt(LocalDateTime.now());  //  the time is set already in the constructor of the Transport, but just to be accurate :)
 
@@ -135,8 +142,9 @@ public class TransportFacade {
             this.itemsDocs.remove(itemsDocInRemovingOne.getItemDoc_num());
         }
 
-        if (toRemoveDoc.getTransportDriver().getInTransportID() == toRemoveDoc.getTran_Doc_ID()){
-            toRemoveDoc.getTransportDriver().setInTransportID(-1);  //  releasing the Driver if he's with this Transport
+        if (this.driverIdToInTransportID.get(toRemoveDoc.getTransportDriverId()) == toRemoveDoc.getTran_Doc_ID()){
+//            toRemoveDoc.getTransportDriver().setInTransportID(-1);  //  releasing the Driver if he's with this Transport
+            this.driverIdToInTransportID.put(toRemoveDoc.getTransportDriverId(), -1);
         }
         if (toRemoveDoc.getTransportTruck().getInTransportID() == toRemoveDoc.getTran_Doc_ID()){
             toRemoveDoc.getTransportTruck().setInTransportID(-1);  //  releasing the Truck if it's with this Transport

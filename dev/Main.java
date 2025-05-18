@@ -1,9 +1,9 @@
 import DomainLayer.*;
 import DomainLayer.EmpSubModule.EmployeeFacade;
 import DomainLayer.SiteSubModule.SiteFacade;
-import DomainLayer.TranSubModule.TransportFacade;
+import DomainLayer.TranSubModule.TransportController;
 import DomainLayer.TruSubModule.TruckFacade;
-import PresentationLayer.MainTranSysController;
+import PresentationLayer.MainTranSysCLI;
 import PresentationLayer.MainCLI;
 import ServiceLayer.EmployeeService;
 import ServiceLayer.ShiftService;
@@ -17,7 +17,7 @@ public class Main {
       TruckFacade tru_f = new TruckFacade();
       EmployeeFacade eff = new EmployeeFacade();
       SiteFacade sf = new SiteFacade();
-      TransportFacade tran_f = new TransportFacade(eff, sf, tru_f);
+      TransportController tran_f = new TransportController(eff, sf, tru_f);
 
       TransportService tran_s = new TransportService(tran_f);
       TruckService tru_s = new TruckService(tru_f);
@@ -26,7 +26,7 @@ public class Main {
 
       StartUpStateService start = new StartUpStateService(tran_s, tru_s, es, site_s);
 
-      MainTranSysController mtsc = new MainTranSysController(tru_s, tran_s, site_s, es, start);
+      MainTranSysCLI mtsc = new MainTranSysCLI(tru_s, tran_s, site_s, es, start);
 
       mtsc.transportModuleStartup();      ///         <<<-----------------------   starts the whole Transport Module System
 

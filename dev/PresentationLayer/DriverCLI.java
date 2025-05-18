@@ -5,13 +5,13 @@ import ServiceLayer.TransportService;
 
 import java.util.Scanner;
 
-public class DriController {
-    private MainTranSysController main;
+public class DriverCLI {
+    private MainTranSysCLI main;
     private TransportService tran_s;
     private TranEmployeeService emp_s;
     private Scanner scanner;
 
-    public DriController(MainTranSysController m, TransportService trs, TranEmployeeService es, Scanner sc) {
+    public DriverCLI(MainTranSysCLI m, TransportService trs, TranEmployeeService es, Scanner sc) {
         this.main = m;
         this.tran_s = trs;
         this.emp_s = es;

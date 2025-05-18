@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class TranManController {
-    private MainTranSysController main;
+public class TranManCLI {
+    private MainTranSysCLI main;
     private TruckService tru_ser;
     private TransportService tra_ser;
     private SiteService site_ser;
@@ -19,7 +19,7 @@ public class TranManController {
     private Scanner scanner;
     private ObjectMapper objectMapper;
 
-    public TranManController(MainTranSysController m, TruckService ts, TransportService trs, SiteService sis, TranEmployeeService es, Scanner sc) {
+    public TranManCLI(MainTranSysCLI m, TruckService ts, TransportService trs, SiteService sis, TranEmployeeService es, Scanner sc) {
         this.main = m;
         this.tru_ser = ts;
         this.tra_ser = trs;

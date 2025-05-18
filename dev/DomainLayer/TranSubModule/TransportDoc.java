@@ -14,18 +14,19 @@ public class TransportDoc {
     private int tran_Doc_ID;
     private LocalDateTime departure_dt;
     private Truck transportTruck;
-    private Driver transportDriver;
+//    private Driver transportDriver;   //TODO: change to long transportDriverId
+    private long transportDriverId;   //TODO: change to long transportDriverId
     private double truck_Depart_Weight;
     private Site src_site;
     private ArrayList<ItemsDoc> dests_Docs;  ///  <<<--------------  In Order of visit   <<<--------------------
     private ArrayList<enumTranProblem> problems;
 
-    public TransportDoc(enumTranStatus status, int tran_Doc_ID, Truck transportTruck, Driver transportDriver, Site src_site) {
+    public TransportDoc(enumTranStatus status, int tran_Doc_ID, Truck transportTruck, long tranDriverId, Site src_site) {
         this.status = status;
         this.tran_Doc_ID = tran_Doc_ID;
         this.departure_dt = LocalDateTime.now();   // In the code, if it doesn't depart immediately, this always updates right before genuine departure.
         this.transportTruck = transportTruck;
-        this.transportDriver = transportDriver;
+        this.transportDriverId = tranDriverId;
         this.truck_Depart_Weight = -1;   //  Initialization, calculated before being sent
         this.src_site = src_site;
         this.dests_Docs = new ArrayList<ItemsDoc>();
@@ -51,17 +52,22 @@ public class TransportDoc {
         }
     }
 
-    public Driver getTransportDriver() {return transportDriver;}
+    public long getTransportDriverId() {return transportDriverId;}
+    public void setTransportDriverId(long transportDriverId) {this.transportDriverId = transportDriverId;}
+    //TODO: changing to this here so move logics to the Transport Controller.
 
-    public void setTransportDriver(Driver transportDriver) {
-        if (this.transportDriver.getInTransportID() == this.tran_Doc_ID) {  // if another driver belongs to the transport already
-            this.transportDriver.setInTransportID(-1);  // unassign old one
-        }
-        this.transportDriver = transportDriver;
-        if (this.status == enumTranStatus.InTransit || this.status == enumTranStatus.BeingAssembled || this.status == enumTranStatus.BeingDelayed) {
-            this.transportDriver.setInTransportID(this.tran_Doc_ID);   ///  only if the current Transport is active
-        }
-    }
+//    public Driver getTransportDriver() {return transportDriver;}
+
+//    public void setTransportDriver(Driver transportDriver) {  //TODO: new changes check this and do this in the facade
+//        if (this.transportDriver.getInTransportID() == this.tran_Doc_ID) {  // if another driver belongs to the transport already
+//            this.transportDriver.setInTransportID(-1);  // unassign old one
+//        }
+//        this.transportDriver = transportDriver;
+//        if (this.status == enumTranStatus.InTransit || this.status == enumTranStatus.BeingAssembled || this.status == enumTranStatus.BeingDelayed) {
+//            //TODO: new changes check this and do this in the facade
+//            this.transportDriver.setInTransportID(this.tran_Doc_ID);   ///  only if the current Transport is active
+//        }
+//    }
 
 
     public double getTruck_Depart_Weight() {return truck_Depart_Weight;}
@@ -192,7 +198,7 @@ public class TransportDoc {
     @Override
     public String toString() {
         String res = "-- Transport Document ID #: " + tran_Doc_ID + ", Transport Status: >>> " + status + " <<<, Departure Time: " + this.departure_dt.toString() + ", \n";
-        res += "Truck: " + this.transportTruck.toString() + ".\nDriver: " + this.transportDriver.toString() + ",\nTruck departure weight: " + this.truck_Depart_Weight;
+        res += "Truck: " + this.transportTruck.toString() + ".\nDriverID: " + this.transportDriverId + ",\nTruck departure weight: " + this.truck_Depart_Weight;
         res += ", Source Site: " + this.src_site.toString() + ", Transport Problems: {";
 
         for (enumTranProblem problem : problems) { res += problem.toString() + ", "; }

@@ -4,12 +4,12 @@ import ServiceLayer.TranEmployeeService;
 
 import java.util.Scanner;
 
-public class SysAdController {
-    private MainTranSysController main;
+public class TranSysAdCLI {
+    private MainTranSysCLI main;
     private TranEmployeeService emp_s;
     private Scanner scanner;
 
-    public SysAdController(MainTranSysController m, TranEmployeeService es, Scanner sc) {
+    public TranSysAdCLI(MainTranSysCLI m, TranEmployeeService es, Scanner sc) {
         this.main = m;
         this.emp_s = es;
         this.scanner = sc;

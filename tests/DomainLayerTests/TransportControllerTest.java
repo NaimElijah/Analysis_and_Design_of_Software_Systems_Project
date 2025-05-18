@@ -2,7 +2,6 @@ package DomainLayerTests;
 
 import DTOs.*;
 import DomainLayer.Driver;
-import DomainLayer.EmpSubModule.Employee;
 import DomainLayer.EmpSubModule.EmployeeFacade;
 import DomainLayer.SiteSubModule.Address;
 import DomainLayer.SiteSubModule.ShippingArea;
@@ -10,7 +9,7 @@ import DomainLayer.SiteSubModule.Site;
 import DomainLayer.SiteSubModule.SiteFacade;
 import DomainLayer.TranSubModule.Item;
 import DomainLayer.TranSubModule.TransportDoc;
-import DomainLayer.TranSubModule.TransportFacade;
+import DomainLayer.TranSubModule.TransportController;
 import DomainLayer.TruSubModule.Truck;
 import DomainLayer.TruSubModule.TruckFacade;
 import DomainLayer.enums.enumDriLicense;
@@ -30,8 +29,8 @@ import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class TransportFacadeTest {
-    private TransportFacade transportFacade;
+class TransportControllerTest {
+    private TransportController transportController;
     private EmployeeFacade employeeFacade;
     private SiteFacade siteFacade;
     private TruckFacade truckFacade;
@@ -59,7 +58,7 @@ class TransportFacadeTest {
         employeeFacade = new EmployeeFacade();
         siteFacade = new SiteFacade();
         truckFacade = new TruckFacade();
-        transportFacade = new TransportFacade(employeeFacade, siteFacade, truckFacade);
+        transportController = new TransportController(employeeFacade, siteFacade, truckFacade);
         objectMapper = new ObjectMapper();
 
         /// shipping area:
@@ -155,7 +154,7 @@ class TransportFacadeTest {
         itemsDocDTOs.add(itemsDocDTO2);
 
         TransportDTO transportDTO = new TransportDTO(-99, 1010, 555, new SiteDTO(1,"Ramla"), itemsDocDTOs);
-        transportFacade.createTransport(objectMapper.writeValueAsString(transportDTO), -100);
+        transportController.createTransport(objectMapper.writeValueAsString(transportDTO), -100);
 
     }
 
@@ -166,189 +165,189 @@ class TransportFacadeTest {
 
     @Test
     void testIsTruckActive_ActiveTruck() {
-        assertTrue(transportFacade.isTruckActive(truckFacade.getTrucksWareHouse().get(1010)));
+        assertTrue(transportController.isTruckActive(truckFacade.getTrucksWareHouse().get(1010)));
     }
 
     @Test
     void testIsTruckActive_InactiveTruck() {
-        assertFalse(transportFacade.isTruckActive(truckFacade.getTrucksWareHouse().get(3030)));
+        assertFalse(transportController.isTruckActive(truckFacade.getTrucksWareHouse().get(3030)));
     }
 
     @Test
     void testGetAQueuedTransportAsDTOJson_Success() throws Exception {
         // Assuming a queued transport exists
-        transportFacade.getQueuedTransports().add(new TransportDoc(enumTranStatus.Queued, 99, truck2, driver1, site3));
+        transportController.getQueuedTransports().add(new TransportDoc(enumTranStatus.Queued, 99, truck2, driver1, site3));
 
-        String result = transportFacade.getAQueuedTransportAsDTOJson(1);
+        String result = transportController.getAQueuedTransportAsDTOJson(1);
         assertNotNull(result);
     }
 
     @Test
     void testGetAQueuedTransportAsDTOJson_IndexOutOfBounds() {
-        transportFacade.getQueuedTransports().add(new TransportDoc(enumTranStatus.Queued, 99, truck2, driver1, site3));
+        transportController.getQueuedTransports().add(new TransportDoc(enumTranStatus.Queued, 99, truck2, driver1, site3));
 
-        assertThrows(IndexOutOfBoundsException.class, () -> { transportFacade.getAQueuedTransportAsDTOJson(2); });
+        assertThrows(IndexOutOfBoundsException.class, () -> { transportController.getAQueuedTransportAsDTOJson(2); });
     }
 
     @Test
     void testAddTransportProblem_Success() throws Exception {
-        transportFacade.addTransportProblem(1, 1); // Add a Puncture problem
+        transportController.addTransportProblem(1, 1); // Add a Puncture problem
 
-        assertTrue(transportFacade.getTransports().get(1).getProblems().contains(enumTranProblem.Puncture));
+        assertTrue(transportController.getTransports().get(1).getProblems().contains(enumTranProblem.Puncture));
     }
 
     @Test
     void testAddTransportProblem_AlreadyExists() throws FileAlreadyExistsException, FileNotFoundException {
-        transportFacade.addTransportProblem(1, 1); // Add a Puncture problem
+        transportController.addTransportProblem(1, 1); // Add a Puncture problem
 
         // Try adding the same problem again
-        assertThrows(FileAlreadyExistsException.class, () -> { transportFacade.addTransportProblem(1, 1); });
+        assertThrows(FileAlreadyExistsException.class, () -> { transportController.addTransportProblem(1, 1); });
     }
 
     @Test
     void testRemoveTransportProblem_Success() throws Exception {
-        transportFacade.addTransportProblem(1, 1); // Add a Puncture problem
-        transportFacade.removeTransportProblem(1, 1); // Remove the Puncture problem
+        transportController.addTransportProblem(1, 1); // Add a Puncture problem
+        transportController.removeTransportProblem(1, 1); // Remove the Puncture problem
 
-        assertFalse(transportFacade.getTransports().get(1).getProblems().contains(enumTranProblem.Puncture));
+        assertFalse(transportController.getTransports().get(1).getProblems().contains(enumTranProblem.Puncture));
     }
 
     @Test
     void testRemoveTransportProblem_NotExist() {
         // Remove a non-existent problem
-        assertThrows(FileAlreadyExistsException.class, () -> { transportFacade.removeTransportProblem(1, 1); });
+        assertThrows(FileAlreadyExistsException.class, () -> { transportController.removeTransportProblem(1, 1); });
     }
 
     @Test
     void testAddDestSiteToTransport_Success() throws Exception {
-        transportFacade.addDestSiteToTransport(1, 3, 2, "Ashkelon", "New Contact", 536543210);
-        assertEquals(3, transportFacade.getTransports().get(1).getDests_Docs().size());
+        transportController.addDestSiteToTransport(1, 3, 2, "Ashkelon", "New Contact", 536543210);
+        assertEquals(3, transportController.getTransports().get(1).getDests_Docs().size());
     }
 
     @Test
     void testAddDestSiteToTransport_AlreadyExists() {
         assertThrows(CommunicationException.class, () -> {
-            transportFacade.addDestSiteToTransport(1, 4, 2, "Dimona", "Contact", 556543210); // Site already exists
+            transportController.addDestSiteToTransport(1, 4, 2, "Dimona", "Contact", 556543210); // Site already exists
         });
     }
 
     @Test
     void testRemoveDestSiteFromTransport_Success() throws Exception {
-        transportFacade.removeDestSiteFromTransport(1, 2); // Remove destination site
-        assertEquals(1, transportFacade.getTransports().get(1).getDests_Docs().size());
+        transportController.removeDestSiteFromTransport(1, 2); // Remove destination site
+        assertEquals(1, transportController.getTransports().get(1).getDests_Docs().size());
     }
 
     @Test
     void testRemoveDestSiteFromTransport_NotExist() {
         // Removing a non-existent destination site
-        assertThrows(CommunicationException.class, () -> { transportFacade.removeDestSiteFromTransport(1, 99); });
+        assertThrows(CommunicationException.class, () -> { transportController.removeDestSiteFromTransport(1, 99); });
     }
 
     @Test
     void testSetSiteArrivalIndexInTransport_Success() throws Exception {
-        transportFacade.addDestSiteToTransport(1, 4, 2, "Ashkelon", "Alice Green", 536719584);
+        transportController.addDestSiteToTransport(1, 4, 2, "Ashkelon", "Alice Green", 536719584);
 
         // Now change the index of the added site to be first in arrival order
-        transportFacade.setSiteArrivalIndexInTransport(1, 2, "Ashkelon", 1);
+        transportController.setSiteArrivalIndexInTransport(1, 2, "Ashkelon", 1);
 
-        assertEquals("Ashkelon", transportFacade.getTransports().get(1).getDests_Docs().get(0).getDest_site().getAddress().getAddress());
+        assertEquals("Ashkelon", transportController.getTransports().get(1).getDests_Docs().get(0).getDest_site().getAddress().getAddress());
     }
 
 
 
     @Test
     void testSetSiteArrivalIndexInTransport_InvalidIndex() throws FileAlreadyExistsException, CommunicationException, FileNotFoundException, ClassNotFoundException {
-        transportFacade.addDestSiteToTransport(1, 4, 2, "Ashkelon", "Alice Green", 536719584);
+        transportController.addDestSiteToTransport(1, 4, 2, "Ashkelon", "Alice Green", 536719584);
 
         assertThrows(AbstractMethodError.class, () -> {
-            transportFacade.setSiteArrivalIndexInTransport(1, 2, "Ashkelon", 99); // Invalid index
+            transportController.setSiteArrivalIndexInTransport(1, 2, "Ashkelon", 99); // Invalid index
         });
     }
 
     @Test
     void testChangeAnItemsDocNum_Success() throws Exception {
-        transportFacade.changeAnItemsDocNum(1, 3);
-        assertTrue(transportFacade.getItemsDocs().containsKey(3));
-        assertFalse(transportFacade.getItemsDocs().containsKey(1));
+        transportController.changeAnItemsDocNum(1, 3);
+        assertTrue(transportController.getItemsDocs().containsKey(3));
+        assertFalse(transportController.getItemsDocs().containsKey(1));
     }
 
     @Test
     void testChangeAnItemsDocNum_AlreadyExists() {
-        assertThrows(KeyAlreadyExistsException.class, () -> { transportFacade.changeAnItemsDocNum(1, 2); });
+        assertThrows(KeyAlreadyExistsException.class, () -> { transportController.changeAnItemsDocNum(1, 2); });
     }
 
 
     @Test
     void testCheckValidItemsDocID() {
-        assertTrue(transportFacade.checkValidItemsDocID(99)); // Checking non-existent ItemsDoc
-        assertFalse(transportFacade.checkValidItemsDocID(1)); // Checking existing ItemsDoc
+        assertTrue(transportController.checkValidItemsDocID(99)); // Checking non-existent ItemsDoc
+        assertFalse(transportController.checkValidItemsDocID(1)); // Checking existing ItemsDoc
     }
 
     @Test
     void testCheckIfDriverDrivesThisItemsDoc_Success() throws Exception {
-        transportFacade.checkIfDriverDrivesThisItemsDoc(555, 1); // Driver drives this ItemsDoc
+        transportController.checkIfDriverDrivesThisItemsDoc(555, 1); // Driver drives this ItemsDoc
     }
 
     @Test
     void testCheckIfDriverDrivesThisItemsDoc_Failure() {
         assertThrows(IllegalAccessException.class, () -> {
-            transportFacade.checkIfDriverDrivesThisItemsDoc(444, 1); // Driver does not drive this ItemsDoc
+            transportController.checkIfDriverDrivesThisItemsDoc(444, 1); // Driver does not drive this ItemsDoc
         });
     }
 
     @Test
     void testAddItem_Success() throws Exception {
-        transportFacade.addItem(1, "Item-1", 5.0, 10, true);
-        assertTrue(transportFacade.getItemsDocs().get(1).getGoodItems().containsKey(new Item("Item-1", 5.0, true)));
+        transportController.addItem(1, "Item-1", 5.0, 10, true);
+        assertTrue(transportController.getItemsDocs().get(1).getGoodItems().containsKey(new Item("Item-1", 5.0, true)));
     }
 
     @Test
     void testRemoveItem_Success() throws Exception {
-        transportFacade.addItem(1, "Item-1", 5.0, 10, true);
-        transportFacade.removeItem(1, "Item-1", 5.0, 5, true);
-        assertEquals(5, transportFacade.getItemsDocs().get(1).getGoodItems().get(new Item("Item-1", 5.0, true)));
+        transportController.addItem(1, "Item-1", 5.0, 10, true);
+        transportController.removeItem(1, "Item-1", 5.0, 5, true);
+        assertEquals(5, transportController.getItemsDocs().get(1).getGoodItems().get(new Item("Item-1", 5.0, true)));
     }
 
     @Test
     void testRemoveItem_NotFound() {
         assertThrows(ClassNotFoundException.class, () -> {
-            transportFacade.removeItem(1, "Item-NotFound", 5.0, 10, true); // Item not found
+            transportController.removeItem(1, "Item-NotFound", 5.0, 10, true); // Item not found
         });
     }
 
     @Test
     void testSetItemCond_Success() throws Exception {
-        transportFacade.addItem(1, "Item-1", 5.0, 10, true); // Add item with initial quantity 10
-        transportFacade.setItemCond(1, "Item-1", 5.0, 10, false); // Set item condition to false
+        transportController.addItem(1, "Item-1", 5.0, 10, true); // Add item with initial quantity 10
+        transportController.setItemCond(1, "Item-1", 5.0, 10, false); // Set item condition to false
 
         // Check if the quantity is zero or the condition is set as expected
-        assertEquals(null, transportFacade.getItemsDocs().get(1).getGoodItems().get(new Item("Item-1", 5.0, true)));
-        assertEquals(10, transportFacade.getItemsDocs().get(1).getBadItems().get(new Item("Item-1", 5.0, false)));
+        assertEquals(null, transportController.getItemsDocs().get(1).getGoodItems().get(new Item("Item-1", 5.0, true)));
+        assertEquals(10, transportController.getItemsDocs().get(1).getBadItems().get(new Item("Item-1", 5.0, false)));
     }
 
 
     @Test
     void testSetItemCond_NotFound() {
         assertThrows(ClassNotFoundException.class, () -> {
-            transportFacade.setItemCond(1, "Item-NotFound", 5.0, 10, false); // Item not found
+            transportController.setItemCond(1, "Item-NotFound", 5.0, 10, false); // Item not found
         });
     }
 
     @Test
     void testShowTransportsOfDriver() throws Exception {
-        String result = transportFacade.showTransportsOfDriver(555);
+        String result = transportController.showTransportsOfDriver(555);
         assertNotNull(result);
     }
 
     @Test
     void testShowAllQueuedTransports() throws Exception {
-        String result = transportFacade.showAllQueuedTransports();
+        String result = transportController.showAllQueuedTransports();
         assertNotNull(result);
     }
 
     @Test
     void testShowAllTransports() throws Exception {
-        String result = transportFacade.showAllTransports();
+        String result = transportController.showAllTransports();
         assertNotNull(result);
     }
 
