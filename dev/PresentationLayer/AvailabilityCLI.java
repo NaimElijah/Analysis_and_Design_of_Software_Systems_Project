@@ -53,7 +53,10 @@ public class AvailabilityCLI {
             }
 
             List<ShiftSL> shiftsList = new ArrayList<>(weekShifts);
-            shiftsList.sort(Comparator.comparing(ShiftSL::getShiftDate));
+            Comparator<ShiftSL> byDateThenType = Comparator
+                    .comparing(ShiftSL::getShiftDate)
+                    .thenComparing(ShiftSL::getShiftType);
+            shiftsList.sort(byDateThenType);
 
             CliUtil.printSectionHeader("Employee Weekly Availability", false, "SYSTEM");
 
