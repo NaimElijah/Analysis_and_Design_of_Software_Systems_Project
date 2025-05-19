@@ -366,6 +366,9 @@ public class EmployeeController {
         return authorisationController;
     }
 
+    // ===========================
+    // Functions for integration with Transport module
+    // ===========================
     public boolean hasPermission(long israeliId, String permission) {
         Employee employee = getEmployeeByIsraeliId(israeliId);
         if (employee == null) {
@@ -374,19 +377,25 @@ public class EmployeeController {
         return authorisationController.hasPermission(employee, permission);
     }
 
-    public boolean isActive(long employeeId) {
-        return true;   //TODO     <<---------------------------------------    <<------------------
+    /**
+     * Checks if an employee with the given Israeli ID is active.
+     *
+     * @param employeeId The Israeli ID of the employee to check.
+     * @return True if the employee is active, false otherwise.
+     */
+    public boolean isEmployeeActive(long employeeId) {
+        return employees.stream().anyMatch(e -> e.getIsraeliId() == employeeId && e.isActive());
     }
 
-    public boolean hasRole(String role, long employeeId){
-        return true;   //TODO     <<---------------------------------------    <<------------------
+    /**
+     * Checks if an employee with the given ID has a specific role.
+     *
+     * @param employeeId The Israeli ID of the employee to check.
+     * @param role The role to check for.
+     * @return True if the employee has the specified role, false otherwise.
+     */
+    public boolean isEmployeeHaveRole( long employeeId, String role){
+        return employees.stream().anyMatch(e -> e.getIsraeliId() == employeeId && e.getRoles().contains(role));
     }
 
-//    public String getHighestRole(long israeliId) {
-//        Employee employee = getEmployeeByIsraeliId(israeliId);
-//        if (employee == null) {
-//            throw new InvalidInputException("Employee with ID " + israeliId + " not found");
-//        }
-//        return authorisationController.getHighestRole(employee);
-//    }
 }

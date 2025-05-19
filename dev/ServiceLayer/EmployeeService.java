@@ -771,6 +771,9 @@ public class EmployeeService {
         }
     }
 
+    // ===========================
+    // Functions for integration with Transport module
+    // ===========================
 
     public boolean hasPermission(long israeliId, String permission) {
         try {
@@ -781,4 +784,35 @@ public class EmployeeService {
             throw new ServiceException("Error checking authorization: " + e.getMessage(), e);
         }
     }
+
+    /**
+     * Checks if the employee with the given ID is currently active.
+     *
+     * @param employeeId The unique identifier of the employee to be checked.
+     * @return true if the employee is active; false otherwise.
+     * @throws ServiceException if there is an error while checking the employee's status.
+     */
+    public boolean isEmployeeActive(long employeeId) {
+        try{
+            return employeeController.isEmployeeActive(employeeId);
+        } catch (Exception e) {
+            throw new ServiceException("Error checking employee status: " + e.getMessage(), e);
+        }
+    }
+    /**
+     * Checks if an employee, identified by their Israeli ID, has a specified role.
+     *
+     * @param israeliId the unique Israeli ID of the employee
+     * @param roleName the name of the role to check for the employee
+     * @return true if the employee has the specified role, otherwise false
+     * @throws ServiceException if an error occurs during the check
+     */
+    public boolean isEmployeeHaveRole(long israeliId, String roleName) {
+        try{
+            return employeeController.isEmployeeHaveRole(israeliId, roleName);
+        } catch (Exception e) {
+            throw new ServiceException("Error checking employee role: " + e.getMessage(), e);
+        }
+    }
+
 }
