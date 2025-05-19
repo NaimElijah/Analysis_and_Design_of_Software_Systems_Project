@@ -386,6 +386,9 @@ public class EmployeeController {
     public boolean isEmployeeActive(long employeeId) {
         return employees.stream().anyMatch(e -> e.getIsraeliId() == employeeId && e.isActive());
     }
+    public boolean isActive(long israeliId) {
+        return isEmployeeActive(israeliId);
+    }
 
     /**
      * Checks if an employee with the given ID has a specific role.

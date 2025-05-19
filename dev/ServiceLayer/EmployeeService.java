@@ -775,6 +775,15 @@ public class EmployeeService {
     // Functions for integration with Transport module
     // ===========================
 
+    /**
+     * Checks if the employee with the given Israeli ID has the specified permission.
+     *
+     * @param israeliId The unique identifier of the employee.
+     * @param permission The permission to check for the specified employee.
+     * @return true if the employee has the given permission, false otherwise.
+     * @throws AuthorizationException If there is an issue with authorization.
+     * @throws ServiceException If a general error occurs while checking permissions.
+     */
     public boolean hasPermission(long israeliId, String permission) {
         try {
             return employeeController.hasPermission(israeliId, permission);
