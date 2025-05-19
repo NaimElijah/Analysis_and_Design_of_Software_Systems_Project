@@ -9,8 +9,6 @@ import ServiceLayer.exception.ServiceException;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-
-import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -62,6 +60,7 @@ public class ShiftCLI {
         if (hasPermission("VIEW_SHIFT")) {
             menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". View All Shifts");
             menuOptions.add(YELLOW + optionNumber++ + RESET + ". View Shift Details");
+            menuOptions.add(YELLOW + optionNumber++ + RESET + ". View My Shifts");
         }
         if (hasPermission("CREATE_SHIFT")) {
             menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Add Shift");
@@ -113,6 +112,11 @@ public class ShiftCLI {
 
                 if (choiceNum == currentOption++) {
                     viewShiftDetails();
+                    return true;
+                }
+
+                if (choiceNum == currentOption++) {
+                    viewEmployeeShifts();
                     return true;
                 }
             }
@@ -175,8 +179,11 @@ public class ShiftCLI {
         try {
             employeeService.isEmployeeAuthorised(doneBy, permission);
             return true;
-        } catch (Exception e) {
+        } catch (ServiceLayer.exception.AuthorizationException e) {
             //printError("Error checking permissions: " + e.getMessage());
+            return false;
+        } catch (Exception e) {
+            printError("Error checking permissions: " + e.getMessage());
             return false;
         }
     }
@@ -947,5 +954,57 @@ public class ShiftCLI {
         }
 
         waitForEnter();
+    }
+
+    /**
+     * Displays the list of shifts assigned to the currently logged-in employee.
+     * If the employee has no assigned shifts, an error message will be displayed.
+     * Shifts are shown with pagination, allowing the user to navigate through
+     * a limited number of entries per page.
+     */
+    private void viewEmployeeShifts() {
+
+        try {
+            // Get shifts for logged in employee
+            List<ShiftDTO> employeeShifts = ShiftDTO.deserializeList(shiftService.getShiftByEmployee(doneBy, doneBy));
+
+            if (employeeShifts.isEmpty()) {
+                printError("You are not assigned to any shifts.");
+                waitForEnter();
+                return;
+            }
+
+            // Display shifts with pagination
+            final int ITEMS_PER_PAGE = 5;
+
+            CliUtil.displayPaginatedList(
+                    "My Assigned Shifts",
+                    employeeShifts,
+                    ITEMS_PER_PAGE,
+                    shift -> {
+                        String openStatus = shift.isOpen() ? CliUtil.greenString("Open") : CliUtil.redString("Closed");
+
+                        // Get employee's roles in this shift
+                        List<String> employeeRoles = new ArrayList<>();
+                        for (Map.Entry<String, Set<Long>> entry : shift.getAssignedEmployees().entrySet()) {
+                            if (entry.getValue().contains(doneBy)) {
+                                employeeRoles.add(entry.getKey());
+                            }
+                        }
+
+                        return String.format("ID: %s | Date: %s | Type: %s | Status: %s | My Roles: %s",
+                                shift.getId(),
+                                shift.getShiftDate().toString(),
+                                shift.getShiftType().toString(),
+                                openStatus,
+                                String.join(", ", employeeRoles));
+                    },
+                    scanner
+            );
+
+        } catch (Exception e) {
+            printError("Error retrieving your shifts: " + e.getMessage());
+            waitForEnter();
+        }
     }
 }

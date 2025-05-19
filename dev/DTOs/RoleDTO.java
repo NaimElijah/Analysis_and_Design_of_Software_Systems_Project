@@ -92,7 +92,7 @@ public class RoleDTO {
      * @throws RuntimeException if serialization fails
      */
     public String serialize() {
-        try {
+        try { // TODO: update it to return it not as a JSON string
             return objectMapper.writeValueAsString(this);
         } catch (IOException e) {
             throw new RuntimeException("Failed to serialize RoleDTO to JSON", e);

@@ -155,7 +155,7 @@ public class ShiftService {
             String domainShifts = shiftController.getAllShifts(doneBy);
             return domainShifts;
         } catch (RuntimeException e) {
-            throw new RuntimeException(e);
+            return "Error: " + e.getMessage();
         }
     }
 
@@ -164,7 +164,7 @@ public class ShiftService {
             String shifts = shiftController.getAllShiftsByDate(doneBy, date);
             return shifts;
         } catch (RuntimeException e) {
-            throw new RuntimeException(e);
+            return "Error: " + e.getMessage();
         }
     }
 
@@ -172,7 +172,7 @@ public class ShiftService {
         try {
             return shiftController.getShiftsByEmployee(doneBy, employeeID);
         } catch (RuntimeException e) {
-            throw new RuntimeException(e);
+            return "Error: " + e.getMessage();
         }
     }
 
@@ -181,7 +181,7 @@ public class ShiftService {
             String shift = shiftController.getshift(doneBy, date, shiftType);
             return shift;
         } catch (RuntimeException e) {
-            throw new RuntimeException(e);
+            return "Error: " + e.getMessage();
         }
     }
 
@@ -290,7 +290,7 @@ public class ShiftService {
             availabilityController.markAvailable(shiftId, doneBy);
             return "Employee marked as available successfully";
         } catch (RuntimeException e) {
-            return "Error: " + e.getMessage();
+            return  e.getMessage();
         }
     }
 
@@ -380,6 +380,13 @@ public class ShiftService {
             return assignmentController.isAssignedByDate(doneBy, date, hour, employeeId);
         } catch (RuntimeException e) {
             throw new RuntimeException(e);
+        }
+    }
+    public String getShiftByEmployee(long doneBy, long employeeId) {
+        try {
+            return shiftController.getShiftByEmployee(doneBy, employeeId);
+        } catch (RuntimeException e) {
+            return "Error: " + e.getMessage();
         }
     }
 

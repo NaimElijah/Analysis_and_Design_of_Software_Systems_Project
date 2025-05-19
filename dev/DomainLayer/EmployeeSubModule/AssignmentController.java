@@ -77,6 +77,11 @@ public class AssignmentController {
         }
         Shift shift = shiftController.getShiftByIdAsShift(doneBy, shiftId);
 
+        // Special case for SHIFT_MANAGER role - if removing, set isAssignedShiftManager to false and show error if no other manager is assigned
+        if (Objects.equals(role, "Shift Manager")) {
+            if (shift.getAssignedEmployees().get(role).size() <= 1)
+                throw new IllegalStateException("Cannot remove the only Shift Manager from the shift, at least one must be assigned");
+        }
         Map <String, Set<Long>> assignedEmployees = shift.getAssignedEmployees();
         Set<Long> employeesInRole = assignedEmployees.get(role);
         employeesInRole.remove(employeeId);

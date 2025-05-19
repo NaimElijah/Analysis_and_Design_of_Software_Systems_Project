@@ -63,12 +63,18 @@ public class ShiftController {
     }
     /**
      * Serialize a set of shifts to a string format.
+     * The shifts are sorted by date and then by type.
      * List<Shift> -> List<ShiftDTO> -> String
      * Each shift is serialized to a new line.
      * @param shifts - the set of shifts to serialize
      * @return the serialized string representation of the shifts
      */
     public String serializeArrayShifts(List<Shift> shifts) {
+        // Sort the list by date and then by type
+        shifts = shifts.stream()
+                .sorted(Comparator.comparing(Shift::getShiftDate).thenComparing(Shift::getShiftType))
+                .collect(Collectors.toList());
+
         StringBuilder sb = new StringBuilder();
         for (Shift shift : shifts) {
             String serializedShift = serializeShift(shift);
@@ -355,7 +361,9 @@ public class ShiftController {
             throw new RuntimeException("No Shifts were found");
         }
         // return all dtos as strings DTO serialized
-        return serializeSetShifts(shifts);
+        List<Shift> shiftsList = new ArrayList<>(shifts); // Convert Set to List
+
+        return serializeArrayShifts(shiftsList);
     }
 
     /**
@@ -624,4 +632,30 @@ public class ShiftController {
                 .orElse(null);
     }
 
+    /**
+     * Retrieves all shifts assigned to a specific employee.
+     * The requesting employee must have the "GET_SHIFT" permission.
+     * An exception is thrown if the permission is not granted or the provided employee ID is invalid.
+     *
+     * @param doneBy     the ID of the employee requesting the shifts
+     * @param employeeId the ID of the employee whose shifts are being retrieved
+     * @return a serialized string representation of all shifts assigned to the specified employee
+     * @throws UnauthorizedPermissionException if the requesting employee does not have the required permission
+     * @throws IllegalArgumentException        if the provided employee ID is not a positive number
+     */
+    public String getShiftByEmployee(long doneBy, long employeeId) {
+        String PERMISSION_REQUIRED = "GET_SHIFT";
+        if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
+            throw new UnauthorizedPermissionException("User does not have permission to get shifts by employee");
+        }
+        if (employeeId <= 0) {
+            throw new IllegalArgumentException("Employee ID must be a positive number");
+        }
+        List<Shift> EmployeeShifts = new ArrayList<>();
+        EmployeeShifts = shifts.stream()
+                .filter(shift -> shift.getAssignedEmployees().values().stream().anyMatch(set -> set.contains(employeeId)))
+                .toList();
+
+        return serializeArrayShifts(EmployeeShifts);
+    }
 }

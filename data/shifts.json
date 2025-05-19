@@ -2,7 +2,7 @@
   {
     "id": 1,
     "shiftType": "MORNING",
-    "shiftDate": "2025-04-13",
+    "shiftDate": "2025-05-18",
     "rolesRequired": {
       "Shift Manager": 1,
       "Cashier": 2,
@@ -17,7 +17,7 @@
       "Cleaner": [666666666],
       "Driver": [555555555]
     },
-    "availableEmployees": [
+    "AvailableEmployees": [
       111111111,
       222222222,
       333333333,
@@ -25,15 +25,17 @@
       555555555,
       666666666
     ],
-    "isAssignedShiftManager": true,
+    "isAssignedShitManager": true,
     "isOpen": true,
-    "hours": "09:00 - 16:00",
-    "updateDate": "2025-04-06"
+    "startHour": "09:00",
+    "endHour": "16:00",
+    "createDate": "2025-05-11",
+    "updateDate": "2025-05-11"
   },
   {
     "id": 2,
     "shiftType": "EVENING",
-    "shiftDate": "2025-04-13",
+    "shiftDate": "2025-05-18",
     "rolesRequired": {
       "Shift Manager": 1,
       "Cashier": 2,
@@ -46,7 +48,7 @@
       "Stocker": [222222222],
       "Cleaner": [666666666]
     },
-    "availableEmployees": [
+    "AvailableEmployees": [
       111111111,
       222222222,
       333333333,
@@ -54,15 +56,17 @@
       555555555,
       666666666
     ],
-    "isAssignedShiftManager": true,
+    "isAssignedShitManager": true,
     "isOpen": true,
-    "hours": "16:00 - 20:00",
-    "updateDate": "2025-04-06"
+    "startHour": "16:00",
+    "endHour": "20:00",
+    "createDate": "2025-05-11",
+    "updateDate": "2025-05-11"
   },
   {
     "id": 3,
     "shiftType": "MORNING",
-    "shiftDate": "2025-04-14",
+    "shiftDate": "2025-05-19",
     "rolesRequired": {
       "Shift Manager": 1,
       "Cashier": 2,
@@ -77,7 +81,7 @@
       "HR manager": [444444444],
       "Driver": [555555555]
     },
-    "availableEmployees": [
+    "AvailableEmployees": [
       111111111,
       222222222,
       333333333,
@@ -85,15 +89,17 @@
       555555555,
       666666666
     ],
-    "isAssignedShiftManager": true,
+    "isAssignedShitManager": true,
     "isOpen": true,
-    "hours": "09:00 - 16:00",
-    "updateDate": "2025-04-06"
+    "startHour": "09:00",
+    "endHour": "16:00",
+    "createDate": "2025-05-11",
+    "updateDate": "2025-05-11"
   },
   {
     "id": 4,
     "shiftType": "EVENING",
-    "shiftDate": "2025-04-14",
+    "shiftDate": "2025-05-19",
     "rolesRequired": {
       "Shift Manager": 1,
       "Cashier": 2,
@@ -106,7 +112,7 @@
       "Stocker": [222222222],
       "Cleaner": [666666666]
     },
-    "availableEmployees": [
+    "AvailableEmployees": [
       111111111,
       222222222,
       333333333,
@@ -114,15 +120,17 @@
       555555555,
       666666666
     ],
-    "isAssignedShiftManager": true,
+    "isAssignedShitManager": true,
     "isOpen": true,
-    "hours": "16:00 - 20:00",
-    "updateDate": "2025-04-06"
+    "startHour": "16:00",
+    "endHour": "20:00",
+    "createDate": "2025-05-11",
+    "updateDate": "2025-05-11"
   },
   {
     "id": 5,
     "shiftType": "MORNING",
-    "shiftDate": "2025-04-15",
+    "shiftDate": "2025-05-20",
     "rolesRequired": {
       "Shift Manager": 1,
       "Cashier": 2,
@@ -137,7 +145,7 @@
       "Cleaner": [666666666],
       "Driver": [555555555]
     },
-    "availableEmployees": [
+    "AvailableEmployees": [
       111111111,
       222222222,
       333333333,
@@ -145,15 +153,17 @@
       555555555,
       666666666
     ],
-    "isAssignedShiftManager": true,
+    "isAssignedShitManager": true,
     "isOpen": true,
-    "hours": "09:00 - 16:00",
-    "updateDate": "2025-04-06"
+    "startHour": "09:00",
+    "endHour": "16:00",
+    "createDate": "2025-05-11",
+    "updateDate": "2025-05-11"
   },
   {
     "id": 6,
     "shiftType": "EVENING",
-    "shiftDate": "2025-04-15",
+    "shiftDate": "2025-05-20",
     "rolesRequired": {
       "Shift Manager": 1,
       "Cashier": 2,
@@ -166,7 +176,7 @@
       "Stocker": [222222222],
       "Cleaner": [666666666]
     },
-    "availableEmployees": [
+    "AvailableEmployees": [
       111111111,
       222222222,
       333333333,
@@ -174,15 +184,17 @@
       555555555,
       666666666
     ],
-    "isAssignedShiftManager": true,
+    "isAssignedShitManager": true,
     "isOpen": true,
-    "hours": "16:00 - 20:00",
-    "updateDate": "2025-04-06"
+    "startHour": "16:00",
+    "endHour": "20:00",
+    "createDate": "2025-05-11",
+    "updateDate": "2025-05-11"
   },
   {
     "id": 7,
     "shiftType": "MORNING",
-    "shiftDate": "2025-04-16",
+    "shiftDate": "2025-05-21",
     "rolesRequired": {
       "Shift Manager": 1,
       "Cashier": 2,
@@ -197,7 +209,7 @@
       "HR manager": [444444444],
       "Driver": [555555555]
     },
-    "availableEmployees": [
+    "AvailableEmployees": [
       111111111,
       222222222,
       333333333,
@@ -205,15 +217,17 @@
       555555555,
       666666666
     ],
-    "isAssignedShiftManager": true,
+    "isAssignedShitManager": true,
     "isOpen": true,
-    "hours": "09:00 - 16:00",
-    "updateDate": "2025-04-06"
+    "startHour": "09:00",
+    "endHour": "16:00",
+    "createDate": "2025-05-11",
+    "updateDate": "2025-05-11"
   },
   {
     "id": 8,
     "shiftType": "EVENING",
-    "shiftDate": "2025-04-16",
+    "shiftDate": "2025-05-21",
     "rolesRequired": {
       "Shift Manager": 1,
       "Cashier": 2,
@@ -226,7 +240,7 @@
       "Stocker": [222222222],
       "Cleaner": [666666666]
     },
-    "availableEmployees": [
+    "AvailableEmployees": [
       111111111,
       222222222,
       333333333,
@@ -234,15 +248,17 @@
       555555555,
       666666666
     ],
-    "isAssignedShiftManager": true,
+    "isAssignedShitManager": true,
     "isOpen": true,
-    "hours": "16:00 - 20:00",
-    "updateDate": "2025-04-06"
+    "startHour": "16:00",
+    "endHour": "20:00",
+    "createDate": "2025-05-11",
+    "updateDate": "2025-05-11"
   },
   {
     "id": 9,
     "shiftType": "MORNING",
-    "shiftDate": "2025-04-17",
+    "shiftDate": "2025-05-22",
     "rolesRequired": {
       "Shift Manager": 1,
       "Cashier": 2,
@@ -257,7 +273,7 @@
       "Cleaner": [666666666],
       "Driver": [555555555]
     },
-    "availableEmployees": [
+    "AvailableEmployees": [
       111111111,
       222222222,
       333333333,
@@ -265,15 +281,17 @@
       555555555,
       666666666
     ],
-    "isAssignedShiftManager": true,
+    "isAssignedShitManager": true,
     "isOpen": true,
-    "hours": "09:00 - 16:00",
-    "updateDate": "2025-04-06"
+    "startHour": "09:00",
+    "endHour": "16:00",
+    "createDate": "2025-05-11",
+    "updateDate": "2025-05-11"
   },
   {
     "id": 10,
     "shiftType": "EVENING",
-    "shiftDate": "2025-04-17",
+    "shiftDate": "2025-05-22",
     "rolesRequired": {
       "Shift Manager": 1,
       "Cashier": 2,
@@ -286,7 +304,7 @@
       "Stocker": [222222222],
       "Cleaner": [666666666]
     },
-    "availableEmployees": [
+    "AvailableEmployees": [
       111111111,
       222222222,
       333333333,
@@ -294,15 +312,17 @@
       555555555,
       666666666
     ],
-    "isAssignedShiftManager": true,
+    "isAssignedShitManager": true,
     "isOpen": true,
-    "hours": "16:00 - 20:00",
-    "updateDate": "2025-04-06"
+    "startHour": "16:00",
+    "endHour": "20:00",
+    "createDate": "2025-05-11",
+    "updateDate": "2025-05-11"
   },
   {
     "id": 11,
     "shiftType": "MORNING",
-    "shiftDate": "2025-04-18",
+    "shiftDate": "2025-05-23",
     "rolesRequired": {
       "Shift Manager": 1,
       "Cashier": 2,
@@ -315,7 +335,7 @@
       "Stocker": [222222222],
       "HR manager": [444444444]
     },
-    "availableEmployees": [
+    "AvailableEmployees": [
       111111111,
       222222222,
       333333333,
@@ -323,15 +343,17 @@
       555555555,
       666666666
     ],
-    "isAssignedShiftManager": true,
+    "isAssignedShitManager": true,
     "isOpen": true,
-    "hours": "09:00 - 16:00",
-    "updateDate": "2025-04-06"
+    "startHour": "09:00",
+    "endHour": "16:00",
+    "createDate": "2025-05-11",
+    "updateDate": "2025-05-11"
   },
   {
     "id": 12,
     "shiftType": "EVENING",
-    "shiftDate": "2025-04-18",
+    "shiftDate": "2025-05-23",
     "rolesRequired": {
       "Shift Manager": 1,
       "Cashier": 2,
@@ -344,7 +366,7 @@
       "Stocker": [222222222],
       "Cleaner": [666666666]
     },
-    "availableEmployees": [
+    "AvailableEmployees": [
       111111111,
       222222222,
       333333333,
@@ -352,14 +374,16 @@
       555555555,
       666666666
     ],
-    "isAssignedShiftManager": true,
+    "isAssignedShitManager": true,
     "isOpen": true,
-    "hours": "16:00 - 20:00",
-    "updateDate": "2025-04-06"
+    "startHour": "16:00",
+    "endHour": "20:00",
+    "createDate": "2025-05-11",
+    "updateDate": "2025-05-11"
   }, {
   "id": 13,
   "shiftType": "MORNING",
-  "shiftDate": "2025-04-19",
+  "shiftDate": "2025-05-24",
   "rolesRequired": {
     "Shift Manager": 1,
     "Cashier": 2,
@@ -372,7 +396,7 @@
     "Stocker": [222222222],
     "Driver": [555555555]
   },
-  "availableEmployees": [
+  "AvailableEmployees": [
     111111111,
     222222222,
     333333333,
@@ -380,15 +404,17 @@
     555555555,
     666666666
   ],
-  "isAssignedShiftManager": true,
+  "isAssignedShitManager": true,
   "isOpen": true,
-  "hours": "09:00 - 16:00",
-  "updateDate": "2025-04-06"
+  "startHour": "09:00",
+  "endHour": "16:00",
+  "createDate": "2025-05-11",
+  "updateDate": "2025-05-11"
 },
   {
     "id": 14,
     "shiftType": "EVENING",
-    "shiftDate": "2025-04-19",
+    "shiftDate": "2025-05-24",
     "rolesRequired": {
       "Shift Manager": 1,
       "Cashier": 2,
@@ -401,7 +427,7 @@
       "Stocker": [222222222],
       "Cleaner": [666666666]
     },
-    "availableEmployees": [
+    "AvailableEmployees": [
       111111111,
       222222222,
       333333333,
@@ -409,15 +435,17 @@
       555555555,
       666666666
     ],
-    "isAssignedShiftManager": true,
+    "isAssignedShitManager": true,
     "isOpen": true,
-    "hours": "16:00 - 20:00",
-    "updateDate": "2025-04-06"
+    "startHour": "16:00",
+    "endHour": "20:00",
+    "createDate": "2025-05-11",
+    "updateDate": "2025-05-11"
   },
   {
     "id": 15,
     "shiftType": "MORNING",
-    "shiftDate": "2025-04-20",
+    "shiftDate": "2025-05-25",
     "rolesRequired": {
       "Shift Manager": 1,
       "Cashier": 2,
@@ -432,7 +460,7 @@
       "Cleaner": [666666666],
       "Driver": [555555555]
     },
-    "availableEmployees": [
+    "AvailableEmployees": [
       111111111,
       222222222,
       333333333,
@@ -440,15 +468,17 @@
       555555555,
       666666666
     ],
-    "isAssignedShiftManager": true,
+    "isAssignedShitManager": true,
     "isOpen": true,
-    "hours": "09:00 - 16:00",
-    "updateDate": "2025-04-06"
+    "startHour": "09:00",
+    "endHour": "16:00",
+    "createDate": "2025-05-11",
+    "updateDate": "2025-05-11"
   },
   {
     "id": 16,
     "shiftType": "EVENING",
-    "shiftDate": "2025-04-20",
+    "shiftDate": "2025-05-25",
     "rolesRequired": {
       "Shift Manager": 1,
       "Cashier": 2,
@@ -461,7 +491,7 @@
       "Stocker": [222222222],
       "Cleaner": [666666666]
     },
-    "availableEmployees": [
+    "AvailableEmployees": [
       111111111,
       222222222,
       333333333,
@@ -469,15 +499,17 @@
       555555555,
       666666666
     ],
-    "isAssignedShiftManager": true,
+    "isAssignedShitManager": true,
     "isOpen": true,
-    "hours": "16:00 - 20:00",
-    "updateDate": "2025-04-06"
+    "startHour": "16:00",
+    "endHour": "20:00",
+    "createDate": "2025-05-11",
+    "updateDate": "2025-05-11"
   },
   {
     "id": 17,
     "shiftType": "MORNING",
-    "shiftDate": "2025-04-21",
+    "shiftDate": "2025-05-26",
     "rolesRequired": {
       "Shift Manager": 1,
       "Cashier": 2,
@@ -492,7 +524,7 @@
       "HR manager": [444444444],
       "Driver": [555555555]
     },
-    "availableEmployees": [
+    "AvailableEmployees": [
       111111111,
       222222222,
       333333333,
@@ -500,15 +532,17 @@
       555555555,
       666666666
     ],
-    "isAssignedShiftManager": true,
+    "isAssignedShitManager": true,
     "isOpen": true,
-    "hours": "09:00 - 16:00",
-    "updateDate": "2025-04-06"
+    "startHour": "09:00",
+    "endHour": "16:00",
+    "createDate": "2025-05-11",
+    "updateDate": "2025-05-11"
   },
   {
     "id": 18,
     "shiftType": "EVENING",
-    "shiftDate": "2025-04-21",
+    "shiftDate": "2025-05-26",
     "rolesRequired": {
       "Shift Manager": 1,
       "Cashier": 2,
@@ -521,7 +555,7 @@
       "Stocker": [222222222],
       "Cleaner": [666666666]
     },
-    "availableEmployees": [
+    "AvailableEmployees": [
       111111111,
       222222222,
       333333333,
@@ -529,14 +563,16 @@
       555555555,
       666666666
     ],
-    "isAssignedShiftManager": true,
+    "isAssignedShitManager": true,
     "isOpen": true,
-    "hours": "16:00 - 20:00",
-    "updateDate": "2025-04-06"
+    "startHour": "16:00",
+    "endHour": "20:00",
+    "createDate": "2025-05-11",
+    "updateDate": "2025-05-11"
   },  {
   "id": 19,
   "shiftType": "MORNING",
-  "shiftDate": "2025-04-22",
+  "shiftDate": "2025-05-27",
   "rolesRequired": {
     "Shift Manager": 1,
     "Cashier": 2,
@@ -551,7 +587,7 @@
     "Cleaner": [666666666],
     "Driver": [555555555]
   },
-  "availableEmployees": [
+  "AvailableEmployees": [
     111111111,
     222222222,
     333333333,
@@ -559,15 +595,17 @@
     555555555,
     666666666
   ],
-  "isAssignedShiftManager": true,
+  "isAssignedShitManager": true,
   "isOpen": true,
-  "hours": "09:00 - 16:00",
-  "updateDate": "2025-04-06"
+  "startHour": "09:00",
+  "endHour": "16:00",
+  "createDate": "2025-05-11",
+  "updateDate": "2025-05-11"
 },
 {
   "id": 20,
   "shiftType": "EVENING",
-  "shiftDate": "2025-04-22",
+  "shiftDate": "2025-05-27",
   "rolesRequired": {
     "Shift Manager": 1,
     "Cashier": 2,
@@ -580,7 +618,7 @@
     "Stocker": [222222222],
     "Cleaner": [666666666]
   },
-  "availableEmployees": [
+  "AvailableEmployees": [
     111111111,
     222222222,
     333333333,
@@ -588,15 +626,17 @@
     555555555,
     666666666
   ],
-  "isAssignedShiftManager": true,
+  "isAssignedShitManager": true,
   "isOpen": true,
-  "hours": "16:00 - 20:00",
-  "updateDate": "2025-04-06"
+  "startHour": "16:00",
+  "endHour": "20:00",
+  "createDate": "2025-05-11",
+  "updateDate": "2025-05-11"
 },
 {
   "id": 21,
   "shiftType": "MORNING",
-  "shiftDate": "2025-04-23",
+  "shiftDate": "2025-05-28",
   "rolesRequired": {
     "Shift Manager": 1,
     "Cashier": 2,
@@ -611,7 +651,7 @@
     "HR manager": [444444444],
     "Driver": [555555555]
   },
-  "availableEmployees": [
+  "AvailableEmployees": [
     111111111,
     222222222,
     333333333,
@@ -619,15 +659,17 @@
     555555555,
     666666666
   ],
-  "isAssignedShiftManager": true,
+  "isAssignedShitManager": true,
   "isOpen": true,
-  "hours": "09:00 - 16:00",
-  "updateDate": "2025-04-06"
+  "startHour": "09:00",
+  "endHour": "16:00",
+  "createDate": "2025-05-11",
+  "updateDate": "2025-05-11"
 },
 {
   "id": 22,
   "shiftType": "EVENING",
-  "shiftDate": "2025-04-23",
+  "shiftDate": "2025-05-28",
   "rolesRequired": {
     "Shift Manager": 1,
     "Cashier": 2,
@@ -640,7 +682,7 @@
     "Stocker": [222222222],
     "Cleaner": [666666666]
   },
-  "availableEmployees": [
+  "AvailableEmployees": [
     111111111,
     222222222,
     333333333,
@@ -648,15 +690,17 @@
     555555555,
     666666666
   ],
-  "isAssignedShiftManager": true,
+  "isAssignedShitManager": true,
   "isOpen": true,
-  "hours": "16:00 - 20:00",
-  "updateDate": "2025-04-06"
+  "startHour": "16:00",
+  "endHour": "20:00",
+  "createDate": "2025-05-11",
+  "updateDate": "2025-05-11"
 },
 {
   "id": 23,
   "shiftType": "MORNING",
-  "shiftDate": "2025-04-24",
+  "shiftDate": "2025-05-29",
   "rolesRequired": {
     "Shift Manager": 1,
     "Cashier": 2,
@@ -671,7 +715,7 @@
     "Cleaner": [666666666],
     "Driver": [555555555]
   },
-  "availableEmployees": [
+  "AvailableEmployees": [
     111111111,
     222222222,
     333333333,
@@ -679,15 +723,17 @@
     555555555,
     666666666
   ],
-  "isAssignedShiftManager": true,
+  "isAssignedShitManager": true,
   "isOpen": true,
-  "hours": "09:00 - 16:00",
-  "updateDate": "2025-04-06"
+  "startHour": "09:00",
+  "endHour": "16:00",
+  "createDate": "2025-05-11",
+  "updateDate": "2025-05-11"
 },
 {
   "id": 24,
   "shiftType": "EVENING",
-  "shiftDate": "2025-04-24",
+  "shiftDate": "2025-05-29",
   "rolesRequired": {
     "Shift Manager": 1,
     "Cashier": 2,
@@ -700,7 +746,7 @@
     "Stocker": [222222222],
     "Cleaner": [666666666]
   },
-  "availableEmployees": [
+  "AvailableEmployees": [
     111111111,
     222222222,
     333333333,
@@ -708,14 +754,16 @@
     555555555,
     666666666
   ],
-  "isAssignedShiftManager": true,
+  "isAssignedShitManager": true,
   "isOpen": true,
-  "hours": "16:00 - 20:00",
-  "updateDate": "2025-04-06"
+  "startHour": "16:00",
+  "endHour": "20:00",
+  "createDate": "2025-05-11",
+  "updateDate": "2025-05-11"
 },  {
 "id": 25,
 "shiftType": "MORNING",
-"shiftDate": "2025-04-25",
+"shiftDate": "2025-05-30",
 "rolesRequired": {
   "Shift Manager": 1,
   "Cashier": 2,
@@ -728,7 +776,7 @@
   "Stocker": [222222222],
   "HR manager": [444444444]
 },
-"availableEmployees": [
+"AvailableEmployees": [
   111111111,
   222222222,
   333333333,
@@ -736,15 +784,17 @@
   555555555,
   666666666
 ],
-"isAssignedShiftManager": true,
+"isAssignedShitManager": true,
 "isOpen": true,
-"hours": "09:00 - 16:00",
-"updateDate": "2025-04-06"
+"startHour": "09:00",
+"endHour": "16:00",
+"createDate": "2025-05-11",
+"updateDate": "2025-05-11"
 },
   {
     "id": 26,
     "shiftType": "EVENING",
-    "shiftDate": "2025-04-25",
+    "shiftDate": "2025-05-30",
     "rolesRequired": {
       "Shift Manager": 1,
       "Cashier": 2,
@@ -757,7 +807,7 @@
       "Stocker": [222222222],
       "Cleaner": [666666666]
     },
-    "availableEmployees": [
+    "AvailableEmployees": [
       111111111,
       222222222,
       333333333,
@@ -765,15 +815,17 @@
       555555555,
       666666666
     ],
-    "isAssignedShiftManager": true,
+    "isAssignedShitManager": true,
     "isOpen": true,
-    "hours": "16:00 - 20:00",
-    "updateDate": "2025-04-06"
+    "startHour": "16:00",
+    "endHour": "20:00",
+    "createDate": "2025-05-11",
+    "updateDate": "2025-05-11"
   },
   {
     "id": 27,
     "shiftType": "MORNING",
-    "shiftDate": "2025-04-26",
+    "shiftDate": "2025-05-31",
     "rolesRequired": {
       "Shift Manager": 1,
       "Cashier": 2,
@@ -786,7 +838,7 @@
       "Stocker": [222222222],
       "Driver": [555555555]
     },
-    "availableEmployees": [
+    "AvailableEmployees": [
       111111111,
       222222222,
       333333333,
@@ -794,15 +846,17 @@
       555555555,
       666666666
     ],
-    "isAssignedShiftManager": true,
+    "isAssignedShitManager": true,
     "isOpen": true,
-    "hours": "09:00 - 16:00",
-    "updateDate": "2025-04-06"
+    "startHour": "09:00",
+    "endHour": "16:00",
+    "createDate": "2025-05-11",
+    "updateDate": "2025-05-11"
   },
   {
     "id": 28,
     "shiftType": "EVENING",
-    "shiftDate": "2025-04-26",
+    "shiftDate": "2025-05-31",
     "rolesRequired": {
       "Shift Manager": 1,
       "Cashier": 2,
@@ -815,11 +869,12 @@
       "Stocker": [222222222],
       "Cleaner": [666666666]
     },
-    "availableEmployees": [],
-    "isAssignedShiftManager": true,
+    "AvailableEmployees": [],
+    "isAssignedShitManager": true,
     "isOpen": true,
-    "hours": "16:00 - 20:00",
-    "updateDate": "2025-04-06"
+    "startHour": "16:00",
+    "endHour": "20:00",
+    "createDate": "2025-05-11",
+    "updateDate": "2025-05-11"
   }
 ]
-

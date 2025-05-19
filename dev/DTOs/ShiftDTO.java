@@ -2,6 +2,7 @@ package DTOs;
 
 import DomainLayer.enums.ShiftType;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -21,6 +22,7 @@ public class ShiftDTO {
     // Static ObjectMapper configured for all serialization/deserialization
     private static final ObjectMapper objectMapper = new ObjectMapper()
             .registerModule(new JavaTimeModule())
+            .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     private long id;
@@ -28,8 +30,15 @@ public class ShiftDTO {
     private LocalDate shiftDate;
     private Map<String, Integer> rolesRequired;   // e.g., {"Cashier": 2, "Security": 1}
     private Map<String, Set<Long>> assignedEmployees;  // e.g., {"Cashier": [123456789, 987654321], "Security": [112233445]}
+
+    // This field maps to AvailableEmployees in the Shift class (note the case difference)
+    @JsonProperty("AvailableEmployees")
     private Set<Long> availableEmployees;  // e.g., [123456789, 555444333]
+
+    // This field maps to isAssignedShitManager in the Shift class (note the typo in the domain class)
+    @JsonProperty("isAssignedShitManager")
     private boolean isAssignedShiftManager;
+
     private boolean isOpen;
     private LocalTime startHour;
     private LocalTime endHour;
@@ -163,10 +172,15 @@ public class ShiftDTO {
      * Serializes this ShiftDTO object to a JSON string
      * 
      * @return JSON string representation of this object
-     * @throws RuntimeException if serialization fails
+     * @throws SerializeException if serialization fails
      */
     public String serialize() {
         try {
+            // Ensure collections are initialized before serialization
+            if (rolesRequired == null) rolesRequired = new HashMap<>();
+            if (assignedEmployees == null) assignedEmployees = new HashMap<>();
+            if (availableEmployees == null) availableEmployees = new HashSet<>();
+
             return objectMapper.writeValueAsString(this);
         } catch (IOException e) {
             throw new SerializeException("Failed to serialize ShiftDTO to JSON", e);
@@ -178,35 +192,126 @@ public class ShiftDTO {
      * 
      * @param serialized JSON string representation of a ShiftDTO object
      * @return The deserialized ShiftDTO object
-     * @throws RuntimeException if deserialization fails
+     * @throws SerializeException if deserialization fails
      */
     public static ShiftDTO deserialize(String serialized) {
+        if (serialized == null || serialized.trim().isEmpty()) {
+            throw new SerializeException("Cannot deserialize null or empty string");
+        }
+
         try {
-            return objectMapper.readValue(serialized, ShiftDTO.class);
+            ShiftDTO dto = objectMapper.readValue(serialized, ShiftDTO.class);
+
+            // Ensure collections are initialized after deserialization
+            if (dto.rolesRequired == null) dto.rolesRequired = new HashMap<>();
+            if (dto.assignedEmployees == null) dto.assignedEmployees = new HashMap<>();
+            if (dto.availableEmployees == null) dto.availableEmployees = new HashSet<>();
+
+            return dto;
         } catch (IOException e) {
-            throw new SerializeException("Failed to deserialize ShiftDTO from JSON", e);
+            throw new SerializeException("Failed to deserialize ShiftDTO from JSON: " + e.getMessage(), e);
         }
     }
 
+    /**
+     * Deserializes a Set of ShiftDTO objects from a JSON string
+     * 
+     * @param serialized JSON string representation of a Set of ShiftDTO objects
+     * @return The deserialized Set of ShiftDTO objects
+     * @throws SerializeException if deserialization fails
+     */
     public static Set<ShiftDTO> deserializeSet(String serialized) {
+        if (serialized == null || serialized.trim().isEmpty()) {
+            return new HashSet<>();
+        }
+
         try {
-            return objectMapper.readValue(serialized, objectMapper.getTypeFactory().constructCollectionType(Set.class, ShiftDTO.class));
+            Set<ShiftDTO> dtos = objectMapper.readValue(serialized, 
+                objectMapper.getTypeFactory().constructCollectionType(Set.class, ShiftDTO.class));
+
+            // Ensure collections are initialized for each DTO
+            for (ShiftDTO dto : dtos) {
+                if (dto.rolesRequired == null) dto.rolesRequired = new HashMap<>();
+                if (dto.assignedEmployees == null) dto.assignedEmployees = new HashMap<>();
+                if (dto.availableEmployees == null) dto.availableEmployees = new HashSet<>();
+            }
+
+            return dtos;
         } catch (IOException e) {
-            throw new SerializeException("Failed to deserialize Set<ShiftDTO> from JSON", e);
+            throw new SerializeException("Failed to deserialize Set<ShiftDTO> from JSON: " + e.getMessage(), e);
         }
     }
+
+    /**
+     * Deserializes a List of ShiftDTO objects from a JSON string
+     * 
+     * @param serialized JSON string representation of a List of ShiftDTO objects
+     *                  or multiple JSON objects separated by newlines
+     * @return The deserialized List of ShiftDTO objects
+     * @throws SerializeException if deserialization fails
+     */
     public static List<ShiftDTO> deserializeList(String serialized) {
+        if (serialized == null || serialized.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
         try {
-            return objectMapper.readValue(serialized, objectMapper.getTypeFactory().constructCollectionType(List.class, ShiftDTO.class));
-        } catch (IOException e) {
-            throw new SerializeException("Failed to deserialize List<ShiftDTO> from JSON", e);
+            List<ShiftDTO> dtos;
+
+            // First try to parse as a JSON array
+            try {
+                dtos = objectMapper.readValue(serialized, 
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, ShiftDTO.class));
+            } catch (Exception e) {
+                // If that fails, try to parse as multiple JSON objects separated by newlines
+                dtos = new ArrayList<>();
+                String[] lines = serialized.split("\n");
+                for (String line : lines) {
+                    if (!line.trim().isEmpty()) {
+                        ShiftDTO dto = deserialize(line);
+                        dtos.add(dto);
+                    }
+                }
+            }
+
+            // Ensure collections are initialized for each DTO
+            for (ShiftDTO dto : dtos) {
+                if (dto.rolesRequired == null) dto.rolesRequired = new HashMap<>();
+                if (dto.assignedEmployees == null) dto.assignedEmployees = new HashMap<>();
+                if (dto.availableEmployees == null) dto.availableEmployees = new HashSet<>();
+            }
+
+            return dtos;
+        } catch (Exception e) {
+            throw new SerializeException("Failed to deserialize List<ShiftDTO> from JSON: " + e.getMessage(), e);
         }
     }
+
+    /**
+     * Deserializes an array of ShiftDTO objects from a JSON string
+     * 
+     * @param serialized JSON string representation of an array of ShiftDTO objects
+     * @return The deserialized array of ShiftDTO objects
+     * @throws SerializeException if deserialization fails
+     */
     public static ShiftDTO[] deserializeArray(String serialized) {
+        if (serialized == null || serialized.trim().isEmpty()) {
+            return new ShiftDTO[0];
+        }
+
         try {
-            return objectMapper.readValue(serialized, ShiftDTO[].class);
+            ShiftDTO[] dtos = objectMapper.readValue(serialized, ShiftDTO[].class);
+
+            // Ensure collections are initialized for each DTO
+            for (ShiftDTO dto : dtos) {
+                if (dto.rolesRequired == null) dto.rolesRequired = new HashMap<>();
+                if (dto.assignedEmployees == null) dto.assignedEmployees = new HashMap<>();
+                if (dto.availableEmployees == null) dto.availableEmployees = new HashSet<>();
+            }
+
+            return dtos;
         } catch (IOException e) {
-            throw new SerializeException("Failed to deserialize ShiftDTO[] from JSON", e);
+            throw new SerializeException("Failed to deserialize ShiftDTO[] from JSON: " + e.getMessage(), e);
         }
     }
 
@@ -217,8 +322,15 @@ public class ShiftDTO {
                 "id=" + id +
                 ", shiftType=" + shiftType +
                 ", shiftDate=" + shiftDate +
+                ", rolesRequired=" + (rolesRequired != null ? rolesRequired.size() : "null") +
+                ", assignedEmployees=" + (assignedEmployees != null ? assignedEmployees.size() : "null") +
+                ", availableEmployees=" + (availableEmployees != null ? availableEmployees.size() : "null") +
                 ", isOpen=" + isOpen +
                 ", isAssignedShiftManager=" + isAssignedShiftManager +
+                ", startHour=" + startHour +
+                ", endHour=" + endHour +
+                ", createDate=" + createDate +
+                ", updateDate=" + updateDate +
                 '}';
     }
 }

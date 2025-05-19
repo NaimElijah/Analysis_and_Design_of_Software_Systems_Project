@@ -39,11 +39,10 @@ public class AvailabilityCLI {
 
     public boolean process() {
         try {
-            // TODO:
-            //        if (isWeekendBlocked()) {
-//                System.out.println("🚫 Availability update is blocked on weekends.");
-//                return;
-//            }
+            if (isWeekendBlocked()) {
+                System.out.println("🚫 Availability update is blocked on weekends.");
+                return false;
+            }
             LocalDate startDate = Week.getNextSunday(LocalDate.now());
             Week week = Week.from(startDate);
             Set<ShiftDTO> weekShifts = shiftService.getShiftsByWeek(doneBy, week);
@@ -128,12 +127,10 @@ public class AvailabilityCLI {
             CliUtil.printError("An error occurred: " + e.getMessage());
             return true;
         }
-        //System.out.printf("%d. %-15s| %-13s| %-13s|%n", index, (shift.getShiftType() == ShiftType.MORNING ? dayStr + " " + date : ""), shift.getShiftType(), availabilityMark);
-
     }
 
 
-            private boolean isWeekendBlocked() {
+    private boolean isWeekendBlocked() {
         ZonedDateTime now = ZonedDateTime.now(ZoneId.systemDefault());
         DayOfWeek day = now.getDayOfWeek();
         LocalTime time = now.toLocalTime();

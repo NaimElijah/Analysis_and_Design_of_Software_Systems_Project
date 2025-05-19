@@ -256,11 +256,12 @@ public class DataInitializer {
                 long id = shiftNode.get("id").asLong();
                 ShiftType shiftType = ShiftType.valueOf(shiftNode.get("shiftType").asText());
                 LocalDate shiftDate = LocalDate.parse(shiftNode.get("shiftDate").asText());
-                boolean isAssignedShiftManager = shiftNode.get("isAssignedShiftManager").asBoolean();
+                boolean isAssignedShitManager = shiftNode.get("isAssignedShitManager").asBoolean();
                 boolean isOpen = shiftNode.get("isOpen").asBoolean();
-                String hours = shiftNode.get("hours").asText();
-                LocalTime startHours = LocalTime.of(13, 0);
-                LocalTime endHours = LocalTime.of(20, 0);
+                // Get start and end hours directly from the JSON
+                LocalTime startHours = LocalTime.parse(shiftNode.get("startHour").asText());
+                LocalTime endHours = LocalTime.parse(shiftNode.get("endHour").asText());
+
                 LocalDate updateDate = LocalDate.parse(shiftNode.get("updateDate").asText());
 
                 // Parse roles required
@@ -296,7 +297,7 @@ public class DataInitializer {
 
                 // Parse available employees
                 Set<Long> availableEmployees = new HashSet<>();
-                JsonNode availableEmployeesNode = shiftNode.get("availableEmployees");
+                JsonNode availableEmployeesNode = shiftNode.get("AvailableEmployees");
                 if (availableEmployeesNode != null && availableEmployeesNode.isArray()) {
                     for (JsonNode empIdNode : availableEmployeesNode) {
                         long empId = empIdNode.asLong();
@@ -309,7 +310,7 @@ public class DataInitializer {
 
                 Shift shift = new Shift(
                     id, shiftType, shiftDate, rolesRequired, assignedEmployees,
-                    availableEmployees, isAssignedShiftManager, isOpen, startHours, endHours,updateDate
+                    availableEmployees, isAssignedShitManager, isOpen, startHours, endHours, updateDate
                 );
 
                 shifts.add(shift);

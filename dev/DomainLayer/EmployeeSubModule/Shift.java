@@ -8,6 +8,11 @@ import java.util.Map;
 import java.util.Set;
 
 
+/**
+ * The Shift class represents a work shift for a specified date, time, and type.
+ * It maintains details about required roles, assigned employees, available employees,
+ * shift manager assignment status, and the open/close status of the shift.
+ */
 public class Shift {
     private long id;
     private ShiftType shiftType;
