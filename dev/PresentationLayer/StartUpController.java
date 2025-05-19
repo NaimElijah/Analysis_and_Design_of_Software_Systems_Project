@@ -1,14 +1,14 @@
 package PresentationLayer;
 
-import ServiceLayer.TranEmployeeService;
+//import ServiceLayer.TranEmployeeService;
 import ServiceLayer.StartUpStateService;
 
 public class StartUpController {
     private StartUpStateService startUpStateService;
 
-    public StartUpController(StartUpStateService startUpStateService, TranEmployeeService tranEmployeeService) {
-        this.startUpStateService = startUpStateService;
-    }
+//    public StartUpController(StartUpStateService startUpStateService, TranEmployeeService tranEmployeeService) {
+//        this.startUpStateService = startUpStateService;
+//    }
 
     public void startUpData(){
         System.out.println("     --------     StartUp     -------");
@@ -23,9 +23,9 @@ public class StartUpController {
     }
 
 
-    public int getEmployeePermissionsRank(int loginIDGiven) {   //  return the permission of that ID (0, 1, 2)
-        return this.startUpStateService.getEmployeePermissionsRank(loginIDGiven);
-    }
+//    public int getEmployeePermissionsRank(int loginIDGiven) {   //  return the permission of that ID (0, 1, 2)
+//        return this.startUpStateService.getEmployeePermissionsRank(loginIDGiven);
+//    }
 
 
 }

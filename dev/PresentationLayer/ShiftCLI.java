@@ -1,15 +1,17 @@
 package PresentationLayer;
 
 import DomainLayer.enums.ShiftType;
-import ServiceLayer.EmployeeSL;
+import DTOs.EmployeeDTO;
+import DTOs.ShiftDTO;
 import ServiceLayer.EmployeeService;
-import ServiceLayer.ShiftSL;
 import ServiceLayer.ShiftService;
 import ServiceLayer.exception.ServiceException;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ShiftCLI {
     // ANSI color codes
@@ -58,6 +60,7 @@ public class ShiftCLI {
         if (hasPermission("VIEW_SHIFT")) {
             menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". View All Shifts");
             menuOptions.add(YELLOW + optionNumber++ + RESET + ". View Shift Details");
+            menuOptions.add(YELLOW + optionNumber++ + RESET + ". View My Shifts");
         }
         if (hasPermission("CREATE_SHIFT")) {
             menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Add Shift");
@@ -109,6 +112,11 @@ public class ShiftCLI {
 
                 if (choiceNum == currentOption++) {
                     viewShiftDetails();
+                    return true;
+                }
+
+                if (choiceNum == currentOption++) {
+                    viewEmployeeShifts();
                     return true;
                 }
             }
@@ -171,8 +179,11 @@ public class ShiftCLI {
         try {
             employeeService.isEmployeeAuthorised(doneBy, permission);
             return true;
-        } catch (Exception e) {
+        } catch (ServiceLayer.exception.AuthorizationException e) {
             //printError("Error checking permissions: " + e.getMessage());
+            return false;
+        } catch (Exception e) {
+            printError("Error checking permissions: " + e.getMessage());
             return false;
         }
     }
@@ -185,7 +196,7 @@ public class ShiftCLI {
      */
     private String formatEmployeeDisplay(long employeeId) {
         try {
-            EmployeeSL employee = employeeService.getEmployeeById(employeeId);
+            EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(employeeId);
             return employee.getFullName() + " (#" + employeeId + ")";
         } catch (ServiceException e) {
             // If we can't get the employee name, just return the ID
@@ -201,7 +212,7 @@ public class ShiftCLI {
      * @param openOnly Whether to only show open shifts
      * @return The selected shift, or null if no shift was selected
      */
-    private ShiftSL selectShiftByDateAndType(String headerText, boolean openOnly) {
+    private ShiftDTO selectShiftByDateAndType(String headerText, boolean openOnly) {
         printSectionHeader(headerText);
 
         // Get date from user
@@ -209,12 +220,12 @@ public class ShiftCLI {
 
         // Show available shifts on this date to help user make a selection
         try {
-            ShiftSL[] shiftsOnDate = shiftService.getAllShiftsByDate(doneBy, date);
+            ShiftDTO[] shiftsOnDate = ShiftDTO.deserializeArray(shiftService.getAllShiftsByDate(doneBy, date));
 
             // Filter shifts if openOnly is true
             if (openOnly) {
-                List<ShiftSL> openShifts = new ArrayList<>();
-                for (ShiftSL s : shiftsOnDate) {
+                List<ShiftDTO> openShifts = new ArrayList<>();
+                for (ShiftDTO s : shiftsOnDate) {
                     if (s.isOpen()) {
                         openShifts.add(s);
                     }
@@ -226,7 +237,7 @@ public class ShiftCLI {
                     return null;
                 }
 
-                shiftsOnDate = openShifts.toArray(new ShiftSL[0]);
+                shiftsOnDate = openShifts.toArray(new ShiftDTO[0]);
             }
 
             if (shiftsOnDate.length == 0) {
@@ -238,7 +249,7 @@ public class ShiftCLI {
             CliUtil.printSectionWithIcon("Available shifts on " + date.format(dateFormatter) + ":", "📅");
 
             List<String> shiftItems = new ArrayList<>();
-            for (ShiftSL s : shiftsOnDate) {
+            for (ShiftDTO s : shiftsOnDate) {
                 String status = s.isOpen() ? "(Open)" : "(Closed)";
                 shiftItems.add(s.getShiftType() + " shift " + status + " (ID: " + s.getId() + ")");
             }
@@ -254,7 +265,7 @@ public class ShiftCLI {
 
         try {
             // Get shift by date and type
-            ShiftSL shift = shiftService.getShift(doneBy, date, shiftType);
+            ShiftDTO shift = ShiftDTO.deserialize(shiftService.getShift(doneBy, date, shiftType));
 
             // Check if shift is open if openOnly is true
             if (openOnly && !shift.isOpen()) {
@@ -326,8 +337,8 @@ public class ShiftCLI {
         return CliUtil.getDateInput(prompt, scanner);
     }
 
-    private String getHoursInput(String prompt) {
-        return CliUtil.getHoursInput(prompt, scanner);
+    private LocalTime getHourInput(String prompt) {
+        return CliUtil.getHourInput(prompt, scanner);
     }
 
 
@@ -359,7 +370,7 @@ public class ShiftCLI {
      */
     private void viewAllShifts() {
         // Convert array to list for pagination
-        List<ShiftSL> shiftList = Arrays.asList(shiftService.getAllShifts(doneBy));
+        List<ShiftDTO> shiftList = ShiftDTO.deserializeList(shiftService.getAllShifts(doneBy));
 
         // Define how many shifts to show per page
         final int ITEMS_PER_PAGE = 5;
@@ -414,7 +425,7 @@ public class ShiftCLI {
 
         // Show available shifts on this date to help user make a selection
         try {
-            ShiftSL[] shiftsOnDate = shiftService.getAllShiftsByDate(doneBy, date);
+            ShiftDTO[] shiftsOnDate = ShiftDTO.deserializeArray(shiftService.getAllShiftsByDate(doneBy, date));
 
             if (shiftsOnDate.length == 0) {
                 printError("No shifts found for the selected date: " + date.format(dateFormatter));
@@ -425,7 +436,7 @@ public class ShiftCLI {
             CliUtil.printSectionWithIcon("Available shifts on " + date.format(dateFormatter) + ":", "📅");
 
             List<String> shiftItems = new ArrayList<>();
-            for (ShiftSL s : shiftsOnDate) {
+            for (ShiftDTO s : shiftsOnDate) {
                 shiftItems.add(s.getShiftType() + " shift (ID: " + s.getId() + ")");
             }
             CliUtil.printHierarchicalList(shiftItems, "• ", 2);
@@ -440,7 +451,7 @@ public class ShiftCLI {
 
         try {
             // Get shift by date and type
-            ShiftSL shift = shiftService.getShift(doneBy, date, shiftType);
+            ShiftDTO shift = ShiftDTO.deserialize(shiftService.getShift(doneBy, date, shiftType));
 
             CliUtil.printSuccessWithCheckmark("Found shift: " + date.format(dateFormatter) + " " + shiftType + " (ID: " + shift.getId() + ")");
             CliUtil.printEmptyLine();
@@ -536,7 +547,7 @@ public class ShiftCLI {
         printSectionHeader("Update Shift");
 
         // Select a shift to update
-        ShiftSL shift = selectShiftByDateAndType("Select Shift to Update", false);
+        ShiftDTO shift = selectShiftByDateAndType("Select Shift to Update", false);
         if (shift == null) {
             return; // User cancelled or no shift found
         }
@@ -569,7 +580,8 @@ public class ShiftCLI {
             boolean hasManager = shift.isAssignedShiftManager();
             ShiftType shiftType = shift.getShiftType();
             LocalDate date = shift.getShiftDate();
-            String hours = shift.getHours();
+            LocalTime startHour = shift.getStartHour();
+            LocalTime endHour = shift.getEndHour();
 
             // Option to change shift type
             if (confirm("Do you want to change the shift type?")) {
@@ -585,8 +597,8 @@ public class ShiftCLI {
 
             if (confirm("Do you want to change the shift hours?")) {
                 CliUtil.printInfo("Current hours: " + shift.getHours());
-                String newHours = scanner.nextLine().trim();
-                hours = getHoursInput("Select new hours:");
+                startHour = getHourInput("Enter new start hour:");
+                endHour = getHourInput("Enter new end hour:");
             }
 
             // Option to change open status
@@ -652,7 +664,7 @@ public class ShiftCLI {
             // Confirm all changes
             CliUtil.printEmptyLine();
             if (confirm("Apply all changes to this shift?")) {
-                String result = shiftService.updateShift(doneBy, shift.getId(), shiftType, date, isOpen, hasManager, hours,LocalDate.now());
+                String result = shiftService.updateShift(doneBy, shift.getId(), shiftType, date, isOpen, hasManager, startHour,endHour ,LocalDate.now());
                 if (result.contains("successfully")) {
                     printSuccess(result);
                 } else {
@@ -676,7 +688,7 @@ public class ShiftCLI {
         printSectionHeader("Delete Shift");
 
         // Select a shift to delete
-        ShiftSL shift = selectShiftByDateAndType("Select Shift to Delete", false);
+        ShiftDTO shift = selectShiftByDateAndType("Select Shift to Delete", false);
         if (shift == null) {
             return; // User cancelled or no shift found
         }
@@ -753,7 +765,7 @@ public class ShiftCLI {
 
             // Check if shift already exists
             try {
-                ShiftSL existingShift = shiftService.getShift(doneBy, date, shiftType);
+                ShiftDTO existingShift = ShiftDTO.deserialize(shiftService.getShift(doneBy, date, shiftType));
                 if (existingShift != null) {
                     printError("A " + shiftType + " shift already exists for " + date.format(dateFormatter));
                     CliUtil.printTip("You can edit the existing shift using the 'Edit Shifts' option.");
@@ -765,7 +777,8 @@ public class ShiftCLI {
             }
 
             // Get shift hours
-            String hours = getHoursInput("Enter shift hours (e.g., 9:00-17:00):");
+            LocalTime startHour = getHourInput("Enter start hour:");
+            LocalTime endHour = getHourInput("Enter end hour:");
 
 
             // Get roles required
@@ -775,7 +788,7 @@ public class ShiftCLI {
             CliUtil.printEmptyLine();
 
             Map<String, Integer> rolesRequired = new HashMap<>();
-            Set<String> roles = shiftService.getRoles(doneBy);
+            Set<String> roles = Arrays.stream(shiftService.getRoles(doneBy).split(",")).collect(Collectors.toSet());
 
             if (roles.isEmpty()) {
                 printError("No roles defined in the system. Please create roles first.");
@@ -838,7 +851,8 @@ public class ShiftCLI {
                     availableEmployees, 
                     isManagerShift, 
                     isOpen,
-                    hours,
+                    startHour,
+                    endHour,
                     LocalDate.now()
                 );
                 if (result.contains("successfully")) {
@@ -879,7 +893,7 @@ public class ShiftCLI {
             CliUtil.printEmptyLine();
 
             Map<String, Integer> rolesRequired = new HashMap<>();
-            Set<String> roles = shiftService.getRoles(doneBy);
+            Set<String> roles = Arrays.stream(shiftService.getRoles(doneBy).split(",")).collect(Collectors.toSet());
 
             if (roles.isEmpty()) {
                 printError("No roles defined in the system. Please create roles first.");
@@ -940,5 +954,57 @@ public class ShiftCLI {
         }
 
         waitForEnter();
+    }
+
+    /**
+     * Displays the list of shifts assigned to the currently logged-in employee.
+     * If the employee has no assigned shifts, an error message will be displayed.
+     * Shifts are shown with pagination, allowing the user to navigate through
+     * a limited number of entries per page.
+     */
+    private void viewEmployeeShifts() {
+
+        try {
+            // Get shifts for logged in employee
+            List<ShiftDTO> employeeShifts = ShiftDTO.deserializeList(shiftService.getShiftByEmployee(doneBy, doneBy));
+
+            if (employeeShifts.isEmpty()) {
+                printError("You are not assigned to any shifts.");
+                waitForEnter();
+                return;
+            }
+
+            // Display shifts with pagination
+            final int ITEMS_PER_PAGE = 5;
+
+            CliUtil.displayPaginatedList(
+                    "My Assigned Shifts",
+                    employeeShifts,
+                    ITEMS_PER_PAGE,
+                    shift -> {
+                        String openStatus = shift.isOpen() ? CliUtil.greenString("Open") : CliUtil.redString("Closed");
+
+                        // Get employee's roles in this shift
+                        List<String> employeeRoles = new ArrayList<>();
+                        for (Map.Entry<String, Set<Long>> entry : shift.getAssignedEmployees().entrySet()) {
+                            if (entry.getValue().contains(doneBy)) {
+                                employeeRoles.add(entry.getKey());
+                            }
+                        }
+
+                        return String.format("ID: %s | Date: %s | Type: %s | Status: %s | My Roles: %s",
+                                shift.getId(),
+                                shift.getShiftDate().toString(),
+                                shift.getShiftType().toString(),
+                                openStatus,
+                                String.join(", ", employeeRoles));
+                    },
+                    scanner
+            );
+
+        } catch (Exception e) {
+            printError("Error retrieving your shifts: " + e.getMessage());
+            waitForEnter();
+        }
     }
 }

@@ -1,6 +1,7 @@
 package PresentationLayer;
 
-import ServiceLayer.EmployeeSL;
+import DTOs.EmployeeDTO;
+import DTOs.RoleDTO;
 import ServiceLayer.EmployeeService;
 import ServiceLayer.exception.AuthorizationException;
 
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class EmployeeCLI {
 
@@ -22,6 +24,31 @@ public class EmployeeCLI {
     private final EmployeeService employeeService;
     private final Scanner scanner;
     private final long doneBy;
+
+    // Helper methods for DTO deserialization
+    private EmployeeDTO deserializeEmployee(String serialized) {
+        return EmployeeDTO.deserialize(serialized);
+    }
+
+    private EmployeeDTO[] deserializeEmployees(String[] serialized) {
+        EmployeeDTO[] employees = new EmployeeDTO[serialized.length];
+        for (int i = 0; i < serialized.length; i++) {
+            employees[i] = deserializeEmployee(serialized[i]);
+        }
+        return employees;
+    }
+
+    private RoleDTO deserializeRole(String serialized) {
+        return RoleDTO.deserialize(serialized);
+    }
+
+    private RoleDTO[] deserializeRoles(String[] serialized) {
+        RoleDTO[] roles = new RoleDTO[serialized.length];
+        for (int i = 0; i < serialized.length; i++) {
+            roles[i] = deserializeRole(serialized[i]);
+        }
+        return roles;
+    }
 
 
     /**
@@ -334,10 +361,10 @@ public class EmployeeCLI {
 
         // Show all employee
         CliUtil.printInfo("Current employees:");
-        EmployeeSL[] employees = employeeService.getAllEmployees();
-        for (EmployeeSL employee : employees) {
+        EmployeeDTO[] employees = employeeService.getAllEmployeesAsDTO();
+        for (EmployeeDTO employee : employees) {
             String status = employee.isActive() ? CliUtil.greenString("Active") : CliUtil.redString("Inactive");
-            System.out.printf("  • ID: %-9s | Name: %-20s | Status: %s%n",
+            System.out.printf("  • ID: %-9d | Name: %-20s | Status: %s%n",
                 employee.getIsraeliId(),
                 employee.getFullName(),
                 status);
@@ -347,7 +374,7 @@ public class EmployeeCLI {
         long israeliId = getLongInput("Employee Israeli ID: ");
 
         try {
-            EmployeeSL employee = employeeService.getEmployeeById(israeliId);
+            EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(israeliId);
 
             if (!employee.isActive()) {
                 printError("Employee is already inactive.");
@@ -445,7 +472,7 @@ public class EmployeeCLI {
         CliUtil.printBold("Israeli ID: ");
         long israeliId = Long.parseLong(scanner.nextLine());
 
-        EmployeeSL existing = employeeService.getEmployeeById(israeliId);
+        EmployeeDTO existing = employeeService.getEmployeeByIdAsDTO(israeliId);
         if (existing == null) {
             printError("Employee not found.");
             return;
@@ -528,7 +555,7 @@ public class EmployeeCLI {
         long israeliId = Long.parseLong(scanner.nextLine());
 
         try {
-            EmployeeSL employee = employeeService.getEmployeeById(israeliId);
+            EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(israeliId);
             CliUtil.printSuccess("Employee: " + employee.getFullName());
 
             CliUtil.printEmptyLine();
@@ -576,7 +603,7 @@ public class EmployeeCLI {
         long israeliId = Long.parseLong(scanner.nextLine());
 
         try {
-            EmployeeSL employee = employeeService.getEmployeeById(israeliId);
+            EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(israeliId);
             CliUtil.printSuccess("Employee: " + employee.getFullName());
 
             CliUtil.printEmptyLine();
@@ -733,9 +760,9 @@ public class EmployeeCLI {
         String roleName = scanner.nextLine();
 
         try {
-            Map<String, HashSet<String>> roleDetails = employeeService.getRoleDetails(roleName);
-            if (roleDetails != null && !roleDetails.isEmpty()) {
-                HashSet<String> permissions = roleDetails.get(roleName);
+            RoleDTO roleDTO = employeeService.getRoleDetailsAsDTO(roleName);
+            if (roleDTO != null) {
+                Set<String> permissions = roleDTO.getPermissions();
 
                 CliUtil.printEmptyLine();
                 CliUtil.printInfo("Current permissions for role '" + roleName + "':");
@@ -779,8 +806,12 @@ public class EmployeeCLI {
      * Displays all employees in the system with pagination
      */
     private void printAllEmployees() {
+        // Get serialized employees and deserialize them
+        String[] serializedEmployees = employeeService.getAllEmployees();
+        EmployeeDTO[] employees = deserializeEmployees(serializedEmployees);
+
         // Convert array to list for pagination
-        List<EmployeeSL> employeeList = Arrays.asList(employeeService.getAllEmployees());
+        List<EmployeeDTO> employeeList = Arrays.asList(employees);
 
         // Define how many employees to show per page
         final int ITEMS_PER_PAGE = 5;
@@ -793,7 +824,7 @@ public class EmployeeCLI {
             employee -> {
                 // Format each employee for display
                 String status = employee.isActive() ? CliUtil.greenString("Active") : CliUtil.redString("Inactive");
-                return String.format("ID: %-11s | Name: %-28s | Status: %s",
+                return String.format("ID: %-11d | Name: %-28s | Status: %s",
                     employee.getIsraeliId(),
                     employee.getFullName(),
                     status);
@@ -811,7 +842,7 @@ public class EmployeeCLI {
         printSectionHeader("Employee Details");
 
         try {
-            EmployeeSL employee = employeeService.getEmployeeById(israeliId);
+            EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(israeliId);
 
             // Create headers for the table sections
             List<String> headers = Arrays.asList(
@@ -924,9 +955,9 @@ public class EmployeeCLI {
         printSectionHeader("Role Details");
 
         try {
-            Map<String, HashSet<String>> roleDetails = employeeService.getRoleDetails(roleName);
+            RoleDTO roleDTO = employeeService.getRoleDetailsAsDTO(roleName);
 
-            if (roleDetails != null && !roleDetails.isEmpty()) {
+            if (roleDTO != null) {
                 // Create headers for the table sections
                 List<String> headers = Arrays.asList(
                     "ROLE DETAILS",
@@ -938,12 +969,12 @@ public class EmployeeCLI {
 
                 // Role Details section
                 List<String[]> roleInfo = new ArrayList<>();
-                roleInfo.add(new String[]{"Role Name:", roleName});
+                roleInfo.add(new String[]{"Role Name:", roleDTO.getName()});
                 content.put("ROLE DETAILS", roleInfo);
 
                 // Permissions section
                 List<String[]> permissionsInfo = new ArrayList<>();
-                HashSet<String> permissions = roleDetails.get(roleName);
+                Set<String> permissions = roleDTO.getPermissions();
 
                 if (permissions != null && !permissions.isEmpty()) {
                     for (String permission : permissions) {
@@ -1049,15 +1080,15 @@ public class EmployeeCLI {
         String existingRoleName = scanner.nextLine();
 
         try {
-            Map<String, HashSet<String>> roleDetails = employeeService.getRoleDetails(existingRoleName);
-            if (roleDetails == null || roleDetails.isEmpty()) {
+            RoleDTO roleDTO = employeeService.getRoleDetailsAsDTO(existingRoleName);
+            if (roleDTO == null) {
                 printError("Source role '" + existingRoleName + "' not found.");
                 CliUtil.waitForEnter(scanner);
                 return;
             }
 
             // Show permissions that will be cloned
-            HashSet<String> permissions = roleDetails.get(existingRoleName);
+            Set<String> permissions = roleDTO.getPermissions();
             CliUtil.printEmptyLine();
             CliUtil.printInfo("Permissions that will be cloned:");
             if (permissions == null || permissions.isEmpty()) {

@@ -1,6 +1,6 @@
 package ServiceLayer;
 
-import DomainLayer.Shift;
+import DomainLayer.EmployeeSubModule.Shift;
 import DomainLayer.enums.ShiftType;
 
 import java.time.LocalDate;

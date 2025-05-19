@@ -1,9 +1,11 @@
 import DomainLayer.*;
-import DomainLayer.EmpSubModule.EmployeeFacade;
+import DomainLayer.EmployeeSubModule.AssignmentController;
+import DomainLayer.EmployeeSubModule.AuthorisationController;
+import DomainLayer.EmployeeSubModule.AvailabilityController;
+import DomainLayer.EmployeeSubModule.EmployeeController;
+import DomainLayer.EmployeeSubModule.ShiftController;
 import DomainLayer.SiteSubModule.SiteFacade;
-import DomainLayer.TranSubModule.TransportController;
 import DomainLayer.TruSubModule.TruckFacade;
-import PresentationLayer.MainTranSysCLI;
 import PresentationLayer.MainCLI;
 import ServiceLayer.EmployeeService;
 import ServiceLayer.ShiftService;
@@ -13,27 +15,27 @@ import ServiceLayer.*;
 
 public class Main {
    public static void main(String[] args) {
-
-      TruckFacade tru_f = new TruckFacade();
-      EmployeeFacade eff = new EmployeeFacade();
-      SiteFacade sf = new SiteFacade();
-      TransportController tran_f = new TransportController(eff, sf, tru_f);
-
-      TransportService tran_s = new TransportService(tran_f);
-      TruckService tru_s = new TruckService(tru_f);
-      TranEmployeeService es = new TranEmployeeService(eff);
-      SiteService site_s = new SiteService(sf);
-
-      StartUpStateService start = new StartUpStateService(tran_s, tru_s, es, site_s);
-
-      MainTranSysCLI mtsc = new MainTranSysCLI(tru_s, tran_s, site_s, es, start);
-
-      mtsc.transportModuleStartup();      ///         <<<-----------------------   starts the whole Transport Module System
-
-
-
-
-
+//
+//      TruckFacade tru_f = new TruckFacade();
+//      EmployeeFacade eff = new EmployeeFacade();
+//      SiteFacade sf = new SiteFacade();
+//      TransportFacade tran_f = new TransportFacade(eff, sf, tru_f);
+//
+//      TransportService tran_s = new TransportService(tran_f);
+//      TruckService tru_s = new TruckService(tru_f);
+//      TranEmployeeService es = new TranEmployeeService(eff);
+//      SiteService site_s = new SiteService(sf);
+//
+//      StartUpStateService start = new StartUpStateService(tran_s, tru_s, es, site_s);
+//
+//      MainTranSysController mtsc = new MainTranSysController(tru_s, tran_s, site_s, es, start);
+//
+//      mtsc.transportModuleStartup();      ///         <<<-----------------------   starts the whole Transport Module System
+//
+//
+//
+//
+//
        /// ////////    <<<--------------------------------------   from here it's the HR's code      <<<--------------------     <<<------------------------------
 
        System.out.println("Initializing Employee Module System...");
@@ -72,8 +74,8 @@ public class Main {
        authController       = initData.getAuthController();
        employeeController   = initData.getEmployeeController();
        ShiftController shc   = initData.getShiftController();
-       assignmentController = new AssignmentController(employeeController);
-       availabilityController = new AvailabilityController(employeeController);
+       assignmentController = new AssignmentController(employeeController,shc);
+       availabilityController = new AvailabilityController(employeeController, shc);
        employeeService      = new EmployeeService(employeeController, authController);
        shiftService         = new ShiftService(shc, assignmentController, availabilityController);
 

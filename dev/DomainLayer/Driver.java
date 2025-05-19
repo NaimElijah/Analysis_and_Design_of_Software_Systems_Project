@@ -1,7 +1,6 @@
 package DomainLayer;
 
 //import DomainLayer.EmpSubModule.Employee;
-import DomainLayer.Employee;
 import DomainLayer.enums.enumDriLicense;
 import DomainLayer.enums.enumPermissionRank;
 
@@ -11,8 +10,9 @@ public class Driver {
     private ArrayList<enumDriLicense> licenses;
     private int inTransportID;
 
+    //TODO:         <<<-------------------  DELETE this class later
+
     public Driver(long id, enumPermissionRank permissions, ArrayList<enumDriLicense> licenses) {
-        this.employeeID = id;  //  <<<------  refactor
         this.licenses = licenses;
         this.inTransportID = -1;  // not assigned yet
     }

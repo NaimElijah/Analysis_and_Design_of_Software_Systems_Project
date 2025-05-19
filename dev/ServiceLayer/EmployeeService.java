@@ -1,7 +1,10 @@
 package ServiceLayer;
 
-import DomainLayer.AuthorisationController;
-import DomainLayer.EmployeeController;
+import DTOs.EmployeeDTO;
+import DTOs.RoleDTO;
+import DomainLayer.EmployeeSubModule.AuthorisationController;
+import DomainLayer.EmployeeSubModule.EmployeeController;
+import DomainLayer.EmployeeSubModule.Employee;
 import DomainLayer.exception.InvalidInputException;
 import DomainLayer.exception.UnauthorizedPermissionException;
 import ServiceLayer.exception.AuthorizationException;
@@ -10,6 +13,7 @@ import ServiceLayer.exception.ServiceException;
 import ServiceLayer.exception.ValidationException;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -23,6 +27,86 @@ public class EmployeeService {
     public EmployeeService(EmployeeController employeeController , AuthorisationController authorisationController) {
         this.employeeController = employeeController;
         this.authorisationController = authorisationController;
+    }
+
+    /**
+     * Converts a domain Employee object to an EmployeeDTO
+     * 
+     * @param employee The domain Employee object to convert
+     * @return The corresponding EmployeeDTO object
+     */
+    private EmployeeDTO convertToDTO(Employee employee) {
+        if (employee == null) {
+            return null;
+        }
+
+        return new EmployeeDTO(
+            employee.getIsraeliId(),
+            employee.getFirstName(),
+            employee.getLastName(),
+            employee.getSalary(),
+            employee.getTermsOfEmployment(),
+            employee.getRoles(),
+            employee.getStartOfEmployment(),
+            employee.isActive(),
+            employee.getCreationDate(),
+            employee.getUpdateDate()
+        );
+    }
+
+    /**
+     * Converts a role name and permissions to a RoleDTO
+     * 
+     * @param roleName The name of the role
+     * @param permissions The set of permissions for the role
+     * @return The corresponding RoleDTO object
+     */
+    private RoleDTO convertToRoleDTO(String roleName, Set<String> permissions) {
+        if (roleName == null) {
+            return null;
+        }
+
+        return new RoleDTO(roleName, permissions);
+    }
+
+    /**
+     * Serializes an EmployeeDTO to a string for transfer between layers
+     * 
+     * @param dto The EmployeeDTO to serialize
+     * @return The serialized string representation
+     */
+    private String serializeEmployeeDTO(EmployeeDTO dto) {
+        return dto.serialize();
+    }
+
+    /**
+     * Deserializes a string to an EmployeeDTO
+     * 
+     * @param serialized The serialized string representation
+     * @return The deserialized EmployeeDTO
+     */
+    private EmployeeDTO deserializeEmployeeDTO(String serialized) {
+        return EmployeeDTO.deserialize(serialized);
+    }
+
+    /**
+     * Serializes a RoleDTO to a string for transfer between layers
+     * 
+     * @param dto The RoleDTO to serialize
+     * @return The serialized string representation
+     */
+    private String serializeRoleDTO(RoleDTO dto) {
+        return dto.serialize();
+    }
+
+    /**
+     * Deserializes a string to a RoleDTO
+     * 
+     * @param serialized The serialized string representation
+     * @return The deserialized RoleDTO
+     */
+    private RoleDTO deserializeRoleDTO(String serialized) {
+        return RoleDTO.deserialize(serialized);
     }
 
     /**
@@ -49,16 +133,38 @@ public class EmployeeService {
     /**
      * Gets all employees in the system.
      *
-     * @return An array of all employees
+     * @return An array of serialized EmployeeDTO objects
      * @throws ServiceException if an error occurs while retrieving employees
      */
-    public EmployeeSL[] getAllEmployees() {
+    public String[] getAllEmployees() {
         try {
-            Map<Long, DomainLayer.Employee> employeeMap = employeeController.getAllEmployees();
-            EmployeeSL[] employees = new EmployeeSL[employeeMap.size()];
+            Map<Long, Employee> employeeMap = employeeController.getAllEmployees();
+            String[] serializedEmployees = new String[employeeMap.size()];
             int i = 0;
-            for (DomainLayer.Employee employee : employeeMap.values()) {
-                employees[i] = new EmployeeSL(employee);
+            for (Employee employee : employeeMap.values()) {
+                EmployeeDTO dto = convertToDTO(employee);
+                serializedEmployees[i] = serializeEmployeeDTO(dto);
+                i++;
+            }
+            return serializedEmployees;
+        } catch (Exception e) {
+            throw new ServiceException("Error retrieving all employees: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Gets all employees in the system as DTO objects.
+     *
+     * @return An array of EmployeeDTO objects
+     * @throws ServiceException if an error occurs while retrieving employees
+     */
+    public EmployeeDTO[] getAllEmployeesAsDTO() {
+        try {
+            Map<Long, Employee> employeeMap = employeeController.getAllEmployees();
+            EmployeeDTO[] employees = new EmployeeDTO[employeeMap.size()];
+            int i = 0;
+            for (Employee employee : employeeMap.values()) {
+                employees[i] = convertToDTO(employee);
                 i++;
             }
             return employees;
@@ -70,16 +176,48 @@ public class EmployeeService {
     /**
      * Gets all roles in the system.
      *
-     * @return An array of all role names
+     * @return An array of serialized RoleDTO objects
      * @throws ServiceException if an error occurs while retrieving roles
      */
     public String[] getAllRoles() {
         try {
             Map<String, String[]> rolesMap = authorisationController.getAllRolesWithPermissions();
-            String[] roles = new String[rolesMap.size()];
+            String[] serializedRoles = new String[rolesMap.size()];
             int i = 0;
-            for (String role : rolesMap.keySet()) {
-                roles[i] = role;
+            for (Map.Entry<String, String[]> entry : rolesMap.entrySet()) {
+                String roleName = entry.getKey();
+                Set<String> permissions = new HashSet<>();
+                for (String permission : entry.getValue()) {
+                    permissions.add(permission);
+                }
+                RoleDTO dto = convertToRoleDTO(roleName, permissions);
+                serializedRoles[i] = serializeRoleDTO(dto);
+                i++;
+            }
+            return serializedRoles;
+        } catch (Exception e) {
+            throw new ServiceException("Error retrieving all roles: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Gets all roles in the system as DTO objects.
+     *
+     * @return An array of RoleDTO objects
+     * @throws ServiceException if an error occurs while retrieving roles
+     */
+    public RoleDTO[] getAllRolesAsDTO() {
+        try {
+            Map<String, String[]> rolesMap = authorisationController.getAllRolesWithPermissions();
+            RoleDTO[] roles = new RoleDTO[rolesMap.size()];
+            int i = 0;
+            for (Map.Entry<String, String[]> entry : rolesMap.entrySet()) {
+                String roleName = entry.getKey();
+                Set<String> permissions = new HashSet<>();
+                for (String permission : entry.getValue()) {
+                    permissions.add(permission);
+                }
+                roles[i] = convertToRoleDTO(roleName, permissions);
                 i++;
             }
             return roles;
@@ -113,11 +251,11 @@ public class EmployeeService {
      * Gets details of a specific role, including its permissions.
      *
      * @param roleName The name of the role to get details for
-     * @return A map containing the role name and its permissions
+     * @return A serialized RoleDTO object
      * @throws ValidationException if the role name is invalid
      * @throws ServiceException if an error occurs while retrieving role details
      */
-    public Map<String, HashSet<String>> getRoleDetails(String roleName) {
+    public String getRoleDetails(String roleName) {
         try {
             // Validate input
             if (roleName == null || roleName.trim().isEmpty()) {
@@ -126,7 +264,40 @@ public class EmployeeService {
 
             Map<String, HashSet<String>> roleDetails = authorisationController.getRoleDetails(roleName);
             if (roleDetails != null && !roleDetails.isEmpty()) {
-                return roleDetails;
+                HashSet<String> permissions = roleDetails.get("permissions");
+                RoleDTO dto = convertToRoleDTO(roleName, permissions);
+                return serializeRoleDTO(dto);
+            } else {
+                throw new ValidationException("Role not found: " + roleName);
+            }
+        } catch (ValidationException e) {
+            throw e; // Rethrow validation exceptions
+        } catch (InvalidInputException e) {
+            throw new ValidationException(e.getMessage(), e);
+        } catch (Exception e) {
+            throw new ServiceException("Error retrieving role details: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Gets details of a specific role as a DTO object.
+     *
+     * @param roleName The name of the role to get details for
+     * @return A RoleDTO object
+     * @throws ValidationException if the role name is invalid
+     * @throws ServiceException if an error occurs while retrieving role details
+     */
+    public RoleDTO getRoleDetailsAsDTO(String roleName) {
+        try {
+            // Validate input
+            if (roleName == null || roleName.trim().isEmpty()) {
+                throw new ValidationException("roleName", "Role name cannot be null or empty");
+            }
+
+            Map<String, HashSet<String>> roleDetails = authorisationController.getRoleDetails(roleName);
+            if (roleDetails != null && !roleDetails.isEmpty()) {
+                HashSet<String> permissions = roleDetails.get("permissions");
+                return convertToRoleDTO(roleName, permissions);
             } else {
                 throw new ValidationException("Role not found: " + roleName);
             }
@@ -142,6 +313,63 @@ public class EmployeeService {
     // ========================
     // Employee related methods
     // ========================
+
+    /**
+     * Gets an employee by their Israeli ID.
+     *
+     * @param israeliId The Israeli ID of the employee to retrieve
+     * @return A serialized EmployeeDTO object
+     * @throws EmployeeNotFoundException if the employee with the given ID doesn't exist
+     * @throws ServiceException if an error occurs while retrieving the employee
+     */
+    public String getEmployeeById(long israeliId) {
+        try {
+            // Validate input
+            if (String.valueOf(israeliId).length() != 9) {
+                throw new ValidationException("israeliId", "Israeli ID must be 9 digits");
+            }
+
+            Employee employee = employeeController.getEmployeeByIsraeliId(israeliId);
+            if (employee == null) {
+                throw new EmployeeNotFoundException(israeliId);
+            }
+
+            EmployeeDTO dto = convertToDTO(employee);
+            return serializeEmployeeDTO(dto);
+        } catch (ValidationException | EmployeeNotFoundException e) {
+            throw e; // Rethrow specific exceptions
+        } catch (Exception e) {
+            throw new ServiceException("Error retrieving employee: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Gets an employee by their Israeli ID as a DTO object.
+     *
+     * @param israeliId The Israeli ID of the employee to retrieve
+     * @return An EmployeeDTO object
+     * @throws EmployeeNotFoundException if the employee with the given ID doesn't exist
+     * @throws ServiceException if an error occurs while retrieving the employee
+     */
+    public EmployeeDTO getEmployeeByIdAsDTO(long israeliId) {
+        try {
+            // Validate input
+            if (String.valueOf(israeliId).length() != 9) {
+                throw new ValidationException("israeliId", "Israeli ID must be 9 digits");
+            }
+
+            Employee employee = employeeController.getEmployeeByIsraeliId(israeliId);
+            if (employee == null) {
+                throw new EmployeeNotFoundException(israeliId);
+            }
+
+            return convertToDTO(employee);
+        } catch (ValidationException | EmployeeNotFoundException e) {
+            throw e; // Rethrow specific exceptions
+        } catch (Exception e) {
+            throw new ServiceException("Error retrieving employee: " + e.getMessage(), e);
+        }
+    }
 
     /**
      * Creates a new employee.
@@ -198,7 +426,7 @@ public class EmployeeService {
         try {
 
             // Check if employee exists
-            DomainLayer.Employee employee = employeeController.getEmployeeByIsraeliId(israeliId);
+            Employee employee = employeeController.getEmployeeByIsraeliId(israeliId);
             if (employee == null) {
                 throw new EmployeeNotFoundException(israeliId);
             }
@@ -239,7 +467,7 @@ public class EmployeeService {
             }
 
             // Check if employee exists
-            DomainLayer.Employee employee = employeeController.getEmployeeByIsraeliId(israeliId);
+            Employee employee = employeeController.getEmployeeByIsraeliId(israeliId);
             if (employee == null) {
                 throw new EmployeeNotFoundException(israeliId);
             }
@@ -258,6 +486,27 @@ public class EmployeeService {
             throw e; // Rethrow specific exceptions
         } catch (Exception e) {
             throw new ServiceException("Error deactivating employee: " + e.getMessage(), e);
+        }
+    }
+
+    public String getEmployeeFullNameByID(long israeliId) {
+        try {
+            // Validate input parameters
+            if (String.valueOf(israeliId).length() != 9) {
+                throw new ValidationException("israeliId", "Israeli ID must be 9 digits");
+            }
+
+            // Check if employee exists
+            Employee employee = employeeController.getEmployeeByIsraeliId(israeliId);
+            if (employee == null) {
+                throw new EmployeeNotFoundException(israeliId);
+            }
+
+            return employee.getFullName();
+        } catch (ValidationException | EmployeeNotFoundException e) {
+            throw e; // Rethrow specific exceptions
+        } catch (Exception e) {
+            throw new ServiceException("Error retrieving employee full name: " + e.getMessage(), e);
         }
     }
 
@@ -522,35 +771,19 @@ public class EmployeeService {
         }
     }
 
+    // ===========================
+    // Functions for integration with Transport module
+    // ===========================
+
     /**
-     * Retrieves an employee by their Israeli ID.
+     * Checks if the employee with the given Israeli ID has the specified permission.
      *
-     * @param israeliId The Israeli ID of the employee to retrieve
-     * @return The employee with the given Israeli ID
-     * @throws EmployeeNotFoundException if the employee is not found
-     * @throws ServiceException if an unexpected error occurs
+     * @param israeliId The unique identifier of the employee.
+     * @param permission The permission to check for the specified employee.
+     * @return true if the employee has the given permission, false otherwise.
+     * @throws AuthorizationException If there is an issue with authorization.
+     * @throws ServiceException If a general error occurs while checking permissions.
      */
-    public EmployeeSL getEmployeeById(long israeliId) {
-        try {
-            // Validate input
-            if (String.valueOf(israeliId).length() != 9) {
-                throw new ValidationException("israeliId", "Israeli ID must be 9 digits");
-            }
-
-            DomainLayer.Employee employee = employeeController.getEmployeeByIsraeliId(israeliId);
-            if (employee == null) {
-                throw new EmployeeNotFoundException(israeliId);
-            }
-            return new EmployeeSL(employee);
-        } catch (InvalidInputException e) {
-            throw new ValidationException(e.getMessage(), e);
-        } catch (EmployeeNotFoundException | ValidationException e) {
-            throw e; // Rethrow specific exceptions
-        } catch (Exception e) {
-            throw new ServiceException("Error retrieving employee: " + e.getMessage(), e);
-        }
-    }
-
     public boolean hasPermission(long israeliId, String permission) {
         try {
             return employeeController.hasPermission(israeliId, permission);
@@ -560,4 +793,35 @@ public class EmployeeService {
             throw new ServiceException("Error checking authorization: " + e.getMessage(), e);
         }
     }
+
+    /**
+     * Checks if the employee with the given ID is currently active.
+     *
+     * @param employeeId The unique identifier of the employee to be checked.
+     * @return true if the employee is active; false otherwise.
+     * @throws ServiceException if there is an error while checking the employee's status.
+     */
+    public boolean isEmployeeActive(long employeeId) {
+        try{
+            return employeeController.isEmployeeActive(employeeId);
+        } catch (Exception e) {
+            throw new ServiceException("Error checking employee status: " + e.getMessage(), e);
+        }
+    }
+    /**
+     * Checks if an employee, identified by their Israeli ID, has a specified role.
+     *
+     * @param israeliId the unique Israeli ID of the employee
+     * @param roleName the name of the role to check for the employee
+     * @return true if the employee has the specified role, otherwise false
+     * @throws ServiceException if an error occurs during the check
+     */
+    public boolean isEmployeeHaveRole(long israeliId, String roleName) {
+        try{
+            return employeeController.isEmployeeHaveRole(israeliId, roleName);
+        } catch (Exception e) {
+            throw new ServiceException("Error checking employee role: " + e.getMessage(), e);
+        }
+    }
+
 }

@@ -120,7 +120,7 @@ public class MainCLI {
 
     private void printWelcomeBanner() {
         String currentDate = LocalDate.now().format(CliUtil.dateFormatter);
-        String userInfo = employeeService.getEmployeeById(doneBy).getFullName();
+        String userInfo = employeeService.getEmployeeFullNameByID(doneBy);
         CliUtil.printWelcomeBanner("Employee Module", currentDate, userInfo);
     }
 

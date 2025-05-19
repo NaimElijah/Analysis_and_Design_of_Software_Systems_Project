@@ -1,9 +1,9 @@
 package PresentationLayer;
 
-import ServiceLayer.ShiftSL;
+import DTOs.ShiftDTO;
 import ServiceLayer.ShiftService;
 import ServiceLayer.EmployeeService;
-import ServiceLayer.EmployeeSL;
+import DTOs.EmployeeDTO;
 import ServiceLayer.exception.AuthorizationException;
 import ServiceLayer.exception.ServiceException;
 import DomainLayer.enums.ShiftType;
@@ -13,6 +13,7 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class AssignmentCLI {
 
@@ -170,7 +171,7 @@ public class AssignmentCLI {
      */
     private String formatEmployeeDisplay(long employeeId) {
         try {
-            EmployeeSL employee = employeeService.getEmployeeById(employeeId);
+            EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(employeeId);
             return employee.getFullName() + " (#" + employeeId + ")";
         } catch (ServiceException e) {
             // If we can't get the employee name, just return the ID
@@ -186,7 +187,7 @@ public class AssignmentCLI {
      */
     private String formatUnassignedEmployeeDisplay(long employeeId) {
         try {
-            EmployeeSL employee = employeeService.getEmployeeById(employeeId);
+            EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(employeeId);
                 return employee.getFullName() + " (#" + employeeId + ")" + "{" + employee.getRoles() + "}" + CliUtil.RESET ;
 
         } catch (ServiceException e) {
@@ -268,7 +269,7 @@ public class AssignmentCLI {
      * @param openOnly Whether to only show open shifts
      * @return The selected shift, or null if no shift was selected
      */
-    private ShiftSL selectShiftByDateAndType(String headerText, boolean openOnly) {
+    private ShiftDTO selectShiftByDateAndType(String headerText, boolean openOnly) {
         printSectionHeader(headerText);
 
         // Get date from user
@@ -276,12 +277,12 @@ public class AssignmentCLI {
 
         // Show available shifts on this date to help user make a selection
         try {
-            ShiftSL[] shiftsOnDate = shiftService.getAllShiftsByDate(doneBy, date);
+            ShiftDTO[] shiftsOnDate = ShiftDTO.deserializeList(shiftService.getAllShiftsByDate(doneBy, date)).toArray(new ShiftDTO[0]);
 
             // Filter shifts if openOnly is true
             if (openOnly) {
-                List<ShiftSL> openShifts = new ArrayList<>();
-                for (ShiftSL s : shiftsOnDate) {
+                List<ShiftDTO> openShifts = new ArrayList<>();
+                for (ShiftDTO s : shiftsOnDate) {
                     if (s.isOpen()) {
                         openShifts.add(s);
                     }
@@ -293,7 +294,7 @@ public class AssignmentCLI {
                     return null;
                 }
 
-                shiftsOnDate = openShifts.toArray(new ShiftSL[0]);
+                shiftsOnDate = openShifts.toArray(new ShiftDTO[0]);
             }
 
             if (shiftsOnDate.length == 0) {
@@ -305,7 +306,7 @@ public class AssignmentCLI {
             CliUtil.printSectionWithIcon("Available shifts on " + date.format(dateFormatter) + ":", "📅");
 
             List<String> shiftItems = new ArrayList<>();
-            for (ShiftSL s : shiftsOnDate) {
+            for (ShiftDTO s : shiftsOnDate) {
                 String status = s.isOpen() ? "(Open)" : "(Closed)";
                 shiftItems.add(s.getShiftType() + " shift " + status + " (ID: " + s.getId() + ")");
             }
@@ -321,7 +322,8 @@ public class AssignmentCLI {
 
         try {
             // Get shift by date and type
-            ShiftSL shift = shiftService.getShift(doneBy, date, shiftType);
+            String str = shiftService.getShift(doneBy, date, shiftType);
+            ShiftDTO shift = ShiftDTO.deserialize(str);
 
             // Check if shift is open if openOnly is true
             if (openOnly && !shift.isOpen()) {
@@ -388,14 +390,14 @@ public class AssignmentCLI {
         LocalDate today = LocalDate.now();
         LocalDate nextSunday = Week.getNextSunday(LocalDate.now());
 
-        List<ShiftSL> shifts = getShiftsInRange(nextSunday, nextSunday.plusDays(4));
+        List<ShiftDTO> shifts = getShiftsInRange(nextSunday, nextSunday.plusDays(4));
         if (shifts.isEmpty()) {
             printError("No open shifts found for the upcoming week (Sunday-Thursday).");
             waitForEnter();
             return;
         }
 
-        ShiftSL selectedShift = selectShiftFromList(shifts);
+        ShiftDTO selectedShift = selectShiftFromList(shifts);
         if (selectedShift != null) {
             assignEmployeesToSpecificShift(selectedShift);
         }
@@ -403,7 +405,7 @@ public class AssignmentCLI {
 
     private void assignBySpecificDate() {
         LocalDate date = CliUtil.getDateInput("Enter the specific date:", scanner);
-        List<ShiftSL> shifts = getShiftsInRange(date, date);
+        List<ShiftDTO> shifts = getShiftsInRange(date, date);
 
         if (shifts.isEmpty()) {
             printError("No open shifts found on selected date.");
@@ -411,7 +413,7 @@ public class AssignmentCLI {
             return;
         }
 
-        ShiftSL selectedShift = selectShiftFromList(shifts);
+        ShiftDTO selectedShift = selectShiftFromList(shifts);
         if (selectedShift != null) {
             assignEmployeesToSpecificShift(selectedShift);
         }
@@ -420,7 +422,7 @@ public class AssignmentCLI {
     private void assignFromPreviousWeeks() {
         LocalDate date = CliUtil.getDateInput("Enter a date from the past:", scanner);
         LocalDate weekStart = date.with(DayOfWeek.SUNDAY);
-        List<ShiftSL> shifts = getShiftsInRange(weekStart, weekStart.plusDays(6));
+        List<ShiftDTO> shifts = getShiftsInRange(weekStart, weekStart.plusDays(6));
 
         if (shifts.isEmpty()) {
             CliUtil.printError("No open shifts found for that week.");
@@ -428,29 +430,29 @@ public class AssignmentCLI {
             return;
         }
 
-        ShiftSL selectedShift = selectShiftFromList(shifts);
+        ShiftDTO selectedShift = selectShiftFromList(shifts);
         if (selectedShift != null) {
             assignEmployeesToSpecificShift(selectedShift);
         }
     }
 
-    private List<ShiftSL> getShiftsInRange(LocalDate start, LocalDate end) {
-        List<ShiftSL> shifts = new ArrayList<>();
+    private List<ShiftDTO> getShiftsInRange(LocalDate start, LocalDate end) {
+        List<ShiftDTO> shifts = new ArrayList<>();
         for (LocalDate date = start; !date.isAfter(end); date = date.plusDays(1)) {
             try {
-                ShiftSL[] dayShifts = shiftService.getAllShiftsByDate(doneBy, date);
-                for (ShiftSL shift : dayShifts) {
+                ShiftDTO[] dayShifts = ShiftDTO.deserializeList(shiftService.getAllShiftsByDate(doneBy, date)).toArray(new ShiftDTO[0]);
+                for (ShiftDTO shift : dayShifts) {
                     if (shift.isOpen()) {
                         shifts.add(shift);
                     }
                 }
             } catch (ServiceException ignored) {}
         }
-        shifts.sort(Comparator.comparing(ShiftSL::getShiftDate).thenComparing(ShiftSL::getShiftType));
+        shifts.sort(Comparator.comparing(ShiftDTO::getShiftDate).thenComparing(ShiftDTO::getShiftType));
         return shifts;
     }
 
-    private ShiftSL selectShiftFromList(List<ShiftSL> shifts) {
+    private ShiftDTO selectShiftFromList(List<ShiftDTO> shifts) {
         CliUtil.printOptionsHeader("Select a shift:");
         CliUtil.printNumberedListWithInfo(shifts, shift ->
                 String.format("%s %s (ID: %d)", shift.getShiftDate(), shift.getShiftType(), shift.getId()), 1);
@@ -459,20 +461,20 @@ public class AssignmentCLI {
         return shifts.get(choice - 1);
     }
 
-    private void assignEmployeesToSpecificShift(ShiftSL shift) {
+    private void assignEmployeesToSpecificShift(ShiftDTO shift) {
         CliUtil.printEmptyLine();
         printSectionHeader("Assign Employees to Shift");
 
         try {
             Set<Long> availableEmployees = shift.getAvailableEmployees();
-            EmployeeSL[] allEmployees = employeeService.getAllEmployees();
+            EmployeeDTO[] allEmployees = employeeService.getAllEmployeesAsDTO();
 
             CliUtil.printSectionWithIcon("Available Employees:", "👥");
-            for (EmployeeSL emp : allEmployees) {
-                boolean isAvailable = availableEmployees.contains(emp.getId());
+            for (EmployeeDTO emp : allEmployees) {
+                boolean isAvailable = availableEmployees.contains(emp.getIsraeliId());
                 String availability = isAvailable ? CliUtil.greenString("[Available]") : CliUtil.redString("[Unavailable]");
                 String roles = String.join(", ", emp.getRoles());
-                CliUtil.print(String.format("  • %s (ID: %d) %s | Roles: %s", emp.getFullName(), emp.getId(), availability, roles));
+                CliUtil.print(String.format("  • %s (ID: %d) %s | Roles: %s", emp.getFullName(), emp.getIsraeliId(), availability, roles));
             }
 
             CliUtil.printInfo("Assignment functionality coming next... (extend here)");
@@ -594,7 +596,7 @@ public class AssignmentCLI {
             // Get available roles
             Set<String> allRoles;
             try {
-                allRoles = shiftService.getRoles(doneBy);
+                allRoles = Arrays.stream(shiftService.getRoles(doneBy).split(",")).collect(Collectors.toSet());
             } catch (Exception e) {
                 printError("Error retrieving available roles: " + e.getMessage());
                 waitForEnter();
@@ -707,7 +709,7 @@ public class AssignmentCLI {
      */
     private void viewAllShifts() {
         // Convert array to list for pagination
-        List<ShiftSL> shiftList = Arrays.asList(shiftService.getAllShifts(doneBy));
+        List<ShiftDTO> shiftList = Arrays.asList(ShiftDTO.deserialize(shiftService.getAllShifts(doneBy)));
 
         // Define how many shifts to show per page
         final int ITEMS_PER_PAGE = 5;
@@ -762,7 +764,7 @@ public class AssignmentCLI {
 
         // Show available shifts on this date to help user make a selection
         try {
-            ShiftSL[] shiftsOnDate = shiftService.getAllShiftsByDate(doneBy, date);
+            ShiftDTO[] shiftsOnDate = ShiftDTO.deserializeList(shiftService.getAllShiftsByDate(doneBy, date)).toArray(new ShiftDTO[0]);
 
             if (shiftsOnDate.length == 0) {
                 printError("No shifts found for the selected date: " + date.format(dateFormatter));
@@ -773,7 +775,7 @@ public class AssignmentCLI {
             CliUtil.printSectionWithIcon("Available shifts on " + date.format(dateFormatter) + ":", "📅");
 
             List<String> shiftItems = new ArrayList<>();
-            for (ShiftSL s : shiftsOnDate) {
+            for (ShiftDTO s : shiftsOnDate) {
                 shiftItems.add(s.getShiftType() + " shift (ID: " + s.getId() + ")");
             }
             CliUtil.printHierarchicalList(shiftItems, "• ", 2);
@@ -788,7 +790,7 @@ public class AssignmentCLI {
 
         try {
             // Get shift by date and type
-            ShiftSL shift = shiftService.getShift(doneBy, date, shiftType);
+            ShiftDTO shift = ShiftDTO.deserialize(shiftService.getShift(doneBy, date, shiftType));
 
             CliUtil.printSuccessWithCheckmark("Found shift: " + date.format(dateFormatter) + " " + shiftType + " (ID: " + shift.getId() + ")");
             CliUtil.printEmptyLine();
@@ -886,7 +888,7 @@ public class AssignmentCLI {
         }
 
         // Select a shift by date and type (only open shifts)
-        ShiftSL shift = selectShiftByDateAndType("Assign Employees to Shift", true);
+        ShiftDTO shift = selectShiftByDateAndType("Assign Employees to Shift", true);
         if (shift == null) {
             return; // User cancelled or no shift was found
         }
@@ -911,7 +913,7 @@ public class AssignmentCLI {
             boolean continuingAssignments = true;
             while (continuingAssignments) {
                 // Refresh shift data
-                shift = shiftService.getShiftById(doneBy, shiftId);
+                shift = ShiftDTO.deserialize(shiftService.getShiftById(doneBy, shiftId));
                 rolesRequired = shift.getRolesRequired();
                 assignedEmployees = shift.getAssignedEmployees();
 
@@ -1132,7 +1134,7 @@ public class AssignmentCLI {
         }
 
         // Select a shift by date and type (only open shifts)
-        ShiftSL shift = selectShiftByDateAndType("Remove Employee from Shift", true);
+        ShiftDTO shift = selectShiftByDateAndType("Remove Employee from Shift", true);
         if (shift == null) {
             return; // User cancelled or no shift was found
         }
@@ -1221,7 +1223,7 @@ public class AssignmentCLI {
         }
 
         // Select a shift by date and type (only open shifts)
-        ShiftSL shift = selectShiftByDateAndType("Modify Required Roles", true);
+        ShiftDTO shift = selectShiftByDateAndType("Modify Required Roles", true);
         if (shift == null) {
             return; // User cancelled or no shift was found
         }
@@ -1235,7 +1237,7 @@ public class AssignmentCLI {
             boolean continuingModifications = true;
             while (continuingModifications) {
                 // Refresh shift data
-                shift = shiftService.getShiftById(doneBy, shiftId);
+                shift = ShiftDTO.deserialize(shiftService.getShiftById(doneBy, shiftId));
                 rolesRequired = shift.getRolesRequired();
 
                 CliUtil.printEmptyLine();
@@ -1295,7 +1297,7 @@ public class AssignmentCLI {
     private void addRequiredRole(long shiftId, Map<String, Integer> currentRoles) {
         try {
             // Get all available roles
-            Set<String> allRoles = shiftService.getRoles(doneBy);
+            String[] allRoles = shiftService.getRoles(doneBy).split(",");
 
             // Filter out roles that are already required
             List<String> availableRoles = new ArrayList<>();
@@ -1439,7 +1441,7 @@ public class AssignmentCLI {
             String employeeName = formatEmployeeDisplay(employeeId);
 
             // Get shifts assigned to the employee
-            ShiftSL[] shifts = shiftService.getShiftsByEmployee(doneBy, employeeId);
+            ShiftDTO[] shifts = ShiftDTO.deserializeList(shiftService.getShiftsByEmployee(doneBy, employeeId)).toArray(new ShiftDTO[0]);
 
             if (shifts.length == 0) {
                 CliUtil.printInfo("No shifts assigned to " + employeeName + ".");
@@ -1448,7 +1450,7 @@ public class AssignmentCLI {
             }
 
             // Convert array to list for pagination
-            List<ShiftSL> shiftList = Arrays.asList(shifts);
+            List<ShiftDTO> shiftList = Arrays.asList(shifts);
 
             // Define how many shifts to show per page
             final int ITEMS_PER_PAGE = 5;

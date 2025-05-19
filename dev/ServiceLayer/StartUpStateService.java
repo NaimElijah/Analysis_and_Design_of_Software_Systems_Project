@@ -8,14 +8,14 @@ import java.util.ArrayList;
 public class StartUpStateService {
     private TransportService tranSer;
     private TruckService truckSer;
-    private TranEmployeeService empSer;
+//    private TranEmployeeService empSer;
     private SiteService siteSer;
     private ObjectMapper objectMapper;
 
-    public StartUpStateService(TransportService tranSer, TruckService truckSer, TranEmployeeService empSer, SiteService siteSer) {
+    public StartUpStateService(TransportService tranSer, TruckService truckSer, SiteService siteSer) {
         this.tranSer = tranSer;
         this.truckSer = truckSer;
-        this.empSer = empSer;
+//        this.empSer = empSer;
         this.siteSer = siteSer;
         this.objectMapper = new ObjectMapper();
     }
@@ -41,9 +41,9 @@ public class StartUpStateService {
 
 
             //  Admin, Managers, Drivers:
-            this.empSer.initializeAdmin(111, "Cody", "Weber");
-            this.empSer.addManager(222, "Naim", "Elijah");
-            this.empSer.addManager(333, "Bar", "Miyara");
+//            this.empSer.initializeAdmin(111, "Cody", "Weber");
+//            this.empSer.addManager(222, "Naim", "Elijah");
+//            this.empSer.addManager(333, "Bar", "Miyara");
 
             ArrayList<String> tomsLicenses = new ArrayList<>();
             tomsLicenses.add("A");
@@ -59,9 +59,9 @@ public class StartUpStateService {
             maxLicenses.add("C");
             maxLicenses.add("D");
             maxLicenses.add("E");
-            this.empSer.addDriver(444, "Tom", "Hat", tomsLicenses);
-            this.empSer.addDriver(555, "Xavier", "Hernandez", xaviersLicenses);
-            this.empSer.addDriver(666, "Max", "Turner", maxLicenses);
+//            this.empSer.addDriver(444, "Tom", "Hat", tomsLicenses);
+//            this.empSer.addDriver(555, "Xavier", "Hernandez", xaviersLicenses);
+//            this.empSer.addDriver(666, "Max", "Turner", maxLicenses);
 
             // Transport
             ArrayList<ItemsDocDTO> itemsDocDTOs = new ArrayList<>();
@@ -90,9 +90,9 @@ public class StartUpStateService {
     }
 
 
-    public int getEmployeePermissionsRank(int loginIDGiven) {
-        return empSer.getEmployeePermissionsRank(loginIDGiven);
-    }
+//    public int getEmployeePermissionsRank(int loginIDGiven) {
+//        return empSer.getEmployeePermissionsRank(loginIDGiven);
+//    }
 
 
 

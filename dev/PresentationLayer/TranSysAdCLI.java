@@ -1,17 +1,17 @@
 package PresentationLayer;
 
-import ServiceLayer.TranEmployeeService;
+//import ServiceLayer.TranEmployeeService;
 
 import java.util.Scanner;
 
 public class TranSysAdCLI {
     private MainTranSysCLI main;
-    private TranEmployeeService emp_s;
+//    private TranEmployeeService emp_s;
     private Scanner scanner;
 
-    public TranSysAdCLI(MainTranSysCLI m, TranEmployeeService es, Scanner sc) {
+    public TranSysAdCLI(MainTranSysCLI m, Scanner sc) {
         this.main = m;
-        this.emp_s = es;
+//        this.emp_s = es;
         this.scanner = sc;
     }
 
@@ -50,12 +50,12 @@ public class TranSysAdCLI {
             System.out.println("Enter New Manager's Last Name:");
             String lname = scanner.nextLine();
 
-            String res = this.emp_s.addManager(empId, fname, lname);
-            if(res.equals("Success")){
-                System.out.println("Successfully Added new Manager.\n");
-            } else if(res.equals("Exception")){
-                System.out.println("Failed to Add new Manager due to technical machine error.\n");
-            }else { System.out.println(res + "\n"); }
+//            String res = this.emp_s.addManager(empId, fname, lname);
+//            if(res.equals("Success")){
+//                System.out.println("Successfully Added new Manager.\n");
+//            } else if(res.equals("Exception")){
+//                System.out.println("Failed to Add new Manager due to technical machine error.\n");
+//            }else { System.out.println(res + "\n"); }
 
 
 
@@ -69,12 +69,12 @@ public class TranSysAdCLI {
             } catch (Exception e) {}
             scanner.nextLine(); // consume the leftover newline
 
-            String res = this.emp_s.removeEmployeeByAdmin(empId);
-            if(res.equals("Success")){
-                System.out.println("Successfully Removed Employee.\n");
-            } else if(res.equals("Exception")){
-                System.out.println("Failed to Remove Employee due to technical machine error.\n");
-            }else { System.out.println(res + "\n"); }
+//            String res = this.emp_s.removeEmployeeByAdmin(empId);
+//            if(res.equals("Success")){
+//                System.out.println("Successfully Removed Employee.\n");
+//            } else if(res.equals("Exception")){
+//                System.out.println("Failed to Remove Employee due to technical machine error.\n");
+//            }else { System.out.println(res + "\n"); }
 
 
 
@@ -83,12 +83,12 @@ public class TranSysAdCLI {
             int driverId = scanner.nextInt();
             scanner.nextLine(); // consume the leftover newline
 
-            String res = this.emp_s.giveADriverAManagersPermissionRank(driverId);
-            if(res.equals("Success")){
-                System.out.println("Successfully Gave the Driver a Manager's Permission Rank.\n");
-            } else if(res.equals("Exception")){
-                System.out.println("Failed to Give the Driver a Manager's Permission Rank due to technical machine error.\n");
-            }else { System.out.println(res + "\n"); }
+//            String res = this.emp_s.giveADriverAManagersPermissionRank(driverId);
+//            if(res.equals("Success")){
+//                System.out.println("Successfully Gave the Driver a Manager's Permission Rank.\n");
+//            } else if(res.equals("Exception")){
+//                System.out.println("Failed to Give the Driver a Manager's Permission Rank due to technical machine error.\n");
+//            }else { System.out.println(res + "\n"); }
 
 
         } else if (choice.equals("7")) {
@@ -104,19 +104,19 @@ public class TranSysAdCLI {
 
     private void viewAllEmployees(){
         System.out.println("   --------    Showing All Employees    --------\n");
-        System.out.println(this.emp_s.showEmployees());
+//        System.out.println(this.emp_s.showEmployees());
         System.out.println();
     }
 
     private void viewAllManagers(){
         System.out.println("   --------    Showing All Managers    --------\n");
-        System.out.println(this.emp_s.showManagers());
+//        System.out.println(this.emp_s.showManagers());
         System.out.println();
     }
 
     private void viewAllDrivers(){
         System.out.println("   --------    Showing All Drivers    --------\n");
-        System.out.println(this.emp_s.showDrivers());
+//        System.out.println(this.emp_s.showDrivers());
         System.out.println();
     }
 

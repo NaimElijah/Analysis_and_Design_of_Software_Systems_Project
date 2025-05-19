@@ -2,8 +2,8 @@ package DomainLayer.TranSubModule;
 
 import DTOs.*;
 import DomainLayer.Driver;
-import DomainLayer.EmpSubModule.EmployeeFacade;
-import DomainLayer.EmployeeController;
+//import DomainLayer.EmpSubModule.EmployeeFacade;
+import DomainLayer.EmployeeSubModule.EmployeeController;
 import DomainLayer.SiteSubModule.Address;
 import DomainLayer.SiteSubModule.Site;
 import DomainLayer.SiteSubModule.SiteFacade;
@@ -33,12 +33,13 @@ public class TransportController {
 
 //    private EmployeeFacade employeeFacade;   ///  DELETEEEEE: using the new EmployeeController
     private EmployeeController employeeController;
-    private HashMap<Long, Integer> driverIdToInTransportID;  // TODO: mapping between a Drier to his inTransportID variable
+    private HashMap<Long, Integer> driverIdToInTransportID;  // TODO: mapping between a Driver to his inTransportID variable
 
     private SiteFacade siteFacade;
     private TruckFacade truckFacade;
 
     private ObjectMapper objectMapper;
+
 
     public TransportController(EmployeeController eC, SiteFacade sF, TruckFacade tF) {
         this.transportIDCounter = 0;
@@ -192,13 +193,14 @@ public class TransportController {
         if (currStatus == enumTranStatus.Canceled || currStatus == enumTranStatus.Completed || currStatus == enumTranStatus.Queued) {  // if currStatus is Not Active
             if (newStatus == enumTranStatus.BeingDelayed || newStatus == enumTranStatus.BeingAssembled || newStatus == enumTranStatus.InTransit) {  // if newStatus is Active
 
+                //TODO:  use isActive(id)  function   <<<-----------------------   <<----------------
                 // if the Truck or/and the Driver have been deleted
-                if (transport.getTransportDriver().getIsDeleted() || transport.getTransportTruck().getIsDeleted()) {
+                if (!this.employeeController.isActive(transport.getTransportDriverId()) || transport.getTransportTruck().getIsDeleted()) {
                     throw new IndexOutOfBoundsException("the Truck or/and Driver of this Transport have been Deleted, you can view available Trucks or/and Drivers using the menu and set appropriately");
                 }
 
-                if (transport.getTransportDriver().getInTransportID() != -1 && transport.getTransportDriver().getInTransportID() != TranDocID) {  // if it belongs to another Transport
-                    TransportDoc otherTransport = transports.get(transport.getTransportDriver().getInTransportID());
+                if (this.driverIdToInTransportID.get(transport.getTransportDriverId()) != -1 && this.driverIdToInTransportID.get(transport.getTransportDriverId()) != TranDocID) {  // if it belongs to another Transport
+                    TransportDoc otherTransport = transports.get(this.driverIdToInTransportID.get(transport.getTransportDriverId()));
                     if (otherTransport.getStatus() == enumTranStatus.BeingDelayed || otherTransport.getStatus() == enumTranStatus.BeingAssembled || otherTransport.getStatus() == enumTranStatus.InTransit) {  // if the other Transport is Active
                         throw new CommunicationException("cannot change Transport Status because it wants to change to an active one, but the Driver is already active in another Transport.");
                     }
@@ -213,7 +215,8 @@ public class TransportController {
 
                 // if got to here in this case (the first 2 outer if's), then we can make these actions:
                 transport.getTransportTruck().setInTransportID(TranDocID);
-                transport.getTransportDriver().setInTransportID(TranDocID);
+//                transport.getTransportDriver().setInTransportID(TranDocID);
+                this.driverIdToInTransportID.put(transport.getTransportDriverId(), TranDocID);
                 transport.setStatus(newStatus);
                 return;
             }
@@ -223,8 +226,9 @@ public class TransportController {
         /// scenario 2 & 3
         if (newStatus == enumTranStatus.Canceled || newStatus == enumTranStatus.Completed || newStatus == enumTranStatus.Queued) {  // if newStatus is Not Active
             if (currStatus == enumTranStatus.BeingDelayed || currStatus == enumTranStatus.BeingAssembled || currStatus == enumTranStatus.InTransit) {  // if currStatus is Active
-                if (transport.getTransportDriver().getInTransportID() == TranDocID) {   // if he is active in the transport
-                    transport.getTransportDriver().setInTransportID(-1);  //  release him
+                if (this.driverIdToInTransportID.get(transport.getTransportDriverId()) == TranDocID) {   // if he is active in the transport
+//                    transport.getTransportDriver().setInTransportID(-1);  //  release him
+                    this.driverIdToInTransportID.put(transport.getTransportDriverId(), -1);  //  release him
                 }
                 if (transport.getTransportTruck().getInTransportID() == TranDocID) {   // if it is active in the transport
                     transport.getTransportTruck().setInTransportID(-1);  //  release it
@@ -270,9 +274,10 @@ public class TransportController {
         // if we got to here so the truck is not in an active transport OR/AND the Transport we are trying to set is not active
 
         // check NewTruck - Driver Compatability
-        if (!this.transports.get(TranDocID).getTransportDriver().getLicenses().contains(truck.getValid_license())){
-            throw new CommunicationException("The transport's driver doesn't have the fitting license for the new Truck you want to set.");
-        }
+        //TODO:  use the hasRole in the employee controller
+//        if (!this.transports.get(TranDocID).getTransportDriver().getLicenses().contains(truck.getValid_license())){
+//            throw new CommunicationException("The transport's driver doesn't have the fitting license for the new Truck you want to set.");
+//        }    //TODO:    do this logic later   <<------------------
 
         //  CHECK IF THE TRUCK CAN CARRY THE WEIGHT OF THAT TRANSPORT   <<-----------------------
         if (this.transports.get(TranDocID).calculateTransportItemsWeight() > truck.getMax_carry_weight()){
@@ -286,33 +291,34 @@ public class TransportController {
 
 
     public void setTransportDriver(int TranDocID, int DriverID) throws FileNotFoundException, ArrayIndexOutOfBoundsException, FileAlreadyExistsException, CloneNotSupportedException, CommunicationException, ClassNotFoundException {
-        if(!transports.containsKey(TranDocID)){
-            throw new FileNotFoundException("The Transport ID you have entered doesn't exist.");
-        } else if (!this.employeeFacade.getDrivers().containsKey(DriverID)){
-            throw new ArrayIndexOutOfBoundsException("The Driver ID you have entered doesn't exist.");
-        } else if (this.transports.get(TranDocID).getTransportDriver().getId() == DriverID) {
-            throw new FileAlreadyExistsException("This Driver is already the Driver of this Transport");
-        } else if (employeeFacade.getDrivers().get(DriverID).getIsDeleted()) {   // if the Driver has been deleted
-            throw new ClassNotFoundException("the Driver of this Transport have been Deleted, you can view available Drivers using the menu and set appropriately");
-        }
+//        if(!transports.containsKey(TranDocID)){
+//            throw new FileNotFoundException("The Transport ID you have entered doesn't exist.");
+//        } else if (!this.employeeFacade.getDrivers().containsKey(DriverID)){
+//            throw new ArrayIndexOutOfBoundsException("The Driver ID you have entered doesn't exist.");
+//        } else if (this.transports.get(TranDocID).getTransportDriverId() == DriverID) {
+//            throw new FileAlreadyExistsException("This Driver is already the Driver of this Transport");
+//        } else if (!employeeController.isActive(DriverID)) {   // if the Driver has been deleted
+//            throw new ClassNotFoundException("the Driver of this Transport have been Deleted, you can view available Drivers using the menu and set appropriately");
+//        }//TODO:    <<<---------------------------------------------  change here
 
         /// Note:  a Driver cannot be in more than 1 active Transport
-
-        Driver driver = this.employeeFacade.getDrivers().get(DriverID);  // the driver in contention to be set in the Transport
-        if(driver.getInTransportID() != -1){    // so it belong to another Transport Active right now, We take care of the Transport's status in the setTransportStatus() function
-            if (this.transports.get(TranDocID).getStatus() == enumTranStatus.InTransit || this.transports.get(TranDocID).getStatus() == enumTranStatus.BeingDelayed || this.transports.get(TranDocID).getStatus() == enumTranStatus.BeingAssembled) {
-                throw new CloneNotSupportedException("The Transport you are trying to set to is Active and The Driver you are trying to set is already Occupied with another Active Transport right now");
-            }
-        }
+        //TODO:    <<<---------------------------------------------  change here
+//        Driver driver = this.employeeFacade.getDrivers().get(DriverID);  // the driver in contention to be set in the Transport
+//        if(driver.getInTransportID() != -1){    // so it belong to another Transport Active right now, We take care of the Transport's status in the setTransportStatus() function
+//            if (this.transports.get(TranDocID).getStatus() == enumTranStatus.InTransit || this.transports.get(TranDocID).getStatus() == enumTranStatus.BeingDelayed || this.transports.get(TranDocID).getStatus() == enumTranStatus.BeingAssembled) {
+//                throw new CloneNotSupportedException("The Transport you are trying to set to is Active and The Driver you are trying to set is already Occupied with another Active Transport right now");
+//            }
+//        }
 
         // if we got to here so the driver is not in an active transport OR/AND the Transport we are trying to set is not active
 
+        //TODO:    <<<---------------------------------------------  change here
         // check Truck - NewDriver Compatability
-        if (!driver.getLicenses().contains(this.transports.get(TranDocID).getTransportTruck().getValid_license())){
-            throw new CommunicationException("The New Driver you are trying to set doesn't have the fitting license for the Truck that is in the Transport.");
-        }
-
-        this.transports.get(TranDocID).setTransportDriver(driver);
+//        if (!driver.getLicenses().contains(this.transports.get(TranDocID).getTransportTruck().getValid_license())){
+//            throw new CommunicationException("The New Driver you are trying to set doesn't have the fitting license for the Truck that is in the Transport.");
+//        }
+////TODO:    <<<---------------------------------------------  change here
+//        this.transports.get(TranDocID).setTransportDriver(driver);
     }
 
 
@@ -326,23 +332,23 @@ public class TransportController {
 
 
     public void isTruckDriverPairingGood(int truckNum, int driverID) throws FileNotFoundException, ArrayIndexOutOfBoundsException, ClassNotFoundException, CloneNotSupportedException {
-        if (!this.truckFacade.getTrucksWareHouse().containsKey(truckNum)) {
-            throw new FileNotFoundException("Truck Number entered doesn't exist");
-        } else if (!this.employeeFacade.getDrivers().containsKey(driverID)) {
-            throw new ArrayIndexOutOfBoundsException("The Driver ID you have entered doesn't exist");
-        } else if (this.truckFacade.getTrucksWareHouse().get(truckNum).getInTransportID() != -1){
-            throw new CloneNotSupportedException("The Truck you chose is partaking in another Active Transport right now");
-        }
+//        if (!this.truckFacade.getTrucksWareHouse().containsKey(truckNum)) {
+//            throw new FileNotFoundException("Truck Number entered doesn't exist");
+//        } else if (!this.employeeFacade.getDrivers().containsKey(driverID)) {
+//            throw new ArrayIndexOutOfBoundsException("The Driver ID you have entered doesn't exist");
+//        } else if (this.truckFacade.getTrucksWareHouse().get(truckNum).getInTransportID() != -1){
+//            throw new CloneNotSupportedException("The Truck you chose is partaking in another Active Transport right now");
+//        }//TODO:    <<<---------------------------------------------  change here
 
-        boolean isThereAvailableDriverMatchingThisTruck = false;
-        for (Driver driver : this.employeeFacade.getDrivers().values()){
-            if (driver.getLicenses().contains(this.truckFacade.getTrucksWareHouse().get(truckNum).getValid_license()) && driver.getInTransportID() == -1){  // if driver compatible and free
-                isThereAvailableDriverMatchingThisTruck = true;
-            }
-        }
-        if (!isThereAvailableDriverMatchingThisTruck){
-            throw new ClassNotFoundException("There isn't a Driver that is available right now and compatible, license wise, with the Truck you chose");
-        }
+//        boolean isThereAvailableDriverMatchingThisTruck = false;
+//        for (Driver driver : this.employeeFacade.getDrivers().values()){
+//            if (driver.getLicenses().contains(this.truckFacade.getTrucksWareHouse().get(truckNum).getValid_license()) && driver.getInTransportID() == -1){  // if driver compatible and free
+//                isThereAvailableDriverMatchingThisTruck = true;
+//            }
+//        }
+//        if (!isThereAvailableDriverMatchingThisTruck){
+//            throw new ClassNotFoundException("There isn't a Driver that is available right now and compatible, license wise, with the Truck you chose");
+//        }//TODO:    <<<---------------------------------------------  change here
     }
 
 
@@ -366,88 +372,90 @@ public class TransportController {
 
 
     public String checkTransportValidity(String DTO_OfTransport) throws JsonProcessingException {  ///  returns: "Valid", "BadLicenses", "overallWeight-truckMaxCarryWeight", "Queue", "Occupied"
-        TransportDTO transport_DTO = this.objectMapper.readValue(DTO_OfTransport, TransportDTO.class);
+        //TODO:    <<<---------------------------------------------  change here
+//        TransportDTO transport_DTO = this.objectMapper.readValue(DTO_OfTransport, TransportDTO.class);
+////TODO:    <<<---------------------------------------------  change here
+//        Driver driver = (Driver) this.employeeFacade.getEmployees().get(transport_DTO.getTransportDriverID());
+//        Truck truck = this.truckFacade.getTrucksWareHouse().get(transport_DTO.getTransportTruckNum());
+//        Site srcSite = this.siteFacade.getShippingAreas().get(transport_DTO.getSrc_site().getSiteAreaNum()).getSites().get(transport_DTO.getSrc_site().getSiteAddressString());
+////TODO:    <<<---------------------------------------------  change here
+//        TransportDoc tempTransport = new TransportDoc(enumTranStatus.BeingAssembled, transport_DTO.getTransport_ID(), truck, driver, srcSite);
+////TODO:    <<<---------------------------------------------  change here
+//        for (ItemsDocDTO itemsDocDTO : transport_DTO.getDests_Docs()){
+//            Site destSiteTemp = this.siteFacade.getShippingAreas().get(itemsDocDTO.getDest_siteDTO().getSiteAreaNum()).getSites().get(itemsDocDTO.getDest_siteDTO().getSiteAddressString());
+//            String tempCName = destSiteTemp.getcName();
+//            long tempCNumber = destSiteTemp.getcNumber();
+//            tempTransport.addDestSite(itemsDocDTO.getItemsDoc_num(), destSiteTemp);
+//
+//            for (ItemQuantityDTO itemQuantityDTO : itemsDocDTO.getItemQuantityDTOs()){
+//                tempTransport.addItem(itemsDocDTO.getItemsDoc_num(), itemQuantityDTO.getItem().getName(), itemQuantityDTO.getItem().getWeight(), itemQuantityDTO.getQuantity(), itemQuantityDTO.getItem().getCondition());
+//            }
+//        }    ///  adding every site and every item for each site
+//
+//        double overallTransportWeight = tempTransport.calculateTransportItemsWeight();
+//        String res = "Valid";
+//
+//        /// /////////////////////////////////    <<-------------------------------------   checking if there's a Driver-Truck Pairing At All Right Now, from the Free ones
+//
+//        ///  checking if there is a match at all, from those who are free right now
+//        boolean isThereMatchAtAllBetweenLicenses = false;
+//        for (Driver driv : this.employeeFacade.getDrivers().values()){
+//            for (enumDriLicense drivers_license : driv.getLicenses()){
+//                for (Truck truc : this.truckFacade.getTrucksWareHouse().values()){
+//                    if (truc.getValid_license().equals(drivers_license) && (!isDriverActive(driv)) && (!isTruckActive(truc))){  // searching only the free ones, like in the Requirements
+//                        isThereMatchAtAllBetweenLicenses = true;  // if found
+//                        break;   // because already found
+//                    }
+//                }
+//                if (isThereMatchAtAllBetweenLicenses){break;}  // if already found
+//            }
+//            if (isThereMatchAtAllBetweenLicenses){break;}  // if already found
+//        }
+//
+//        if(!isThereMatchAtAllBetweenLicenses){
+//            // send to Queue
+//            this.addTransportToWaitQueue(tempTransport);
+//            return "Queue";
+//        }
+//
+//        // else: continue to check other stuff
+//
+//
+//        /// /////////////////////////////////    <<-------------------------------------   checking if the Driver-Truck pairing is compatible
+//
+//        boolean driver_has_correct_license = false;
+//        for (enumDriLicense drivers_license : tempTransport.getTransportDriver().getLicenses()){
+//            if (tempTransport.getTransportTruck().getValid_license().equals(drivers_license)){
+//                driver_has_correct_license = true;
+//                break;
+//            }
+//        }
+//        if (!driver_has_correct_license){
+//            return "BadLicenses";
+//        }
+//
+//        // else: continue to check another thing
+//
+//        /// /////////////////////////////////    <<-------------------------------------   checking if the Driver-Truck pairing are both free
+//
+//        if (isDriverActive(tempTransport.getTransportDriver())){ return "Occupied"; }
+//        if (isTruckActive(tempTransport.getTransportTruck())){ return "Occupied"; }
+//
+//        // else: continue to check another thing
+//        /// /////////////////////////////////    <<-------------------------------------   checking Overall Weight
+//
+//        if (tempTransport.getTransportTruck().getMax_carry_weight() < overallTransportWeight){
+//            res = "" + overallTransportWeight + "-" + tempTransport.getTransportTruck().getMax_carry_weight();  // "overallWeight-truckMaxCarryWeight" format
+//        }//TODO:    <<<---------------------------------------------  change here
 
-        Driver driver = (Driver) this.employeeFacade.getEmployees().get(transport_DTO.getTransportDriverID());
-        Truck truck = this.truckFacade.getTrucksWareHouse().get(transport_DTO.getTransportTruckNum());
-        Site srcSite = this.siteFacade.getShippingAreas().get(transport_DTO.getSrc_site().getSiteAreaNum()).getSites().get(transport_DTO.getSrc_site().getSiteAddressString());
-
-        TransportDoc tempTransport = new TransportDoc(enumTranStatus.BeingAssembled, transport_DTO.getTransport_ID(), truck, driver, srcSite);
-
-        for (ItemsDocDTO itemsDocDTO : transport_DTO.getDests_Docs()){
-            Site destSiteTemp = this.siteFacade.getShippingAreas().get(itemsDocDTO.getDest_siteDTO().getSiteAreaNum()).getSites().get(itemsDocDTO.getDest_siteDTO().getSiteAddressString());
-            String tempCName = destSiteTemp.getcName();
-            long tempCNumber = destSiteTemp.getcNumber();
-            tempTransport.addDestSite(itemsDocDTO.getItemsDoc_num(), destSiteTemp);
-
-            for (ItemQuantityDTO itemQuantityDTO : itemsDocDTO.getItemQuantityDTOs()){
-                tempTransport.addItem(itemsDocDTO.getItemsDoc_num(), itemQuantityDTO.getItem().getName(), itemQuantityDTO.getItem().getWeight(), itemQuantityDTO.getQuantity(), itemQuantityDTO.getItem().getCondition());
-            }
-        }    ///  adding every site and every item for each site
-
-        double overallTransportWeight = tempTransport.calculateTransportItemsWeight();
-        String res = "Valid";
-
-        /// /////////////////////////////////    <<-------------------------------------   checking if there's a Driver-Truck Pairing At All Right Now, from the Free ones
-
-        ///  checking if there is a match at all, from those who are free right now
-        boolean isThereMatchAtAllBetweenLicenses = false;
-        for (Driver driv : this.employeeFacade.getDrivers().values()){
-            for (enumDriLicense drivers_license : driv.getLicenses()){
-                for (Truck truc : this.truckFacade.getTrucksWareHouse().values()){
-                    if (truc.getValid_license().equals(drivers_license) && (!isDriverActive(driv)) && (!isTruckActive(truc))){  // searching only the free ones, like in the Requirements
-                        isThereMatchAtAllBetweenLicenses = true;  // if found
-                        break;   // because already found
-                    }
-                }
-                if (isThereMatchAtAllBetweenLicenses){break;}  // if already found
-            }
-            if (isThereMatchAtAllBetweenLicenses){break;}  // if already found
-        }
-
-        if(!isThereMatchAtAllBetweenLicenses){
-            // send to Queue
-            this.addTransportToWaitQueue(tempTransport);
-            return "Queue";
-        }
-
-        // else: continue to check other stuff
-
-
-        /// /////////////////////////////////    <<-------------------------------------   checking if the Driver-Truck pairing is compatible
-
-        boolean driver_has_correct_license = false;
-        for (enumDriLicense drivers_license : tempTransport.getTransportDriver().getLicenses()){
-            if (tempTransport.getTransportTruck().getValid_license().equals(drivers_license)){
-                driver_has_correct_license = true;
-                break;
-            }
-        }
-        if (!driver_has_correct_license){
-            return "BadLicenses";
-        }
-
-        // else: continue to check another thing
-
-        /// /////////////////////////////////    <<-------------------------------------   checking if the Driver-Truck pairing are both free
-
-        if (isDriverActive(tempTransport.getTransportDriver())){ return "Occupied"; }
-        if (isTruckActive(tempTransport.getTransportTruck())){ return "Occupied"; }
-
-        // else: continue to check another thing
-        /// /////////////////////////////////    <<-------------------------------------   checking Overall Weight
-
-        if (tempTransport.getTransportTruck().getMax_carry_weight() < overallTransportWeight){
-            res = "" + overallTransportWeight + "-" + tempTransport.getTransportTruck().getMax_carry_weight();  // "overallWeight-truckMaxCarryWeight" format
-        }
-
-        return res;
+//        return res;
+        return "";
     }
 
 
 
 
-    private boolean isDriverActive(Driver driver){
+    private boolean isDriverActive(Driver driver){ //TODO:    <<<---------------------------------------------  change here
         if (driver.getInTransportID() != -1) {  // if driver is in another transport
             TransportDoc otherTransport = transports.get(driver.getInTransportID());
             if(otherTransport.getStatus() == enumTranStatus.BeingAssembled || otherTransport.getStatus() == enumTranStatus.InTransit || otherTransport.getStatus() == enumTranStatus.BeingDelayed){  // if other Transport is Active
@@ -523,7 +531,7 @@ public class TransportController {
             listOfItemsDocDTOs.add(new ItemsDocDTO(itemsDoc.getItemDoc_num(), srcSiteDTO, destSiteDTO, itemQuantityDTOS));
         }
 
-        TransportDTO transportDTO = new TransportDTO(transportDoc.getTran_Doc_ID(), transportDoc.getTransportTruck().getTruck_num(), transportDoc.getTransportDriver().getId(), srcSiteDTO, listOfItemsDocDTOs);
+        TransportDTO transportDTO = new TransportDTO(transportDoc.getTran_Doc_ID(), transportDoc.getTransportTruck().getTruck_num(), transportDoc.getTransportDriverId(), srcSiteDTO, listOfItemsDocDTOs);
         return transportDTO;
     }
 
@@ -694,22 +702,23 @@ public class TransportController {
 
     public void checkIfDriverDrivesThisItemsDoc(int id, int itemsDocId) throws FileNotFoundException, IllegalAccessException, ClassNotFoundException {
         if (!this.itemsDocs.containsKey(itemsDocId)) { throw new FileNotFoundException("Items Document ID not found."); }
-        if (!this.employeeFacade.getDrivers().containsKey(id)) { throw new ClassNotFoundException("Driver ID doesn't exist."); }
+//        if (!this.employeeFacade.getDrivers().containsKey(id)) { throw new ClassNotFoundException("Driver ID doesn't exist."); }
+        //TODO:    <<<---------------------------------------------  change here
+//        boolean driverDrivesThisItemsDoc = false;
+//        for (TransportDoc transportDoc : this.transports.values()) {
+//            if (transportDoc.getTransportDriver().getId() == id){//TODO:    <<<---------------------------------------------  change here
+//                for (ItemsDoc itemsDoc : transportDoc.getDests_Docs()) {
+//                    if (itemsDoc.getItemDoc_num() == itemsDocId) {
+//                        driverDrivesThisItemsDoc = true;
+//                        break; // because found
+//                    }
+//                }
+//            }
+//            if (driverDrivesThisItemsDoc){ break;}   // because found
+//        }
 
-        boolean driverDrivesThisItemsDoc = false;
-        for (TransportDoc transportDoc : this.transports.values()) {
-            if (transportDoc.getTransportDriver().getId() == id){
-                for (ItemsDoc itemsDoc : transportDoc.getDests_Docs()) {
-                    if (itemsDoc.getItemDoc_num() == itemsDocId) {
-                        driverDrivesThisItemsDoc = true;
-                        break; // because found
-                    }
-                }
-            }
-            if (driverDrivesThisItemsDoc){ break;}   // because found
-        }
-
-        if (!driverDrivesThisItemsDoc) { throw new IllegalAccessException("Driver doesn't drive this Items Document's Transport"); }
+        //TODO:    <<<---------------------------------------------  change here
+//        if (!driverDrivesThisItemsDoc) { throw new IllegalAccessException("Driver doesn't drive this Items Document's Transport"); }
     }
 
 
@@ -795,22 +804,23 @@ public class TransportController {
 
 
     public String showTransportsOfDriver(int id) throws ArrayStoreException {
-        if (!this.employeeFacade.getDrivers().containsKey(id)) { throw new ArrayStoreException("The Driver(ID) to show Transports for was not found"); }
-        String res = "All Transports (all statuses) That Driver with id " + id + " is written in:\n";
-
-        for (TransportDoc t : transports.values()){
-            if (t.getTransportDriver().getId() == id){
-                res += t.toString() + "\n";
-            }
-        }
-        res += "\nQueued Transports of Driver(Values of Drivers/Trucks/Time here are the values that were set when first trying to create the Transport):\n";
-        for (TransportDoc t : this.queuedTransports){
-            if (t.getTransportDriver().getId() == id){
-                res += "(Queued Transport) " + t.toString() + "\n";
-            }
-        }
-        res += "\n";
-        return res;
+//        if (!this.employeeFacade.getDrivers().containsKey(id)) { throw new ArrayStoreException("The Driver(ID) to show Transports for was not found"); }
+//        String res = "All Transports (all statuses) That Driver with id " + id + " is written in:\n";
+//      //TODO:    <<<---------------------------------------------  change here
+//        for (TransportDoc t : transports.values()){
+//            if (t.getTransportDriver().getId() == id){
+//                res += t.toString() + "\n";
+//            }
+//        } //TODO:    <<<---------------------------------------------  change here
+//        res += "\nQueued Transports of Driver(Values of Drivers/Trucks/Time here are the values that were set when first trying to create the Transport):\n";
+//        for (TransportDoc t : this.queuedTransports){
+//            if (t.getTransportDriver().getId() == id){
+//                res += "(Queued Transport) " + t.toString() + "\n";
+//            } //TODO:    <<<---------------------------------------------  change here
+//        }
+//        res += "\n";
+//        return res;
+        return "";
     }
 
 
