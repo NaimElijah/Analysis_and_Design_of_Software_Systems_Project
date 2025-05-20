@@ -164,15 +164,16 @@ public class AssignmentCLI {
     //==========================================================================================
 
     /**
-     * Formats employee display with name and number
+     * Formats employee display with name, number, and branch
      *
      * @param employeeId The ID of the employee
-     * @return A formatted string with employee name and number
+     * @return A formatted string with employee name, number, and branch
      */
     private String formatEmployeeDisplay(long employeeId) {
         try {
             EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(employeeId);
-            return employee.getFullName() + " (#" + employeeId + ")";
+            String branch = employee.getBranch() != null ? " [" + employee.getBranch() + "]" : "";
+            return employee.getFullName() + " (#" + employeeId + ")" + branch;
         } catch (ServiceException e) {
             // If we can't get the employee name, just return the ID
             return "Employee #" + employeeId;
@@ -180,15 +181,16 @@ public class AssignmentCLI {
     }
 
     /**
-     * Formats employee display with name and number and color to show availability
+     * Formats employee display with name, number, branch, and roles to show availability
      *
      * @param employeeId The ID of the employee
-     * @return A formatted string with the employee name and number
+     * @return A formatted string with the employee name, number, branch, and roles
      */
     private String formatUnassignedEmployeeDisplay(long employeeId) {
         try {
             EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(employeeId);
-                return employee.getFullName() + " (#" + employeeId + ")" + "{" + employee.getRoles() + "}" + CliUtil.RESET ;
+            String branch = employee.getBranch() != null ? " [" + employee.getBranch() + "]" : "";
+            return employee.getFullName() + " (#" + employeeId + ")" + branch + " {" + employee.getRoles() + "}" + CliUtil.RESET;
 
         } catch (ServiceException e) {
             // If we can't get the employee name, just return the ID
@@ -263,7 +265,7 @@ public class AssignmentCLI {
 
     /**
      * Utility method to select a shift by date and type
-     * Shows available shifts on the selected date to help user make a selection
+     * Shows available shifts on the selected date to help the user make a selection
      * 
      * @param headerText The header text to display
      * @param openOnly Whether to only show open shifts

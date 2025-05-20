@@ -8,12 +8,16 @@ import DomainLayer.EmployeeSubModule.Employee;
 import DomainLayer.EmployeeSubModule.EmployeeController;
 import ServiceLayer.exception.AuthorizationException;
 import ServiceLayer.exception.EmployeeNotFoundException;
+import ServiceLayer.exception.ValidationException;
+import ServiceLayer.exception.ServiceException;
 
 import java.time.LocalDate;
 import java.util.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -23,8 +27,13 @@ class EmployeeServiceTest {
     private EmployeeController employeeController;
     private AuthorisationController authorisationController;
     private Employee adminEmployee;
+    private Employee managerEmployee;
+    private Employee regularEmployee;
     private final long ADMIN_ID = 123456789L;
+    private final long MANAGER_ID = 234567891L;
+    private final long REGULAR_EMPLOYEE_ID = 345678912L;
     private final long TEST_EMPLOYEE_ID = 987654321L;
+    private final long INVALID_ID = 999999999L;
 
     @BeforeEach
     void setUp() {
@@ -40,51 +49,98 @@ class EmployeeServiceTest {
         roles.put("ADMIN", new HashSet<>(permissions)); // Admin has all permissions
         roles.put("MANAGER", new HashSet<>(Arrays.asList("CREATE_EMPLOYEE", "UPDATE_EMPLOYEE")));
         roles.put("EMPLOYEE", new HashSet<>(Collections.emptyList()));
+        roles.put("DRIVER", new HashSet<>(Arrays.asList("DRIVE_TRUCK")));
 
         authorisationController = new AuthorisationController(roles, permissions);
 
-        // Create a test employee with admin role
+        // Create test employees with different roles
         Set<Employee> employees = new HashSet<>();
+
+        // Admin employee
         Set<String> adminRoles = new HashSet<>();
         adminRoles.add("ADMIN");
-
-        // Create terms of employment map
-        Map<String, Object> termsOfEmployment = new HashMap<>();
-        termsOfEmployment.put("bankAccount", new BankAccount(1L, 123L, 456L, 789L));
-
+        Map<String, Object> adminTerms = new HashMap<>();
+        adminTerms.put("bankAccount", new BankAccount(1L, 123L, 456L, 789L));
         adminEmployee = new Employee(ADMIN_ID, "Admin", "User", 50000, 
-                                     termsOfEmployment, adminRoles, 
+                                     adminTerms, adminRoles, 
                                      LocalDate.now().minusYears(1), true, 
-                                     LocalDate.now().minusYears(1), LocalDate.now());
+                                     LocalDate.now().minusYears(1), LocalDate.now(),
+                                     "Headquarters");
         employees.add(adminEmployee);
+
+        // Manager employee
+        Set<String> managerRoles = new HashSet<>();
+        managerRoles.add("MANAGER");
+        Map<String, Object> managerTerms = new HashMap<>();
+        managerTerms.put("bankAccount", new BankAccount(2L, 234L, 567L, 890L));
+        managerEmployee = new Employee(MANAGER_ID, "Manager", "User", 40000, 
+                                      managerTerms, managerRoles, 
+                                      LocalDate.now().minusYears(1), true, 
+                                      LocalDate.now().minusYears(1), LocalDate.now(),
+                                      "Tel Aviv Branch");
+        employees.add(managerEmployee);
+
+        // Regular employee
+        Set<String> regularRoles = new HashSet<>();
+        regularRoles.add("EMPLOYEE");
+        Map<String, Object> regularTerms = new HashMap<>();
+        regularTerms.put("bankAccount", new BankAccount(3L, 345L, 678L, 901L));
+        regularEmployee = new Employee(REGULAR_EMPLOYEE_ID, "Regular", "User", 30000, 
+                                      regularTerms, regularRoles, 
+                                      LocalDate.now().minusYears(1), true, 
+                                      LocalDate.now().minusYears(1), LocalDate.now(),
+                                      "Jerusalem Branch");
+        employees.add(regularEmployee);
 
         employeeController = new EmployeeController(employees, authorisationController);
         employeeService = new EmployeeService(employeeController, authorisationController);
     }
 
-    @Test
-    void createEmployee() {
-        // Test data
+    // Helper method to create a test employee
+    private void createTestEmployee() {
         String firstName = "David";
         String lastName = "Ben-Gurion";
         long salary = 40000;
         Map<String, Object> termsOfEmployment = new HashMap<>();
         termsOfEmployment.put("bankAccount", new BankAccount(2L, 111L, 222L, 333L));
         LocalDate startOfEmployment = LocalDate.now();
+        String branch = "Tel Aviv Branch";
 
-        // Test creating an employee
-        String result = employeeService.createEmployee(ADMIN_ID, TEST_EMPLOYEE_ID, firstName, lastName, 
-                                                     salary, termsOfEmployment, startOfEmployment);
+        employeeService.createEmployee(ADMIN_ID, TEST_EMPLOYEE_ID, firstName, lastName, 
+                                     salary, termsOfEmployment, startOfEmployment, branch);
+    }
 
-        assertEquals("Employee created successfully", result);
+    @Nested
+    @DisplayName("Employee Management Tests")
+    class EmployeeManagementTests {
 
-        // Verify the employee was created
-        EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(TEST_EMPLOYEE_ID);
-        assertNotNull(employee);
-        assertEquals(firstName, employee.getFirstName());
-        assertEquals(lastName, employee.getLastName());
-        assertEquals(salary, employee.getSalary());
-        assertTrue(employee.isActive());
+        @Test
+        @DisplayName("Create employee successfully")
+        void createEmployee() {
+            // Test data
+            String firstName = "David";
+            String lastName = "Ben-Gurion";
+            long salary = 40000;
+            Map<String, Object> termsOfEmployment = new HashMap<>();
+            termsOfEmployment.put("bankAccount", new BankAccount(2L, 111L, 222L, 333L));
+            LocalDate startOfEmployment = LocalDate.now();
+
+            // Test creating an employee
+            String branch = "Tel Aviv Branch";
+            String result = employeeService.createEmployee(ADMIN_ID, TEST_EMPLOYEE_ID, firstName, lastName, 
+                                                         salary, termsOfEmployment, startOfEmployment, branch);
+
+            assertEquals("Employee created successfully", result);
+
+            // Verify the employee was created
+            EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(TEST_EMPLOYEE_ID);
+            assertNotNull(employee);
+            assertEquals(firstName, employee.getFirstName());
+            assertEquals(lastName, employee.getLastName());
+            assertEquals(salary, employee.getSalary());
+            assertEquals(branch, employee.getBranch());
+            assertTrue(employee.isActive());
+        }
     }
 
     @Test
@@ -100,8 +156,9 @@ class EmployeeServiceTest {
         newTermsOfEmployment.put("bankAccount", new BankAccount(3L, 444L, 555L, 666L));
 
         // Test updating the employee
+        String newBranch = "Jerusalem Branch";
         String result = employeeService.updateEmployee(ADMIN_ID, TEST_EMPLOYEE_ID, newFirstName, 
-                                                     newLastName, newSalary, newTermsOfEmployment, true);
+                                                     newLastName, newSalary, newTermsOfEmployment, true, newBranch);
 
         assertEquals("Employee updated successfully", result);
 
@@ -111,6 +168,7 @@ class EmployeeServiceTest {
         assertEquals(newFirstName, employee.getFirstName());
         assertEquals(newLastName, employee.getLastName());
         assertEquals(newSalary, employee.getSalary());
+        assertEquals(newBranch, employee.getBranch());
         assertTrue(employee.isActive());
     }
 
@@ -144,7 +202,7 @@ class EmployeeServiceTest {
         String[] roles = employeeService.getAllRoles();
         boolean roleFound = false;
         for (String role : roles) {
-            if (role.equals(roleName)) {
+            if (role.contains(roleName)) {
                 roleFound = true;
                 break;
             }
@@ -254,28 +312,18 @@ class EmployeeServiceTest {
         Employee regularEmployee = new Employee(555555555L, "Regular", "User", 30000, 
                                               termsOfEmployment, regularRoles, 
                                               LocalDate.now().minusYears(1), true, 
-                                              LocalDate.now().minusYears(1), LocalDate.now());
+                                              LocalDate.now().minusYears(1), LocalDate.now(),
+                                              "Branch Office");
 
         employeeController.createEmployee(ADMIN_ID, 555555555L, "Regular", "User", 30000, 
-                                        termsOfEmployment, regularRoles, LocalDate.now().minusYears(1));
+                                        termsOfEmployment, regularRoles, LocalDate.now().minusYears(1),
+                                        "Branch Office");
 
         // Test creating an employee with unauthorized user
         assertThrows(AuthorizationException.class, () -> {
             employeeService.createEmployee(555555555L, 111111111L, "Test", "User", 
-                                         25000, termsOfEmployment, LocalDate.now());
+                                         25000, termsOfEmployment, LocalDate.now(), "Test Branch");
         });
     }
 
-    // Helper method to create a test employee
-    private void createTestEmployee() {
-        String firstName = "David";
-        String lastName = "Ben-Gurion";
-        long salary = 40000;
-        Map<String, Object> termsOfEmployment = new HashMap<>();
-        termsOfEmployment.put("bankAccount", new BankAccount(2L, 111L, 222L, 333L));
-        LocalDate startOfEmployment = LocalDate.now();
-
-        employeeService.createEmployee(ADMIN_ID, TEST_EMPLOYEE_ID, firstName, lastName, 
-                                     salary, termsOfEmployment, startOfEmployment);
-    }
 }

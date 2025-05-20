@@ -166,7 +166,7 @@ public class ShiftCLI {
     }
 
     private void printWelcomeBanner() {
-        CliUtil.printWelcomeBanner("SHIFT MANAGEMENT SYSTEM", LocalDate.now().toString(), "Employee #" + doneBy);
+        CliUtil.printWelcomeBanner("SHIFT MANAGEMENT SYSTEM", LocalDate.now().toString(), formatEmployeeDisplay(doneBy));
     }
 
     /**
@@ -189,15 +189,16 @@ public class ShiftCLI {
     }
 
     /**
-     * Formats employee display with name and number
+     * Formats employee display with name, number, and branch
      *
      * @param employeeId The ID of the employee
-     * @return A formatted string with employee name and number
+     * @return A formatted string with employee name, number, and branch
      */
     private String formatEmployeeDisplay(long employeeId) {
         try {
             EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(employeeId);
-            return employee.getFullName() + " (#" + employeeId + ")";
+            String branch = employee.getBranch() != null ? " [" + employee.getBranch() + "]" : "";
+            return employee.getFullName() + " (#" + employeeId + ")" + branch;
         } catch (ServiceException e) {
             // If we can't get the employee name, just return the ID
             return "Employee #" + employeeId;

@@ -3,12 +3,10 @@ package ServiceLayer;
 import DTOs.ShiftDTO;
 import DomainLayer.EmployeeSubModule.AssignmentController;
 import DomainLayer.EmployeeSubModule.AvailabilityController;
-import DomainLayer.EmployeeSubModule.Shift;
 import DomainLayer.EmployeeSubModule.ShiftController;
 import DomainLayer.enums.ShiftType;
 import Util.Week;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
@@ -128,28 +126,6 @@ public class ShiftService {
         }
     }
 
-    /**
-     * Converts a Shift domain object to a ShiftDTO
-     * @param shift the Shift domain object
-     * @return a ShiftDTO representing the Shift
-     */
-    private ShiftDTO convertToDTO(Shift shift) {
-        return new ShiftDTO(
-            shift.getId(),
-            shift.getShiftType(),
-            shift.getShiftDate(),
-            shift.getRolesRequired(),
-            shift.getAssignedEmployees(),
-            shift.getAvailableEmployees(),
-            shift.isAssignedShiftManager(),
-            shift.isOpen(),
-            shift.getStartHour(),
-            shift.getEndHour(),
-            shift.getCreateDate(),
-            shift.getUpdateDate()
-        );
-    }
-
     public String getAllShifts(long doneBy) {
         try {
             String domainShifts = shiftController.getAllShifts(doneBy);
@@ -159,9 +135,9 @@ public class ShiftService {
         }
     }
 
-    public String getAllShiftsByDate(long doneBy, LocalDate date) {
+    public String getAllShiftsByDateBranch(long doneBy, LocalDate date, String branch) {
         try {
-            String shifts = shiftController.getAllShiftsByDate(doneBy, date);
+            String shifts = shiftController.getAllShiftsByDateAndBranch(doneBy, date, branch);
             return shifts;
         } catch (RuntimeException e) {
             return "Error: " + e.getMessage();
@@ -375,9 +351,19 @@ public class ShiftService {
         }
     }
 
-    public boolean isAssignedByDate(long doneBy, LocalDate date, LocalTime hour, long employeeId) {
+    /**
+     * Checks if an employee is assigned to a shift at a specific date, time, and branch.
+     *
+     * @param doneBy the ID of the user performing the check
+     * @param date the date of the shift
+     * @param hour the time of the shift
+     * @param employeeId the ID of the employee to check
+     * @param branch the branch where the shift is located
+     * @return true if the employee is assigned to the shift, false otherwise
+     */
+    public boolean isAssignedByDateTimeBranch(long doneBy, LocalDate date, LocalTime hour, long employeeId, String branch) {
         try {
-            return assignmentController.isAssignedByDate(doneBy, date, hour, employeeId);
+            return assignmentController.isAssignedEmployeeByDateTimeBranch(doneBy, date, hour, employeeId, branch);
         } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }
@@ -389,5 +375,30 @@ public class ShiftService {
             return "Error: " + e.getMessage();
         }
     }
+    /**
+     * Checks whether a specific role is assigned at a given date, time, and branch location.
+     *
+     * @param date The date to verify the role assignment.
+     * @param hour The time to verify the role assignment.
+     * @param role The role to check within the given shift.
+     * @param branch The branch location where the verification is performed.
+     * @return true if the specified role is assigned at the specified date, time, and branch; false otherwise.
+     * @throws RuntimeException if an error occurs during the operation.
+     */
+    public boolean isAssignedRoleByDateTimeBranch( LocalDate date, LocalTime hour, String role, String branch) {
+        try {
+            return assignmentController.isAssignedRoleByDateTimeBranch( date, hour, role, branch);
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
+    public String getAllShiftsByDate(long doneBy, LocalDate date) {
+        try {
+            String shifts = shiftController.getAllShiftsByDate(doneBy, date);
+            return shifts;
+        } catch (RuntimeException e) {
+            return "Error: " + e.getMessage();
+        }
+    }
 }

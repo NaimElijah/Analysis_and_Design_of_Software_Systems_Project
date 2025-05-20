@@ -44,6 +44,7 @@ public class ShiftDTO {
     private LocalTime endHour;
     private LocalDate createDate;
     private LocalDate updateDate;
+    private String branch; // Branch that this shift belongs to
 
     /**
      * Default constructor for serialization
@@ -73,6 +74,29 @@ public class ShiftDTO {
         this.endHour = endHour;
         this.createDate = createDate;
         this.updateDate = updateDate;
+        this.branch = null; // Default to null
+    }
+
+    /**
+     * Full constructor for creating a ShiftDTO with all fields including branch
+     */
+    public ShiftDTO(long id, ShiftType shiftType, LocalDate shiftDate, 
+                   Map<String, Integer> rolesRequired, Map<String, Set<Long>> assignedEmployees, 
+                   Set<Long> availableEmployees, boolean isAssignedShiftManager, 
+                   boolean isOpen,LocalTime startHour , LocalTime endHour, LocalDate createDate, LocalDate updateDate, String branch) {
+        this.id = id;
+        this.shiftType = shiftType;
+        this.shiftDate = shiftDate;
+        this.rolesRequired = rolesRequired != null ? new HashMap<>(rolesRequired) : new HashMap<>();
+        this.assignedEmployees = assignedEmployees != null ? new HashMap<>(assignedEmployees) : new HashMap<>();
+        this.availableEmployees = availableEmployees != null ? new HashSet<>(availableEmployees) : new HashSet<>();
+        this.isAssignedShiftManager = isAssignedShiftManager;
+        this.isOpen = isOpen;
+        this.startHour = startHour;
+        this.endHour = endHour;
+        this.createDate = createDate;
+        this.updateDate = updateDate;
+        this.branch = branch;
     }
 
     // Getters and setters
@@ -166,6 +190,24 @@ public class ShiftDTO {
 
     public void setUpdateDate(LocalDate updateDate) {
         this.updateDate = updateDate;
+    }
+
+    /**
+     * Gets the branch that this shift belongs to.
+     * 
+     * @return The branch name
+     */
+    public String getBranch() {
+        return branch;
+    }
+
+    /**
+     * Sets the branch that this shift belongs to.
+     * 
+     * @param branch The branch name
+     */
+    public void setBranch(String branch) {
+        this.branch = branch;
     }
 
     /**
@@ -329,6 +371,7 @@ public class ShiftDTO {
                 ", isAssignedShiftManager=" + isAssignedShiftManager +
                 ", startHour=" + startHour +
                 ", endHour=" + endHour +
+                ", branch='" + branch + '\'' +
                 ", createDate=" + createDate +
                 ", updateDate=" + updateDate +
                 '}';

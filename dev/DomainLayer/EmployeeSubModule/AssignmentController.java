@@ -155,14 +155,47 @@ public class AssignmentController {
         return unAssignedEmployees;
     }
 
-    public boolean isAssignedByDate(long doneBy, LocalDate date, LocalTime hour, long employeeId) {
+    /**
+     * Checks if a specific employee is assigned to a shift at a given date, time, and branch location.
+     * Verifies that the user performing the check has the required permission
+     * before retrieving and analyzing the shift data.
+     *
+     * @param doneBy The ID of the user performing the check. This user must have the appropriate permissions.
+     * @param date The date of the shift being checked.
+     * @param hour The start time of the shift being checked.
+     * @param employeeId The ID of the employee whose assignment status is being verified.
+     * @param branch The branch location where the shift is scheduled.
+     * @return true if the specified employee is assigned to any role in the given shift; false otherwise.
+     */
+    public boolean isAssignedEmployeeByDateTimeBranch(long doneBy, LocalDate date, LocalTime hour, long employeeId, String branch) {
         String PERMISSION = "GET_ASSIGN";
         if (!employeeController.isEmployeeAuthorised(doneBy, PERMISSION)) {
             throw new UnauthorizedPermissionException("User does not have permission to assign employees");
         }
-        Shift shift = shiftController.getShiftbyDateAndTime(doneBy, date, hour);
+        Shift shift = shiftController.getShiftbyDateTimeAndBranch(date, hour, branch);
         return shift.getAssignedEmployees().values().stream()
                 .anyMatch(set -> set.contains(employeeId));
     }
+
+    /**
+     * Checks whether a specific role is assigned at a given date, time, and branch location.
+     * Verifies that the user performing the check has the required permission before retrieving and analyzing the shift data.
+     *
+     * @param date The date of the shift being checked.
+     * @param hour The start time of the shift being checked.
+     * @param role The role being verified within the shift.
+     * @param branch The branch location where the shift is scheduled.
+     * @return true if the specified role is assigned within the given shift; false otherwise.
+     * @throws UnauthorizedPermissionException if the user performing the check does not have permission to verify role assignments.
+     */
+    public boolean isAssignedRoleByDateTimeBranch( LocalDate date, LocalTime hour, String role, String branch) {
+        String PERMISSION = " "; // TODO: Define the permission needed for this action
+//        if (!employeeController.isEmployeeAuthorised(doneBy, PERMISSION)) {
+//            throw new UnauthorizedPermissionException("User does not have permission to view assign employees");
+//        }
+        Shift shift = shiftController.getShiftbyDateTimeAndBranch(date, hour, branch);
+        return shift.getAssignedEmployees().get(role) != null;
+    }
+
 
 }
