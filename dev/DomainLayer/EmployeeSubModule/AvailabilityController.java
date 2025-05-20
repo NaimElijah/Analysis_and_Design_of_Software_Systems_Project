@@ -2,8 +2,9 @@ package DomainLayer.EmployeeSubModule;
 
 import DomainLayer.exception.UnauthorizedPermissionException;
 import Util.Week;
+import Util.config;
 
-import java.time.LocalDate;
+import java.time.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,6 +78,9 @@ public class AvailabilityController {
 
     public Map<LocalDate, Map<String, Boolean>> getWeeklyAvailability(Week week, long doneBy) {
         String PERMISSION = "UPDATE_AVAILABLE";
+        if (isWeekendBlocked()) {
+            throw new IllegalArgumentException("Availability update is blocked on weekends.");
+        }
         if (!employeeController.isEmployeeAuthorised(doneBy, PERMISSION)) {
             throw new UnauthorizedPermissionException("User does not have permission to check availability");
         }
@@ -89,6 +93,16 @@ public class AvailabilityController {
                     .put(shift.getShiftType().toString(), isAvailable(shift.getId(), doneBy));
         }
         return availability;
+    }
+
+    public boolean isWeekendBlocked() {
+        ZonedDateTime now = ZonedDateTime.now(ZoneId.systemDefault());
+        DayOfWeek day = now.getDayOfWeek();
+        LocalTime time = now.toLocalTime();
+
+        return (day == DayOfWeek.THURSDAY && time.isAfter(config.BLOCK_AVAILABILITY_START))
+                || day == DayOfWeek.FRIDAY
+                || day == DayOfWeek.SATURDAY;
     }
 
 }

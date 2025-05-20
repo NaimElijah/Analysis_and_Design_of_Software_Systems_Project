@@ -56,7 +56,6 @@ public class TransportController {
         ///  NOTE: I already did all of the checks beforehand, so if we get to here, then we can successfully and legitimately create the Transport
 
         TransportDTO transport_DTO = this.objectMapper.readValue(DTO_OfTransport, TransportDTO.class);
-//        Driver driver = this.employeeFacade.getDrivers().get(transport_DTO.getTransportDriverID());
         long driverId = transport_DTO.getTransportDriverID();  ///  NEW
         Truck truck = this.truckFacade.getTrucksWareHouse().get(transport_DTO.getTransportTruckNum());
 
@@ -95,7 +94,6 @@ public class TransportController {
         newTransportBeingCreated.setStatus(enumTranStatus.InTransit);
         newTransportBeingCreated.getTransportTruck().setInTransportID(newTransportBeingCreated.getTran_Doc_ID());
         this.driverIdToInTransportID.put(driverId, newTransportBeingCreated.getTran_Doc_ID());   ///  NEW
-//        newTransportBeingCreated.getTransportDriver().setInTransportID(newTransportBeingCreated.getTran_Doc_ID());
         newTransportBeingCreated.setTruck_Depart_Weight(newTransportBeingCreated.calculateTransportItemsWeight());
         newTransportBeingCreated.setDeparture_dt(LocalDateTime.now());  //  the time is set already in the constructor of the Transport, but just to be accurate :)
 
@@ -137,8 +135,6 @@ public class TransportController {
 
         if (this.driverIdToInTransportID.containsKey(toRemoveDoc.getTransportDriverId())){
             if (this.driverIdToInTransportID.get(toRemoveDoc.getTransportDriverId()) == toRemoveDoc.getTran_Doc_ID()){
-//                toRemoveDoc.getTransportDriver().setInTransportID(-1);  //  releasing the Driver if he's with this Transport
-//                this.driverIdToInTransportID.put(toRemoveDoc.getTransportDriverId(), -1);
                 this.driverIdToInTransportID.remove(toRemoveDoc.getTransportDriverId());
             }
         }
@@ -210,7 +206,6 @@ public class TransportController {
 
                 // if got to here in this case (the first 2 outer if's), then we can make these actions:
                 transport.getTransportTruck().setInTransportID(TranDocID);
-//                transport.getTransportDriver().setInTransportID(TranDocID);
                 this.driverIdToInTransportID.put(transport.getTransportDriverId(), TranDocID);
                 transport.setStatus(newStatus);
                 return;
@@ -223,8 +218,6 @@ public class TransportController {
             if (currStatus == enumTranStatus.BeingDelayed || currStatus == enumTranStatus.BeingAssembled || currStatus == enumTranStatus.InTransit) {  // if currStatus is Active
                 if (this.driverIdToInTransportID.containsKey(transport.getTransportDriverId())) {
                     if (this.driverIdToInTransportID.get(transport.getTransportDriverId()) == TranDocID) {   // if he is active in the transport
-//                        transport.getTransportDriver().setInTransportID(-1);  //  release him
-//                        this.driverIdToInTransportID.put(transport.getTransportDriverId(), -1);  //  release him
                         this.driverIdToInTransportID.remove(transport.getTransportDriverId());  //  release him
                     }
                 }
@@ -390,7 +383,6 @@ public class TransportController {
         String res = "Valid";
 
         if(!isThereMatchAtAllBetweenLicenses){
-            // send to Queue
             this.addTransportToWaitQueue(tempTransport);
             return "Queue";
         }
@@ -467,6 +459,8 @@ public class TransportController {
             throw new AttributeNotFoundException("There are no Queued Transports.");
         }
     }
+
+
 
 
 
@@ -688,7 +682,7 @@ public class TransportController {
 
 
 
-    public void checkIfDriverDrivesThisItemsDoc(int id, int itemsDocId, boolean isNotDriver) throws FileNotFoundException, IllegalAccessException, ClassNotFoundException {
+    public void checkIfDriverDrivesThisItemsDoc(long id, int itemsDocId, boolean isNotDriver) throws FileNotFoundException, IllegalAccessException, ClassNotFoundException {
         if (!this.itemsDocs.containsKey(itemsDocId)) { throw new FileNotFoundException("Items Document ID not found."); }
         if (isNotDriver){ throw new ClassNotFoundException("Driver ID doesn't exist."); }
 
@@ -790,7 +784,7 @@ public class TransportController {
 
 
 
-    public String showTransportsOfDriver(int id, boolean isNotDriver) throws ArrayStoreException {
+    public String showTransportsOfDriver(long id, boolean isNotDriver) throws ArrayStoreException {
         if (isNotDriver){ throw new ArrayStoreException("The Driver(ID) to show Transports for was not found"); }
         String res = "All Transports (all statuses) That Driver with id " + id + " is written in:\n";
         for (TransportDoc t : transports.values()){

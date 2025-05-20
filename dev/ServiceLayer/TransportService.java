@@ -379,7 +379,7 @@ public class TransportService {
 
 
 
-    public String checkIfDriverDrivesThisItemsDoc(int id, int itemsDocId) {
+    public String checkIfDriverDrivesThisItemsDoc(long id, int itemsDocId) {
         if (id < 0 || itemsDocId < 0){ return "The IDs you enter cannot be negative"; }
         try {
             boolean isNotDriver = !this.employeeIntegrationServiceService.hasRole(id, "DriverA") && !this.employeeIntegrationServiceService.hasRole(id, "DriverB") && !this.employeeIntegrationServiceService.hasRole(id, "DriverC") && !this.employeeIntegrationServiceService.hasRole(id, "DriverD") && !this.employeeIntegrationServiceService.hasRole(id, "DriverE");
@@ -527,7 +527,7 @@ public class TransportService {
 
 
 
-    public String showTransportsOfDriver(int id) {
+    public String showTransportsOfDriver(long id) {
         if (id < 0){ return "The Driver(ID) you want to show is invalid (it's negative)"; }
         String res = "";
         try {

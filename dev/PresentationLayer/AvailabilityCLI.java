@@ -38,7 +38,8 @@ public class AvailabilityCLI {
 
     public boolean process() {
         try {
-            if (isWeekendBlocked()) {
+            // check if the availability board is blocked on weekends
+            if (shiftService.isWeekendBlocked()) {
                 System.out.println("🚫 Availability update is blocked on weekends.");
                 return false;
             }
@@ -52,7 +53,10 @@ public class AvailabilityCLI {
             }
 
             List<ShiftDTO> shiftsList = new ArrayList<>(weekShifts);
-            shiftsList.sort(Comparator.comparing(ShiftDTO::getShiftDate));
+            Comparator<ShiftDTO> byDateThenType = Comparator
+                    .comparing(ShiftDTO::getShiftDate)
+                    .thenComparing(ShiftDTO::getShiftType);
+            shiftsList.sort(byDateThenType);
 
             CliUtil.printSectionHeader("Employee Weekly Availability", false, "SYSTEM");
 
@@ -126,18 +130,12 @@ public class AvailabilityCLI {
             CliUtil.printError("An error occurred: " + e.getMessage());
             return true;
         }
+        //System.out.printf("%d. %-15s| %-13s| %-13s|%n", index, (shift.getShiftType() == ShiftType.MORNING ? dayStr + " " + date : ""), shift.getShiftType(), availabilityMark);
+
     }
 
 
-    private boolean isWeekendBlocked() {
-        ZonedDateTime now = ZonedDateTime.now(ZoneId.systemDefault());
-        DayOfWeek day = now.getDayOfWeek();
-        LocalTime time = now.toLocalTime();
 
-        return (day == DayOfWeek.THURSDAY && time.isAfter(LocalTime.of(16, 0)))
-                || day == DayOfWeek.FRIDAY
-                || day == DayOfWeek.SATURDAY;
-    }
 
     //==========================================================================================
     // UI UTILITY METHODS

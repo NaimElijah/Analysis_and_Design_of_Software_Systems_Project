@@ -92,14 +92,6 @@
     "GET_SHIFT",
     "HANDLE_CASH"
   ],
-  "Driver": [
-    "VIEW_SHIFT",
-    "DRIVE_VEHICLE",
-    "UPDATE_AVAILABLE",
-    "GET_SHIFT",
-    "VIEW_RELEVANT_TRANSPORTS",
-    "EDIT_TRANSPORT_ITEM_CONDITION"
-  ],
   "Stocker": [
     "VIEW_SHIFT",
     "UPDATE_AVAILABLE",
@@ -112,6 +104,30 @@
     "UPDATE_AVAILABLE",
     "GET_SHIFT",
     "CLEAN_FACILITY"
-  ]
-
+  ],
+  "DriverA": [
+    "VIEW_SHIFT",
+    "UPDATE_AVAILABLE",
+    "GET_SHIFT"
+  ],
+    "DriverB": [
+        "VIEW_SHIFT",
+        "UPDATE_AVAILABLE",
+        "GET_SHIFT"
+    ],
+    "DriverC": [
+        "VIEW_SHIFT",
+        "UPDATE_AVAILABLE",
+        "GET_SHIFT"
+    ],
+    "DriverD": [
+        "VIEW_SHIFT",
+        "UPDATE_AVAILABLE",
+        "GET_SHIFT"
+    ],
+    "DriverE": [
+        "VIEW_SHIFT",
+        "UPDATE_AVAILABLE",
+        "GET_SHIFT"
+    ]
 }

@@ -6,9 +6,12 @@ import java.time.temporal.WeekFields;
 import java.util.Locale;
 
 public record Week(int year, int week) implements Comparable<Week> {
+    private static final WeekFields SUNDAY_START_WEEK = WeekFields.of(DayOfWeek.SUNDAY, 1);
+
     public static Week from(LocalDate date) {
-        WeekFields wf = WeekFields.of(Locale.getDefault());
-        return new Week(date.getYear(), date.get(wf.weekOfWeekBasedYear()));
+        int week = date.get(SUNDAY_START_WEEK.weekOfWeekBasedYear());
+        int year = date.get(SUNDAY_START_WEEK.weekBasedYear());
+        return new Week(year, week);
     }
 
     public static LocalDate getNextSunday(LocalDate fromDate) {

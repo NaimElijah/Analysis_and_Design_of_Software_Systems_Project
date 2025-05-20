@@ -3,10 +3,12 @@ package ServiceLayer;
 import DTOs.ShiftDTO;
 import DomainLayer.EmployeeSubModule.AssignmentController;
 import DomainLayer.EmployeeSubModule.AvailabilityController;
+import DomainLayer.EmployeeSubModule.Shift;
 import DomainLayer.EmployeeSubModule.ShiftController;
 import DomainLayer.enums.ShiftType;
 import Util.Week;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
@@ -124,6 +126,28 @@ public class ShiftService {
         } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Converts a Shift domain object to a ShiftDTO
+     * @param shift the Shift domain object
+     * @return a ShiftDTO representing the Shift
+     */
+    private ShiftDTO convertToDTO(Shift shift) {
+        return new ShiftDTO(
+            shift.getId(),
+            shift.getShiftType(),
+            shift.getShiftDate(),
+            shift.getRolesRequired(),
+            shift.getAssignedEmployees(),
+            shift.getAvailableEmployees(),
+            shift.isAssignedShiftManager(),
+            shift.isOpen(),
+            shift.getStartHour(),
+            shift.getEndHour(),
+            shift.getCreateDate(),
+            shift.getUpdateDate()
+        );
     }
 
     public String getAllShifts(long doneBy) {
@@ -401,4 +425,9 @@ public class ShiftService {
             return "Error: " + e.getMessage();
         }
     }
+
+    public Boolean isWeekendBlocked() {
+        return availabilityController.isWeekendBlocked();
+    }
+
 }

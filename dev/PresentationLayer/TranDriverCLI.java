@@ -9,40 +9,33 @@ import java.util.Scanner;
 public class TranDriverCLI {
     private MainTranSysCLI main;
     private TransportService tran_s;
-    private EmployeeService emp_s;   ///  <<<-----------------------   new Service
     private Scanner scanner;
 
     public TranDriverCLI(MainTranSysCLI m, TransportService trs, Scanner sc) {
         this.main = m;
         this.tran_s = trs;
-//        this.emp_s = es;
         this.scanner = sc;
     }
 
 
-    void driverMainMenu(int id){
+    void driverMainMenu(long id){
         System.out.println("\n           --------    Driver Menu    -------");
-        System.out.println("(1)  View My Details");    //TODO:    <<<--------------------   remove this, already done in HR module and more relevant there now.
-        System.out.println("(2)  View All Transports Related to me (all Statuses)");
-        System.out.println("(3)  Edit an Item's Condition in a Transport that I'm a Driver in");
-        System.out.println("(4)  Disconnect");
+        System.out.println("(1)  View All Transports Related to me (all Statuses)");
+        System.out.println("(2)  Edit an Item's Condition in a Transport that I'm a Driver in");
+        System.out.println("(3)  Disconnect");
         System.out.println();
         System.out.println("   Select Action:\n");
 
         String choice = scanner.nextLine();
         if(choice.equals("1")){
-//            System.out.println(this.emp_s.showEmployee(id));    //TODO:    <<<--------------------   remove this, already done in HR module and more relevant there now.
-            System.out.println();
-
-        }else if(choice.equals("2")){
             System.out.println("All Transports Related to me: ");
             System.out.println(this.tran_s.showTransportsOfDriver(id));
             System.out.println();
 
-        }else if(choice.equals("3")){
+        }else if(choice.equals("2")){
             editItemsConditionInMyTransport(id);
 
-        } else if (choice.equals("4")) {
+        } else if (choice.equals("3")) {
             System.out.println("\nGoing Back to Main Program Authentication Screen.\n");
             this.main.idAuthAccess();
         } else {
@@ -53,7 +46,7 @@ public class TranDriverCLI {
 
 
 
-    private void editItemsConditionInMyTransport(int id){
+    private void editItemsConditionInMyTransport(long id){
         System.out.println("Ok, let's Edit an Item's Condition in a Transport that You're a Driver in:");
         System.out.println("Enter Items Document ID, that that Item is in:");
         int itemsDoc_id = this.scanner.nextInt();

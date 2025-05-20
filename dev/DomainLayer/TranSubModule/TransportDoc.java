@@ -1,6 +1,5 @@
 package DomainLayer.TranSubModule;
 
-import DomainLayer.Driver;
 import DomainLayer.SiteSubModule.Site;
 import DomainLayer.TruSubModule.Truck;
 import DomainLayer.enums.enumTranProblem;

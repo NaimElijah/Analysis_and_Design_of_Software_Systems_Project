@@ -740,9 +740,16 @@ public class ShiftController {
 
     public boolean addShiftToWeekly(Shift shift) {
         Week week = Week.from(shift.getShiftDate());
-        // Comparator to sort by date (and optionally by hour if needed)
-        Comparator<Shift> byDate = Comparator.comparing(Shift::getShiftDate);
-        return weeklyShifts.computeIfAbsent(week, k -> new TreeSet<>(byDate)).add(shift);
+
+        // Comparator: first by date, then by shift type (MORNING before EVENING)
+        Comparator<Shift> byDateThenType = Comparator
+                .comparing(Shift::getShiftDate)
+                .thenComparing(Shift::getShiftType); // Ensure ShiftType enum has MORNING < EVENING
+
+        // Add the shift to the proper week, with sorting
+        return weeklyShifts
+                .computeIfAbsent(week, k -> new TreeSet<>(byDateThenType))
+                .add(shift);
     }
 
     public Shift getShiftbyDateAndTime(long doneBy, LocalDate date, LocalTime hour) {
