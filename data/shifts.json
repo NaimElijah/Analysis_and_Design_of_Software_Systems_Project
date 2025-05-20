@@ -30,7 +30,8 @@
     "startHour": "09:00",
     "endHour": "16:00",
     "createDate": "2025-05-11",
-    "updateDate": "2025-05-11"
+    "updateDate": "2025-05-11",
+    "branch": "Beer Shave"
   },
   {
     "id": 2,
@@ -61,7 +62,8 @@
     "startHour": "16:00",
     "endHour": "20:00",
     "createDate": "2025-05-11",
-    "updateDate": "2025-05-11"
+    "updateDate": "2025-05-11",
+    "branch": "Beer Shave"
   },
   {
     "id": 3,
@@ -94,7 +96,8 @@
     "startHour": "09:00",
     "endHour": "16:00",
     "createDate": "2025-05-11",
-    "updateDate": "2025-05-11"
+    "updateDate": "2025-05-11",
+    "branch": "Beer Shave"
   },
   {
     "id": 4,
@@ -125,7 +128,8 @@
     "startHour": "16:00",
     "endHour": "20:00",
     "createDate": "2025-05-11",
-    "updateDate": "2025-05-11"
+    "updateDate": "2025-05-11",
+    "branch": "Beer Shave"
   },
   {
     "id": 5,
@@ -158,7 +162,8 @@
     "startHour": "09:00",
     "endHour": "16:00",
     "createDate": "2025-05-11",
-    "updateDate": "2025-05-11"
+    "updateDate": "2025-05-11",
+    "branch": "Beer Shave"
   },
   {
     "id": 6,
@@ -189,7 +194,8 @@
     "startHour": "16:00",
     "endHour": "20:00",
     "createDate": "2025-05-11",
-    "updateDate": "2025-05-11"
+    "updateDate": "2025-05-11",
+    "branch": "Beer Shave"
   },
   {
     "id": 7,
@@ -222,7 +228,8 @@
     "startHour": "09:00",
     "endHour": "16:00",
     "createDate": "2025-05-11",
-    "updateDate": "2025-05-11"
+    "updateDate": "2025-05-11",
+    "branch": "Beer Shave"
   },
   {
     "id": 8,
@@ -253,7 +260,9 @@
     "startHour": "16:00",
     "endHour": "20:00",
     "createDate": "2025-05-11",
-    "updateDate": "2025-05-11"
+    "updateDate": "2025-05-11",
+    "branch": "Beer Shave"
+
   },
   {
     "id": 9,
@@ -286,7 +295,9 @@
     "startHour": "09:00",
     "endHour": "16:00",
     "createDate": "2025-05-11",
-    "updateDate": "2025-05-11"
+    "updateDate": "2025-05-11",
+    "branch": "Beer Shave"
+
   },
   {
     "id": 10,
@@ -317,7 +328,9 @@
     "startHour": "16:00",
     "endHour": "20:00",
     "createDate": "2025-05-11",
-    "updateDate": "2025-05-11"
+    "updateDate": "2025-05-11",
+    "branch": "Beer Shave"
+
   },
   {
     "id": 11,
@@ -348,7 +361,9 @@
     "startHour": "09:00",
     "endHour": "16:00",
     "createDate": "2025-05-11",
-    "updateDate": "2025-05-11"
+    "updateDate": "2025-05-11",
+    "branch": "Beer Shave"
+
   },
   {
     "id": 12,
@@ -379,7 +394,9 @@
     "startHour": "16:00",
     "endHour": "20:00",
     "createDate": "2025-05-11",
-    "updateDate": "2025-05-11"
+    "updateDate": "2025-05-11",
+    "branch": "Beer Shave"
+
   }, {
   "id": 13,
   "shiftType": "MORNING",
@@ -409,7 +426,9 @@
   "startHour": "09:00",
   "endHour": "16:00",
   "createDate": "2025-05-11",
-  "updateDate": "2025-05-11"
+  "updateDate": "2025-05-11",
+  "branch": "Beer Shave"
+
 },
   {
     "id": 14,
@@ -440,7 +459,9 @@
     "startHour": "16:00",
     "endHour": "20:00",
     "createDate": "2025-05-11",
-    "updateDate": "2025-05-11"
+    "updateDate": "2025-05-11",
+    "branch": "Beer Shave"
+
   },
   {
     "id": 15,
@@ -473,7 +494,9 @@
     "startHour": "09:00",
     "endHour": "16:00",
     "createDate": "2025-05-11",
-    "updateDate": "2025-05-11"
+    "updateDate": "2025-05-11",
+    "branch": "Beer Shave"
+
   },
   {
     "id": 16,
@@ -504,7 +527,9 @@
     "startHour": "16:00",
     "endHour": "20:00",
     "createDate": "2025-05-11",
-    "updateDate": "2025-05-11"
+    "updateDate": "2025-05-11",
+    "branch": "Beer Shave"
+
   },
   {
     "id": 17,
@@ -537,7 +562,9 @@
     "startHour": "09:00",
     "endHour": "16:00",
     "createDate": "2025-05-11",
-    "updateDate": "2025-05-11"
+    "updateDate": "2025-05-11",
+    "branch": "Beer Shave"
+
   },
   {
     "id": 18,
@@ -568,7 +595,9 @@
     "startHour": "16:00",
     "endHour": "20:00",
     "createDate": "2025-05-11",
-    "updateDate": "2025-05-11"
+    "updateDate": "2025-05-11",
+    "branch": "Beer Shave"
+
   },  {
   "id": 19,
   "shiftType": "MORNING",
@@ -600,7 +629,9 @@
   "startHour": "09:00",
   "endHour": "16:00",
   "createDate": "2025-05-11",
-  "updateDate": "2025-05-11"
+  "updateDate": "2025-05-11",
+  "branch": "Beer Shave"
+
 },
 {
   "id": 20,
@@ -631,7 +662,9 @@
   "startHour": "16:00",
   "endHour": "20:00",
   "createDate": "2025-05-11",
-  "updateDate": "2025-05-11"
+  "updateDate": "2025-05-11",
+  "branch": "Beer Shave"
+
 },
 {
   "id": 21,
@@ -664,7 +697,9 @@
   "startHour": "09:00",
   "endHour": "16:00",
   "createDate": "2025-05-11",
-  "updateDate": "2025-05-11"
+  "updateDate": "2025-05-11",
+  "branch": "Beer Shave"
+
 },
 {
   "id": 22,
@@ -695,7 +730,9 @@
   "startHour": "16:00",
   "endHour": "20:00",
   "createDate": "2025-05-11",
-  "updateDate": "2025-05-11"
+  "updateDate": "2025-05-11",
+  "branch": "Beer Shave"
+
 },
 {
   "id": 23,
@@ -728,7 +765,9 @@
   "startHour": "09:00",
   "endHour": "16:00",
   "createDate": "2025-05-11",
-  "updateDate": "2025-05-11"
+  "updateDate": "2025-05-11",
+  "branch": "Beer Shave"
+
 },
 {
   "id": 24,
@@ -759,7 +798,9 @@
   "startHour": "16:00",
   "endHour": "20:00",
   "createDate": "2025-05-11",
-  "updateDate": "2025-05-11"
+  "updateDate": "2025-05-11",
+  "branch": "Beer Shave"
+
 },  {
 "id": 25,
 "shiftType": "MORNING",
@@ -789,7 +830,9 @@
 "startHour": "09:00",
 "endHour": "16:00",
 "createDate": "2025-05-11",
-"updateDate": "2025-05-11"
+"updateDate": "2025-05-11",
+  "branch": "Beer Shave"
+
 },
   {
     "id": 26,
@@ -820,7 +863,9 @@
     "startHour": "16:00",
     "endHour": "20:00",
     "createDate": "2025-05-11",
-    "updateDate": "2025-05-11"
+    "updateDate": "2025-05-11",
+    "branch": "Beer Shave"
+
   },
   {
     "id": 27,
@@ -851,7 +896,9 @@
     "startHour": "09:00",
     "endHour": "16:00",
     "createDate": "2025-05-11",
-    "updateDate": "2025-05-11"
+    "updateDate": "2025-05-11",
+    "branch": "Beer Shave"
+
   },
   {
     "id": 28,
@@ -875,6 +922,7 @@
     "startHour": "16:00",
     "endHour": "20:00",
     "createDate": "2025-05-11",
-    "updateDate": "2025-05-11"
+    "updateDate": "2025-05-11",
+    "branch": "Beer Shave"
   }
 ]

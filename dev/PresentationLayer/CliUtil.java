@@ -506,6 +506,8 @@ public class CliUtil {
         }
     }
 
+
+
     public static LocalTime getHourInput(String prompt, Scanner scanner) {
         while (true) {
             System.out.print(prompt);

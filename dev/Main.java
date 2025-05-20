@@ -7,8 +7,6 @@ import DomainLayer.EmployeeSubModule.ShiftController;
 import DomainLayer.SiteSubModule.SiteFacade;
 import DomainLayer.TruSubModule.TruckFacade;
 import PresentationLayer.MainCLI;
-import ServiceLayer.EmployeeService;
-import ServiceLayer.ShiftService;
 import java.io.IOException;
 import java.util.Scanner;
 import ServiceLayer.*;
@@ -97,6 +95,7 @@ public class Main {
                    System.out.println("  1. Shira Steinbuch");
                    System.out.println("  2. Ramzi Abd Rabo");
                    System.out.println("  3. Kochava Shavit");
+                   System.out.println("  4. Login as a different user");
                    System.out.print("Enter your choice: ");
                    String choice = scanner.nextLine().trim();
 
@@ -105,6 +104,15 @@ public class Main {
                        case "1": loginId = 111111111L; validLogin = true; break;
                        case "2": loginId = 222222222L; validLogin = true; break;
                        case "3": loginId = 333333333L; validLogin = true; break;
+                       case "4":
+                           System.out.println("Enter your ID:");
+                           Long id = Long.parseLong(scanner.nextLine().trim());
+                            if (employeeService.getEmployeeById(id) != null) {
+                                 loginId = id;
+                                 validLogin = true;
+                            } else {
+                                 System.out.println("Invalid ID. Please try again.");
+                            }
                        default:
                            System.out.println("Invalid choice. Please try again.");
                    }

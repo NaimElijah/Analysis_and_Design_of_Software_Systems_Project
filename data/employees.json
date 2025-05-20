@@ -19,7 +19,8 @@
     "startOfEmployment": "2020-01-01",
     "isActive": true,
     "creationDate": "2023-01-01",
-    "updateDate": "2023-01-01"
+    "updateDate": "2023-01-01",
+    "branch": "Headquarters"
   },
   {
     "israeliId": 111111111,
@@ -42,7 +43,8 @@
     "startOfEmployment": "2019-05-10",
     "isActive": true,
     "creationDate": "2023-01-01",
-    "updateDate": "2023-01-01"
+    "updateDate": "2023-01-01",
+    "branch": "Beer Shave"
   },
   {
     "israeliId": 222222222,
@@ -65,7 +67,8 @@
     "startOfEmployment": "2021-08-15",
     "isActive": true,
     "creationDate": "2023-01-01",
-    "updateDate": "2023-01-01"
+    "updateDate": "2023-01-01",
+    "branch": "Beer Shave"
   },
   {
     "israeliId": 333333333,
@@ -88,7 +91,8 @@
     "startOfEmployment": "2020-03-22",
     "isActive": true,
     "creationDate": "2023-01-01",
-    "updateDate": "2023-01-01"
+    "updateDate": "2023-01-01",
+    "branch": "Beer Shave"
   },
   {
     "israeliId": 444444444,
@@ -111,7 +115,8 @@
     "startOfEmployment": "2021-02-15",
     "isActive": true,
     "creationDate": "2023-01-01",
-    "updateDate": "2023-01-01"
+    "updateDate": "2023-01-01",
+    "branch": "Shefa Issachar"
   },
   {
     "israeliId": 555555555,
@@ -134,7 +139,8 @@
     "startOfEmployment": "2022-06-01",
     "isActive": true,
     "creationDate": "2023-01-01",
-    "updateDate": "2023-01-01"
+    "updateDate": "2023-01-01",
+    "branch": "Beer Shave"
   },
   {
     "israeliId": 666666666,
@@ -157,6 +163,7 @@
     "startOfEmployment": "2022-09-15",
     "isActive": true,
     "creationDate": "2023-01-01",
-    "updateDate": "2023-01-01"
+    "updateDate": "2023-01-01",
+    "branch": "Shefa Issachar"
   }
 ]

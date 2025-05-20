@@ -1,13 +1,11 @@
 package DomainLayer.EmployeeSubModule;
 
+import DTOs.EmployeeDTO;
 import DomainLayer.exception.InvalidInputException;
 import DomainLayer.exception.UnauthorizedPermissionException;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class EmployeeController {
     private final Set<Employee> employees;
@@ -40,11 +38,12 @@ public class EmployeeController {
      * @param termsOfEmployment - The terms of employment of the new employee
      * @param roles - The roles of the new employee
      * @param startOfEmployment - The start of employment date of the new employee
+     * @param branch - The branch that the employee is assigned to
      * @return True if the employee was created successfully
      * @throws UnauthorizedPermissionException if the user does not have permission
      * @throws InvalidInputException if any input is invalid
      */
-    public boolean createEmployee(long doneBy, long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, Set<String> roles, LocalDate startOfEmployment) {
+    public boolean createEmployee(long doneBy, long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, Set<String> roles, LocalDate startOfEmployment, String branch) {
         // Permission handling
         String PERMISSION_REQUIRED = "CREATE_EMPLOYEE";
         if (!isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
@@ -85,7 +84,7 @@ public class EmployeeController {
         }
 
         // Create new employee
-        Employee newEmployee = new Employee(israeliId, firstName, lastName, salary, termsOfEmployment, roles, startOfEmployment, true, LocalDate.now(), LocalDate.now());
+        Employee newEmployee = new Employee(israeliId, firstName, lastName, salary, termsOfEmployment, roles, startOfEmployment, true, LocalDate.now(), LocalDate.now(), branch);
         employees.add(newEmployee);
         return true;
     }
@@ -100,11 +99,12 @@ public class EmployeeController {
      * @param salary - The new salary
      * @param termsOfEmployment - The new terms of employment
      * @param active - The new active status
+     * @param branch - The new branch that the employee is assigned to
      * @return True if the employee was updated successfully
      * @throws UnauthorizedPermissionException if the user does not have permission
      * @throws InvalidInputException if any input is invalid or if the employee does not exist
      */
-    public boolean updateEmployee(long doneBy, long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, boolean active) {
+    public boolean updateEmployee(long doneBy, long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, boolean active, String branch) {
         // Permission handling
         String PERMISSION_REQUIRED = "UPDATE_EMPLOYEE";
         if (!isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
@@ -150,6 +150,7 @@ public class EmployeeController {
         employee.setSalary(salary);
         employee.setTermsOfEmployment(termsOfEmployment);
         employee.setActive(active);
+        employee.setBranch(branch);
         employee.setUpdateDate(LocalDate.now());
         return true;
     }
@@ -401,4 +402,23 @@ public class EmployeeController {
         return employees.stream().anyMatch(e -> e.getIsraeliId() == employeeId && e.getRoles().contains(role));
     }
 
+    public String[] getAllDrivers() {
+        // Filter employees to get only those with the "Driver" role
+        Employee[] drivers = employees.stream()
+                .filter(e -> e.getRoles().contains("Driver"))
+                .toArray(Employee[]::new);
+        // Convert the filtered employees to EmployeeDTO objects
+        EmployeeDTO[] driverDTOs = Arrays.stream(drivers)
+                .map(e -> new EmployeeDTO(e.getIsraeliId(), e.getFirstName(), e.getLastName(), e.getSalary(), e.getTermsOfEmployment(), e.getRoles(), e.getStartOfEmployment(), e.isActive(), e.getCreationDate(), e.getUpdateDate(), e.getBranch()))
+                .toArray(EmployeeDTO[]::new);
+        // Serialize the EmployeeDTO objects to strings
+        String[] serializedDrivers = new String[drivers.length];
+        // Serialize each EmployeeDTO object to a string
+        for (int i = 0; i < drivers.length; i++) {
+            serializedDrivers[i] = driverDTOs[i].serialize();
+        }
+
+        return serializedDrivers;
+
+    }
 }

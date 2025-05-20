@@ -26,6 +26,7 @@ public class Shift {
     private LocalTime endHour;
     private LocalDate createDate;
     private LocalDate updateDate;
+    private String branch; // Branch that this shift belongs to
 
     public Shift(long id,ShiftType shiftType, LocalDate shiftDate, Map<String, Integer> rolesRequired, Map<String, Set<Long>> assignedEmployees, Set<Long> AvailableEmployees, boolean isAssignedShitManager, boolean isOpen ,LocalTime startHour , LocalTime endHour, LocalDate updateDate) {
         this.id = id;
@@ -40,6 +41,23 @@ public class Shift {
         this.endHour = endHour;
         this.createDate = LocalDate.now();
         this.updateDate = updateDate;
+        this.branch = null; // Default to null
+    }
+
+    public Shift(long id,ShiftType shiftType, LocalDate shiftDate, Map<String, Integer> rolesRequired, Map<String, Set<Long>> assignedEmployees, Set<Long> AvailableEmployees, boolean isAssignedShitManager, boolean isOpen ,LocalTime startHour , LocalTime endHour, LocalDate updateDate, String branch) {
+        this.id = id;
+        this.shiftType = shiftType;
+        this.shiftDate = shiftDate;
+        this.rolesRequired = rolesRequired;
+        this.assignedEmployees = assignedEmployees;
+        this.AvailableEmployees = AvailableEmployees;
+        this.isAssignedShitManager = isAssignedShitManager;
+        this.isOpen = isOpen;
+        this.startHour = startHour;
+        this.endHour = endHour;
+        this.createDate = LocalDate.now();
+        this.updateDate = updateDate;
+        this.branch = branch;
     }
 
     public long getId() {
@@ -129,7 +147,22 @@ public class Shift {
     public String getHours() {
         return startHour + " - " + endHour;
     }
+
+    /**
+     * Gets the branch that this shift belongs to.
+     * 
+     * @return The branch name
+     */
+    public String getBranch() {
+        return branch;
+    }
+
+    /**
+     * Sets the branch that this shift belongs to.
+     * 
+     * @param branch The branch name
+     */
+    public void setBranch(String branch) {
+        this.branch = branch;
+    }
 }
-
-
-

@@ -48,8 +48,8 @@ class EmployeeControllerTest {
                 ADMIN, new HashSet<>(Set.of(CREATE_EMPLOYEE, ADD_EMPLOYEE, UPDATE_EMPLOYEE, DELETE_EMPLOYEE, ROLE_PERMISSION, EDIT_EMPLOYEE)),
                 CASHIER_ROLE, new HashSet<>(Set.of(CASHIER_PERMISSION))
         );
-        shira = new Employee(123456789,"Shira", "Shtinboch", 10000, null, Set.of(ADMIN), LocalDate.now().minusYears(5),true, LocalDate.now().minusYears(5), LocalDate.now());
-        cochava = new Employee(123456788,"Cochava", "Shavit", 10000, null, Set.of(CASHIER_ROLE), LocalDate.now().minusYears(5),true, LocalDate.now().minusYears(5), LocalDate.now());
+        shira = new Employee(123456789,"Shira", "Shtinboch", 10000, null, Set.of(ADMIN), LocalDate.now().minusYears(5),true, LocalDate.now().minusYears(5), LocalDate.now(), "Main Branch");
+        cochava = new Employee(123456788,"Cochava", "Shavit", 10000, null, Set.of(CASHIER_ROLE), LocalDate.now().minusYears(5),true, LocalDate.now().minusYears(5), LocalDate.now(), "Secondary Branch");
 
         authorisationController = new AuthorisationController(roles, permissions);
         Set<Employee> employees = new HashSet<>();
@@ -77,17 +77,18 @@ class EmployeeControllerTest {
         LocalDate startOfEmployment = LocalDate.now();
         Map<String, Object> terms = Map.of("Days Off", 5000, "Contract Type", "Full Time");
 
-        boolean result = employeeController.createEmployee(shira.getIsraeliId(), 123456790, "Ramzi", "Abed-Ramzi", 5000, terms, roles, startOfEmployment);
+        String branch = "Main Branch";
+        boolean result = employeeController.createEmployee(shira.getIsraeliId(), 123456790, "Ramzi", "Abed-Ramzi", 5000, terms, roles, startOfEmployment, branch);
         assertTrue(result);
 
         // Test for creating an existing employee
         assertThrows(InvalidInputException.class, () -> {
-            employeeController.createEmployee(shira.getIsraeliId(), shira.getIsraeliId(), "Shira", "Shtinboch", 10000, terms, roles, startOfEmployment);
+            employeeController.createEmployee(shira.getIsraeliId(), shira.getIsraeliId(), "Shira", "Shtinboch", 10000, terms, roles, startOfEmployment, "Main Branch");
         });
 
         // Test for invalid input
         assertThrows(InvalidInputException.class, () -> {
-            employeeController.createEmployee(shira.getIsraeliId(), 123456791, "", "Employee", 5000, terms, roles, startOfEmployment);
+            employeeController.createEmployee(shira.getIsraeliId(), 123456791, "", "Employee", 5000, terms, roles, startOfEmployment, "Main Branch");
         });
     }
 
@@ -95,17 +96,18 @@ class EmployeeControllerTest {
     void updateEmployee() {
         // Test for updating an existing employee
         Map<String, Object> terms = Map.of("Days Off", 5000, "Contract Type", "Full Time");
-        boolean result = employeeController.updateEmployee(shira.getIsraeliId(), shira.getIsraeliId(), "Shira", "Shtinboch", 12000, terms, true);
+        String branch = "Updated Branch";
+        boolean result = employeeController.updateEmployee(shira.getIsraeliId(), shira.getIsraeliId(), "Shira", "Shtinboch", 12000, terms, true, branch);
         assertTrue(result);
 
         // Test for updating a non-existing employee
         assertThrows(InvalidInputException.class, () -> {
-            employeeController.updateEmployee(shira.getIsraeliId(), 123456799, "Non-Existing", "Employee", 5000, terms, true);
+            employeeController.updateEmployee(shira.getIsraeliId(), 123456799, "Non-Existing", "Employee", 5000, terms, true, "Main Branch");
         });
 
         // Test for invalid input
         assertThrows(InvalidInputException.class, () -> {
-            employeeController.updateEmployee(shira.getIsraeliId(), shira.getIsraeliId(), "", "Employee", 5000, terms, true);
+            employeeController.updateEmployee(shira.getIsraeliId(), shira.getIsraeliId(), "", "Employee", 5000, terms, true, "Main Branch");
         });
     }
 

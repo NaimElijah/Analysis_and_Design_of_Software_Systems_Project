@@ -50,7 +50,8 @@ public class EmployeeService {
             employee.getStartOfEmployment(),
             employee.isActive(),
             employee.getCreationDate(),
-            employee.getUpdateDate()
+            employee.getUpdateDate(),
+            employee.getBranch()
         );
     }
 
@@ -296,7 +297,7 @@ public class EmployeeService {
 
             Map<String, HashSet<String>> roleDetails = authorisationController.getRoleDetails(roleName);
             if (roleDetails != null && !roleDetails.isEmpty()) {
-                HashSet<String> permissions = roleDetails.get("permissions");
+                HashSet<String> permissions = roleDetails.get(roleName);
                 return convertToRoleDTO(roleName, permissions);
             } else {
                 throw new ValidationException("Role not found: " + roleName);
@@ -382,14 +383,15 @@ public class EmployeeService {
      * @param salary         The salary of the employee.
      * @param termsOfEmployment The terms of employment for the employee.
      * @param startOfEmployment The start date of employment for the employee.
+     * @param branch         The branch that the employee is assigned to.
      * @return A message indicating whether the employee was created successfully or not.
      * @throws ValidationException if any input parameters are invalid
      * @throws AuthorizationException if the user doesn't have permission to create employees
      * @throws ServiceException if an unexpected error occurs
      */
-    public String createEmployee(long doneBy, long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, LocalDate startOfEmployment) {
+    public String createEmployee(long doneBy, long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, LocalDate startOfEmployment, String branch) {
         try {
-            boolean result = employeeController.createEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, null, startOfEmployment);
+            boolean result = employeeController.createEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, null, startOfEmployment, branch);
 
             if (result) {
                 return "Employee created successfully"; // Employee created successfully
@@ -406,8 +408,71 @@ public class EmployeeService {
             throw new ServiceException("Error creating employee: " + e.getMessage(), e);
         }
     }
+
+    /**
+     * Creates a new employee with no branch assigned.
+     * NOTE: CreateEmployee with NO roles or permissions need to be added to the employee in another action!
+     *
+     * @param doneBy         The ID of the user who is creating the employee.
+     * @param israeliId      The Israeli ID of the employee.
+     * @param firstName      The first name of the employee.
+     * @param lastName       The last name of the employee.
+     * @param salary         The salary of the employee.
+     * @param termsOfEmployment The terms of employment for the employee.
+     * @param startOfEmployment The start date of employment for the employee.
+     * @return A message indicating whether the employee was created successfully or not.
+     * @throws ValidationException if any input parameters are invalid
+     * @throws AuthorizationException if the user doesn't have permission to create employees
+     * @throws ServiceException if an unexpected error occurs
+     */
+    public String createEmployee(long doneBy, long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, LocalDate startOfEmployment) {
+        return createEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, startOfEmployment, null);
+    }
     /**
      * Updates an existing employee.
+     *
+     * @param doneBy         The ID of the user who is updating the employee.
+     * @param israeliId      The Israeli ID of the employee.
+     * @param firstName      The new first name of the employee.
+     * @param lastName       The new last name of the employee.
+     * @param salary         The new salary of the employee.
+     * @param termsOfEmployment The new terms of employment for the employee.
+     * @param active         Whether the employee is active or not.
+     * @param branch         The new branch that the employee is assigned to.
+     * @return A message indicating whether the employee was updated successfully or not.
+     * @throws ValidationException if any input parameters are invalid
+     * @throws EmployeeNotFoundException if the employee with the given ID doesn't exist
+     * @throws AuthorizationException if the user doesn't have permission to update employees
+     * @throws ServiceException if an unexpected error occurs
+     */
+    public String updateEmployee(long doneBy, long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, boolean active, String branch) {
+        try {
+
+            // Check if employee exists
+            Employee employee = employeeController.getEmployeeByIsraeliId(israeliId);
+            if (employee == null) {
+                throw new EmployeeNotFoundException(israeliId);
+            }
+
+            boolean result = employeeController.updateEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, active, branch);
+            if (result) {
+                return "Employee updated successfully";
+            } else {
+                return "Failed to update employee";
+            }
+        } catch (UnauthorizedPermissionException e) {
+            throw new AuthorizationException(doneBy, "UPDATE_EMPLOYEE");
+        } catch (InvalidInputException e) {
+            throw new ValidationException(e.getMessage(), e);
+        } catch (ValidationException | EmployeeNotFoundException | AuthorizationException e) {
+            throw e; // Rethrow specific exceptions
+        } catch (Exception e) {
+            throw new ServiceException("Error updating employee: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Updates an existing employee without changing the branch.
      *
      * @param doneBy         The ID of the user who is updating the employee.
      * @param israeliId      The Israeli ID of the employee.
@@ -424,23 +489,16 @@ public class EmployeeService {
      */
     public String updateEmployee(long doneBy, long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, boolean active) {
         try {
-
             // Check if employee exists
             Employee employee = employeeController.getEmployeeByIsraeliId(israeliId);
             if (employee == null) {
                 throw new EmployeeNotFoundException(israeliId);
             }
 
-            boolean result = employeeController.updateEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, active);
-            if (result) {
-                return "Employee updated successfully";
-            } else {
-                return "Failed to update employee";
-            }
-        } catch (UnauthorizedPermissionException e) {
-            throw new AuthorizationException(doneBy, "UPDATE_EMPLOYEE");
-        } catch (InvalidInputException e) {
-            throw new ValidationException(e.getMessage(), e);
+            // Keep the existing branch
+            String branch = employee.getBranch();
+
+            return updateEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, active, branch);
         } catch (ValidationException | EmployeeNotFoundException | AuthorizationException e) {
             throw e; // Rethrow specific exceptions
         } catch (Exception e) {
@@ -824,4 +882,11 @@ public class EmployeeService {
         }
     }
 
+    public String[] getAllDrivers() {
+        try {
+            return employeeController.getAllDrivers();
+        } catch (Exception e) {
+            throw new ServiceException("Error retrieving all drivers: " + e.getMessage(), e);
+        }
+    }
 }
