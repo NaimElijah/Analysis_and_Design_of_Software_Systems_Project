@@ -1,8 +1,11 @@
 package PresentationLayer;
 
+import DTOs.SerializeException;
 import DomainLayer.enums.ShiftType;
 import DTOs.EmployeeDTO;
 import DTOs.ShiftDTO;
+import DomainLayer.exception.ShiftNotFoundException;
+import DomainLayer.exception.UnauthorizedPermissionException;
 import ServiceLayer.EmployeeService;
 import ServiceLayer.ShiftService;
 import ServiceLayer.exception.ServiceException;
@@ -209,58 +212,64 @@ public class ShiftCLI {
      * Utility method to select a shift by date and type
      * Shows available shifts on the selected date to help user make a selection
      *
-     * @param headerText The header text to display
      * @param openOnly Whether to only show open shifts
      * @return The selected shift, or null if no shift was selected
      */
-    private ShiftDTO selectShiftByDateAndType(String headerText, boolean openOnly) {
-        printSectionHeader(headerText);
+    private ShiftDTO selectShiftByDateAndType(String header,boolean openOnly) {
+        printSectionHeader(header);
+        LocalDate date = null;
+        ShiftDTO[] shiftsOnDate = new ShiftDTO[0];
+        while (true)
+        {
+            // Get date from user
+            date = getDateInput("Select a date for the shift:");
 
-        // Get date from user
-        LocalDate date = getDateInput("Select a date for the shift:");
+            // Show available shifts on this date to help user make a selection
+            try {
+                String shifts = shiftService.getAllShiftsByDate(doneBy, date);
+                shiftsOnDate = ShiftDTO.deserializeArray(shifts);
 
-        // Show available shifts on this date to help user make a selection
-        try {
-            ShiftDTO[] shiftsOnDate = ShiftDTO.deserializeArray(shiftService.getAllShiftsByDate(doneBy, date));
-
-            // Filter shifts if openOnly is true
-            if (openOnly) {
-                List<ShiftDTO> openShifts = new ArrayList<>();
-                for (ShiftDTO s : shiftsOnDate) {
-                    if (s.isOpen()) {
-                        openShifts.add(s);
+                // Filter shifts if openOnly is true
+                if (openOnly) {
+                    List<ShiftDTO> openShifts = new ArrayList<>();
+                    for (ShiftDTO s : shiftsOnDate) {
+                        if (s.isOpen()) {
+                            openShifts.add(s);
+                        }
                     }
-                }
 
-                if (openShifts.isEmpty()) {
-                    printError("No open shifts found for the selected date: " + date.format(dateFormatter));
-                    waitForEnter();
+                    if (openShifts.isEmpty()) {
+                        printError("No open shifts found for the selected date: " + date.format(dateFormatter));
+                        waitForEnter();
+                        return null;
+                    }
+
+                    shiftsOnDate = openShifts.toArray(new ShiftDTO[0]);
+                }
+                CliUtil.printSectionWithIcon("Available shifts on " + date.format(dateFormatter) + ":", "📅");
+
+                List<String> shiftItems = new ArrayList<>();
+                for (ShiftDTO s : shiftsOnDate) {
+                    String status = s.isOpen() ? "(Open)" : "(Closed)";
+                    shiftItems.add(s.getShiftType() + " shift " + status + " (ID: " + s.getId() + ")");
+                }
+                CliUtil.printHierarchicalList(shiftItems, "• ", 2);
+                CliUtil.printEmptyLine();
+                break; // Exit loop if we have shifts
+            } catch (ShiftNotFoundException e) {
+                printError(e.getMessage());
+                boolean tryAgain = confirm("Would you like to try another date?");
+                if (!tryAgain) {
+                    CliUtil.printReturnPrompt("Shift Management Menu", scanner);
                     return null;
                 }
 
-                shiftsOnDate = openShifts.toArray(new ShiftDTO[0]);
-            }
-
-            if (shiftsOnDate.length == 0) {
-                printError("No shifts found for the selected date: " + date.format(dateFormatter));
-                waitForEnter();
+            } catch  (Exception e) {
+                printError("Unexpected error: " + e.getMessage());
+                CliUtil.printReturnPrompt("Shift Management Menu", scanner);
                 return null;
             }
-
-            CliUtil.printSectionWithIcon("Available shifts on " + date.format(dateFormatter) + ":", "📅");
-
-            List<String> shiftItems = new ArrayList<>();
-            for (ShiftDTO s : shiftsOnDate) {
-                String status = s.isOpen() ? "(Open)" : "(Closed)";
-                shiftItems.add(s.getShiftType() + " shift " + status + " (ID: " + s.getId() + ")");
-            }
-            CliUtil.printHierarchicalList(shiftItems, "• ", 2);
-            CliUtil.printEmptyLine();
-        } catch (Exception e) {
-            // If there's an error getting shifts by date, continue with manual selection
-            CliUtil.printError("Could not retrieve shifts for the selected date. Please select a shift type manually.");
         }
-
         // Get shift type from user
         ShiftType shiftType = getShiftTypeInput("Select the shift type:");
 
@@ -370,6 +379,7 @@ public class ShiftCLI {
      * Displays all shifts in the system with pagination
      */
     private void viewAllShifts() {
+
         // Convert array to list for pagination
         List<ShiftDTO> shiftList = ShiftDTO.deserializeList(shiftService.getAllShifts(doneBy));
 
@@ -419,42 +429,15 @@ public class ShiftCLI {
         printSectionHeader("Shift Details");
 
         // Display breadcrumb navigation
-        CliUtil.printBreadcrumb("Assignment Management > View Shift Details");
-
-        // Get date from user
-        LocalDate date = getDateInput("Select a date for the shift you want to view:");
-
-        // Show available shifts on this date to help user make a selection
-        try {
-            ShiftDTO[] shiftsOnDate = ShiftDTO.deserializeArray(shiftService.getAllShiftsByDate(doneBy, date));
-
-            if (shiftsOnDate.length == 0) {
-                printError("No shifts found for the selected date: " + date.format(dateFormatter));
-                waitForEnter();
-                return;
-            }
-
-            CliUtil.printSectionWithIcon("Available shifts on " + date.format(dateFormatter) + ":", "📅");
-
-            List<String> shiftItems = new ArrayList<>();
-            for (ShiftDTO s : shiftsOnDate) {
-                shiftItems.add(s.getShiftType() + " shift (ID: " + s.getId() + ")");
-            }
-            CliUtil.printHierarchicalList(shiftItems, "• ", 2);
-            CliUtil.printEmptyLine();
-        } catch (Exception e) {
-            // If there's an error getting shifts by date, continue with manual selection
-            CliUtil.printError("Could not retrieve shifts for the selected date. Please select a shift type manually.");
-        }
-
-        // Get shift type from user
-        ShiftType shiftType = getShiftTypeInput("Select the shift type:");
+        CliUtil.printBreadcrumb("Shift Management > View Shift Details");
 
         try {
             // Get shift by date and type
-            ShiftDTO shift = ShiftDTO.deserialize(shiftService.getShift(doneBy, date, shiftType));
-
-            CliUtil.printSuccessWithCheckmark("Found shift: " + date.format(dateFormatter) + " " + shiftType + " (ID: " + shift.getId() + ")");
+            ShiftDTO shift = selectShiftByDateAndType("Select Shift to View", false);
+            if (shift == null) {
+                return; // User cancelled or no shift found
+            }
+            CliUtil.printSuccessWithCheckmark("Found shift: " + shift.getShiftDate().format(dateFormatter) + " " + shift.getShiftType() + " (ID: " + shift.getId() + ")");
             CliUtil.printEmptyLine();
 
             // Prepare data for the formatted table
@@ -525,18 +508,11 @@ public class ShiftCLI {
             // Display the formatted table
             CliUtil.printFormattedTable(null, headers, content, emptyMessages);
 
-        } catch (RuntimeException e) {
-            if (e.getMessage() != null && e.getMessage().contains("not found")) {
-                printError("No " + shiftType + " shift found for date " + date.format(dateFormatter));
-                CliUtil.printTip("Check if the shift exists using 'View All Shifts' option first.");
-            } else {
-                printError("Error retrieving shift details: " + e.getMessage());
-            }
         } catch (Exception e) {
             printError("Unexpected error: " + e.getMessage());
         }
 
-        CliUtil.printReturnPrompt("Assignment Management Menu", scanner);
+        CliUtil.printReturnPrompt("Shift Management Menu", scanner);
     }
 
 
@@ -547,8 +523,11 @@ public class ShiftCLI {
     private void updateShift() {
         printSectionHeader("Update Shift");
 
+        // Display breadcrumb navigation
+        CliUtil.printBreadcrumb("Shift Management > Update Shift Details");
+
         // Select a shift to update
-        ShiftDTO shift = selectShiftByDateAndType("Select Shift to Update", false);
+        ShiftDTO shift = selectShiftByDateAndType( "Select Shift to Update", false);
         if (shift == null) {
             return; // User cancelled or no shift found
         }
@@ -688,6 +667,9 @@ public class ShiftCLI {
     private void deleteShift() {
         printSectionHeader("Delete Shift");
 
+        // Display breadcrumb navigation
+        CliUtil.printBreadcrumb("Shift Management > Delete Shift");
+
         // Select a shift to delete
         ShiftDTO shift = selectShiftByDateAndType("Select Shift to Delete", false);
         if (shift == null) {
@@ -756,6 +738,9 @@ public class ShiftCLI {
      */
     private void createShift() {
         printSectionHeader("Create Shift");
+
+        // Display breadcrumb navigation
+        CliUtil.printBreadcrumb("Shift Management > Create Shift");
 
         try {
             // Get basic shift information
@@ -877,6 +862,9 @@ public class ShiftCLI {
      */
     private void addWeeklyShifts() {
         printSectionHeader("Add Weekly Shifts");
+
+        // Display breadcrumb navigation
+        CliUtil.printBreadcrumb("Shift Management > Add Weekly Shifts");
 
         try {
             // Get start date for the week

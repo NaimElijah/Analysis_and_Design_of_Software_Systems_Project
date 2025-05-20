@@ -59,7 +59,7 @@
     "GET_SHIFT",
     "MANAGE_HR"
   ],
-  "Transport manager": [
+  "Transport Manager": [
     "CREATE_TRANSPORT",
     "DELETE_TRANSPORT",
     "EDIT_TRANSPORT",

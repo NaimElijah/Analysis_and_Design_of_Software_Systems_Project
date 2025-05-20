@@ -352,7 +352,7 @@ public class ShiftDTO {
             }
 
             return dtos;
-        } catch (IOException e) {
+        } catch (IOException e ) {
             throw new SerializeException("Failed to deserialize ShiftDTO[] from JSON: " + e.getMessage(), e);
         }
     }

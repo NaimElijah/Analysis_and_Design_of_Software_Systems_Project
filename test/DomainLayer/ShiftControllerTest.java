@@ -3,6 +3,7 @@ package DomainLayer;
 import DTOs.ShiftDTO;
 import DomainLayer.EmployeeSubModule.*;
 import DomainLayer.enums.ShiftType;
+import Util.config;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -99,7 +100,7 @@ class ShiftControllerTest {
         LocalDate date = LocalDate.of(2025, 4, 9);
         Map<String, Integer> rolesRequired = new HashMap<>();
         // Add Shift Manager role with count 1
-        rolesRequired.put("Shift Manager", 1);
+        rolesRequired.put(config.ROLE_SHIFT_MANAGER, 1);
 
         Map<String, Set<Long>> assignedEmployees = new HashMap<>();
         Set<Long> availableEmployees = new HashSet<>();
@@ -126,7 +127,7 @@ class ShiftControllerTest {
         LocalDate date = LocalDate.of(2025, 4, 9);
         Map<String, Integer> rolesRequired = new HashMap<>();
         // Add Shift Manager role with count 1
-        rolesRequired.put("Shift Manager", 1);
+        rolesRequired.put(config.ROLE_SHIFT_MANAGER, 1);
 
         Map<String, Set<Long>> assignedEmployees = new HashMap<>();
         Set<Long> availableEmployees = new HashSet<>();
@@ -168,7 +169,7 @@ class ShiftControllerTest {
         LocalDate date = LocalDate.of(2025, 4, 9);
         Map<String, Integer> rolesRequired = new HashMap<>();
         // Add Shift Manager role with count 1
-        rolesRequired.put("Shift Manager", 1);
+        rolesRequired.put(config.ROLE_SHIFT_MANAGER, 1);
 
         Map<String, Set<Long>> assignedEmployees = new HashMap<>();
         Set<Long> availableEmployees = new HashSet<>();
@@ -208,7 +209,7 @@ class ShiftControllerTest {
         LocalDate date = LocalDate.of(2025, 4, 9);
         Map<String, Integer> rolesRequired = new HashMap<>();
         // Add Shift Manager role with count 1
-        rolesRequired.put("Shift Manager", 1);
+        rolesRequired.put(config.ROLE_SHIFT_MANAGER, 1);
 
         Map<String, Set<Long>> assignedEmployees = new HashMap<>();
         Set<Long> availableEmployees = new HashSet<>();
@@ -260,7 +261,7 @@ class ShiftControllerTest {
         LocalDate date = LocalDate.of(2025, 4, 9);
         Map<String, Integer> rolesRequired = new HashMap<>();
         // Add Shift Manager role with count 1
-        rolesRequired.put("Shift Manager", 1);
+        rolesRequired.put(config.ROLE_SHIFT_MANAGER, 1);
 
         Map<String, Set<Long>> assignedEmployees = new HashMap<>();
         Set<Long> availableEmployees = new HashSet<>();

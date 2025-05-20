@@ -6,6 +6,7 @@ import DomainLayer.EmployeeSubModule.AvailabilityController;
 import DomainLayer.EmployeeSubModule.Shift;
 import DomainLayer.EmployeeSubModule.ShiftController;
 import DomainLayer.enums.ShiftType;
+import DomainLayer.exception.ShiftNotFoundException;
 import Util.Week;
 
 import java.io.IOException;
@@ -48,7 +49,7 @@ public class ShiftService {
             if (shift.getId() >= 0) {
                 return shift;
             } else {
-                throw new RuntimeException("Shift with ID " + shiftId + " not found");
+                throw new ShiftNotFoundException("Shift with ID " + shiftId + " not found");
             }
         } catch (RuntimeException e) {
             throw new RuntimeException(e);
@@ -123,8 +124,8 @@ public class ShiftService {
         try {
             String shift = shiftController.getShiftByID(doneBy, shiftId);
             return shift;
-        } catch (RuntimeException e) {
-            throw new RuntimeException(e);
+        } catch (ShiftNotFoundException e) {
+            throw new ShiftNotFoundException(e.getMessage());
         }
     }
 
@@ -155,7 +156,7 @@ public class ShiftService {
             String domainShifts = shiftController.getAllShifts(doneBy);
             return domainShifts;
         } catch (RuntimeException e) {
-            return "Error: " + e.getMessage();
+            throw new RuntimeException(e);
         }
     }
 
@@ -164,15 +165,15 @@ public class ShiftService {
             String shifts = shiftController.getAllShiftsByDateAndBranch(doneBy, date, branch);
             return shifts;
         } catch (RuntimeException e) {
-            return "Error: " + e.getMessage();
+            throw new RuntimeException(e);
         }
     }
 
     public String getShiftsByEmployee(long doneBy, long employeeID) {
         try {
             return shiftController.getShiftsByEmployee(doneBy, employeeID);
-        } catch (RuntimeException e) {
-            return "Error: " + e.getMessage();
+        } catch (ShiftNotFoundException e) {
+            throw new ShiftNotFoundException(e.getMessage());
         }
     }
 
@@ -180,8 +181,8 @@ public class ShiftService {
         try {
             String shift = shiftController.getshift(doneBy, date, shiftType);
             return shift;
-        } catch (RuntimeException e) {
-            return "Error: " + e.getMessage();
+        } catch (ShiftNotFoundException e) {
+            throw new ShiftNotFoundException(e.getMessage());
         }
     }
 
@@ -352,8 +353,8 @@ public class ShiftService {
             }
             return shiftDTOs;
         }
-        catch (RuntimeException e) {
-            throw new RuntimeException(e);
+        catch (ShiftNotFoundException e) {
+            throw new ShiftNotFoundException(e.getMessage());
         }
     }
 
@@ -395,8 +396,8 @@ public class ShiftService {
     public String getShiftByEmployee(long doneBy, long employeeId) {
         try {
             return shiftController.getShiftByEmployee(doneBy, employeeId);
-        } catch (RuntimeException e) {
-            return "Error: " + e.getMessage();
+        } catch (ShiftNotFoundException e) {
+            throw new ShiftNotFoundException(e.getMessage());
         }
     }
     /**
@@ -421,7 +422,11 @@ public class ShiftService {
         try {
             String shifts = shiftController.getAllShiftsByDate(doneBy, date);
             return shifts;
-        } catch (RuntimeException e) {
+        }
+        catch (ShiftNotFoundException e) {
+            throw new ShiftNotFoundException(e.getMessage());
+        }
+        catch (RuntimeException e) {
             return "Error: " + e.getMessage();
         }
     }

@@ -3,6 +3,7 @@ package DomainLayer.EmployeeSubModule;
 import DTOs.ShiftDTO;
 import DomainLayer.enums.ShiftType;
 import DomainLayer.exception.InvalidInputException;
+import DomainLayer.exception.ShiftNotFoundException;
 import DomainLayer.exception.UnauthorizedPermissionException;
 import Util.Week;
 import Util.config;
@@ -23,7 +24,7 @@ public class ShiftController {
     private long shiftIdCounter = 1;
 
     // Magic Number
-    private final String ShiftManagerStr = " Shift Manager"; // TODO: for some reason the initdata is adding a space in the start of each role name after DAL integration we must remove the space here!
+    private final String ShiftManagerStr = config.ROLE_SHIFT_MANAGER; // TODO: for some reason the initdata is adding a space in the start of each role name after DAL integration we must remove the space here!
 
     public ShiftController(Set<Shift> shifts, AuthorisationController authorizationController, EmployeeController employeeController) {
         this.shifts = shifts;
@@ -256,7 +257,7 @@ public class ShiftController {
         }
         Shift shiftToRemove = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
         if (shiftToRemove == null) {
-            throw new RuntimeException("Shift does not exist");
+            throw new ShiftNotFoundException("Shift does not exist");
         }
         shifts.remove(shiftToRemove);
         return true;
@@ -270,7 +271,7 @@ public class ShiftController {
      * @param shiftType The type of the shift to be removed (e.g., morning, evening).
      * @return {@code true} if the shift was successfully removed.
      * @throws UnauthorizedPermissionException if the employee does not have sufficient permission to remove a shift.
-     * @throws RuntimeException                if the shift does not exist.
+     * @throws ShiftNotFoundException if the shift does not exist.
      */
     public boolean removeShift(long doneBy, LocalDate date,ShiftType shiftType) {
         String PERMISSION_REQUIRED = "REMOVE_SHIFT";
@@ -283,7 +284,7 @@ public class ShiftController {
                 .findFirst()
                 .orElse(null);
         if (shiftToRemove == null) {
-            throw new RuntimeException("Shift does not exist");
+            throw new ShiftNotFoundException("Shift does not exist");
         }
         shifts.remove(shiftToRemove);
         return true;
@@ -330,7 +331,7 @@ public class ShiftController {
         }
         Shift shiftToUpdate = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
         if (shiftToUpdate == null) {
-            throw new RuntimeException("Shift does not exist");
+            throw new ShiftNotFoundException("Shift does not exist");
         }
         shiftToUpdate.setShiftType(shiftType);
         shiftToUpdate.setShiftDate(date);
@@ -358,7 +359,7 @@ public class ShiftController {
         }
         Shift shiftToGet = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
         if (shiftToGet == null) {
-            throw new RuntimeException("Shift does not exist");
+            throw new ShiftNotFoundException("Shift does not exist");
         }
         ShiftDTO dto = new ShiftDTO(shiftToGet.getId(), shiftToGet.getShiftType(), shiftToGet.getShiftDate(), shiftToGet.getRolesRequired(), shiftToGet.getAssignedEmployees(), shiftToGet.getAvailableEmployees(), shiftToGet.isAssignedShiftManager(), shiftToGet.isOpen(), shiftToGet.getStartHour(), shiftToGet.getEndHour(), shiftToGet.getCreateDate(), shiftToGet.getUpdateDate());
         return dto.serialize();
@@ -391,9 +392,9 @@ public class ShiftController {
 
         if (filteredShifts.isEmpty()) {
             if (branch == null) {
-                throw new RuntimeException("No shifts were found");
+                throw new ShiftNotFoundException("No shifts were found");
             } else {
-                throw new RuntimeException("No shifts were found for the branch: " + branch);
+                throw new ShiftNotFoundException("No shifts were found for the branch: " + branch);
             }
         }
 
@@ -437,9 +438,9 @@ public class ShiftController {
 
         if (filteredShifts.isEmpty()) {
             if (branch == null) {
-                throw new RuntimeException("No shifts found for the date");
+                throw new ShiftNotFoundException("No shifts found for the date");
             } else {
-                throw new RuntimeException("No shifts found for the date and branch");
+                throw new ShiftNotFoundException("No shifts found for the date and branch");
             }
         }
         return serializeSetShifts(filteredShifts);
@@ -478,9 +479,9 @@ public class ShiftController {
 
         if (filteredShifts.isEmpty()) {
             if (branch == null) {
-                throw new RuntimeException("No shifts found for the employee");
+                throw new ShiftNotFoundException("No shifts found for the employee");
             } else {
-                throw new RuntimeException("No shifts found for the employee in branch: " + branch);
+                throw new ShiftNotFoundException("No shifts found for the employee in branch: " + branch);
             }
         }
 
@@ -522,9 +523,9 @@ public class ShiftController {
                 .map(this::serializeShift)
                 .orElseThrow(() -> {
                     if (branch == null) {
-                        return new RuntimeException("Shift does not exist for the specified date and type");
+                        return new ShiftNotFoundException("Shift does not exist for the specified date and type");
                     } else {
-                        return new RuntimeException("Shift does not exist for the specified date, type, and branch: " + branch);
+                        return new ShiftNotFoundException("Shift does not exist for the specified date, type, and branch: " + branch);
                     }
                 });
     }
@@ -553,7 +554,7 @@ public class ShiftController {
         }
         Shift shiftToUpdate = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
         if (shiftToUpdate == null) {
-            throw new RuntimeException("Shift does not exist");
+            throw new ShiftNotFoundException("Shift does not exist");
         }
         Map <String, Integer> rolesRequiredMap = shiftToUpdate.getRolesRequired();
         rolesRequiredMap.put(role, rolesRequired);
@@ -579,7 +580,7 @@ public class ShiftController {
         }
         Shift shiftToUpdate = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
         if (shiftToUpdate == null) {
-            throw new RuntimeException("Shift does not exist");
+            throw new ShiftNotFoundException("Shift does not exist");
         }
         shiftToUpdate.setAssignedShiftManager(isAssignedShiftManager);
         shiftToUpdate.setUpdateDate(LocalDate.now());
@@ -603,7 +604,7 @@ public class ShiftController {
         }
         Shift shiftToUpdate = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
         if (shiftToUpdate == null) {
-            throw new RuntimeException("Shift does not exist");
+            throw new ShiftNotFoundException("Shift does not exist");
         }
         shiftToUpdate.setOpen(isOpen);
         shiftToUpdate.setUpdateDate(LocalDate.now());
@@ -617,7 +618,7 @@ public class ShiftController {
      * @param shiftId the ID of the shift
      * @param role    the role to remove
      * @return true if the role was removed, false if it was not present
-     * @throws RuntimeException if the shift does not exist
+     * @throws ShiftNotFoundException if the shift does not exist
      */
     public boolean removeRoleRequired(long doneBy, long shiftId, String role) {
         String PERMISSION_REQUIRED = "ROLE_REQUIRED";
@@ -631,7 +632,7 @@ public class ShiftController {
                 .orElse(null);
 
         if (shiftToUpdate == null) {
-            throw new RuntimeException("Shift does not exist");
+            throw new ShiftNotFoundException("Shift does not exist");
         }
         // Check if its not removing the shift manager role
         if (role.equals(ShiftManagerStr)) {
