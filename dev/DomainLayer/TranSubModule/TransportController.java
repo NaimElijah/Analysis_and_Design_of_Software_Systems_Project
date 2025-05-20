@@ -1,7 +1,6 @@
 package DomainLayer.TranSubModule;
 
 import DTOs.*;
-import DomainLayer.EmployeeSubModule.EmployeeController;
 import DomainLayer.SiteSubModule.Address;
 import DomainLayer.SiteSubModule.Site;
 import DomainLayer.SiteSubModule.SiteFacade;
@@ -28,9 +27,6 @@ public class TransportController {
     private int transportIDCounter;
     private HashMap<Integer, ItemsDoc> itemsDocs;  // to know an ItemsDoc's num is unique like required.
     private ArrayList<TransportDoc> queuedTransports;
-
-//    private EmployeeController employeeController;   //TODO: put code that references this in the service layer and use the EmployeeService there
-
     private HashMap<Long, Integer> driverIdToInTransportID;  //  employee is added to here if he is an active driver in an active Transport.
 
     private SiteFacade siteFacade;
@@ -44,7 +40,6 @@ public class TransportController {
         this.transports = new HashMap<Integer, TransportDoc>();
         this.itemsDocs = new HashMap<Integer, ItemsDoc>();
         this.queuedTransports = new ArrayList<TransportDoc>();
-//        this.employeeController = eC;
         this.driverIdToInTransportID = new HashMap<>();
         this.siteFacade = sF;
         this.truckFacade = tF;
@@ -330,37 +325,26 @@ public class TransportController {
         }
     }
 
+
     public HashMap<Long, Integer> getDriverIdToInTransportID() {return driverIdToInTransportID;}
     public TruckFacade getTruckFacade() {return truckFacade;}
+    public SiteFacade getSiteFacade() {return siteFacade;}
 
 
-//    public void isTruckDriverPairingGood(int truckNum, long driverID) throws FileNotFoundException, ArrayIndexOutOfBoundsException, ClassNotFoundException, CloneNotSupportedException, CommunicationException {
-//        if (!this.truckFacade.getTrucksWareHouse().containsKey(truckNum)) {
-//            throw new FileNotFoundException("Truck Number entered doesn't exist");
-//        } else if (!this.employeeController.hasRole("DriverA", driverID) && !this.employeeController.hasRole("DriverB", driverID) && !this.employeeController.hasRole("DriverC", driverID) && !this.employeeController.hasRole("DriverD", driverID) && !this.employeeController.hasRole("DriverE", driverID)){
-//            throw new ArrayIndexOutOfBoundsException("The Driver ID you have entered doesn't exist");
-//        } else if (this.truckFacade.getTrucksWareHouse().get(truckNum).getInTransportID() != -1){
-//            throw new CloneNotSupportedException("The Truck you chose is partaking in another Active Transport right now");
-//        }
-//
-//        String lice = getTruckLicenseAsStringRole(truckNum);
-//
-//        boolean isThereAvailableDriverMatchingThisTruck = false;
-//        for(long driverId : this.driverIdToInTransportID.keySet()){
-//            if (this.employeeController.hasRole(lice, driverId) && !this.driverIdToInTransportID.containsKey(driverId)){  // if driver compatible and free
-//                isThereAvailableDriverMatchingThisTruck = true;
-//            }
-//        }
-//
-//        if (!isThereAvailableDriverMatchingThisTruck){
-//            throw new ClassNotFoundException("There isn't a Driver that is available right now and compatible, license wise, with the Truck you chose");
-//        }
-//
-//        // check if the driver has a license matching the truck's license
-//        if (!employeeController.hasRole(lice, driverID)){
-//            throw new CommunicationException("The Driver you chose doesn't have the fitting license for the Truck you chose");
-//        }
-//    }
+    public void isTruckDriverPairingGood(int truckNum, long driverID, boolean isNotDriver, boolean hasRole22) throws FileNotFoundException, ArrayIndexOutOfBoundsException, ClassNotFoundException, CloneNotSupportedException, CommunicationException {
+        if (!this.truckFacade.getTrucksWareHouse().containsKey(truckNum)) {
+            throw new FileNotFoundException("Truck Number entered doesn't exist");
+        } else if (isNotDriver){
+            throw new ArrayIndexOutOfBoundsException("The Driver ID you have entered doesn't exist");
+        } else if (this.truckFacade.getTrucksWareHouse().get(truckNum).getInTransportID() != -1){
+            throw new CloneNotSupportedException("The Truck you chose is partaking in another Active Transport right now");
+        }
+        // check if the driver has a license matching the truck's license
+        if (!hasRole22){
+            throw new CommunicationException("The Driver you chose doesn't have the fitting license for the Truck you chose");
+        }
+    }
+
 
 
     public String getTruckLicenseAsStringRole(int trucknum){
@@ -400,96 +384,39 @@ public class TransportController {
 
 
 
-    public String checkTransportValidity(String DTO_OfTransport) throws JsonProcessingException {  ///  returns: "Valid", "BadLicenses", "overallWeight-truckMaxCarryWeight", "Queue", "Occupied"
+    public String checkTransportValidity(String DTO_OfTransport, boolean hasRole11, boolean isThereMatchAtAllBetweenLicenses) throws JsonProcessingException {  ///  returns: "Valid", "BadLicenses", "overallWeight-truckMaxCarryWeight", "Queue", "Occupied"
         TransportDTO transport_DTO = this.objectMapper.readValue(DTO_OfTransport, TransportDTO.class);
-        long driverID = transport_DTO.getTransportDriverID();
-        Truck truck = this.truckFacade.getTrucksWareHouse().get(transport_DTO.getTransportTruckNum());
-        Site srcSite = this.siteFacade.getShippingAreas().get(transport_DTO.getSrc_site().getSiteAreaNum()).getSites().get(transport_DTO.getSrc_site().getSiteAddressString());
-        TransportDoc tempTransport = new TransportDoc(enumTranStatus.BeingAssembled, transport_DTO.getTransport_ID(), truck, driverID, srcSite);
-        for (ItemsDocDTO itemsDocDTO : transport_DTO.getDests_Docs()){
-            Site destSiteTemp = this.siteFacade.getShippingAreas().get(itemsDocDTO.getDest_siteDTO().getSiteAreaNum()).getSites().get(itemsDocDTO.getDest_siteDTO().getSiteAddressString());
-//            String tempCName = destSiteTemp.getcName();  // not needed
-//            long tempCNumber = destSiteTemp.getcNumber();  // not needed
-            tempTransport.addDestSite(itemsDocDTO.getItemsDoc_num(), destSiteTemp);
-
-            for (ItemQuantityDTO itemQuantityDTO : itemsDocDTO.getItemQuantityDTOs()){
-                tempTransport.addItem(itemsDocDTO.getItemsDoc_num(), itemQuantityDTO.getItem().getName(), itemQuantityDTO.getItem().getWeight(), itemQuantityDTO.getQuantity(), itemQuantityDTO.getItem().getCondition());
-            }
-        }    ///  adding every site and every item for each site
-
-        double overallTransportWeight = tempTransport.calculateTransportItemsWeight();
+        TransportDoc tempTransport = convertTransportDTOToTransportDoc(transport_DTO);
         String res = "Valid";
-
-        /// /////////////////////////////////    <<-------------------------------------   checking if there's a Driver-Truck Pairing At All Right Now, from the Free ones
-
-        ///  checking if there is a match at all, --> from those who are free right now
-        boolean isThereMatchAtAllBetweenLicenses = false;
-        for (Employee employee : this.employeeController.getAllEmployees().values()){
-            for (Truck truc : this.truckFacade.getTrucksWareHouse().values()){
-                if (this.employeeController.hasRole(getTruckLicenseAsStringRole(truc.getTruck_num()), employee.getIsraeliId())){  //  if compatible
-                    if ((!isDriverActive(employee.getIsraeliId())) && (!isTruckActive(truc))){   // searching only the free ones, like in the Requirements
-                        isThereMatchAtAllBetweenLicenses = true;  // if found
-                        break;   // because already found
-                    }
-                }
-            }
-            if (isThereMatchAtAllBetweenLicenses){break;}  // if already found
-        }
-
-//        for (long driverId : this.driverIdToInTransportID.keySet()){
-//            for (Truck truc : this.truckFacade.getTrucksWareHouse().values()){
-//                if (truc.getValid_license().equals(drivers_license) && (!isDriverActive(driverId)) && (!isTruckActive(truc))){  // searching only the free ones, like in the Requirements
-//                    isThereMatchAtAllBetweenLicenses = true;  // if found
-//                    break;   // because already found
-//                }
-//            }
-//            if (isThereMatchAtAllBetweenLicenses){break;}  // if already found
-//        }
 
         if(!isThereMatchAtAllBetweenLicenses){
             // send to Queue
             this.addTransportToWaitQueue(tempTransport);
             return "Queue";
         }
-
         // else: continue to check other stuff
-
-
         /// /////////////////////////////////    <<-------------------------------------   checking if the Driver-Truck pairing is compatible
-
-//        boolean driver_has_correct_license = false;
-//        for (enumDriLicense drivers_license : tempTransport.getTransportDriver().getLicenses()){
-//            if (tempTransport.getTransportTruck().getValid_license().equals(drivers_license)){
-//                driver_has_correct_license = true;
-//                break;
-//            }
-//        }
-
-        if (!this.employeeController.hasRole(getTruckLicenseAsStringRole(tempTransport.getTransportTruck().getTruck_num()), tempTransport.getTransportDriverId())){
+        if (!hasRole11){
             return "BadLicenses";
         }
-
         // else: continue to check another thing
-
         /// /////////////////////////////////    <<-------------------------------------   checking if the Driver-Truck pairing are both free
-
         if (isDriverActive(tempTransport.getTransportDriverId())){ return "Occupied"; }
-        if (isTruckActive(tempTransport.getTransportTruck())){ return "Occupied"; }
-
+        if (isTruckActive(tempTransport.getTransportTruck().getTruck_num())){ return "Occupied"; }
         // else: continue to check another thing
         /// /////////////////////////////////    <<-------------------------------------   checking Overall Weight
 
+        double overallTransportWeight = tempTransport.calculateTransportItemsWeight();
         if (tempTransport.getTransportTruck().getMax_carry_weight() < overallTransportWeight){
             res = "" + overallTransportWeight + "-" + tempTransport.getTransportTruck().getMax_carry_weight();  // "overallWeight-truckMaxCarryWeight" format
         }
-
         return res;
     }
 
 
 
 
-    private boolean isDriverActive(long driverID){
+    public boolean isDriverActive(long driverID){
         if (this.driverIdToInTransportID.containsKey(driverID)) {  // if driver is in another transport
             TransportDoc otherTransport = transports.get(this.driverIdToInTransportID.get(driverID));
             if(otherTransport.getStatus() == enumTranStatus.BeingAssembled || otherTransport.getStatus() == enumTranStatus.InTransit || otherTransport.getStatus() == enumTranStatus.BeingDelayed){  // if other Transport is Active
@@ -500,7 +427,8 @@ public class TransportController {
     }
 
 
-    public boolean isTruckActive(Truck truck){
+    public boolean isTruckActive(int truck_num){
+        Truck truck = this.truckFacade.getTrucksWareHouse().get(truck_num);
         if (truck.getInTransportID() != -1) {  // if truck is in another transport
             TransportDoc otherTransport = transports.get(truck.getInTransportID());
             if(otherTransport.getStatus() == enumTranStatus.BeingAssembled || otherTransport.getStatus() == enumTranStatus.InTransit || otherTransport.getStatus() == enumTranStatus.BeingDelayed){  // if other Transport is Active
@@ -567,6 +495,27 @@ public class TransportController {
 
         TransportDTO transportDTO = new TransportDTO(transportDoc.getTran_Doc_ID(), transportDoc.getTransportTruck().getTruck_num(), transportDoc.getTransportDriverId(), srcSiteDTO, listOfItemsDocDTOs);
         return transportDTO;
+    }
+
+
+
+    private TransportDoc convertTransportDTOToTransportDoc(TransportDTO transport_DTO){
+        long driverID = transport_DTO.getTransportDriverID();
+        Truck truck = this.truckFacade.getTrucksWareHouse().get(transport_DTO.getTransportTruckNum());
+        Site srcSite = this.siteFacade.getShippingAreas().get(transport_DTO.getSrc_site().getSiteAreaNum()).getSites().get(transport_DTO.getSrc_site().getSiteAddressString());
+
+        TransportDoc tempTransport = new TransportDoc(enumTranStatus.BeingAssembled, transport_DTO.getTransport_ID(), truck, driverID, srcSite);
+
+        for (ItemsDocDTO itemsDocDTO : transport_DTO.getDests_Docs()){
+            Site destSiteTemp = this.siteFacade.getShippingAreas().get(itemsDocDTO.getDest_siteDTO().getSiteAreaNum()).getSites().get(itemsDocDTO.getDest_siteDTO().getSiteAddressString());
+            tempTransport.addDestSite(itemsDocDTO.getItemsDoc_num(), destSiteTemp);
+
+            for (ItemQuantityDTO itemQuantityDTO : itemsDocDTO.getItemQuantityDTOs()){
+                tempTransport.addItem(itemsDocDTO.getItemsDoc_num(), itemQuantityDTO.getItem().getName(), itemQuantityDTO.getItem().getWeight(), itemQuantityDTO.getQuantity(), itemQuantityDTO.getItem().getCondition());
+            }
+        }    ///  adding every site and every item for each site
+
+        return tempTransport;
     }
 
 
@@ -667,6 +616,8 @@ public class TransportController {
         if (addition == null){
             throw new CommunicationException("Destination Site already in this Transport, you can add items to that site instead.");
         }
+
+        //TODO:  recalculate arrival times within ItemsDocs of this Transport
         this.itemsDocs.put(itemsDoc_num, addition);
     }
 
@@ -677,8 +628,9 @@ public class TransportController {
         } else if (!this.itemsDocs.containsKey(itemsDoc_num)) {
             throw new CommunicationException("The Site's Items Document Number you are trying to remove doesn't exist in the system.");
         }
-
         if (this.transports.get(tran_ID).removeDestSite(itemsDoc_num) == -1){ throw new ClassNotFoundException("The Site's Items Document Number is not in that Transport"); }
+
+        //TODO:  recalculate arrival times within ItemsDocs of this Transport
         this.itemsDocs.remove(itemsDoc_num);
     }
 
@@ -702,6 +654,8 @@ public class TransportController {
         } else if (index > this.transports.get(transportID).getDests_Docs().size()) {   // if the index is valid    //  index should be 1, 2, ....
             throw new AbstractMethodError("The Index entered is bigger than the amount of sites in the Transport, so can't put that site in that bigger index");
         }
+
+        //TODO:  recalculate arrival times within ItemsDocs of this Transport
 
         this.transports.get(transportID).setSiteArrivalIndexInTransport(siteArea, siteAddress, index);
     }
@@ -734,11 +688,9 @@ public class TransportController {
 
 
 
-    public void checkIfDriverDrivesThisItemsDoc(int id, int itemsDocId) throws FileNotFoundException, IllegalAccessException, ClassNotFoundException {
+    public void checkIfDriverDrivesThisItemsDoc(int id, int itemsDocId, boolean isNotDriver) throws FileNotFoundException, IllegalAccessException, ClassNotFoundException {
         if (!this.itemsDocs.containsKey(itemsDocId)) { throw new FileNotFoundException("Items Document ID not found."); }
-        if (!this.employeeController.hasRole("DriverA", id) && !this.employeeController.hasRole("DriverB", id) && !this.employeeController.hasRole("DriverC", id) && !this.employeeController.hasRole("DriverD", id) && !this.employeeController.hasRole("DriverE", id)){
-            throw new ClassNotFoundException("Driver ID doesn't exist.");
-        }
+        if (isNotDriver){ throw new ClassNotFoundException("Driver ID doesn't exist."); }
 
         boolean driverDrivesThisItemsDoc = false;
         for (TransportDoc transportDoc : this.transports.values()) {
@@ -838,10 +790,8 @@ public class TransportController {
 
 
 
-    public String showTransportsOfDriver(int id) throws ArrayStoreException {
-        if (!this.employeeController.hasRole("DriverA", id) && !this.employeeController.hasRole("DriverB", id) && !this.employeeController.hasRole("DriverC", id) && !this.employeeController.hasRole("DriverD", id) && !this.employeeController.hasRole("DriverE", id)){
-                throw new ArrayStoreException("The Driver(ID) to show Transports for was not found");
-        }
+    public String showTransportsOfDriver(int id, boolean isNotDriver) throws ArrayStoreException {
+        if (isNotDriver){ throw new ArrayStoreException("The Driver(ID) to show Transports for was not found"); }
         String res = "All Transports (all statuses) That Driver with id " + id + " is written in:\n";
         for (TransportDoc t : transports.values()){
             if (t.getTransportDriverId() == id){

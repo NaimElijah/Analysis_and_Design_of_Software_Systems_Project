@@ -1,20 +1,35 @@
 package ServiceLayer;
 
+import DTOs.EmployeeDTO;
+import DTOs.ItemQuantityDTO;
+import DTOs.ItemsDocDTO;
+import DTOs.TransportDTO;
+import DomainLayer.EmployeeSubModule.Employee;
+import DomainLayer.SiteSubModule.Site;
 import DomainLayer.TranSubModule.TransportController;
+import DomainLayer.TranSubModule.TransportDoc;
+import DomainLayer.TruSubModule.Truck;
+import DomainLayer.enums.enumTranStatus;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.management.AttributeNotFoundException;
 import javax.management.openmbean.KeyAlreadyExistsException;
 import javax.naming.CommunicationException;
 import java.io.FileNotFoundException;
 import java.nio.file.FileAlreadyExistsException;
+import java.util.ArrayList;
 
 public class TransportService {
-    private EmployeeService employeeService;
+//    private EmployeeService employeeService;
+    private EmployeeIntegrationService employeeIntegrationServiceService;
     private TransportController tran_f;
-    public TransportService(TransportController tf, EmployeeService es) {
-        this.employeeService = es;
+    private ObjectMapper objectMapper;
+
+    public TransportService(TransportController tf, EmployeeIntegrationService es) {
+        this.employeeIntegrationServiceService = es;
         this.tran_f = tf;
+        this.objectMapper = new ObjectMapper();
     }
 
 
@@ -55,7 +70,7 @@ public class TransportService {
             return "Invalid menu status option - enter a number between 1 and 6";
         }
         try {
-            this.tran_f.setTransportStatus(TranDocID, intMenuStatusOption, this.employeeService.isActive(this.tran_f.getTransports().get(TranDocID).getTransportDriverId()));
+            this.tran_f.setTransportStatus(TranDocID, intMenuStatusOption, this.employeeIntegrationServiceService.isActive(this.tran_f.getTransports().get(TranDocID).getTransportDriverId()));
         } catch (FileNotFoundException e) {
             return "The Transport ID you have entered doesn't exist.";
         } catch (FileAlreadyExistsException e) {
@@ -81,7 +96,7 @@ public class TransportService {
     public String setTransportTruck(int TranDocID, int truckNum){
         if (TranDocID < 0 || truckNum < 0){ return "Transport Document number, Truck number values cannot be negative."; }
         try {
-            this.tran_f.setTransportTruck(TranDocID, truckNum, this.employeeService.hasRole(this.tran_f.getTruckLicenseAsStringRole(truckNum), this.tran_f.getTransports().get(TranDocID).getTransportDriverId()));
+            this.tran_f.setTransportTruck(TranDocID, truckNum, this.employeeIntegrationServiceService.hasRole(this.tran_f.getTransports().get(TranDocID).getTransportDriverId(), this.tran_f.getTruckLicenseAsStringRole(truckNum)));
         } catch (FileNotFoundException e) {
             return "The Transport ID you have entered doesn't exist.";
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -108,9 +123,9 @@ public class TransportService {
     public String setTransportDriver(int TranDocID, int DriverID){
         if (TranDocID < 0 || DriverID < 0){ return "Transport Document number, Driver ID values cannot be negative."; }
         try {
-            boolean isNotDriver = !this.employeeService.hasRole("DriverA", DriverID) && !this.employeeService.hasRole("DriverB", DriverID) && !this.employeeService.hasRole("DriverC", DriverID) && !this.employeeService.hasRole("DriverD", DriverID) && !this.employeeService.hasRole("DriverE", DriverID);
+            boolean isNotDriver = !this.employeeIntegrationServiceService.hasRole(DriverID, "DriverA") && !this.employeeIntegrationServiceService.hasRole(DriverID, "DriverB") && !this.employeeIntegrationServiceService.hasRole(DriverID, "DriverC") && !this.employeeIntegrationServiceService.hasRole(DriverID, "DriverD") && !this.employeeIntegrationServiceService.hasRole(DriverID, "DriverE");
             String lice = this.tran_f.getTruckLicenseAsStringRole(this.tran_f.getTransports().get(TranDocID).getTransportTruck().getTruck_num());
-            this.tran_f.setTransportDriver(TranDocID, DriverID, isNotDriver, this.employeeService.isActive(DriverID), this.employeeService.hasRole(lice, DriverID));
+            this.tran_f.setTransportDriver(TranDocID, DriverID, isNotDriver, this.employeeIntegrationServiceService.isActive(DriverID), this.employeeIntegrationServiceService.hasRole(DriverID, lice));
         } catch (FileNotFoundException e) {
             return "The Transport ID you have entered doesn't exist.";
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -135,39 +150,29 @@ public class TransportService {
 
 
 
-
+    //TODO: refactor to timing and specific site workers elements.  (also refactor other functions in here)
     public String isTruckDriverPairingGood(int truckNum, int driverID) {
         if (truckNum < 0 || driverID < 0){ return "Truck number/Driver ID values cannot be negative."; }
         try {
-//            this.tran_f.isTruckDriverPairingGood(truckNum, driverID, isNotDriver);
-
-            if (!this.tran_f.getTruckFacade().getTrucksWareHouse().containsKey(truckNum)) {
-                throw new FileNotFoundException("Truck Number entered doesn't exist");
-            } else if (!this.employeeService.hasRole("DriverA", driverID) && !this.employeeService.hasRole("DriverB", driverID) && !this.employeeService.hasRole("DriverC", driverID) && !this.employeeService.hasRole("DriverD", driverID) && !this.employeeService.hasRole("DriverE", driverID)){
-                throw new ArrayIndexOutOfBoundsException("The Driver ID you have entered doesn't exist");
-            } else if (this.tran_f.getTruckFacade().getTrucksWareHouse().get(truckNum).getInTransportID() != -1){
-                throw new CloneNotSupportedException("The Truck you chose is partaking in another Active Transport right now");
+            ArrayList<EmployeeDTO> employeesDTOs = new ArrayList<>();
+            for (String emp : this.employeeIntegrationServiceService.getAllDrivers()){
+                employeesDTOs.add(this.objectMapper.readValue(emp, EmployeeDTO.class));
             }
-
             String lice = this.tran_f.getTruckLicenseAsStringRole(truckNum);
-
             boolean isThereAvailableDriverMatchingThisTruck = false;
-            for(long driverId : this.tran_f.getDriverIdToInTransportID().keySet()){  //TODO:  I need to go over all of the Drivers in EmployeeController.  PULL THEIRS  <<----
-                //TODO:  maybe do that they give me a getAllEmployees/Drivers that returns a List of DTOs of the employees and I deserialize here and use the DTOs in this function.
-                if (this.employeeService.hasRole(lice, driverId) && !this.tran_f.getDriverIdToInTransportID().containsKey(driverId)){  // if driver compatible and free
+
+            for(EmployeeDTO driver : employeesDTOs){
+                if (this.employeeIntegrationServiceService.hasRole(driver.getIsraeliId(), lice) && !this.tran_f.getDriverIdToInTransportID().containsKey(driver.getIsraeliId())){  // if driver compatible and free
                     isThereAvailableDriverMatchingThisTruck = true;
                 }
             }
-
             if (!isThereAvailableDriverMatchingThisTruck){
                 throw new ClassNotFoundException("There isn't a Driver that is available right now and compatible, license wise, with the Truck you chose");
             }
 
-            // check if the driver has a license matching the truck's license
-            if (!this.employeeService.hasRole(lice, driverID)){
-                throw new CommunicationException("The Driver you chose doesn't have the fitting license for the Truck you chose");
-            }
-
+            boolean isNotDriver = !this.employeeIntegrationServiceService.hasRole(driverID, "DriverA") && !this.employeeIntegrationServiceService.hasRole(driverID, "DriverB") && !this.employeeIntegrationServiceService.hasRole(driverID, "DriverC") && !this.employeeIntegrationServiceService.hasRole(driverID, "DriverD") && !this.employeeIntegrationServiceService.hasRole(driverID, "DriverE");
+            boolean hasRole22 = this.employeeIntegrationServiceService.hasRole(driverID, lice);
+            this.tran_f.isTruckDriverPairingGood(truckNum, driverID, isNotDriver, hasRole22);
 
         } catch (FileNotFoundException e) {
             return "Truck Number entered doesn't exist";
@@ -193,17 +198,32 @@ public class TransportService {
 
 
 
-
+    //TODO: refactor to timing and specific site workers elements.  (also refactor other functions in here)
     public String checkTransportValidity(String DTO_OfTransport) {  ///  returns: "Valid", "BadLicenses", "<overallWeight-truckMaxCarryWeight>", "Queue", "Occupied"
-        String res = "";
+        String res = "Valid";
         try {
-            res = this.tran_f.checkTransportValidity(DTO_OfTransport);
-            //TODO:  because of this check's complexity, move this functionality to here too, and adjust too
-
-
-
-
-
+            /// /////////////////////////////////    <<-------------------------------------   checking if there's a Driver-Truck Pairing At All Right Now, from the Free ones
+            ArrayList<EmployeeDTO> employeesDTOs = new ArrayList<>();
+            for (String emp : this.employeeIntegrationServiceService.getAllDrivers()){
+                employeesDTOs.add(this.objectMapper.readValue(emp, EmployeeDTO.class));
+            }
+            ///  checking if there is a match at all, --> from those who are free right now
+            boolean isThereMatchAtAllBetweenLicenses = false;
+            for (EmployeeDTO employee : employeesDTOs){
+                for (int trucNum : this.tran_f.getTruckFacade().getTrucksWareHouse().keySet()){
+                    if (this.employeeIntegrationServiceService.hasRole(employee.getIsraeliId(), this.tran_f.getTruckLicenseAsStringRole(trucNum))){  //  if compatible
+                        if ((!this.tran_f.isDriverActive(employee.getIsraeliId())) && (!this.tran_f.isTruckActive(trucNum))){   // searching only the free ones, like in the Requirements
+                            isThereMatchAtAllBetweenLicenses = true;  // if found
+                            break;   // because already found
+                        }
+                    }
+                }
+                if (isThereMatchAtAllBetweenLicenses){break;}  // if already found
+            }
+            // else: continue to check other stuff inside this function
+            TransportDTO transport_DTO = this.objectMapper.readValue(DTO_OfTransport, TransportDTO.class);
+            boolean hasRole11 = this.employeeIntegrationServiceService.hasRole(transport_DTO.getTransportDriverID(), this.tran_f.getTruckLicenseAsStringRole(transport_DTO.getTransportTruckNum()));
+            res = this.tran_f.checkTransportValidity(DTO_OfTransport, hasRole11, isThereMatchAtAllBetweenLicenses);
 
         } catch (JsonProcessingException e) {
             e.printStackTrace();
@@ -362,7 +382,8 @@ public class TransportService {
     public String checkIfDriverDrivesThisItemsDoc(int id, int itemsDocId) {
         if (id < 0 || itemsDocId < 0){ return "The IDs you enter cannot be negative"; }
         try {
-            tran_f.checkIfDriverDrivesThisItemsDoc(id, itemsDocId);
+            boolean isNotDriver = !this.employeeIntegrationServiceService.hasRole(id, "DriverA") && !this.employeeIntegrationServiceService.hasRole(id, "DriverB") && !this.employeeIntegrationServiceService.hasRole(id, "DriverC") && !this.employeeIntegrationServiceService.hasRole(id, "DriverD") && !this.employeeIntegrationServiceService.hasRole(id, "DriverE");
+            tran_f.checkIfDriverDrivesThisItemsDoc(id, itemsDocId, isNotDriver);
         } catch (FileNotFoundException e) {
             return "Items Document ID not found.";
         }catch (ClassNotFoundException e) {
@@ -510,7 +531,8 @@ public class TransportService {
         if (id < 0){ return "The Driver(ID) you want to show is invalid (it's negative)"; }
         String res = "";
         try {
-            res = tran_f.showTransportsOfDriver(id);
+            boolean isNotDriver = !this.employeeIntegrationServiceService.hasRole(id, "DriverA") && !this.employeeIntegrationServiceService.hasRole(id, "DriverB") && !this.employeeIntegrationServiceService.hasRole(id, "DriverC") && !this.employeeIntegrationServiceService.hasRole(id, "DriverD") && !this.employeeIntegrationServiceService.hasRole(id, "DriverE");
+            res = tran_f.showTransportsOfDriver(id, isNotDriver);
         } catch (ArrayStoreException e) {
             return "The Driver(ID) to show Transports for was not found";
         }catch (Exception e){
