@@ -1,12 +1,17 @@
 package DomainLayer;
 
+import DTOs.ShiftDTO;
+import DomainLayer.EmployeeSubModule.*;
 import DomainLayer.enums.ShiftType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,7 +44,19 @@ class ShiftControllerTest {
     Employee cochava;
     Shift shift;
 
-    final String hours = "08:00-16:00";
+    final String hoursString = "08:00-16:00";
+    final LocalTime startHour = LocalTime.of(8, 0);
+    final LocalTime endHour = LocalTime.of(16, 0);
+
+    /**
+     * Helper method to parse hours string in format "HH:MM-HH:MM" into start and end LocalTime objects
+     */
+    private LocalTime[] parseHoursString(String hoursString) {
+        String[] parts = hoursString.split("-");
+        LocalTime start = LocalTime.parse(parts[0].trim());
+        LocalTime end = LocalTime.parse(parts[1].trim());
+        return new LocalTime[] { start, end };
+    }
 
     @BeforeEach
     void setUp() {
@@ -63,27 +80,44 @@ class ShiftControllerTest {
         employees.add(shira);
         employees.add(cochava);
 
-        String hours = "08:00-16:00";
-        shift = new Shift(1, ShiftType.MORNING, LocalDate.of(2020, 10, 2), new HashMap<>(), new HashMap<>(), new HashSet<>(), false, true, hours, LocalDate.now());
+        // Use the predefined startHour and endHour
+        shift = new Shift(1, ShiftType.MORNING, LocalDate.of(2020, 10, 2), new HashMap<>(), new HashMap<>(), new HashSet<>(), false, true, startHour, endHour, LocalDate.now());
         Set<Shift> shifts = new HashSet<>();
         shifts.add(shift);
 
         authorisationController = new AuthorisationController(Strings, permissions);
         employeeController = new EmployeeController(employees, authorisationController);
-        assignmentController = new AssignmentController(employeeController);
-        availabilityController = new AvailabilityController(employeeController);
         shiftController = new ShiftController(shifts, authorisationController, employeeController);
+        assignmentController = new AssignmentController(employeeController, shiftController);
+        availabilityController = new AvailabilityController(employeeController, shiftController);
+
+
     }
 
     @Test
     void testCreateShiftSuccessfully() {
         LocalDate date = LocalDate.of(2025, 4, 9);
         Map<String, Integer> rolesRequired = new HashMap<>();
+        // Add Shift Manager role with count 1
+        rolesRequired.put("Shift Manager", 1);
+
         Map<String, Set<Long>> assignedEmployees = new HashMap<>();
         Set<Long> availableEmployees = new HashSet<>();
-        String hours = "08:00-16:00";
 
-        boolean created = shiftController.createShift(shira.getIsraeliId(), ShiftType.MORNING, date, rolesRequired, assignedEmployees, availableEmployees, false, true, hours, LocalDate.now());
+        // Use the predefined startHour and endHour
+        boolean created = shiftController.createShift(
+            shira.getIsraeliId(), 
+            ShiftType.MORNING, 
+            date, 
+            rolesRequired, 
+            assignedEmployees, 
+            availableEmployees, 
+            false, 
+            true, 
+            startHour, 
+            endHour, 
+            LocalDate.now()
+        );
         assertTrue(created, "Shift should be created successfully");
     }
 
@@ -91,14 +125,41 @@ class ShiftControllerTest {
     void testCreateShiftWithDuplicate() {
         LocalDate date = LocalDate.of(2025, 4, 9);
         Map<String, Integer> rolesRequired = new HashMap<>();
+        // Add Shift Manager role with count 1
+        rolesRequired.put("Shift Manager", 1);
+
         Map<String, Set<Long>> assignedEmployees = new HashMap<>();
         Set<Long> availableEmployees = new HashSet<>();
-        String hours = "08:00-16:00";
 
-        shiftController.createShift(shira.getIsraeliId(), ShiftType.MORNING, date, rolesRequired, assignedEmployees, availableEmployees, false, true, hours, LocalDate.now());
+        // Use the predefined startHour and endHour
+        shiftController.createShift(
+            shira.getIsraeliId(), 
+            ShiftType.MORNING, 
+            date, 
+            rolesRequired, 
+            assignedEmployees, 
+            availableEmployees, 
+            false, 
+            true, 
+            startHour, 
+            endHour, 
+            LocalDate.now()
+        );
 
         assertThrows(RuntimeException.class, () -> {
-            shiftController.createShift(shira.getIsraeliId(), ShiftType.MORNING, date, rolesRequired, assignedEmployees, availableEmployees, false, true, hours, LocalDate.now());
+            shiftController.createShift(
+                shira.getIsraeliId(), 
+                ShiftType.MORNING, 
+                date, 
+                rolesRequired, 
+                assignedEmployees, 
+                availableEmployees, 
+                false, 
+                true, 
+                startHour, 
+                endHour, 
+                LocalDate.now()
+            );
         }, "Shift already exists");
     }
 
@@ -106,14 +167,30 @@ class ShiftControllerTest {
     void testRemoveShiftByIDSuccessfully() {
         LocalDate date = LocalDate.of(2025, 4, 9);
         Map<String, Integer> rolesRequired = new HashMap<>();
+        // Add Shift Manager role with count 1
+        rolesRequired.put("Shift Manager", 1);
+
         Map<String, Set<Long>> assignedEmployees = new HashMap<>();
         Set<Long> availableEmployees = new HashSet<>();
-        String hours = "08:00-16:00";
 
-        shiftController.createShift(shira.getIsraeliId(), ShiftType.MORNING, date, rolesRequired, assignedEmployees, availableEmployees, false, true, hours, LocalDate.now());
+        // Use the predefined startHour and endHour
+        shiftController.createShift(
+            shira.getIsraeliId(), 
+            ShiftType.MORNING, 
+            date, 
+            rolesRequired, 
+            assignedEmployees, 
+            availableEmployees, 
+            false, 
+            true, 
+            startHour, 
+            endHour, 
+            LocalDate.now()
+        );
 
-        Set<Shift> shifts = shiftController.getAllShifts(shira.getIsraeliId());
-        long shiftId = shifts.iterator().next().getId();
+        String serializedShifts = shiftController.getAllShifts(shira.getIsraeliId());
+        List<Shift> shiftsList = shiftController.deserializeArrayShifts(serializedShifts);
+        long shiftId = shiftsList.get(0).getId();
 
         boolean removed = shiftController.removeShiftByID(shira.getIsraeliId(), shiftId);
         assertTrue(removed, "Shift should be removed successfully");
@@ -130,23 +207,51 @@ class ShiftControllerTest {
     void testUpdateShiftSuccessfully() {
         LocalDate date = LocalDate.of(2025, 4, 9);
         Map<String, Integer> rolesRequired = new HashMap<>();
+        // Add Shift Manager role with count 1
+        rolesRequired.put("Shift Manager", 1);
+
         Map<String, Set<Long>> assignedEmployees = new HashMap<>();
         Set<Long> availableEmployees = new HashSet<>();
-        String hours = "08:00-16:00";
 
-        shiftController.createShift(shira.getIsraeliId(), ShiftType.MORNING, date, rolesRequired, assignedEmployees, availableEmployees, false, true, hours, LocalDate.now());
+        // Use the predefined startHour and endHour
+        shiftController.createShift(
+            shira.getIsraeliId(), 
+            ShiftType.MORNING, 
+            date, 
+            rolesRequired, 
+            assignedEmployees, 
+            availableEmployees, 
+            false, 
+            true, 
+            startHour, 
+            endHour, 
+            LocalDate.now()
+        );
 
-        Set<Shift> shifts = shiftController.getAllShifts(shira.getIsraeliId());
-        long shiftId = shifts.iterator().next().getId();
+        // Get the serialized shifts and deserialize them
+        String serializedShifts = shiftController.getAllShifts(shira.getIsraeliId());
+        List<Shift> shiftsList = shiftController.deserializeArrayShifts(serializedShifts);
+        long shiftId = shiftsList.get(0).getId();
 
-        boolean updated = shiftController.updateShift(shira.getIsraeliId(), shiftId, ShiftType.EVENING, date, false, false, hours, LocalDate.now());
+        // Update the shift with the same startHour and endHour
+        boolean updated = shiftController.updateShift(
+            shira.getIsraeliId(), 
+            shiftId, 
+            ShiftType.EVENING, 
+            date, 
+            false, 
+            false, 
+            startHour, 
+            endHour, 
+            LocalDate.now()
+        );
         assertTrue(updated, "Shift should be updated successfully");
     }
 
     @Test
     void testUpdateNonExistingShift() {
         assertThrows(RuntimeException.class, () -> {
-            shiftController.updateShift(shira.getIsraeliId(), 999L, ShiftType.EVENING, LocalDate.now(), false, false, hours, LocalDate.now());
+            shiftController.updateShift(shira.getIsraeliId(), 999L, ShiftType.EVENING, LocalDate.now(), false, false, startHour, endHour, LocalDate.now());
         }, "Shift does not exist");
     }
 
@@ -154,26 +259,49 @@ class ShiftControllerTest {
     void testGetShiftById() {
         LocalDate date = LocalDate.of(2025, 4, 9);
         Map<String, Integer> rolesRequired = new HashMap<>();
+        // Add Shift Manager role with count 1
+        rolesRequired.put("Shift Manager", 1);
+
         Map<String, Set<Long>> assignedEmployees = new HashMap<>();
         Set<Long> availableEmployees = new HashSet<>();
-        String hours = "08:00-16:00";
 
-        shiftController.createShift(shira.getIsraeliId(), ShiftType.MORNING, date, rolesRequired, assignedEmployees, availableEmployees, false, true, hours, LocalDate.now());
+        shiftController.createShift(
+            shira.getIsraeliId(), 
+            ShiftType.MORNING, 
+            date, 
+            rolesRequired, 
+            assignedEmployees, 
+            availableEmployees, 
+            false, 
+            true, 
+            startHour, 
+            endHour, 
+            LocalDate.now()
+        );
 
-        Set<Shift> shifts = shiftController.getAllShifts(shira.getIsraeliId());
-        long shiftId = shifts.iterator().next().getId();
+        String serializedShifts = shiftController.getAllShifts(shira.getIsraeliId());
+        List<Shift> shiftsList = shiftController.deserializeArrayShifts(serializedShifts);
+        long shiftId = shiftsList.get(0).getId();
 
-        Shift shift = shiftController.getShiftByID(shira.getIsraeliId(), shiftId);
-        assertNotNull(shift, "Shift should be returned");
-        assertEquals(shiftId, shift.getId(), "Shift ID should match");
+        String serializedShift = shiftController.getShiftByID(shira.getIsraeliId(), shiftId);
+        assertNotNull(serializedShift, "Serialized shift should not be null");
+
+        // Deserialize the shift to verify its ID
+        ShiftDTO shiftDTO = ShiftDTO.deserialize(serializedShift);
+        assertEquals(shiftId, shiftDTO.getId(), "Shift ID should match");
     }
 
     @Test
     void testGetShiftByIdNotFound() {
-        Shift shift = shiftController.getShiftByID(shira.getIsraeliId(), 999L);
-        assertNull(shift, "Shift should not be found");
+        try {
+            shiftController.getShiftByID(shira.getIsraeliId(), 999L);
+            fail("Expected RuntimeException but no exception was thrown");
+        } catch (RuntimeException e) {
+            // Expected exception
+            assertTrue(e.getMessage().contains("not found") || e.getMessage().contains("does not exist"), 
+                      "Exception message should indicate shift not found");
+        }
     }
 }
 
 // === (Other tests follow same fix pattern — I will continue in the next message because of length) ===
-

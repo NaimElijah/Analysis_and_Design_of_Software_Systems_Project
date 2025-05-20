@@ -1,39 +1,39 @@
 import DomainLayer.*;
-//import DomainLayer.EmpSubModule.EmployeeFacade;
+import DomainLayer.EmployeeSubModule.AssignmentController;
+import DomainLayer.EmployeeSubModule.AuthorisationController;
+import DomainLayer.EmployeeSubModule.AvailabilityController;
+import DomainLayer.EmployeeSubModule.EmployeeController;
+import DomainLayer.EmployeeSubModule.ShiftController;
 import DomainLayer.SiteSubModule.SiteFacade;
-import DomainLayer.TranSubModule.TransportController;
 import DomainLayer.TruSubModule.TruckFacade;
-import PresentationLayer.MainTranSysCLI;
 import PresentationLayer.MainCLI;
-import ServiceLayer.EmployeeService;
-import ServiceLayer.ShiftService;
 import java.io.IOException;
 import java.util.Scanner;
 import ServiceLayer.*;
 
 public class Main {
    public static void main(String[] args) {
-
-      TruckFacade tru_f = new TruckFacade();
+//
+//      TruckFacade tru_f = new TruckFacade();
 //      EmployeeFacade eff = new EmployeeFacade();
-      SiteFacade sf = new SiteFacade();
-//      TransportController tran_f = new TransportController(eff, sf, tru_f);  // also gets the EmployeeController
-
+//      SiteFacade sf = new SiteFacade();
+//      TransportFacade tran_f = new TransportFacade(eff, sf, tru_f);
+//
 //      TransportService tran_s = new TransportService(tran_f);
-      TruckService tru_s = new TruckService(tru_f);
+//      TruckService tru_s = new TruckService(tru_f);
 //      TranEmployeeService es = new TranEmployeeService(eff);
-      SiteService site_s = new SiteService(sf);
-
-//      StartUpStateService start = new StartUpStateService(tran_s, tru_s, site_s);  // also gets the EmployeeController
-
-//      MainTranSysCLI mtsc = new MainTranSysCLI(tru_s, tran_s, site_s, start);  // also gets the EmployeeController
-
+//      SiteService site_s = new SiteService(sf);
+//
+//      StartUpStateService start = new StartUpStateService(tran_s, tru_s, es, site_s);
+//
+//      MainTranSysController mtsc = new MainTranSysController(tru_s, tran_s, site_s, es, start);
+//
 //      mtsc.transportModuleStartup();      ///         <<<-----------------------   starts the whole Transport Module System
-
-
-
-
-
+//
+//
+//
+//
+//
        /// ////////    <<<--------------------------------------   from here it's the HR's code      <<<--------------------     <<<------------------------------
 
        System.out.println("Initializing Employee Module System...");
@@ -72,8 +72,8 @@ public class Main {
        authController       = initData.getAuthController();
        employeeController   = initData.getEmployeeController();
        ShiftController shc   = initData.getShiftController();
-       assignmentController = new AssignmentController(employeeController);
-       availabilityController = new AvailabilityController(employeeController);
+       assignmentController = new AssignmentController(employeeController,shc);
+       availabilityController = new AvailabilityController(employeeController, shc);
        employeeService      = new EmployeeService(employeeController, authController);
        shiftService         = new ShiftService(shc, assignmentController, availabilityController);
 
@@ -95,6 +95,7 @@ public class Main {
                    System.out.println("  1. Shira Steinbuch");
                    System.out.println("  2. Ramzi Abd Rabo");
                    System.out.println("  3. Kochava Shavit");
+                   System.out.println("  4. Login as a different user");
                    System.out.print("Enter your choice: ");
                    String choice = scanner.nextLine().trim();
 
@@ -103,6 +104,15 @@ public class Main {
                        case "1": loginId = 111111111L; validLogin = true; break;
                        case "2": loginId = 222222222L; validLogin = true; break;
                        case "3": loginId = 333333333L; validLogin = true; break;
+                       case "4":
+                           System.out.println("Enter your ID:");
+                           Long id = Long.parseLong(scanner.nextLine().trim());
+                            if (employeeService.getEmployeeById(id) != null) {
+                                 loginId = id;
+                                 validLogin = true;
+                            } else {
+                                 System.out.println("Invalid ID. Please try again.");
+                            }
                        default:
                            System.out.println("Invalid choice. Please try again.");
                    }

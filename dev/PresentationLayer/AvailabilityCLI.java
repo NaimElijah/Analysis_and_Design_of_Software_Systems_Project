@@ -1,7 +1,7 @@
 package PresentationLayer;
 
+import DTOs.ShiftDTO;
 import ServiceLayer.EmployeeService;
-import ServiceLayer.ShiftSL;
 import ServiceLayer.ShiftService;
 import ServiceLayer.exception.AuthorizationException;
 import Util.Week;
@@ -38,22 +38,21 @@ public class AvailabilityCLI {
 
     public boolean process() {
         try {
-            // TODO:
-            //        if (isWeekendBlocked()) {
-//                System.out.println("🚫 Availability update is blocked on weekends.");
-//                return;
-//            }
+            if (isWeekendBlocked()) {
+                System.out.println("🚫 Availability update is blocked on weekends.");
+                return false;
+            }
             LocalDate startDate = Week.getNextSunday(LocalDate.now());
             Week week = Week.from(startDate);
-            Set<ShiftSL> weekShifts = shiftService.getShiftsByWeek(doneBy, week);
+            Set<ShiftDTO> weekShifts = shiftService.getShiftsByWeek(doneBy, week);
 
             if (weekShifts.isEmpty()) {
                 CliUtil.printError("🚫 No shifts available for the upcoming week.");
                 return false;
             }
 
-            List<ShiftSL> shiftsList = new ArrayList<>(weekShifts);
-            shiftsList.sort(Comparator.comparing(ShiftSL::getShiftDate));
+            List<ShiftDTO> shiftsList = new ArrayList<>(weekShifts);
+            shiftsList.sort(Comparator.comparing(ShiftDTO::getShiftDate));
 
             CliUtil.printSectionHeader("Employee Weekly Availability", false, "SYSTEM");
 
@@ -61,9 +60,9 @@ public class AvailabilityCLI {
             System.out.println(CliUtil.GRAY + "--------------------------------------------------" + CliUtil.RESET);
 
             // Mapping of number to shift
-            Map<Integer, ShiftSL> numberedShifts = new LinkedHashMap<>();
+            Map<Integer, ShiftDTO> numberedShifts = new LinkedHashMap<>();
             int index = 1;
-            for (ShiftSL shift : shiftsList) {
+            for (ShiftDTO shift : shiftsList) {
                 LocalDate date = shift.getShiftDate();
                 String dayStr = date.getDayOfWeek().toString().substring(0, 1).toUpperCase() + date.getDayOfWeek().toString().substring(1).toLowerCase();
                 dayStr = dayStr.substring(0, 3); // Sun, Mon...
@@ -96,7 +95,7 @@ public class AvailabilityCLI {
                         continue;
                     }
 
-                    ShiftSL selectedShift = numberedShifts.get(selectedNumber);
+                    ShiftDTO selectedShift = numberedShifts.get(selectedNumber);
 
                     while (true) {
                         CliUtil.printPrompt("Mark availability (Y for available / N for not available): ");
@@ -127,12 +126,10 @@ public class AvailabilityCLI {
             CliUtil.printError("An error occurred: " + e.getMessage());
             return true;
         }
-        //System.out.printf("%d. %-15s| %-13s| %-13s|%n", index, (shift.getShiftType() == ShiftType.MORNING ? dayStr + " " + date : ""), shift.getShiftType(), availabilityMark);
-
     }
 
 
-            private boolean isWeekendBlocked() {
+    private boolean isWeekendBlocked() {
         ZonedDateTime now = ZonedDateTime.now(ZoneId.systemDefault());
         DayOfWeek day = now.getDayOfWeek();
         LocalTime time = now.toLocalTime();

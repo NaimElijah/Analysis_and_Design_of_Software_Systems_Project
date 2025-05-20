@@ -3,7 +3,9 @@ package PresentationLayer;
 import DomainLayer.enums.ShiftType;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -504,17 +506,44 @@ public class CliUtil {
         }
     }
 
-    public static String getHoursInput(String prompt, Scanner scanner) {
+
+
+    public static LocalTime getHourInput(String prompt, Scanner scanner) {
         while (true) {
-            System.out.print(BOLD + prompt + RESET);
-            String input = scanner.nextLine();
-            // Match pattern like 9:00-17:00
-            if (input.matches("\\d{1,2}:\\d{2}-\\d{1,2}:\\d{2}")) {
-                return input;
-            } else {
-                printError("Please enter a valid hours range in the format HH:MM-HH:MM (for example 9:00-17:00).");
+            System.out.print(prompt);
+            String input = scanner.nextLine().trim();
+
+            try {
+                return parseFlexibleTime(input);
+            } catch (DateTimeParseException e) {
+                printError("Invalid time format. Try something like 9, 09:00, 5pm, or 5:00 PM.");
             }
         }
+    }
+
+    private static LocalTime parseFlexibleTime(String input) throws DateTimeParseException {
+        input = input.trim().toLowerCase();
+
+        String[] patterns = {
+                "H",         // 9
+                "HH",        // 09
+                "H:mm",      // 9:00
+                "HH:mm",     // 09:00
+                "h a",       // 5 PM
+                "h:mma",     // 5:00PM
+                "h:mm a",    // 5:00 PM
+                "hh:mm a"    // 05:00 PM
+        };
+
+        for (String pattern : patterns) {
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+                return LocalTime.parse(input.toUpperCase(), formatter);
+            } catch (DateTimeParseException ignored) {
+                // Try next pattern
+            }
+        }
+        throw new DateTimeParseException("Unrecognized time format", input, 0);
     }
 
     /**

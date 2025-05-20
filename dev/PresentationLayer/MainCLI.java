@@ -1,8 +1,10 @@
 package PresentationLayer;
 
+import DTOs.EmployeeDTO;
 import DomainLayer.exception.UnauthorizedPermissionException;
 import ServiceLayer.EmployeeService;
 import ServiceLayer.ShiftService;
+import ServiceLayer.exception.ServiceException;
 
 import java.time.LocalDate;
 import java.util.Scanner;
@@ -120,8 +122,7 @@ public class MainCLI {
 
     private void printWelcomeBanner() {
         String currentDate = LocalDate.now().format(CliUtil.dateFormatter);
-        String userInfo = employeeService.getEmployeeById(doneBy).getFullName();
-        CliUtil.printWelcomeBanner("Employee Module", currentDate, userInfo);
+        CliUtil.printWelcomeBanner("Employee Module", currentDate, formatEmployeeDisplay(doneBy));
     }
 
     private boolean hasPermission(String permission) {
@@ -129,6 +130,22 @@ public class MainCLI {
             return employeeService.hasPermission(doneBy, permission);
         } catch (Exception e) {
             return false;
+        }
+    }
+    /**
+     * Formats employee display with name, number, and branch
+     *
+     * @param employeeId The ID of the employee
+     * @return A formatted string with employee name, number, and branch
+     */
+    private String formatEmployeeDisplay(long employeeId) {
+        try {
+            EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(employeeId);
+            String branch = employee.getBranch() != null ? " [" + employee.getBranch() + "]" : "";
+            return employee.getFullName() + " (#" + employeeId + ")" + branch;
+        } catch (ServiceException e) {
+            // If we can't get the employee name, just return the ID
+            return "Employee #" + employeeId;
         }
     }
 }

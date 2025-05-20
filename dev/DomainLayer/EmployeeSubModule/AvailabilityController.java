@@ -1,6 +1,7 @@
-package DomainLayer;
+package DomainLayer.EmployeeSubModule;
 
 import DomainLayer.exception.UnauthorizedPermissionException;
+import Util.Week;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -12,16 +13,19 @@ import java.util.HashSet;
 
 public class AvailabilityController {
     private final EmployeeController employeeController;
+    private final ShiftController shiftController;
     
-    public AvailabilityController(EmployeeController employeeController) {
+    public AvailabilityController(EmployeeController employeeController, ShiftController shiftController) {
         this.employeeController = employeeController;
+        this.shiftController = shiftController;
     }
 
-    public boolean markAvailable(Shift shift, long doneBy) {
+    public boolean markAvailable(long shiftId, long doneBy) {
         String PERMISSION = "UPDATE_AVAILABLE";
         if (!employeeController.isEmployeeAuthorised(doneBy, PERMISSION)) {
             throw new UnauthorizedPermissionException("User does not have permission to update availability");
         }
+        Shift shift = shiftController.getShiftByIdAsShift(doneBy, shiftId);
         if (shift == null){
             throw new IllegalArgumentException("Shift cannot be null");
         }
@@ -40,11 +44,12 @@ public class AvailabilityController {
         return true;
     }
 
-    public boolean removeAvailability(Shift shift, long doneBy) {
+    public boolean removeAvailability(long shiftId, long doneBy) {
         String PERMISSION = "UPDATE_AVAILABLE";
         if(!employeeController.isEmployeeAuthorised(doneBy, PERMISSION)) {
             throw new UnauthorizedPermissionException("User does not have permission to update availability");
         }
+        Shift shift = shiftController.getShiftByIdAsShift(doneBy, shiftId);
         if(shift == null){
             throw new IllegalArgumentException("Shift cannot be null");
         }
@@ -60,25 +65,28 @@ public class AvailabilityController {
         return true;
     }
 
-    public boolean isAvailable(Shift shift, long doneBy) {
+    public boolean isAvailable(long shiftId, long doneBy) {
         String PERMISSION = "UPDATE_AVAILABLE";
         if (!employeeController.isEmployeeAuthorised(doneBy, PERMISSION)) {
             throw new UnauthorizedPermissionException("User does not have permission to check availability");
         }
+        Shift shift = shiftController.getShiftByIdAsShift(doneBy, shiftId);
         Set<Long> availableEmployees = shift.getAvailableEmployees();
         return availableEmployees.contains(doneBy);
     }
 
-    public Map<LocalDate, Map<String, Boolean>> getWeeklyAvailability(List<Shift> weekShifts, long doneBy) {
+    public Map<LocalDate, Map<String, Boolean>> getWeeklyAvailability(Week week, long doneBy) {
         String PERMISSION = "UPDATE_AVAILABLE";
         if (!employeeController.isEmployeeAuthorised(doneBy, PERMISSION)) {
             throw new UnauthorizedPermissionException("User does not have permission to check availability");
         }
+        String str = shiftController.getShiftsByWeek(doneBy,week);
+        List<Shift> weekShifts = shiftController.deserializeArrayShifts(str);
         Map<LocalDate, Map<String, Boolean>> availability = new TreeMap<>();
         for (Shift shift : weekShifts) {
             availability
                     .computeIfAbsent(shift.getShiftDate(), k -> new HashMap<>())
-                    .put(shift.getShiftType().toString(), isAvailable(shift, doneBy));
+                    .put(shift.getShiftType().toString(), isAvailable(shift.getId(), doneBy));
         }
         return availability;
     }

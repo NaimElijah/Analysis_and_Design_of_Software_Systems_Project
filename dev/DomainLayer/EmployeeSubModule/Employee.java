@@ -1,4 +1,4 @@
-package DomainLayer;
+package DomainLayer.EmployeeSubModule;
 
 import DomainLayer.exception.InvalidInputException;
 
@@ -18,6 +18,7 @@ public class Employee {
     private boolean isActive;
     private LocalDate creationDate; // Creation date of the employee record
     private LocalDate updateDate; // Last update date of the employee record
+    private String branch; // Branch that the employee is assigned to
 
 
     public Employee(long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, Set<String> roles, LocalDate startOfEmployment, boolean isActive, LocalDate creationDate, LocalDate updateDate) {
@@ -31,6 +32,21 @@ public class Employee {
         this.isActive = isActive;
         this.creationDate = creationDate;
         this.updateDate = updateDate;
+        this.branch = null; // Default to null
+    }
+
+    public Employee(long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, Set<String> roles, LocalDate startOfEmployment, boolean isActive, LocalDate creationDate, LocalDate updateDate, String branch) {
+        this.israeliId = israeliId;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.salary = salary;
+        this.termsOfEmployment = termsOfEmployment;
+        this.roles = new HashSet<>(roles);
+        this.startOfEmployment = startOfEmployment;
+        this.isActive = isActive;
+        this.creationDate = creationDate;
+        this.updateDate = updateDate;
+        this.branch = branch;
     }
 
     public long getIsraeliId() {
@@ -149,5 +165,26 @@ public class Employee {
             throw new InvalidInputException("Update date cannot be null");
         }
         this.updateDate = updateDate;
+    }
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
+
+    /**
+     * Gets the branch that the employee is assigned to.
+     * 
+     * @return The branch name
+     */
+    public String getBranch() {
+        return branch;
+    }
+
+    /**
+     * Sets the branch that the employee is assigned to.
+     * 
+     * @param branch The branch name
+     */
+    public void setBranch(String branch) {
+        this.branch = branch;
     }
 }

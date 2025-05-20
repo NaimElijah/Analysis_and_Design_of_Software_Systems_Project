@@ -1,4 +1,4 @@
-package DomainLayer;
+package DomainLayer.EmployeeSubModule;
 
 import DomainLayer.exception.InvalidInputException;
 import DomainLayer.exception.UnauthorizedPermissionException;

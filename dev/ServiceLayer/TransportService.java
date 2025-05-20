@@ -152,7 +152,7 @@ public class TransportService {
             String lice = this.tran_f.getTruckLicenseAsStringRole(truckNum);
 
             boolean isThereAvailableDriverMatchingThisTruck = false;
-            for(long driverId : this.tran_f.getDriverIdToInTransportID().keySet()){    //TODO:  I need to go over all of the Drivers in EmployeeController.  PULL THEIRS  <<----
+            for(long driverId : this.tran_f.getDriverIdToInTransportID().keySet()){  //TODO:  I need to go over all of the Drivers in EmployeeController.  PULL THEIRS  <<----
                 //TODO:  maybe do that they give me a getAllEmployees/Drivers that returns a List of DTOs of the employees and I deserialize here and use the DTOs in this function.
                 if (this.employeeService.hasRole(lice, driverId) && !this.tran_f.getDriverIdToInTransportID().containsKey(driverId)){  // if driver compatible and free
                     isThereAvailableDriverMatchingThisTruck = true;

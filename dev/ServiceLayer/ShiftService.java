@@ -1,10 +1,14 @@
 package ServiceLayer;
 
-import DomainLayer.*;
+import DTOs.ShiftDTO;
+import DomainLayer.EmployeeSubModule.AssignmentController;
+import DomainLayer.EmployeeSubModule.AvailabilityController;
+import DomainLayer.EmployeeSubModule.ShiftController;
 import DomainLayer.enums.ShiftType;
 import Util.Week;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
 
 public class ShiftService {
@@ -17,16 +21,51 @@ public class ShiftService {
         this.assignmentController = assignmentController;
         this.availabilityController = availabilityController;
     }
+    // ========================
+    // DTO related methods
+    // ========================
+    private String serializeShiftDTO(ShiftDTO dto) {
+        try {
+            return dto.serialize();
+        } catch (Exception e) {
+            throw new RuntimeException("Error serializing ShiftDTO: " + e.getMessage());
+        }
+    }
+    private ShiftDTO deserializeShiftDTO(String json) {
+        try {
+            return ShiftDTO.deserialize(json);
+        } catch (Exception e) {
+            throw new RuntimeException("Error deserializing ShiftDTO: " + e.getMessage());
+        }
+    }
+    public ShiftDTO getShiftDTO(long doneBy, long shiftId) {
+        try {
+            String str = shiftController.getShiftByID(doneBy, shiftId);
+            ShiftDTO shift = deserializeShiftDTO(str);
+
+            if (shift.getId() >= 0) {
+                return shift;
+            } else {
+                throw new RuntimeException("Shift with ID " + shiftId + " not found");
+            }
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // ========================
+    // Shift related methods
+    // ========================
 
     public String createShift(long doneBy, ShiftType shiftType, LocalDate date,
                               Map<String, Integer> rolesRequired,
                               Map<String, Set<Long>> assignedEmployees,
                               Set<Long> availableEmployees,
                               boolean isAssignedShiftManager,
-                              boolean isOpen,String hours, LocalDate updateDate) {
+                              boolean isOpen,LocalTime startHour , LocalTime endHour, LocalDate updateDate) {
         try {
             boolean result = shiftController.createShift(doneBy, shiftType, date, rolesRequired, assignedEmployees,
-                    availableEmployees, isAssignedShiftManager, isOpen,hours, updateDate);
+                    availableEmployees, isAssignedShiftManager, isOpen ,startHour , endHour, updateDate);
             return result ? "Shift created successfully" : "Failed to create shift";
         } catch (RuntimeException e) {
             return "Error: " + e.getMessage();
@@ -65,9 +104,9 @@ public class ShiftService {
     }
 
     public String updateShift(long doneBy, long shiftId, ShiftType shiftType, LocalDate date,
-                              boolean isAssignedShiftManager, boolean isOpen,String hours, LocalDate updateDate) {
+                              boolean isAssignedShiftManager, boolean isOpen,LocalTime startHour , LocalTime endHour, LocalDate updateDate) {
         try {
-            boolean result = shiftController.updateShift(doneBy, shiftId, shiftType, date, isAssignedShiftManager, isOpen,hours, updateDate);
+            boolean result = shiftController.updateShift(doneBy, shiftId, shiftType, date, isAssignedShiftManager, isOpen,startHour,endHour, updateDate);
             if (result) {
                 return "Shift updated successfully";
             } else {
@@ -78,71 +117,47 @@ public class ShiftService {
         }
     }
 
-    public ShiftSL getShiftById(long doneBy, long shiftId) {
+    public String getShiftById(long doneBy, long shiftId) {
         try {
-            ShiftSL shift = new ShiftSL(shiftController.getShiftByID(doneBy, shiftId));
-            if (shift.getId() >=0) {
-                return shift;
-            } else {
-                throw new RuntimeException("Shift with ID " + shiftId + " not found");
-            }
+            String shift = shiftController.getShiftByID(doneBy, shiftId);
+            return shift;
         } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public ShiftSL[] getAllShifts(long doneBy) {
+    public String getAllShifts(long doneBy) {
         try {
-            ShiftSL[] shifts = new ShiftSL[shiftController.getAllShifts(doneBy).size()];
-            int i = 0;
-            for (DomainLayer.Shift shift : shiftController.getAllShifts(doneBy)) {
-                shifts[i] = new ShiftSL(shift);
-                i++;
-            }
+            String domainShifts = shiftController.getAllShifts(doneBy);
+            return domainShifts;
+        } catch (RuntimeException e) {
+            return "Error: " + e.getMessage();
+        }
+    }
+
+    public String getAllShiftsByDateBranch(long doneBy, LocalDate date, String branch) {
+        try {
+            String shifts = shiftController.getAllShiftsByDateAndBranch(doneBy, date, branch);
             return shifts;
         } catch (RuntimeException e) {
-            throw new RuntimeException(e);
+            return "Error: " + e.getMessage();
         }
     }
 
-    public ShiftSL[] getAllShiftsByDate(long doneBy, LocalDate date) {
+    public String getShiftsByEmployee(long doneBy, long employeeID) {
         try {
-            ShiftSL[] shifts = new ShiftSL[shiftController.getAllShiftsByDate(doneBy, date).size()];
-            int i = 0;
-            for (DomainLayer.Shift shift : shiftController.getAllShiftsByDate(doneBy, date)) {
-                shifts[i] = new ShiftSL(shift);
-                i++;
-            }
-            return shifts;
+            return shiftController.getShiftsByEmployee(doneBy, employeeID);
         } catch (RuntimeException e) {
-            throw new RuntimeException(e);
+            return "Error: " + e.getMessage();
         }
     }
 
-    public ShiftSL[] getShiftsByEmployee(long doneBy, long employeeID) {
+    public String getShift(long doneBy, LocalDate date, ShiftType shiftType) {
         try {
-            ShiftSL[] shifts = new ShiftSL[shiftController.getShiftsByEmployee(doneBy, employeeID).size()];
-            int i = 0;
-            for (DomainLayer.Shift shift : shiftController.getShiftsByEmployee(doneBy, employeeID)) {
-                shifts[i] = new ShiftSL(shift);
-                i++;
-            }
-            return shifts;
+            String shift = shiftController.getshift(doneBy, date, shiftType);
+            return shift;
         } catch (RuntimeException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public ShiftSL getShift(long doneBy, LocalDate date, ShiftType shiftType) {
-        try {
-            ShiftSL shift = new ShiftSL(shiftController.getshift(doneBy, date, shiftType));
-            if (shift.getId() >= 0) {
-                return shift;
-            } else {
-                throw new RuntimeException("The " + shiftType + " Shift on date " + date + " not found");
-            }
-        } catch (RuntimeException e) {
-            throw new RuntimeException(e);
+            return "Error: " + e.getMessage();
         }
     }
 
@@ -183,8 +198,13 @@ public class ShiftService {
         }
     }
 
-    public Set<String> getRoles(long doneBy) {
-        return shiftController.getRoles(doneBy);
+    public String getRoles(long doneBy) {
+        try{
+            String roles = shiftController.getRoles(doneBy);
+            return roles;
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -197,12 +217,7 @@ public class ShiftService {
      */
     public String assignEmployeeToRole(long doneBy, long shiftId, long employeeId, String role) {
         try {
-            Shift shift = shiftController.getShiftByID(doneBy, shiftId);
-            if (shift == null) {
-                return "Shift not found";
-            }
-
-            boolean result = assignmentController.assignEmployeeToRole( shift, doneBy, role,employeeId);
+            boolean result = assignmentController.assignEmployeeToRole( shiftId, doneBy, role,employeeId);
             return result ? "Employee assigned to role successfully" : "Failed to assign employee to role";
         } catch (RuntimeException e) {
             return "Error: " + e.getMessage();
@@ -218,12 +233,7 @@ public class ShiftService {
      */
     public String removeAssignment(long doneBy, long shiftId, String role, long employeeId) {
         try {
-            Shift shift = shiftController.getShiftByID(doneBy, shiftId);
-            if (shift == null) {
-                return "Shift not found";
-            }
-
-            boolean result = assignmentController.removeAssignment(doneBy, shift, role, employeeId);
+            boolean result = assignmentController.removeAssignment(doneBy, shiftId, role, employeeId);
             return result ? "Employee assignment removed successfully" : "Failed to remove employee assignment";
         } catch (RuntimeException e) {
             return "Error: " + e.getMessage();
@@ -239,12 +249,7 @@ public class ShiftService {
      */
     public boolean isEmployeeAssigned(long doneBy, long shiftId, long employeeId) {
         try {
-            Shift shift = shiftController.getShiftByID(doneBy, shiftId);
-            if (shift == null) {
-                return false;
-            }
-
-            return assignmentController.isAssigned(doneBy, shift, employeeId);
+            return assignmentController.isAssigned(doneBy, shiftId, employeeId);
         } catch (RuntimeException e) {
             return false;
         }
@@ -258,15 +263,10 @@ public class ShiftService {
      */
     public String markEmployeeAvailable(long doneBy, long shiftId) {
         try {
-            Shift shift = shiftController.getShiftByID(doneBy, shiftId);
-            if (shift == null) {
-                return "Shift not found";
-            }
-
-            availabilityController.markAvailable(shift, doneBy);
+            availabilityController.markAvailable(shiftId, doneBy);
             return "Employee marked as available successfully";
         } catch (RuntimeException e) {
-            return "Error: " + e.getMessage();
+            return  e.getMessage();
         }
     }
 
@@ -278,11 +278,7 @@ public class ShiftService {
      */
     public String removeEmployeeAvailability(long doneBy, long shiftId) {
         try {
-            Shift shift = shiftController.getShiftByID(doneBy, shiftId);
-            if (shift == null) {
-                return "Shift not found";
-            }
-            availabilityController.removeAvailability(shift, doneBy);
+            availabilityController.removeAvailability(shiftId, doneBy);
             return "Employee availability removed successfully";
         } catch (RuntimeException e) {
             return "Error: " + e.getMessage();
@@ -298,11 +294,7 @@ public class ShiftService {
      */
     public boolean isEmployeeAvailable(long doneBy, long shiftId, long employeeId) {
         try {
-            Shift shift = shiftController.getShiftByID(doneBy, shiftId);
-            if (shift == null) {
-                return false;
-            }
-            return availabilityController.isAvailable(shift, employeeId);
+            return availabilityController.isAvailable(shiftId, employeeId);
         } catch (RuntimeException e) {
             return false;
         }
@@ -317,28 +309,24 @@ public class ShiftService {
      */
     public Map<LocalDate, Map<String, Boolean>> getEmployeeWeeklyAvailability(long doneBy, long employeeId, Week week) {
         try {
-            List<Shift> weekShifts = shiftController.getShiftsByWeek(doneBy, week);
-            if (weekShifts.isEmpty()) {
-                return new HashMap<>();
-            }
-
-            return availabilityController.getWeeklyAvailability(weekShifts, employeeId);
+            return availabilityController.getWeeklyAvailability(week, employeeId);
         } catch (RuntimeException e) {
             return new HashMap<>();
         }
     }
 
-    public Set<ShiftSL> getShiftsByWeek(long doneBy, Week week) {
+    public Set<ShiftDTO> getShiftsByWeek(long doneBy, Week week) {
         try {
-            Set<ShiftSL> shiftSLS = new HashSet<>();
-            List<Shift> weekShifts = shiftController.getShiftsByWeek(doneBy, week);
-            if (weekShifts == null) {
-                return shiftSLS;
+            Set<ShiftDTO> shiftDTOs = new HashSet<>();
+            String str = shiftController.getShiftsByWeek(doneBy, week);
+            if (str == null || str.isEmpty()) {
+                return shiftDTOs;
             }
-            for (Shift shift : weekShifts) {
-                shiftSLS.add(new ShiftSL(shift));
+            for(String shiftStr : str.split("\n")) {
+                ShiftDTO shiftDTO = deserializeShiftDTO(shiftStr);
+                shiftDTOs.add(shiftDTO);
             }
-            return shiftSLS;
+            return shiftDTOs;
         }
         catch (RuntimeException e) {
             throw new RuntimeException(e);
@@ -347,11 +335,7 @@ public class ShiftService {
 
     public String isAssignedManager(long doneBy, long shiftId){
         try{
-            Shift shift = shiftController.getShiftByID(doneBy, shiftId);
-            if (shift == null) {
-                return "Shift not found";
-            }
-            assignmentController.isAssignedManager(doneBy, shift);
+            assignmentController.isAssignedManager(doneBy, shiftId);
                 return "success to check if assigned manager";
         } catch (RuntimeException e) {
             return "Error: " + e.getMessage();
@@ -360,12 +344,61 @@ public class ShiftService {
 
     public List<Set<Long>> getUnassignedManager(long doneBy, long shiftId){
         try {
-            Shift shift = shiftController.getShiftByID(doneBy, shiftId);
-            return assignmentController.getUnassignedEmployees(doneBy, shift);
+            return assignmentController.getUnassignedEmployees(doneBy, shiftId);
         }
         catch (RuntimeException e) {
             throw new RuntimeException(e);
         }
     }
 
+    /**
+     * Checks if an employee is assigned to a shift at a specific date, time, and branch.
+     *
+     * @param doneBy the ID of the user performing the check
+     * @param date the date of the shift
+     * @param hour the time of the shift
+     * @param employeeId the ID of the employee to check
+     * @param branch the branch where the shift is located
+     * @return true if the employee is assigned to the shift, false otherwise
+     */
+    public boolean isAssignedByDateTimeBranch(long doneBy, LocalDate date, LocalTime hour, long employeeId, String branch) {
+        try {
+            return assignmentController.isAssignedEmployeeByDateTimeBranch(doneBy, date, hour, employeeId, branch);
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public String getShiftByEmployee(long doneBy, long employeeId) {
+        try {
+            return shiftController.getShiftByEmployee(doneBy, employeeId);
+        } catch (RuntimeException e) {
+            return "Error: " + e.getMessage();
+        }
+    }
+    /**
+     * Checks whether a specific role is assigned at a given date, time, and branch location.
+     *
+     * @param date The date to verify the role assignment.
+     * @param hour The time to verify the role assignment.
+     * @param role The role to check within the given shift.
+     * @param branch The branch location where the verification is performed.
+     * @return true if the specified role is assigned at the specified date, time, and branch; false otherwise.
+     * @throws RuntimeException if an error occurs during the operation.
+     */
+    public boolean isAssignedRoleByDateTimeBranch( LocalDate date, LocalTime hour, String role, String branch) {
+        try {
+            return assignmentController.isAssignedRoleByDateTimeBranch( date, hour, role, branch);
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String getAllShiftsByDate(long doneBy, LocalDate date) {
+        try {
+            String shifts = shiftController.getAllShiftsByDate(doneBy, date);
+            return shifts;
+        } catch (RuntimeException e) {
+            return "Error: " + e.getMessage();
+        }
+    }
 }

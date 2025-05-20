@@ -1,12 +1,18 @@
-package DomainLayer;
+package DomainLayer.EmployeeSubModule;
 
 import DomainLayer.enums.ShiftType;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Map;
 import java.util.Set;
 
 
+/**
+ * The Shift class represents a work shift for a specified date, time, and type.
+ * It maintains details about required roles, assigned employees, available employees,
+ * shift manager assignment status, and the open/close status of the shift.
+ */
 public class Shift {
     private long id;
     private ShiftType shiftType;
@@ -16,11 +22,13 @@ public class Shift {
     private Set<Long> AvailableEmployees;  // e.g., [123456789, 555444333]
     private boolean isAssignedShitManager;
     private boolean isOpen;
-    private String hours;
+    private LocalTime startHour;
+    private LocalTime endHour;
     private LocalDate createDate;
     private LocalDate updateDate;
+    private String branch; // Branch that this shift belongs to
 
-    public Shift(long id,ShiftType shiftType, LocalDate shiftDate, Map<String, Integer> rolesRequired, Map<String, Set<Long>> assignedEmployees, Set<Long> AvailableEmployees, boolean isAssignedShitManager, boolean isOpen ,String hours, LocalDate updateDate) {
+    public Shift(long id,ShiftType shiftType, LocalDate shiftDate, Map<String, Integer> rolesRequired, Map<String, Set<Long>> assignedEmployees, Set<Long> AvailableEmployees, boolean isAssignedShitManager, boolean isOpen ,LocalTime startHour , LocalTime endHour, LocalDate updateDate) {
         this.id = id;
         this.shiftType = shiftType;
         this.shiftDate = shiftDate;
@@ -29,9 +37,27 @@ public class Shift {
         this.AvailableEmployees = AvailableEmployees;
         this.isAssignedShitManager = isAssignedShitManager;
         this.isOpen = isOpen;
-        this.hours = hours;
+        this.startHour = startHour;
+        this.endHour = endHour;
         this.createDate = LocalDate.now();
         this.updateDate = updateDate;
+        this.branch = null; // Default to null
+    }
+
+    public Shift(long id,ShiftType shiftType, LocalDate shiftDate, Map<String, Integer> rolesRequired, Map<String, Set<Long>> assignedEmployees, Set<Long> AvailableEmployees, boolean isAssignedShitManager, boolean isOpen ,LocalTime startHour , LocalTime endHour, LocalDate updateDate, String branch) {
+        this.id = id;
+        this.shiftType = shiftType;
+        this.shiftDate = shiftDate;
+        this.rolesRequired = rolesRequired;
+        this.assignedEmployees = assignedEmployees;
+        this.AvailableEmployees = AvailableEmployees;
+        this.isAssignedShitManager = isAssignedShitManager;
+        this.isOpen = isOpen;
+        this.startHour = startHour;
+        this.endHour = endHour;
+        this.createDate = LocalDate.now();
+        this.updateDate = updateDate;
+        this.branch = branch;
     }
 
     public long getId() {
@@ -106,18 +132,37 @@ public class Shift {
         return updateDate;
     }
 
-    public void setUpdateDate(LocalDate updateDate) {
-        this.updateDate = updateDate;
+    public void setUpdateDate(LocalDate updateDate) {this.updateDate = updateDate;}
+
+    public LocalTime getStartHour() {
+        return startHour;
     }
+
+    public void setStartHour(LocalTime startHour) {this.startHour = startHour;}
+
+    public LocalTime getEndHour() {return endHour;}
+
+    public void setEndHour(LocalTime endHour) {this.endHour = endHour;}
 
     public String getHours() {
-        return hours;
+        return startHour + " - " + endHour;
     }
 
-    public void setHours(String hours) {
-        this.hours = hours;
+    /**
+     * Gets the branch that this shift belongs to.
+     * 
+     * @return The branch name
+     */
+    public String getBranch() {
+        return branch;
+    }
+
+    /**
+     * Sets the branch that this shift belongs to.
+     * 
+     * @param branch The branch name
+     */
+    public void setBranch(String branch) {
+        this.branch = branch;
     }
 }
-
-
-

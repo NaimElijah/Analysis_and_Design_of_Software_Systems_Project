@@ -1,8 +1,7 @@
 package DomainLayer.TranSubModule;
 
 import DTOs.*;
-import DomainLayer.Employee;
-import DomainLayer.EmployeeController;
+import DomainLayer.EmployeeSubModule.EmployeeController;
 import DomainLayer.SiteSubModule.Address;
 import DomainLayer.SiteSubModule.Site;
 import DomainLayer.SiteSubModule.SiteFacade;
@@ -39,7 +38,7 @@ public class TransportController {
 
     private ObjectMapper objectMapper;
 
-    public TransportController(EmployeeController eC, SiteFacade sF, TruckFacade tF) {
+    public TransportController(SiteFacade sF, TruckFacade tF) {
         this.transportIDCounter = 0;
         this.objectMapper = new ObjectMapper();
         this.transports = new HashMap<Integer, TransportDoc>();
