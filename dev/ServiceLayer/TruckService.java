@@ -59,4 +59,14 @@ public class TruckService {
     }
 
 
+
+
+
+
+
+
+
+    public TruckFacade getTru_f() {return tru_f;}
+
+
 }

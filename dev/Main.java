@@ -17,16 +17,16 @@ public class Main {
       TruckFacade tru_f = new TruckFacade();
 //      EmployeeFacade eff = new EmployeeFacade();
       SiteFacade sf = new SiteFacade();
-//      TransportController tran_f = new TransportController(eff, sf, tru_f);
+//      TransportController tran_f = new TransportController(eff, sf, tru_f);  // also gets the EmployeeController
 
 //      TransportService tran_s = new TransportService(tran_f);
       TruckService tru_s = new TruckService(tru_f);
 //      TranEmployeeService es = new TranEmployeeService(eff);
       SiteService site_s = new SiteService(sf);
 
-//      StartUpStateService start = new StartUpStateService(tran_s, tru_s, site_s);
+//      StartUpStateService start = new StartUpStateService(tran_s, tru_s, site_s);  // also gets the EmployeeController
 
-//      MainTranSysCLI mtsc = new MainTranSysCLI(tru_s, tran_s, site_s, start);
+//      MainTranSysCLI mtsc = new MainTranSysCLI(tru_s, tran_s, site_s, start);  // also gets the EmployeeController
 
 //      mtsc.transportModuleStartup();      ///         <<<-----------------------   starts the whole Transport Module System
 

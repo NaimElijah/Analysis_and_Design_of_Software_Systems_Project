@@ -10,8 +10,12 @@ import java.io.FileNotFoundException;
 import java.nio.file.FileAlreadyExistsException;
 
 public class TransportService {
+    private EmployeeService employeeService;
     private TransportController tran_f;
-    public TransportService(TransportController tf) { this.tran_f = tf; }
+    public TransportService(TransportController tf, EmployeeService es) {
+        this.employeeService = es;
+        this.tran_f = tf;
+    }
 
 
     public String createTransport(String transportDTO, int queuedIndexIfWasQueued){
@@ -51,7 +55,7 @@ public class TransportService {
             return "Invalid menu status option - enter a number between 1 and 6";
         }
         try {
-            this.tran_f.setTransportStatus(TranDocID, intMenuStatusOption);
+            this.tran_f.setTransportStatus(TranDocID, intMenuStatusOption, this.employeeService.isActive(this.tran_f.getTransports().get(TranDocID).getTransportDriverId()));
         } catch (FileNotFoundException e) {
             return "The Transport ID you have entered doesn't exist.";
         } catch (FileAlreadyExistsException e) {
@@ -77,7 +81,7 @@ public class TransportService {
     public String setTransportTruck(int TranDocID, int truckNum){
         if (TranDocID < 0 || truckNum < 0){ return "Transport Document number, Truck number values cannot be negative."; }
         try {
-            this.tran_f.setTransportTruck(TranDocID, truckNum);
+            this.tran_f.setTransportTruck(TranDocID, truckNum, this.employeeService.hasRole(this.tran_f.getTruckLicenseAsStringRole(truckNum), this.tran_f.getTransports().get(TranDocID).getTransportDriverId()));
         } catch (FileNotFoundException e) {
             return "The Transport ID you have entered doesn't exist.";
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -104,7 +108,9 @@ public class TransportService {
     public String setTransportDriver(int TranDocID, int DriverID){
         if (TranDocID < 0 || DriverID < 0){ return "Transport Document number, Driver ID values cannot be negative."; }
         try {
-            this.tran_f.setTransportDriver(TranDocID, DriverID);
+            boolean isNotDriver = !this.employeeService.hasRole("DriverA", DriverID) && !this.employeeService.hasRole("DriverB", DriverID) && !this.employeeService.hasRole("DriverC", DriverID) && !this.employeeService.hasRole("DriverD", DriverID) && !this.employeeService.hasRole("DriverE", DriverID);
+            String lice = this.tran_f.getTruckLicenseAsStringRole(this.tran_f.getTransports().get(TranDocID).getTransportTruck().getTruck_num());
+            this.tran_f.setTransportDriver(TranDocID, DriverID, isNotDriver, this.employeeService.isActive(DriverID), this.employeeService.hasRole(lice, DriverID));
         } catch (FileNotFoundException e) {
             return "The Transport ID you have entered doesn't exist.";
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -133,7 +139,36 @@ public class TransportService {
     public String isTruckDriverPairingGood(int truckNum, int driverID) {
         if (truckNum < 0 || driverID < 0){ return "Truck number/Driver ID values cannot be negative."; }
         try {
-            this.tran_f.isTruckDriverPairingGood(truckNum, driverID);
+//            this.tran_f.isTruckDriverPairingGood(truckNum, driverID, isNotDriver);
+
+            if (!this.tran_f.getTruckFacade().getTrucksWareHouse().containsKey(truckNum)) {
+                throw new FileNotFoundException("Truck Number entered doesn't exist");
+            } else if (!this.employeeService.hasRole("DriverA", driverID) && !this.employeeService.hasRole("DriverB", driverID) && !this.employeeService.hasRole("DriverC", driverID) && !this.employeeService.hasRole("DriverD", driverID) && !this.employeeService.hasRole("DriverE", driverID)){
+                throw new ArrayIndexOutOfBoundsException("The Driver ID you have entered doesn't exist");
+            } else if (this.tran_f.getTruckFacade().getTrucksWareHouse().get(truckNum).getInTransportID() != -1){
+                throw new CloneNotSupportedException("The Truck you chose is partaking in another Active Transport right now");
+            }
+
+            String lice = this.tran_f.getTruckLicenseAsStringRole(truckNum);
+
+            boolean isThereAvailableDriverMatchingThisTruck = false;
+            for(long driverId : this.tran_f.getDriverIdToInTransportID().keySet()){    //TODO:  I need to go over all of the Drivers in EmployeeController.  PULL THEIRS  <<----
+                //TODO:  maybe do that they give me a getAllEmployees/Drivers that returns a List of DTOs of the employees and I deserialize here and use the DTOs in this function.
+                if (this.employeeService.hasRole(lice, driverId) && !this.tran_f.getDriverIdToInTransportID().containsKey(driverId)){  // if driver compatible and free
+                    isThereAvailableDriverMatchingThisTruck = true;
+                }
+            }
+
+            if (!isThereAvailableDriverMatchingThisTruck){
+                throw new ClassNotFoundException("There isn't a Driver that is available right now and compatible, license wise, with the Truck you chose");
+            }
+
+            // check if the driver has a license matching the truck's license
+            if (!this.employeeService.hasRole(lice, driverID)){
+                throw new CommunicationException("The Driver you chose doesn't have the fitting license for the Truck you chose");
+            }
+
+
         } catch (FileNotFoundException e) {
             return "Truck Number entered doesn't exist";
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -142,7 +177,9 @@ public class TransportService {
             return "The Truck you chose is partaking in another Active Transport right now";
         } catch (ClassNotFoundException e) {
             return "There isn't a Driver that is available right now and compatible, license wise, with the Truck you chose";
-        } catch (Exception e) {
+        } catch (CommunicationException e) {
+            return "The Driver you chose doesn't have the fitting license for the Truck you chose";
+        }catch (Exception e) {
             e.printStackTrace();
             return "Exception";
         }
@@ -157,10 +194,17 @@ public class TransportService {
 
 
 
-    public String checkTransportValidity(String transportDTO) {  ///  returns: "Valid", "BadLicenses", "<overallWeight-truckMaxCarryWeight>", "Queue", "Occupied"
+    public String checkTransportValidity(String DTO_OfTransport) {  ///  returns: "Valid", "BadLicenses", "<overallWeight-truckMaxCarryWeight>", "Queue", "Occupied"
         String res = "";
         try {
-            res = this.tran_f.checkTransportValidity(transportDTO);
+            res = this.tran_f.checkTransportValidity(DTO_OfTransport);
+            //TODO:  because of this check's complexity, move this functionality to here too, and adjust too
+
+
+
+
+
+
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return "JsonProcessingException";

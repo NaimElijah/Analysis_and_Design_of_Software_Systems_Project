@@ -2,6 +2,8 @@ package PresentationLayer;
 
 import DTOs.*;
 //import ServiceLayer.TranEmployeeService;
+import DomainLayer.EmployeeController;
+import ServiceLayer.EmployeeService;
 import ServiceLayer.SiteService;
 import ServiceLayer.TransportService;
 import ServiceLayer.TruckService;
@@ -16,15 +18,16 @@ public class TranManCLI {
     private TransportService tra_ser;
     private SiteService site_ser;
 //    private TranEmployeeService emp_ser;
+    private EmployeeService emp_ser;    ///  THE NEW EmployeeController
     private Scanner scanner;
     private ObjectMapper objectMapper;
 
-    public TranManCLI(MainTranSysCLI m, TruckService ts, TransportService trs, SiteService sis, Scanner sc) {
+    public TranManCLI(MainTranSysCLI m, TruckService ts, TransportService trs, SiteService sis, EmployeeService es, Scanner sc) {
         this.main = m;
         this.tru_ser = ts;
         this.tra_ser = trs;
         this.site_ser = sis;
-//        this.emp_ser = es;
+        this.emp_ser = es;    ///  THE NEW EmployeeController
         this.scanner = sc;
         this.objectMapper = new ObjectMapper();
     }
@@ -35,7 +38,7 @@ public class TranManCLI {
         System.out.println("(1)  Transports Options Menu");
         System.out.println("(2)  Shipping Areas Options Menu");
         System.out.println("(3)  Sites Options Menu");
-        System.out.println("(4)  Employees Options Menu");
+        System.out.println("(4)  Employees Options Menu");   //TODO:  NOW REMOVE THIS BECAUSE WE ALREADY HAVE THE OPTIONS OF THE HR MODULE
         System.out.println("(5)  Trucks Options Menu");
         System.out.println("(6)  Disconnect");
         System.out.println();
@@ -52,7 +55,7 @@ public class TranManCLI {
                 sitesOptionsMenu();
                 break;
             case "4":
-                EmployeesOptionsMenu();
+//                EmployeesOptionsMenu();    //TODO:  NOW REMOVE THIS BECAUSE WE ALREADY HAVE THE OPTIONS OF THE HR MODULE
                 break;
             case "5":
                 trucksOptionsMenu();
@@ -1361,183 +1364,6 @@ public class TranManCLI {
 
 
 
-    private void EmployeesOptionsMenu(){   ////////////////////////////////    Drivers Menu   <<<--------------------------------------------
-        System.out.println("   --------    Employees Options Menu    -------\n");
-        System.out.println("(1)  View All Employees");
-        System.out.println("(2)  View All Managers");
-        System.out.println("(3)  View All Drivers");
-        System.out.println("(4)  Add a Driver");
-        System.out.println("(5)  Delete a Driver");
-        System.out.println("(6)  Edit a Driver's Details");
-        System.out.println("(7)  Back to Transport Manager Menu");
-        System.out.println();
-        System.out.println(" Select Option: ");
-
-        String choice = scanner.nextLine();
-        if(choice.equals("1")){
-            viewAllEmployees();
-        }else if(choice.equals("2")){
-            viewAllManagers();
-        }else if(choice.equals("3")){
-            viewAllDrivers();
-        }else if(choice.equals("4")){
-            addaDriver();
-        }else if(choice.equals("5")){
-            deleteaDriver();
-        } else if (choice.equals("6")) {
-            editaDriversDetails();
-        } else if (choice.equals("7")) {
-            System.out.println("\n\n");
-            transportManagerMainMenu();
-        } else {
-            System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
-        }
-        EmployeesOptionsMenu();
-    }
-
-    //////////////////////          HELPER FUNCTIONS FOR THE Drivers Options Menu
-
-
-    private void viewAllEmployees(){
-        System.out.println("   --------    Showing All Employees    --------\n");
-//        System.out.println(emp_ser.showEmployees());
-        System.out.println();
-    }
-
-    private void viewAllManagers(){
-        System.out.println("   --------    Showing All Managers    --------\n");
-//        System.out.println(emp_ser.showManagers());
-        System.out.println();
-    }
-
-    private void viewAllDrivers(){
-        System.out.println("   --------    Showing All Drivers    --------\n");
-//        System.out.println(emp_ser.showDrivers());
-        System.out.println();
-    }
-
-
-
-    private void addaDriver(){
-        System.out.println("   --------    Driver Addition    --------\n");
-        System.out.println("Let's add a Driver.");
-        System.out.println("Enter Driver ID:");
-        int id = Integer.parseInt(scanner.nextLine());
-        System.out.println("Enter Driver First Name:");
-        String firstName = scanner.nextLine();
-        System.out.println("Enter Driver Last Name:");
-        String lastName = scanner.nextLine();
-
-        System.out.println("Now Let's add the Driver's Licenses:");
-        ArrayList<String> licenses = new ArrayList<>();
-        boolean anotherLicense = true;
-        while (anotherLicense){
-            System.out.println("Enter Driver's License: (Type: 'A'/'B'/'C'/'D'/'E')");
-            licenses.add(scanner.nextLine());
-            System.out.println("Do you want To add another License? (Y/N(or any other key))");
-            anotherLicense = scanner.nextLine().equals("Y");
-        }
-
-//        String res = this.emp_ser.addDriver(id, firstName, lastName, licenses);
-//        if(res.equals("Success")){
-//            System.out.println("Successfully added Driver.\n");
-//        } else if(res.equals("Exception")){
-//            System.out.println("Failed to add Driver due to technical machine error.\n");
-//        }else { System.out.println(res + "\n"); }
-
-        System.out.println();
-    }
-
-
-
-    private void deleteaDriver(){
-        System.out.println("   --------    Driver Deletion    --------\n");
-        System.out.println("Let's delete a Driver.");
-        System.out.println("Enter Driver ID:");
-        int id = Integer.parseInt(scanner.nextLine());
-
-//        String res = this.emp_ser.removeEmployeeByManager(id);
-//        if(res.equals("Success")){
-//            System.out.println("Successfully removed Driver.\n");
-//        } else if(res.equals("Exception")){
-//            System.out.println("Failed to remove Driver due to technical machine error.\n");
-//        }else { System.out.println(res + "\n"); }
-
-        System.out.println();
-    }
-
-
-
-    private void editaDriversDetails(){
-        System.out.println("   --------    Driver Details Edition Menu    --------\n");
-        System.out.println("Enter Driver's ID (The Driver you want to edit):");
-        int driverId = Integer.parseInt(scanner.nextLine());
-
-        System.out.println("In Which Criteria would you want to edit a Driver at ?");
-        System.out.println("(1)  Add a License to a Driver");
-        System.out.println("(2)  remove a License from a Driver");
-        System.out.println("(3)  Set The Driver's Permission's Rank to Manager Rank (Rank Promotion)");
-        System.out.println("(4)  Back to Employees Options Menu");
-        System.out.println("Enter your Choice:");
-        String choice = scanner.nextLine();
-
-        if(choice.equals("1")){
-            System.out.println("Enter a Driver's License to add ('A'/'B'/'C'/'D'/'E') :");
-            String license = scanner.nextLine();
-
-//            String res = this.emp_ser.addLicense(driverId, license);
-//            if(res.equals("Success")){
-//                System.out.println("Successfully added License to Driver.\n");
-//            } else if(res.equals("Exception")){
-//                System.out.println("Failed to add License to Driver due to technical machine error.\n");
-//            }else { System.out.println(res + "\n"); }
-
-
-        } else if (choice.equals("2")) {
-            System.out.println("Enter a Driver's License to remove ('A'/'B'/'C'/'D'/'E') :");
-            String license = scanner.nextLine();
-
-//            String res = this.emp_ser.removeLicense(driverId, license);
-//            if(res.equals("Success")){
-//                System.out.println("Successfully removed License from Driver.\n");
-//            } else if(res.equals("Exception")){
-//                System.out.println("Failed to remove License from Driver due to technical machine error.\n");
-//            }else { System.out.println(res + "\n"); }
-
-
-        } else if (choice.equals("3")) {
-//            String res = this.emp_ser.giveADriverAManagersPermissionRank(driverId);
-//            if(res.equals("Success")){
-//                System.out.println("Successfully Gave the Driver a Manager's Permission Rank.\n");
-//            } else if(res.equals("Exception")){
-//                System.out.println("Failed to Give the Driver a Manager's Permission Rank due to technical machine error.\n");
-//            }else { System.out.println(res + "\n"); }
-
-
-        } else if (choice.equals("4")) {
-            System.out.println("\n\n");
-        } else {
-            System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
-        }
-
-        System.out.println();
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1624,6 +1450,177 @@ public class TranManCLI {
 
 
 
+
+
+
+
+
+
+
+
+//TODO:   NOW WE USE THE EMPLOYEE OPTIONS OF THE HR MODULE.
+
+//    private void EmployeesOptionsMenu(){   ////////////////////////////////    Drivers Menu   <<<--------------------------------------------
+//        System.out.println("   --------    Employees Options Menu    -------\n");
+//        System.out.println("(1)  View All Employees");
+//        System.out.println("(2)  View All Managers");
+//        System.out.println("(3)  View All Drivers");
+//        System.out.println("(4)  Add a Driver");
+//        System.out.println("(5)  Delete a Driver");
+//        System.out.println("(6)  Edit a Driver's Details");
+//        System.out.println("(7)  Back to Transport Manager Menu");
+//        System.out.println();
+//        System.out.println(" Select Option: ");
+//
+//        String choice = scanner.nextLine();
+//        if(choice.equals("1")){
+//            viewAllEmployees();
+//        }else if(choice.equals("2")){
+//            viewAllManagers();
+//        }else if(choice.equals("3")){
+//            viewAllDrivers();
+//        }else if(choice.equals("4")){
+//            addaDriver();
+//        }else if(choice.equals("5")){
+//            deleteaDriver();
+//        } else if (choice.equals("6")) {
+//            editaDriversDetails();
+//        } else if (choice.equals("7")) {
+//            System.out.println("\n\n");
+//            transportManagerMainMenu();
+//        } else {
+//            System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
+//        }
+//        EmployeesOptionsMenu();
+//    }
+//
+//    //////////////////////          HELPER FUNCTIONS FOR THE Drivers Options Menu
+//
+//
+//    private void viewAllEmployees(){
+//        System.out.println("   --------    Showing All Employees    --------\n");
+////        System.out.println(emp_ser.showEmployees());
+//        System.out.println();
+//    }
+//
+//    private void viewAllManagers(){
+//        System.out.println("   --------    Showing All Managers    --------\n");
+////        System.out.println(emp_ser.showManagers());
+//        System.out.println();
+//    }
+//
+//    private void viewAllDrivers(){
+//        System.out.println("   --------    Showing All Drivers    --------\n");
+////        System.out.println(emp_ser.showDrivers());
+//        System.out.println();
+//    }
+//
+//
+//
+//    private void addaDriver(){
+//        System.out.println("   --------    Driver Addition    --------\n");
+//        System.out.println("Let's add a Driver.");
+//        System.out.println("Enter Driver ID:");
+//        int id = Integer.parseInt(scanner.nextLine());
+//        System.out.println("Enter Driver First Name:");
+//        String firstName = scanner.nextLine();
+//        System.out.println("Enter Driver Last Name:");
+//        String lastName = scanner.nextLine();
+//
+//        System.out.println("Now Let's add the Driver's Licenses:");
+//        ArrayList<String> licenses = new ArrayList<>();
+//        boolean anotherLicense = true;
+//        while (anotherLicense){
+//            System.out.println("Enter Driver's License: (Type: 'A'/'B'/'C'/'D'/'E')");
+//            licenses.add(scanner.nextLine());
+//            System.out.println("Do you want To add another License? (Y/N(or any other key))");
+//            anotherLicense = scanner.nextLine().equals("Y");
+//        }
+//
+////        String res = this.emp_ser.addDriver(id, firstName, lastName, licenses);
+////        if(res.equals("Success")){
+////            System.out.println("Successfully added Driver.\n");
+////        } else if(res.equals("Exception")){
+////            System.out.println("Failed to add Driver due to technical machine error.\n");
+////        }else { System.out.println(res + "\n"); }
+//
+//        System.out.println();
+//    }
+//
+//
+//
+//    private void deleteaDriver(){
+//        System.out.println("   --------    Driver Deletion    --------\n");
+//        System.out.println("Let's delete a Driver.");
+//        System.out.println("Enter Driver ID:");
+//        int id = Integer.parseInt(scanner.nextLine());
+//
+////        String res = this.emp_ser.removeEmployeeByManager(id);
+////        if(res.equals("Success")){
+////            System.out.println("Successfully removed Driver.\n");
+////        } else if(res.equals("Exception")){
+////            System.out.println("Failed to remove Driver due to technical machine error.\n");
+////        }else { System.out.println(res + "\n"); }
+//
+//        System.out.println();
+//    }
+//
+//
+//
+//    private void editaDriversDetails(){
+//        System.out.println("   --------    Driver Details Edition Menu    --------\n");
+//        System.out.println("Enter Driver's ID (The Driver you want to edit):");
+//        int driverId = Integer.parseInt(scanner.nextLine());
+//
+//        System.out.println("In Which Criteria would you want to edit a Driver at ?");
+//        System.out.println("(1)  Add a License to a Driver");
+//        System.out.println("(2)  remove a License from a Driver");
+//        System.out.println("(3)  Set The Driver's Permission's Rank to Manager Rank (Rank Promotion)");
+//        System.out.println("(4)  Back to Employees Options Menu");
+//        System.out.println("Enter your Choice:");
+//        String choice = scanner.nextLine();
+//
+//        if(choice.equals("1")){
+//            System.out.println("Enter a Driver's License to add ('A'/'B'/'C'/'D'/'E') :");
+//            String license = scanner.nextLine();
+//
+////            String res = this.emp_ser.addLicense(driverId, license);
+////            if(res.equals("Success")){
+////                System.out.println("Successfully added License to Driver.\n");
+////            } else if(res.equals("Exception")){
+////                System.out.println("Failed to add License to Driver due to technical machine error.\n");
+////            }else { System.out.println(res + "\n"); }
+//
+//
+//        } else if (choice.equals("2")) {
+//            System.out.println("Enter a Driver's License to remove ('A'/'B'/'C'/'D'/'E') :");
+//            String license = scanner.nextLine();
+//
+////            String res = this.emp_ser.removeLicense(driverId, license);
+////            if(res.equals("Success")){
+////                System.out.println("Successfully removed License from Driver.\n");
+////            } else if(res.equals("Exception")){
+////                System.out.println("Failed to remove License from Driver due to technical machine error.\n");
+////            }else { System.out.println(res + "\n"); }
+//
+//
+//        } else if (choice.equals("3")) {
+////            String res = this.emp_ser.giveADriverAManagersPermissionRank(driverId);
+////            if(res.equals("Success")){
+////                System.out.println("Successfully Gave the Driver a Manager's Permission Rank.\n");
+////            } else if(res.equals("Exception")){
+////                System.out.println("Failed to Give the Driver a Manager's Permission Rank due to technical machine error.\n");
+////            }else { System.out.println(res + "\n"); }
+//
+//
+//        } else if (choice.equals("4")) {
+//            System.out.println("\n\n");
+//        } else {
+//            System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
+//        }
+//
+//        System.out.println();
+//    }
 
 
 

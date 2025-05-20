@@ -1,17 +1,18 @@
 package PresentationLayer;
 
 //import ServiceLayer.TranEmployeeService;
+import ServiceLayer.EmployeeService;
 import ServiceLayer.TransportService;
 
 import java.util.Scanner;
 
-public class DriverCLI {
+public class TranDriverCLI {
     private MainTranSysCLI main;
     private TransportService tran_s;
-//    private TranEmployeeService emp_s;
+    private EmployeeService emp_s;   ///  <<<-----------------------   new Service
     private Scanner scanner;
 
-    public DriverCLI(MainTranSysCLI m, TransportService trs, Scanner sc) {
+    public TranDriverCLI(MainTranSysCLI m, TransportService trs, Scanner sc) {
         this.main = m;
         this.tran_s = trs;
 //        this.emp_s = es;
@@ -21,7 +22,7 @@ public class DriverCLI {
 
     void driverMainMenu(int id){
         System.out.println("\n           --------    Driver Menu    -------");
-        System.out.println("(1)  View My Details");
+        System.out.println("(1)  View My Details");    //TODO:    <<<--------------------   remove this, already done in HR module and more relevant there now.
         System.out.println("(2)  View All Transports Related to me (all Statuses)");
         System.out.println("(3)  Edit an Item's Condition in a Transport that I'm a Driver in");
         System.out.println("(4)  Disconnect");
@@ -30,7 +31,7 @@ public class DriverCLI {
 
         String choice = scanner.nextLine();
         if(choice.equals("1")){
-//            System.out.println(this.emp_s.showEmployee(id));
+//            System.out.println(this.emp_s.showEmployee(id));    //TODO:    <<<--------------------   remove this, already done in HR module and more relevant there now.
             System.out.println();
 
         }else if(choice.equals("2")){

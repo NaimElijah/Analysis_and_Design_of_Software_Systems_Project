@@ -8,6 +8,7 @@ public class ItemsDoc {
     private int itemsDoc_num;
     private Site src_site;
     private Site dest_site;
+    //TODO:  Add another Time element, here or for each ItemsDoc.    <<<-----------------------------------  arrivalTime
     private HashMap<Item, Integer> goodItems;   //  separate the good items and the bad items
     private HashMap<Item, Integer> badItems;
 

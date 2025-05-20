@@ -5,15 +5,15 @@ import ServiceLayer.*;
 import java.util.Scanner;
 
 public class MainTranSysCLI {
-    private DriverCLI drCont;
+    private TranDriverCLI drCont;
     private TranSysAdCLI sysAdCont;
     private TranManCLI tranManCont;
     private StartUpController startUpCont;
     private Scanner scanner;
 
-    public MainTranSysCLI(TruckService ts, TransportService trs, SiteService sis, StartUpStateService starUpStService) {
+    public MainTranSysCLI(TruckService ts, TransportService trs, SiteService sis, EmployeeService es, StartUpStateService starUpStService) {
         this.scanner = new Scanner(System.in);
-//        this.drCont = new DriverCLI(this, trs, es, this.scanner);
+//        this.drCont = new TranDriverCLI(this, trs, es, this.scanner);
 //        this.sysAdCont = new TranSysAdCLI(this, es, this.scanner);
 //        this.tranManCont = new TranManCLI(this, ts, trs, sis, es, this.scanner);
 //        this.startUpCont = new StartUpController(starUpStService, es);
@@ -33,9 +33,9 @@ public class MainTranSysCLI {
         String choice = scanner.nextLine();
 
         if(choice.equals("1")){
-            System.out.println("\n    --------    ID Authentication Screen    -------    (Secure Login)");
-            System.out.println("Enter Your ID:");
-            int loginID = scanner.nextInt();
+            System.out.println("\n    --------    ID Authentication Screen    -------    (Secure Login)");  //TODO:  give to all functions below the ID of the user using the system.
+            System.out.println("Enter Your ID:");  //TODO:  give to all functions below the ID of the user using the system.      <<<------------------
+            int loginID = scanner.nextInt();  //TODO:  give to all functions below the ID of the user using the system.      <<<------------------
             scanner.nextLine(); // consume the leftover newline
 
 //            int permission = this.startUpCont.getEmployeePermissionsRank(loginID);

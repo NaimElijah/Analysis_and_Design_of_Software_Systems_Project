@@ -13,8 +13,9 @@ public class TransportDoc {
     private enumTranStatus status;
     private int tran_Doc_ID;
     private LocalDateTime departure_dt;
+    //TODO:  Add another Time element, here or for each ItemsDoc.    <<<-----------------------------------
     private Truck transportTruck;
-//    private Driver transportDriver;   //TODO: change to long transportDriverId
+//    private Driver transportDriver;
     private long transportDriverId;   //TODO: change to long transportDriverId
     private double truck_Depart_Weight;
     private Site src_site;
@@ -54,21 +55,6 @@ public class TransportDoc {
 
     public long getTransportDriverId() {return transportDriverId;}
     public void setTransportDriverId(long transportDriverId) {this.transportDriverId = transportDriverId;}
-    //TODO: changing to this here so move logics to the Transport Controller.
-
-//    public Driver getTransportDriver() {return transportDriver;}
-
-//    public void setTransportDriver(Driver transportDriver) {  //TODO: new changes check this and do this in the facade
-//        if (this.transportDriver.getInTransportID() == this.tran_Doc_ID) {  // if another driver belongs to the transport already
-//            this.transportDriver.setInTransportID(-1);  // unassign old one
-//        }
-//        this.transportDriver = transportDriver;
-//        if (this.status == enumTranStatus.InTransit || this.status == enumTranStatus.BeingAssembled || this.status == enumTranStatus.BeingDelayed) {
-//            //TODO: new changes check this and do this in the facade
-//            this.transportDriver.setInTransportID(this.tran_Doc_ID);   ///  only if the current Transport is active
-//        }
-//    }
-
 
     public double getTruck_Depart_Weight() {return truck_Depart_Weight;}
     public void setTruck_Depart_Weight(double truck_Depart_Weight) {this.truck_Depart_Weight = truck_Depart_Weight;}
