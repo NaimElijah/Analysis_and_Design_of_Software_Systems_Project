@@ -390,4 +390,8 @@ public class ShiftService {
         }
     }
 
+    public Boolean isWeekendBlocked() {
+        return availabilityController.isWeekendBlocked();
+    }
+
 }

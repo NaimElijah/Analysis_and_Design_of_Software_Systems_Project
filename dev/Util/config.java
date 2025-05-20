@@ -9,4 +9,6 @@ public class config {
     public static final LocalTime START_HOUR_EVENING = LocalTime.of(16, 0);
     public static final LocalTime END_HOUR_EVENING = LocalTime.of(20, 0);
 
+    public static final LocalTime BLOCK_AVAILABILITY_START = LocalTime.of(16, 0);
+
 }
