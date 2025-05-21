@@ -26,9 +26,9 @@ public class Shift {
     private LocalTime endHour;
     private LocalDate createDate;
     private LocalDate updateDate;
-    private String branch; // Branch that this shift belongs to
+    private long branchId; // Branch that this shift belongs to
 
-    public Shift(long id,ShiftType shiftType, LocalDate shiftDate, Map<String, Integer> rolesRequired, Map<String, Set<Long>> assignedEmployees, Set<Long> AvailableEmployees, boolean isAssignedShitManager, boolean isOpen ,LocalTime startHour , LocalTime endHour, LocalDate updateDate) {
+    public Shift(long id,ShiftType shiftType, LocalDate shiftDate, Map<String, Integer> rolesRequired, Map<String, Set<Long>> assignedEmployees, Set<Long> AvailableEmployees, boolean isAssignedShitManager, boolean isOpen ,LocalTime startHour , LocalTime endHour, LocalDate updateDate, long branchId) {
         this.id = id;
         this.shiftType = shiftType;
         this.shiftDate = shiftDate;
@@ -41,23 +41,7 @@ public class Shift {
         this.endHour = endHour;
         this.createDate = LocalDate.now();
         this.updateDate = updateDate;
-        this.branch = null; // Default to null
-    }
-
-    public Shift(long id,ShiftType shiftType, LocalDate shiftDate, Map<String, Integer> rolesRequired, Map<String, Set<Long>> assignedEmployees, Set<Long> AvailableEmployees, boolean isAssignedShitManager, boolean isOpen ,LocalTime startHour , LocalTime endHour, LocalDate updateDate, String branch) {
-        this.id = id;
-        this.shiftType = shiftType;
-        this.shiftDate = shiftDate;
-        this.rolesRequired = rolesRequired;
-        this.assignedEmployees = assignedEmployees;
-        this.AvailableEmployees = AvailableEmployees;
-        this.isAssignedShitManager = isAssignedShitManager;
-        this.isOpen = isOpen;
-        this.startHour = startHour;
-        this.endHour = endHour;
-        this.createDate = LocalDate.now();
-        this.updateDate = updateDate;
-        this.branch = branch;
+        this.branchId = branchId;
     }
 
     public long getId() {
@@ -153,16 +137,16 @@ public class Shift {
      * 
      * @return The branch name
      */
-    public String getBranch() {
-        return branch;
+    public long getBranchId() {
+        return branchId;
     }
 
     /**
      * Sets the branch that this shift belongs to.
      * 
-     * @param branch The branch name
+     * @param branchId The branch name
      */
-    public void setBranch(String branch) {
-        this.branch = branch;
+    public void setBranchId(long branchId) {
+        this.branchId = branchId;
     }
 }

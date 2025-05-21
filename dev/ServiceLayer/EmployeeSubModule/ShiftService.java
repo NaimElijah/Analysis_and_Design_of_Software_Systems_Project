@@ -1,4 +1,4 @@
-package ServiceLayer;
+package ServiceLayer.EmployeeSubModule;
 
 import DTOs.ShiftDTO;
 import DomainLayer.EmployeeSubModule.AssignmentController;
@@ -9,7 +9,6 @@ import DomainLayer.enums.ShiftType;
 import DomainLayer.exception.ShiftNotFoundException;
 import Util.Week;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
@@ -147,7 +146,8 @@ public class ShiftService {
             shift.getStartHour(),
             shift.getEndHour(),
             shift.getCreateDate(),
-            shift.getUpdateDate()
+            shift.getUpdateDate(),
+            shift.getBranchId()
         );
     }
 
@@ -160,7 +160,7 @@ public class ShiftService {
         }
     }
 
-    public String getAllShiftsByDateBranch(long doneBy, LocalDate date, String branch) {
+    public String getAllShiftsByDateBranch(long doneBy, LocalDate date, long branch) {
         try {
             String shifts = shiftController.getAllShiftsByDateAndBranch(doneBy, date, branch);
             return shifts;
@@ -400,19 +400,20 @@ public class ShiftService {
             throw new ShiftNotFoundException(e.getMessage());
         }
     }
+
     /**
-     * Checks whether a specific role is assigned at a given date, time, and branch location.
+     * Checks if a specific role is assigned at a given date, time, and branch location.
      *
-     * @param date The date to verify the role assignment.
-     * @param hour The time to verify the role assignment.
-     * @param role The role to check within the given shift.
-     * @param branch The branch location where the verification is performed.
-     * @return true if the specified role is assigned at the specified date, time, and branch; false otherwise.
-     * @throws RuntimeException if an error occurs during the operation.
+     * @param date The date of the shift being checked.
+     * @param hour The time of the shift being checked.
+     * @param role The role for which the assignment status is being verified.
+     * @param address The address of the branch where the shift is scheduled.
+     * @param areaCode The area code of the branch location.
+     * @return true if the specified role is assigned at the given date, time, and branch location; false otherwise.
      */
-    public boolean isAssignedRoleByDateTimeBranch( LocalDate date, LocalTime hour, String role, String branch) {
+    public boolean isAssignedRoleByDateTimeBranch( LocalDate date, LocalTime hour, String role, String address, int areaCode) {
         try {
-            return assignmentController.isAssignedRoleByDateTimeBranch( date, hour, role, branch);
+            return assignmentController.isAssignedRoleByDateTimeBranch( date, hour, role, address, areaCode);
         } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }

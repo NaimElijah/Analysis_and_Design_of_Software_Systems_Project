@@ -9,13 +9,15 @@ import java.util.*;
 
 public class EmployeeController {
     private final Set<Employee> employees;
+    private final Set<Branch> branches;
     private final AuthorisationController authorisationController;
     ///   Naim: I think you need the Transport Facade connected here to update the   <<-----------------   NOTE
     ///         driverIdToInTransportID hashmap when adding/removing a Driver   <<------------   NOTE
 
-    public EmployeeController(Set<Employee> employees , AuthorisationController authorisationController) {
+    public EmployeeController(Set<Employee> employees , AuthorisationController authorisationController, Set<Branch> branches) {
         this.employees = new HashSet<>(employees);
         this.authorisationController = authorisationController;
+        this.branches = new HashSet<>(branches);
     }
 
     /**
@@ -38,12 +40,12 @@ public class EmployeeController {
      * @param termsOfEmployment - The terms of employment of the new employee
      * @param roles - The roles of the new employee
      * @param startOfEmployment - The start of employment date of the new employee
-     * @param branch - The branch that the employee is assigned to
+     * @param branchId - The branch id that the employee is assigned to
      * @return True if the employee was created successfully
      * @throws UnauthorizedPermissionException if the user does not have permission
      * @throws InvalidInputException if any input is invalid
      */
-    public boolean createEmployee(long doneBy, long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, Set<String> roles, LocalDate startOfEmployment, String branch) {
+    public boolean createEmployee(long doneBy, long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, Set<String> roles, LocalDate startOfEmployment, long branchId) {
         // Permission handling
         String PERMISSION_REQUIRED = "CREATE_EMPLOYEE";
         if (!isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
@@ -82,11 +84,18 @@ public class EmployeeController {
         if (roles == null) {
             roles = new HashSet<>();
         }
+        if (!isBranchIdValid(branchId)) {
+            throw new InvalidInputException("Branch info is invalid");
+        }
 
         // Create new employee
-        Employee newEmployee = new Employee(israeliId, firstName, lastName, salary, termsOfEmployment, roles, startOfEmployment, true, LocalDate.now(), LocalDate.now(), branch);
+        Employee newEmployee = new Employee(israeliId, firstName, lastName, salary, termsOfEmployment, roles, startOfEmployment, true, LocalDate.now(), LocalDate.now(), branchId);
         employees.add(newEmployee);
         return true;
+    }
+
+    private boolean isBranchIdValid(long branchId) {
+        return branches.stream().anyMatch(b -> b.getBranchId() == branchId);
     }
 
     /**
@@ -99,12 +108,11 @@ public class EmployeeController {
      * @param salary - The new salary
      * @param termsOfEmployment - The new terms of employment
      * @param active - The new active status
-     * @param branch - The new branch that the employee is assigned to
      * @return True if the employee was updated successfully
      * @throws UnauthorizedPermissionException if the user does not have permission
      * @throws InvalidInputException if any input is invalid or if the employee does not exist
      */
-    public boolean updateEmployee(long doneBy, long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, boolean active, String branch) {
+    public boolean updateEmployee(long doneBy, long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, boolean active) {
         // Permission handling
         String PERMISSION_REQUIRED = "UPDATE_EMPLOYEE";
         if (!isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
@@ -150,7 +158,6 @@ public class EmployeeController {
         employee.setSalary(salary);
         employee.setTermsOfEmployment(termsOfEmployment);
         employee.setActive(active);
-        employee.setBranch(branch);
         employee.setUpdateDate(LocalDate.now());
         return true;
     }
@@ -409,7 +416,7 @@ public class EmployeeController {
                 .toArray(Employee[]::new);
         // Convert the filtered employees to EmployeeDTO objects
         EmployeeDTO[] driverDTOs = Arrays.stream(drivers)
-                .map(e -> new EmployeeDTO(e.getIsraeliId(), e.getFirstName(), e.getLastName(), e.getSalary(), e.getTermsOfEmployment(), e.getRoles(), e.getStartOfEmployment(), e.isActive(), e.getCreationDate(), e.getUpdateDate(), e.getBranch()))
+                .map(e -> new EmployeeDTO(e.getIsraeliId(), e.getFirstName(), e.getLastName(), e.getSalary(), e.getTermsOfEmployment(), e.getRoles(), e.getStartOfEmployment(), e.isActive(), e.getCreationDate(), e.getUpdateDate(), e.getBranchId()))
                 .toArray(EmployeeDTO[]::new);
         // Serialize the EmployeeDTO objects to strings
         String[] serializedDrivers = new String[drivers.length];
@@ -420,5 +427,55 @@ public class EmployeeController {
 
         return serializedDrivers;
 
+    }
+    public boolean updateEmployeeBranch(long israeliId, long branchId) {
+        // Check if the employee exists
+        Employee employee = getEmployeeByIsraeliId(israeliId);
+        if (employee == null) {
+            throw new InvalidInputException("Employee with ID " + israeliId + " not found");
+        }
+
+        // Check if the branch ID is valid
+        if (!isBranchIdValid(branchId)) {
+            throw new InvalidInputException( "Invalid branch ID: " + branchId);
+        }
+
+        // Update the employee's branch
+        employee.setBranch(branchId);
+        throw new InvalidInputException( "Employee with ID " + israeliId + " updated to branch ID " + branchId);
+    }
+    public long getEmployeeBranch(long israeliId) {
+        // Check if the employee exists
+        Employee employee = getEmployeeByIsraeliId(israeliId);
+        if (employee == null) {
+            throw new InvalidInputException("Employee with ID " + israeliId + " not found");
+        }
+        // Return the employee's branch ID
+        return employee.getBranchId();
+    }
+
+    public long getBranchIdByAddress(String address, int areaCode) {
+        // Check if the branch exists
+        Branch branch = branches.stream().filter(b -> b.getBranchAddress().equals(address) && b.getAreaCode() == areaCode).findFirst().orElse(null);
+        if (branch == null) {
+            throw new InvalidInputException("Branch with address " + address + " and area code " + areaCode + " not found");
+        }
+        // Return the branch ID
+        return branch.getBranchId();
+    }
+
+    public String getEmployeeBranchName(long israeliId) {
+        // Check if the employee exists
+        Employee employee = getEmployeeByIsraeliId(israeliId);
+        if (employee == null) {
+            throw new InvalidInputException("Employee with ID " + israeliId + " not found");
+        }
+        // Return the employee's branch name
+        return branches.stream().filter(b -> b.getBranchId() == employee.getBranchId()).map(Branch::getBranchName).findFirst().orElse(null);
+    }
+
+    public boolean isBranchExists(long branch) {
+        // Check if the branch exists
+        return branches.stream().anyMatch(b -> b.getBranchId() == branch);
     }
 }

@@ -1,13 +1,13 @@
-package PresentationLayer;
+package PresentationLayer.EmployeeSubModule;
 
 import DTOs.ShiftDTO;
-import ServiceLayer.EmployeeService;
-import ServiceLayer.ShiftService;
+import Util.CliUtil;
+import ServiceLayer.EmployeeSubModule.EmployeeService;
+import ServiceLayer.EmployeeSubModule.ShiftService;
 import ServiceLayer.exception.AuthorizationException;
 import Util.Week;
 import java.time.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class AvailabilityCLI {
     private final ShiftService shiftService;

@@ -1,9 +1,17 @@
 package ServiceLayer;
 
+import ServiceLayer.EmployeeSubModule.EmployeeService;
+import ServiceLayer.EmployeeSubModule.ShiftService;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
+/**
+ * The EmployeeIntegrationService class provides an abstraction layer for integrating and managing
+ * operations related to employees and their shifts. This class collaborates with EmployeeService
+ * and ShiftService to execute functionality such as checking employee status, roles, and shift assignments.
+ */
 public class EmployeeIntegrationService {
     final private EmployeeService employeeService;
     final private ShiftService shiftService;
@@ -40,30 +48,20 @@ public class EmployeeIntegrationService {
         return employeeService.isEmployeeHaveRole(employeeId, role);
     }
 
-    /**
-     * Determines whether there is a driver assigned to a shift at the specified date, time, and branch location.
-     *
-     * @param dateTime The date and time to check for a driver's shift assignment.
-     * @param branch The branch location for which the driver's shift assignment is being checked.
-     * @return true if a driver is assigned to a shift at the specified date, time, and branch; false otherwise.
-     */
-    public boolean isDriverOnShiftAt(LocalDateTime dateTime, String branch) {
+
+    public boolean isDriverOnShiftAt(LocalDateTime dateTime, String address, int areaCode) {
+        // TODO: Add Driver ID to the method signature, func needs to check if his on shift
         LocalDate date = dateTime.toLocalDate();
         LocalTime time = dateTime.toLocalTime();
-        return shiftService.isAssignedRoleByDateTimeBranch(date, time,branch , "Driver");
+        return shiftService.isAssignedRoleByDateTimeBranch(date, time,"Driver", address, areaCode);
     }
 
-    /**
-     * Determines whether there is a warehouseman assigned to a shift at the specified date, time, and branch location.
-     *
-     * @param dateTime The date and time to check for the warehouseman's shift assignment.
-     * @param branch The branch location for which the warehouseman's shift assignment is being checked.
-     * @return true if a warehouseman is assigned to a shift at the specified date, time, and branch; false otherwise.
-     */
-    public boolean isWarehousemanOnShiftAt(LocalDateTime dateTime, String branch) {
+
+    public boolean isWarehousemanOnShiftAt(LocalDateTime dateTime, String address, int areaCode) {
         LocalDate date = dateTime.toLocalDate();
         LocalTime time = dateTime.toLocalTime();
-        return shiftService.isAssignedRoleByDateTimeBranch(date, time,branch , "Warehouseman");
+        // TODO: upadte this and the above method to use the new branch object
+        return shiftService.isAssignedRoleByDateTimeBranch(date, time,"Warehouseman", address, areaCode);
     }
 
     /**
@@ -76,6 +74,17 @@ public class EmployeeIntegrationService {
      */
     public String[] getAllDrivers() { // NOT TESTED and NOT READY FOR USE!
         return employeeService.getAllDrivers();
+    }
+
+    /**
+     * Checks if an employee with the given ID is authorized to perform an action with the specified permission.
+     *
+     * @param doneBy The unique identifier of the employee whose authorization is being checked.
+     * @param permission The specific permission to check for the employee.
+     * @return true if the employee is authorized to perform the action, false otherwise.
+     */
+    public boolean isEmployeeAuthorised(long doneBy, String permission) {
+        return employeeService.isEmployeeAuthorised(doneBy, permission);
     }
 
 }

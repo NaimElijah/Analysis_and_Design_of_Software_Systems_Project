@@ -6,10 +6,9 @@ import DomainLayer.EmployeeSubModule.AuthorisationController;
 import DomainLayer.EmployeeSubModule.BankAccount;
 import DomainLayer.EmployeeSubModule.Employee;
 import DomainLayer.EmployeeSubModule.EmployeeController;
+import ServiceLayer.EmployeeSubModule.EmployeeService;
 import ServiceLayer.exception.AuthorizationException;
 import ServiceLayer.exception.EmployeeNotFoundException;
-import ServiceLayer.exception.ValidationException;
-import ServiceLayer.exception.ServiceException;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -138,7 +137,7 @@ class EmployeeServiceTest {
             assertEquals(firstName, employee.getFirstName());
             assertEquals(lastName, employee.getLastName());
             assertEquals(salary, employee.getSalary());
-            assertEquals(branch, employee.getBranch());
+            assertEquals(branch, employee.getBranchId());
             assertTrue(employee.isActive());
         }
     }
@@ -168,7 +167,7 @@ class EmployeeServiceTest {
         assertEquals(newFirstName, employee.getFirstName());
         assertEquals(newLastName, employee.getLastName());
         assertEquals(newSalary, employee.getSalary());
-        assertEquals(newBranch, employee.getBranch());
+        assertEquals(newBranch, employee.getBranchId());
         assertTrue(employee.isActive());
     }
 

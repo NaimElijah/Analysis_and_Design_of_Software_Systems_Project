@@ -1,13 +1,12 @@
-package PresentationLayer;
+package PresentationLayer.EmployeeSubModule;
 
-import DTOs.SerializeException;
 import DomainLayer.enums.ShiftType;
 import DTOs.EmployeeDTO;
 import DTOs.ShiftDTO;
 import DomainLayer.exception.ShiftNotFoundException;
-import DomainLayer.exception.UnauthorizedPermissionException;
-import ServiceLayer.EmployeeService;
-import ServiceLayer.ShiftService;
+import Util.CliUtil;
+import ServiceLayer.EmployeeSubModule.EmployeeService;
+import ServiceLayer.EmployeeSubModule.ShiftService;
 import ServiceLayer.exception.ServiceException;
 
 import java.time.LocalDate;
@@ -200,7 +199,7 @@ public class ShiftCLI {
     private String formatEmployeeDisplay(long employeeId) {
         try {
             EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(employeeId);
-            String branch = employee.getBranch() != null ? " [" + employee.getBranch() + "]" : "";
+            String branch = employee.getBranchId() != null ? " [" + employee.getBranchId() + "]" : "";
             return employee.getFullName() + " (#" + employeeId + ")" + branch;
         } catch (ServiceException e) {
             // If we can't get the employee name, just return the ID

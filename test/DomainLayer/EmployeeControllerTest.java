@@ -97,17 +97,17 @@ class EmployeeControllerTest {
         // Test for updating an existing employee
         Map<String, Object> terms = Map.of("Days Off", 5000, "Contract Type", "Full Time");
         String branch = "Updated Branch";
-        boolean result = employeeController.updateEmployee(shira.getIsraeliId(), shira.getIsraeliId(), "Shira", "Shtinboch", 12000, terms, true, branch);
+        boolean result = employeeController.updateEmployee(shira.getIsraeliId(), shira.getIsraeliId(), "Shira", "Shtinboch", 12000, terms, true);
         assertTrue(result);
 
         // Test for updating a non-existing employee
         assertThrows(InvalidInputException.class, () -> {
-            employeeController.updateEmployee(shira.getIsraeliId(), 123456799, "Non-Existing", "Employee", 5000, terms, true, "Main Branch");
+            employeeController.updateEmployee(shira.getIsraeliId(), 123456799, "Non-Existing", "Employee", 5000, terms, true);
         });
 
         // Test for invalid input
         assertThrows(InvalidInputException.class, () -> {
-            employeeController.updateEmployee(shira.getIsraeliId(), shira.getIsraeliId(), "", "Employee", 5000, terms, true, "Main Branch");
+            employeeController.updateEmployee(shira.getIsraeliId(), shira.getIsraeliId(), "", "Employee", 5000, terms, true);
         });
     }
 

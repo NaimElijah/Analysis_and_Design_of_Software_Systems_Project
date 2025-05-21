@@ -1,8 +1,9 @@
-package PresentationLayer;
+package PresentationLayer.EmployeeSubModule;
 
 import DTOs.ShiftDTO;
-import ServiceLayer.ShiftService;
-import ServiceLayer.EmployeeService;
+import Util.CliUtil;
+import ServiceLayer.EmployeeSubModule.ShiftService;
+import ServiceLayer.EmployeeSubModule.EmployeeService;
 import DTOs.EmployeeDTO;
 import ServiceLayer.exception.AuthorizationException;
 import ServiceLayer.exception.ServiceException;
@@ -172,7 +173,7 @@ public class AssignmentCLI {
     private String formatEmployeeDisplay(long employeeId) {
         try {
             EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(employeeId);
-            String branch = employee.getBranch() != null ? " [" + employee.getBranch() + "]" : "";
+            String branch = employee.getBranchId() != null ? " [" + employee.getBranchId() + "]" : "";
             return employee.getFullName() + " (#" + employeeId + ")" + branch;
         } catch (ServiceException e) {
             // If we can't get the employee name, just return the ID
@@ -189,7 +190,7 @@ public class AssignmentCLI {
     private String formatUnassignedEmployeeDisplay(long employeeId) {
         try {
             EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(employeeId);
-            String branch = employee.getBranch() != null ? " [" + employee.getBranch() + "]" : "";
+            String branch = employee.getBranchId() != null ? " [" + employee.getBranchId() + "]" : "";
             return employee.getFullName() + " (#" + employeeId + ")" + branch + " {" + employee.getRoles() + "}" + CliUtil.RESET;
 
         } catch (ServiceException e) {

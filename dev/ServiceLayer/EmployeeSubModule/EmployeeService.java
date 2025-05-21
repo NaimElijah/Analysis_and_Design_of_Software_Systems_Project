@@ -1,8 +1,9 @@
-package ServiceLayer;
+package ServiceLayer.EmployeeSubModule;
 
 import DTOs.EmployeeDTO;
 import DTOs.RoleDTO;
 import DomainLayer.EmployeeSubModule.AuthorisationController;
+import DomainLayer.EmployeeSubModule.Branch;
 import DomainLayer.EmployeeSubModule.EmployeeController;
 import DomainLayer.EmployeeSubModule.Employee;
 import DomainLayer.exception.InvalidInputException;
@@ -13,7 +14,6 @@ import ServiceLayer.exception.ServiceException;
 import ServiceLayer.exception.ValidationException;
 
 import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -51,7 +51,7 @@ public class EmployeeService {
             employee.isActive(),
             employee.getCreationDate(),
             employee.getUpdateDate(),
-            employee.getBranch()
+            employee.getBranchId()
         );
     }
 
@@ -383,15 +383,15 @@ public class EmployeeService {
      * @param salary         The salary of the employee.
      * @param termsOfEmployment The terms of employment for the employee.
      * @param startOfEmployment The start date of employment for the employee.
-     * @param branch         The branch that the employee is assigned to.
+     * @param branchId         The branch that the employee is assigned to.
      * @return A message indicating whether the employee was created successfully or not.
      * @throws ValidationException if any input parameters are invalid
      * @throws AuthorizationException if the user doesn't have permission to create employees
      * @throws ServiceException if an unexpected error occurs
      */
-    public String createEmployee(long doneBy, long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, LocalDate startOfEmployment, String branch) {
+    public String createEmployee(long doneBy, long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, LocalDate startOfEmployment, Long branchId) {
         try {
-            boolean result = employeeController.createEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, null, startOfEmployment, branch);
+            boolean result = employeeController.createEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, null, startOfEmployment, branchId);
 
             if (result) {
                 return "Employee created successfully"; // Employee created successfully
@@ -425,8 +425,8 @@ public class EmployeeService {
      * @throws AuthorizationException if the user doesn't have permission to create employees
      * @throws ServiceException if an unexpected error occurs
      */
-    public String createEmployee(long doneBy, long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, LocalDate startOfEmployment) {
-        return createEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, startOfEmployment, null);
+    public String createEmployee(long doneBy, long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, LocalDate startOfEmployment, long branchId) {
+        return createEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, startOfEmployment, branchId);
     }
     /**
      * Updates an existing employee.
@@ -454,7 +454,7 @@ public class EmployeeService {
                 throw new EmployeeNotFoundException(israeliId);
             }
 
-            boolean result = employeeController.updateEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, active, branch);
+            boolean result = employeeController.updateEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, active);
             if (result) {
                 return "Employee updated successfully";
             } else {
@@ -496,9 +496,9 @@ public class EmployeeService {
             }
 
             // Keep the existing branch
-            String branch = employee.getBranch();
+            long branch = employee.getBranchId();
 
-            return updateEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, active, branch);
+            return updateEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, active);
         } catch (ValidationException | EmployeeNotFoundException | AuthorizationException e) {
             throw e; // Rethrow specific exceptions
         } catch (Exception e) {
@@ -828,6 +828,39 @@ public class EmployeeService {
             return "Unexpected error: " + e.getMessage();
         }
     }
+    public String updateEmployeeBranch(long israeliId, long branchId) {
+        try {
+            // Validate input parameters
+            if (String.valueOf(israeliId).length() != 9) {
+                throw new ValidationException("israeliId", "Israeli ID must be 9 digits");
+            }
+
+            // Check if employee exists
+            Employee employee = employeeController.getEmployeeByIsraeliId(israeliId);
+            if (employee == null) {
+                throw new EmployeeNotFoundException(israeliId);
+            }
+
+            boolean result = employeeController.updateEmployeeBranch(israeliId, branchId);
+            if (result) {
+                return "Success Employee branch updated successfully";
+            } else {
+                return "Failed to update employee branch";
+            }
+        } catch (ValidationException | EmployeeNotFoundException e) {
+            throw e; // Rethrow specific exceptions
+        } catch (Exception e) {
+            throw new ServiceException("Error updating employee branch: " + e.getMessage(), e);
+        }
+    }
+    public String getEmployeeBranchName(long israeliId) {
+        try {
+            return employeeController.getEmployeeBranchName(israeliId);
+        } catch (Exception e) {
+            throw new ServiceException("Error retrieving employee branch name: " + e.getMessage(), e);
+        }
+    }
+
 
     // ===========================
     // Functions for integration with Transport module
@@ -887,6 +920,14 @@ public class EmployeeService {
             return employeeController.getAllDrivers();
         } catch (Exception e) {
             throw new ServiceException("Error retrieving all drivers: " + e.getMessage(), e);
+        }
+    }
+
+    public boolean isBranchExists(long branch) {
+        try {
+            return employeeController.isBranchExists(branch);
+        } catch (Exception e) {
+            throw new ServiceException("Error checking if branch exists: " + e.getMessage(), e);
         }
     }
 }

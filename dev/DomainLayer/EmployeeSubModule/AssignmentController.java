@@ -188,11 +188,12 @@ public class AssignmentController {
      * @return true if the specified role is assigned within the given shift; false otherwise.
      * @throws UnauthorizedPermissionException if the user performing the check does not have permission to verify role assignments.
      */
-    public boolean isAssignedRoleByDateTimeBranch( LocalDate date, LocalTime hour, String role, String branch) {
+    public boolean isAssignedRoleByDateTimeBranch( LocalDate date, LocalTime hour, String role, String address, int areaCode) {
         String PERMISSION = " "; // TODO: Define the permission needed for this action
 //        if (!employeeController.isEmployeeAuthorised(doneBy, PERMISSION)) {
 //            throw new UnauthorizedPermissionException("User does not have permission to view assign employees");
 //        }
+        long branch = shiftController.getBranchIdByAddress(address, areaCode);
         Shift shift = shiftController.getShiftbyDateTimeAndBranch(date, hour, branch);
         return shift.getAssignedEmployees().get(role) != null;
     }

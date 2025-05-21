@@ -43,7 +43,7 @@ public class ShiftController {
         if (shift == null) {
             throw new IllegalArgumentException("Shift cannot be null");
         }
-        ShiftDTO dto = new ShiftDTO(shift.getId(), shift.getShiftType(), shift.getShiftDate(), shift.getRolesRequired(), shift.getAssignedEmployees(), shift.getAvailableEmployees(), shift.isAssignedShiftManager(), shift.isOpen(), shift.getStartHour(), shift.getEndHour(), shift.getCreateDate(), shift.getUpdateDate());
+        ShiftDTO dto = new ShiftDTO(shift.getId(), shift.getShiftType(), shift.getShiftDate(), shift.getRolesRequired(), shift.getAssignedEmployees(), shift.getAvailableEmployees(), shift.isAssignedShiftManager(), shift.isOpen(), shift.getStartHour(), shift.getEndHour(), shift.getCreateDate(), shift.getUpdateDate(), shift.getBranchId());
         return dto.serialize();
     }
 
@@ -106,7 +106,7 @@ public class ShiftController {
         List<Shift> shiftsList = new ArrayList<>();
         for (String serializedShift : serializedShiftArray) {
             ShiftDTO dto = ShiftDTO.deserialize(serializedShift);
-            Shift shift = new Shift(dto.getId(), dto.getShiftType(), dto.getShiftDate(), dto.getRolesRequired(), dto.getAssignedEmployees(), dto.getAvailableEmployees(), dto.isAssignedShiftManager(), dto.isOpen(),dto.getStartHour(),dto.getEndHour(),dto.getUpdateDate());
+            Shift shift = new Shift(dto.getId(), dto.getShiftType(), dto.getShiftDate(), dto.getRolesRequired(), dto.getAssignedEmployees(), dto.getAvailableEmployees(), dto.isAssignedShiftManager(), dto.isOpen(),dto.getStartHour(),dto.getEndHour(),dto.getUpdateDate(),dto.getBranchId());
             shiftsList.add(shift);
         }
         return shiftsList;
@@ -153,7 +153,7 @@ public class ShiftController {
         if (!rolesRequired.containsKey(ShiftManagerStr) || rolesRequired.get(ShiftManagerStr) <= 0) {
             throw new InvalidInputException("At least one shift manager is required for every shift");
         }
-        String branch = empCon.getEmployeeByIsraeliId(doneBy).getBranch(); // Get the branch of the employee that is creating the shift
+        long branch = empCon.getEmployeeByIsraeliId(doneBy).getBranchId(); // Get the branch of the employee that is creating the shift
         Shift newShift = new Shift(shiftIdCounter, shiftType, date, rolesRequired, assignedEmployees, availableEmployees, isAssignedShiftManager, isOpen, startHour, endHour, updateDate, branch);
         shiftIdCounter++;
         boolean addedToWeekly = addShiftToWeekly(newShift);
@@ -188,7 +188,7 @@ public class ShiftController {
 //            startDate = startDate.plusDays(daysUntilSunday);
 //        }
 
-        String branch = empCon.getEmployeeByIsraeliId(doneBy).getBranch(); // Get the branch of the employee that is creating the shifts
+        long branch = empCon.getEmployeeByIsraeliId(doneBy).getBranchId(); // Get the branch of the employee that is creating the shifts
 
         for (int day = 0; day < 7; day++) {
             LocalDate date = startDate.plusDays(day);
@@ -213,10 +213,10 @@ public class ShiftController {
      * @param date the date of the shift
      * @param type the type of the shift (morning or evening)
      * @param rolesRequired number of employees of each role required for the shift
-     * @param branch the branch that this shift belongs to
+     * @param branchId the branchId that this shift belongs to
      * @return true if the shift was added successfully, false otherwise
      */
-    private boolean AddNewShift(LocalDate date, ShiftType type, Map<String, Integer> rolesRequired, String branch) {
+    private boolean AddNewShift(LocalDate date, ShiftType type, Map<String, Integer> rolesRequired, long branchId) {
         // Check if a shift of this type already exists for the date
         if (shifts.stream().anyMatch(s -> s.getShiftDate().equals(date) && s.getShiftType() == type)) {
             throw new RuntimeException(type + " shift already exists for " + date);
@@ -233,7 +233,7 @@ public class ShiftController {
 
         LocalTime startHour = type == ShiftType.MORNING ? config.START_HOUR_MORNING : config.START_HOUR_EVENING;
         LocalTime endHour = type == ShiftType.MORNING ? config.END_HOUR_MORNING : config.END_HOUR_EVENING;
-        Shift shift = new Shift(shiftIdCounter++, type, date, rolesRequired, assignedEmployees, availableEmployees, false, isOpen, startHour, endHour, LocalDate.now(), branch);
+        Shift shift = new Shift(shiftIdCounter++, type, date, rolesRequired, assignedEmployees, availableEmployees, false, isOpen, startHour, endHour, LocalDate.now(), branchId);
 
         boolean added = shifts.add(shift);
         // Even if the shift wasn't added to the weekly shifts map, it's still in the shifts set
@@ -278,9 +278,9 @@ public class ShiftController {
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to delete shift");
         }
-        String branch = empCon.getEmployeeByIsraeliId(doneBy).getBranch(); // Get the branch of the employee that is requesting the shifts
+        long branchId = empCon.getEmployeeByIsraeliId(doneBy).getBranchId(); // Get the branch of the employee that is requesting the shifts
         Shift shiftToRemove = shifts.stream()
-                .filter(shift -> shift.getShiftDate().equals(date) && shift.getShiftType().equals(shiftType) && shift.getBranch().equals(branch))
+                .filter(shift -> shift.getShiftDate().equals(date) && shift.getShiftType().equals(shiftType) && shift.getBranchId() == branchId)
                 .findFirst()
                 .orElse(null);
         if (shiftToRemove == null) {
@@ -361,7 +361,7 @@ public class ShiftController {
         if (shiftToGet == null) {
             throw new ShiftNotFoundException("Shift does not exist");
         }
-        ShiftDTO dto = new ShiftDTO(shiftToGet.getId(), shiftToGet.getShiftType(), shiftToGet.getShiftDate(), shiftToGet.getRolesRequired(), shiftToGet.getAssignedEmployees(), shiftToGet.getAvailableEmployees(), shiftToGet.isAssignedShiftManager(), shiftToGet.isOpen(), shiftToGet.getStartHour(), shiftToGet.getEndHour(), shiftToGet.getCreateDate(), shiftToGet.getUpdateDate());
+        ShiftDTO dto = new ShiftDTO(shiftToGet.getId(), shiftToGet.getShiftType(), shiftToGet.getShiftDate(), shiftToGet.getRolesRequired(), shiftToGet.getAssignedEmployees(), shiftToGet.getAvailableEmployees(), shiftToGet.isAssignedShiftManager(), shiftToGet.isOpen(), shiftToGet.getStartHour(), shiftToGet.getEndHour(), shiftToGet.getCreateDate(), shiftToGet.getUpdateDate(), shiftToGet.getBranchId());
         return dto.serialize();
     }
 
@@ -371,7 +371,12 @@ public class ShiftController {
      * @return all shifts
      */
     public String getAllShifts(long doneBy) {
-        return getAllShiftsByBranch(doneBy, null);
+        String PERMISSION_REQUIRED = "Headquarters"; // TODO: check if this is the correct permission - super user / management user
+        if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
+            throw new UnauthorizedPermissionException("User does not have permission to get all shifts");
+        }
+        // return all shifts as strings DTO serialized
+        return serializeSetShifts(shifts);
     }
 
     /**
@@ -380,23 +385,18 @@ public class ShiftController {
      * @param branch branch of the shifts (if null, returns shifts for all branches)
      * @return all shifts for the branch
      */
-    public String getAllShiftsByBranch(long doneBy, String branch) {
+    public String getAllShiftsByBranch(long doneBy, long branch) {
         String PERMISSION_REQUIRED = "GET_SHIFT";
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to get all dtos");
         }
         // Filter shifts by branch if specified
         Set<Shift> filteredShifts = shifts.stream()
-            .filter(shift -> branch == null || branch.equals(shift.getBranch()))
+            .filter(shift -> branch == shift.getBranchId())
             .collect(Collectors.toSet());
 
-        if (filteredShifts.isEmpty()) {
-            if (branch == null) {
-                throw new ShiftNotFoundException("No shifts were found");
-            } else {
-                throw new ShiftNotFoundException("No shifts were found for the branch: " + branch);
-            }
-        }
+        if (filteredShifts.isEmpty())
+            throw new ShiftNotFoundException("No shifts were found for the branch: " + branch);
 
         // return all dtos as strings DTO serialized
         List<Shift> shiftsList = new ArrayList<>(filteredShifts); // Convert Set to List
@@ -411,18 +411,18 @@ public class ShiftController {
      * @return all shifts for the date
      */
     public String getAllShiftsByDate(long doneBy, LocalDate date) {
-        String branch = empCon.getEmployeeByIsraeliId(doneBy).getBranch(); // Get the branch of the employee that is requesting the shifts
-        return getAllShiftsByDateAndBranch(doneBy, date, branch);
+        long branchId = empCon.getEmployeeByIsraeliId(doneBy).getBranchId(); // Get the branch of the employee that is requesting the shifts
+        return getAllShiftsByDateAndBranch(doneBy, date, branchId);
     }
 
     /**
      * get all shifts for a specific date and branch
      * @param doneBy employee who is requesting the shifts
      * @param date date of the shifts
-     * @param branch branch of the shifts (if null, returns shifts for all branches)
+     * @param branchId branch of the shifts (if null, returns shifts for all branches)
      * @return all shifts for the date and branch
      */
-    public String getAllShiftsByDateAndBranch(long doneBy, LocalDate date, String branch) {
+    public String getAllShiftsByDateAndBranch(long doneBy, LocalDate date, long branchId) {
         String PERMISSION_REQUIRED = "GET_SHIFT";
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to get shifts by date");
@@ -433,16 +433,12 @@ public class ShiftController {
         // return all shifts for the date and branch as strings DTO serialized
         Set<Shift> filteredShifts = shifts.stream()
             .filter(shift -> shift.getShiftDate().equals(date))
-            .filter(shift -> branch == null || branch.equals(shift.getBranch()))
+            .filter(shift -> branchId == shift.getBranchId())
             .collect(Collectors.toSet());
 
-        if (filteredShifts.isEmpty()) {
-            if (branch == null) {
-                throw new ShiftNotFoundException("No shifts found for the date");
-            } else {
-                throw new ShiftNotFoundException("No shifts found for the date and branch");
-            }
-        }
+        if (filteredShifts.isEmpty())
+            throw new ShiftNotFoundException("No shifts found for the date and branch");
+
         return serializeSetShifts(filteredShifts);
     }
 
@@ -453,17 +449,18 @@ public class ShiftController {
      * @return all shifts for the employee
      */
     public String getShiftsByEmployee(long doneBy, long employeeID) {
-        return getShiftsByEmployeeAndBranch(doneBy, employeeID, null);
+        long branchId = empCon.getEmployeeByIsraeliId(doneBy).getBranchId(); // Get the branch of the employee that is requesting the shifts
+        return getShiftsByEmployeeAndBranch(doneBy, employeeID, branchId);
     }
 
     /**
      * get all shifts for a specific employee and branch
      * @param doneBy employee who is requesting the shifts
      * @param employeeID employee to get shifts for
-     * @param branch branch of the shifts (if null, returns shifts for all branches)
+     * @param branchId branch of the shifts (if null, returns shifts for all branches)
      * @return all shifts for the employee and branch
      */
-    public String getShiftsByEmployeeAndBranch(long doneBy, long employeeID, String branch) {
+    public String getShiftsByEmployeeAndBranch(long doneBy, long employeeID, long branchId) {
         String PERMISSION_REQUIRED = "GET_SHIFT";
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to get shifts by employee");
@@ -473,17 +470,12 @@ public class ShiftController {
         }
         // return all shifts for the employee and branch as strings DTO serialized
         Set<Shift> filteredShifts = shifts.stream()
-            .filter(shift -> shift.getAssignedEmployees().values().stream().anyMatch(set -> set.contains(employeeID)))
-            .filter(shift -> branch == null || branch.equals(shift.getBranch()))
-            .collect(Collectors.toSet());
+                .filter(shift -> shift.getAssignedEmployees().values().stream().anyMatch(set -> set.contains(employeeID)))
+                .filter(shift -> branchId == shift.getBranchId())
+                .collect(Collectors.toSet());
 
-        if (filteredShifts.isEmpty()) {
-            if (branch == null) {
-                throw new ShiftNotFoundException("No shifts found for the employee");
-            } else {
-                throw new ShiftNotFoundException("No shifts found for the employee in branch: " + branch);
-            }
-        }
+        if (filteredShifts.isEmpty())
+            throw new ShiftNotFoundException("No shifts found for the employee in branch: " + branchId);
 
         return serializeSetShifts(filteredShifts);
     }
@@ -496,8 +488,8 @@ public class ShiftController {
      * @return the shift if it exists, null otherwise
      */
     public String getshift(long doneBy, LocalDate date, ShiftType shiftType) {
-        String branch = empCon.getEmployeeByIsraeliId(doneBy).getBranch(); // Get the branch of the employee that is requesting the shifts
-        return getshiftByBranch(doneBy, date, shiftType, branch);
+        long branchId = empCon.getEmployeeByIsraeliId(doneBy).getBranchId(); // Get the branch of the employee that is requesting the shifts
+        return getshiftByBranch(doneBy, date, shiftType, branchId);
     }
 
     /**
@@ -505,10 +497,10 @@ public class ShiftController {
      * @param doneBy    employee who is requesting the shift
      * @param date      date of the shift
      * @param shiftType morning or evening
-     * @param branch    branch of the shift (if null, returns shift for any branch)
+     * @param branchId    branch of the shift (if null, returns shift for any branch)
      * @return the shift if it exists, null otherwise
      */
-    public String getshiftByBranch(long doneBy, LocalDate date, ShiftType shiftType, String branch) {
+    public String getshiftByBranch(long doneBy, LocalDate date, ShiftType shiftType, long branchId) {
         String PERMISSION_REQUIRED = "GET_SHIFT";
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to get shifts by date and type");
@@ -518,15 +510,11 @@ public class ShiftController {
         }
         return shifts.stream()
                 .filter(shift -> shift.getShiftDate().equals(date) && shift.getShiftType().equals(shiftType))
-                .filter(shift -> branch == null || branch.equals(shift.getBranch()))
+                .filter(shift -> branchId == shift.getBranchId())
                 .findFirst()
                 .map(this::serializeShift)
                 .orElseThrow(() -> {
-                    if (branch == null) {
-                        return new ShiftNotFoundException("Shift does not exist for the specified date and type");
-                    } else {
-                        return new ShiftNotFoundException("Shift does not exist for the specified date, type, and branch: " + branch);
-                    }
+                    return new ShiftNotFoundException("Shift does not exist for the specified date, type, and branch: " + branchId);
                 });
     }
 
@@ -694,7 +682,7 @@ public class ShiftController {
 
         // Filter shifts by branch if specified
         List<Shift> filteredShifts = shiftsSet.stream()
-            .filter(shift -> branch == null || branch.equals(shift.getBranch()))
+            .filter(shift -> branch == null || branch.equals(shift.getBranchId()))
             .collect(Collectors.toList());
 
         if (filteredShifts.isEmpty()) {
@@ -717,7 +705,7 @@ public class ShiftController {
                     shift.getEndHour(), 
                     shift.getCreateDate(), 
                     shift.getUpdateDate(),
-                    shift.getBranch()))
+                    shift.getBranchId()))
                 .collect(Collectors.toList());
 
         dtos.sort(Comparator.comparing(ShiftDTO::getShiftDate).thenComparing(ShiftDTO::getShiftType)); // optional: morning before evening
@@ -775,7 +763,7 @@ public class ShiftController {
         // Filter shifts by date and branch if specified
         return shifts.stream()
                 .filter(shift -> shift.getShiftDate().equals(date) && shift.getStartHour().isBefore(hour) && shift.getEndHour().isAfter(hour))
-                .filter(shift -> branch == null || branch.equals(shift.getBranch()))
+                .filter(shift -> branch == null || branch.equals(shift.getBranchId()))
                 .findFirst()
                 .orElse(null);
     }
@@ -817,9 +805,13 @@ public class ShiftController {
         }
         List<Shift> EmployeeShifts = shifts.stream()
                 .filter(shift -> shift.getAssignedEmployees().values().stream().anyMatch(set -> set.contains(employeeId)))
-                .filter(shift -> branch == null || branch.equals(shift.getBranch()))
+                .filter(shift -> branch == null || branch.equals(shift.getBranchId()))
                 .toList();
 
         return serializeArrayShifts(EmployeeShifts);
+    }
+
+    public long getBranchIdByAddress(String address, int areaCode) {
+        return empCon.getBranchIdByAddress(address, areaCode);
     }
 }

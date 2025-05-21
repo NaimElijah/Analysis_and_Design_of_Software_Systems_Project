@@ -1,9 +1,9 @@
-package PresentationLayer;
+package PresentationLayer.EmployeeSubModule;
 
 import DTOs.EmployeeDTO;
 import DTOs.RoleDTO;
-import ServiceLayer.EmployeeService;
-import ServiceLayer.exception.AuthorizationException;
+import Util.CliUtil;
+import ServiceLayer.EmployeeSubModule.EmployeeService;
 import ServiceLayer.exception.ServiceException;
 
 import java.time.LocalDate;
@@ -414,7 +414,7 @@ public class EmployeeCLI {
     private String formatEmployeeDisplay(long employeeId) {
         try {
             EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(employeeId);
-            String branch = employee.getBranch() != null ? " [" + employee.getBranch() + "]" : "";
+            String branch = employeeService.getEmployeeBranchName(employee.getBranchId()) != null ? " [" + employeeService.getEmployeeBranchName(employee.getBranchId()) + "]" : "";
             return employee.getFullName() + " (#" + employeeId + ")" + branch;
         } catch (ServiceException e) {
             // If we can't get the employee name, just return the ID
@@ -451,12 +451,9 @@ public class EmployeeCLI {
             CliUtil.printBold("Start Date (dd-MM-yyyy): ");
             LocalDate startDate = LocalDate.parse(scanner.nextLine(), dateFormatter);
 
-            CliUtil.printBold("Branch: ");
-            String branch = scanner.nextLine();
-            // If branch is empty, set it to null
-            if (branch.trim().isEmpty()) {
-                branch = null;
-            }
+            CliUtil.printBold("Branch ID: ");
+            long branch = Long.parseLong(scanner.nextLine());
+
 
             Map<String, Object> termsOfEmployment = new HashMap<>();
             CliUtil.printEmptyLine();
@@ -527,15 +524,6 @@ public class EmployeeCLI {
         String activeInput = scanner.nextLine();
         boolean active = activeInput.isBlank() ? existing.isActive() : Boolean.parseBoolean(activeInput);
 
-        CliUtil.printBold("Current Branch: " + (existing.getBranch() != null ? existing.getBranch() : "None"));
-        CliUtil.printBold("New Branch: ");
-        String branchInput = scanner.nextLine();
-        String branch = branchInput.isBlank() ? existing.getBranch() : branchInput;
-        // If branch input is "null" or "none", set it to null
-        if (branch != null && (branch.equalsIgnoreCase("null") || branch.equalsIgnoreCase("none"))) {
-            branch = null;
-        }
-
         CliUtil.printEmptyLine();
         CliUtil.printSectionWithIcon("CURRENT TERMS OF EMPLOYMENT", "📋");
         if (existing.getTermsOfEmployment().isEmpty()) {
@@ -569,7 +557,7 @@ public class EmployeeCLI {
             }
         }
 
-        String result = employeeService.updateEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, active, branch);
+        String result = employeeService.updateEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, active);
 
         if (result.contains("successfully")) {
             printSuccess(result);
@@ -873,7 +861,7 @@ public class EmployeeCLI {
             employee -> {
                 // Format each employee for display
                 String status = employee.isActive() ? CliUtil.greenString("Active") : CliUtil.redString("Inactive");
-                String branch = employee.getBranch() != null ? employee.getBranch() : "None";
+                String branch = employeeService.getEmployeeBranchName(employee.getIsraeliId()) != null ? employeeService.getEmployeeBranchName(employee.getIsraeliId()) : "None";
                 return String.format("ID: %-11d | Name: %-28s | Branch: %-15s | Status: %s",
                     employee.getIsraeliId(),
                     employee.getFullName(),
@@ -916,7 +904,7 @@ public class EmployeeCLI {
                 : CliUtil.redString("Inactive");
             employeeInfo.add(new String[]{"Status:", status});
             employeeInfo.add(new String[]{"Start Date:", employee.getStartOfEmployment().toString()});
-            employeeInfo.add(new String[]{"Branch:", employee.getBranch() != null ? employee.getBranch() : "None"});
+            employeeInfo.add(new String[]{"Branch:", employeeService.getEmployeeBranchName(employee.getIsraeliId()) != null ? employeeService.getEmployeeBranchName(employee.getIsraeliId()) : "None"});
             content.put("EMPLOYEE INFORMATION", employeeInfo);
 
             // Roles & Permissions section

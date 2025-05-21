@@ -2,9 +2,14 @@ package PresentationLayer;
 
 import DTOs.EmployeeDTO;
 import DomainLayer.exception.UnauthorizedPermissionException;
-import ServiceLayer.EmployeeService;
-import ServiceLayer.ShiftService;
+import PresentationLayer.EmployeeSubModule.AssignmentCLI;
+import PresentationLayer.EmployeeSubModule.AvailabilityCLI;
+import PresentationLayer.EmployeeSubModule.EmployeeCLI;
+import PresentationLayer.EmployeeSubModule.ShiftCLI;
+import ServiceLayer.EmployeeSubModule.EmployeeService;
+import ServiceLayer.EmployeeSubModule.ShiftService;
 import ServiceLayer.exception.ServiceException;
+import Util.CliUtil;
 
 import java.time.LocalDate;
 import java.util.Scanner;
@@ -141,7 +146,7 @@ public class MainCLI {
     private String formatEmployeeDisplay(long employeeId) {
         try {
             EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(employeeId);
-            String branch = employee.getBranch() != null ? " [" + employee.getBranch() + "]" : "";
+            String branch = employeeService.getEmployeeBranchName(employee.getIsraeliId()) != null ? " [" + employeeService.getEmployeeBranchName(employee.getIsraeliId()) + "]" : "";
             return employee.getFullName() + " (#" + employeeId + ")" + branch;
         } catch (ServiceException e) {
             // If we can't get the employee name, just return the ID
