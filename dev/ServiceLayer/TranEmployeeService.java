@@ -1,136 +1,22 @@
-//package ServiceLayer;
-//
-//import DomainLayer.EmpSubModule.EmployeeFacade;
-//
-//import javax.management.openmbean.KeyAlreadyExistsException;
-//import javax.xml.transform.TransformerException;
-//import java.io.FileNotFoundException;
-//import java.util.ArrayList;
-//
-//public class TranEmployeeService {
-//    private EmployeeFacade ef;
-//    public TranEmployeeService(EmployeeFacade ef) {
-//        this.ef = ef;
-//    }
-//
-//
-//    public String addManager(int empid, String fname, String lname){
-//        if (empid < 0 || fname.isEmpty() || lname.isEmpty() || fname.isBlank() || lname.isBlank()) {
-//            return "Manager Details cannot be negative or empty or blank";
-//        }
-//        try {
-//            ef.addManager(empid, fname, lname);
-//        } catch (KeyAlreadyExistsException e) {
-//            return "The Employee Id you are trying to add already exists";
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return "Exception";
-//        }
-//        return "Success";
-//    }
-//
-//    public String addDriver(int empid, String fname, String lname, ArrayList<String> licenses){
-//        if (empid < 0 || fname.isEmpty() || lname.isEmpty() || fname.isBlank() || lname.isBlank()) {
-//            return "Driver Details cannot be negative or empty or blank";
-//        }
-//        for (String license : licenses) {
-//            if (!(license.equals("A") || license.equals("B") || license.equals("C") || license.equals("D") || license.equals("E"))) {
-//                return "Each License must be one of: A,B,C,D,E.";
-//            }
-//        }
-//        try {
-//            ef.addDriver(empid, fname, lname, licenses);
-//        } catch (KeyAlreadyExistsException e) {
-//            return "The Employee Id you are trying to add already exists";
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return "Exception";
-//        }
-//        return "Success";
-//    }
-//
-//
-//
-//    public String initializeAdmin(int empId, String fname, String lname) throws KeyAlreadyExistsException, IllegalAccessException {
-//        if (empId < 0 || fname.isEmpty() || lname.isEmpty() || fname.isBlank() || lname.isBlank()) { return "Manager Details cannot be negative or empty or blank"; }
-//        try {
-//            ef.initializeAdmin(empId, fname, lname);
-//        } catch (KeyAlreadyExistsException e) {
-//            return "The Employee Id you are trying to add as Admin already exists";
-//        } catch (IllegalAccessException e) {
-//            return "Cannot create another Admin, only one Admin Exists.";
-//        }catch (Exception e) {
-//            e.printStackTrace();
-//            return "Exception";
-//        }
-//        return "Success";
-//    }
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//    public String removeEmployeeByAdmin(int empId) {   /// for Admin usage
-//        if (empId < 0) { return "Employee ID cannot be negative"; }
-//        try {
-//            ef.removeEmployeeByAdmin(empId);
-//        } catch (ClassNotFoundException e) {
-//            return "The Employee Id you've entered doesn't exist";
-//        } catch (AssertionError e) {
-//            return "Can't delete Admin. (can't delete yourself)";
-//        } catch (ArrayStoreException e) {
-//            return "Driver cannot be deleted because he is written in an Active Transport, if you want you can remove the Transport or remove him from his transports";
-//        } catch (ArithmeticException e) {
-//            return "Can't delete Manager because after deleting this Manager, there won't be any Managers left :(";
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return "Exception";
-//        }
-//        return "Success";
-//    }
-//
-//
-//    public String removeEmployeeByManager(int empId){   /// for Manager usage
-//        if (empId < 0) { return "Employee ID cannot be negative"; }
-//        try {
-//            ef.removeEmployeeByManager(empId);
-//        } catch (ClassNotFoundException e) {
-//            return "The Employee Id you've entered doesn't exist";
-//        } catch (AssertionError e) {
-//            return "Can't delete Admin or another Manager.";
-//        } catch (ArrayStoreException e) {
-//            return "Driver cannot be deleted because he is written in an Active Transport, if you want you can remove the Transport or remove him from his transports";
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return "Exception";
-//        }
-//        return "Success";
-//    }
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
+
+
+
+
+
+
+//TODO:       putting this here so that I remember to make sure these functionalities happen/ to use the EmployeeService/EmployeeIntegrationService
+//TODO:       putting this here so that I remember to make sure these functionalities happen/ to use the EmployeeService/EmployeeIntegrationService
+//TODO:       putting this here so that I remember to make sure these functionalities happen/ to use the EmployeeService/EmployeeIntegrationService
+//TODO:       putting this here so that I remember to make sure these functionalities happen/ to use the EmployeeService/EmployeeIntegrationService
+//TODO:       putting this here so that I remember to make sure these functionalities happen/ to use the EmployeeService/EmployeeIntegrationService
+//TODO:       putting this here so that I remember to make sure these functionalities happen/ to use the EmployeeService/EmployeeIntegrationService
+//TODO:       putting this here so that I remember to make sure these functionalities happen/ to use the EmployeeService/EmployeeIntegrationService
+//TODO:       putting this here so that I remember to make sure these functionalities happen/ to use the EmployeeService/EmployeeIntegrationService
+//TODO:       putting this here so that I remember to make sure these functionalities happen/ to use the EmployeeService/EmployeeIntegrationService
+//TODO:       putting this here so that I remember to make sure these functionalities happen/ to use the EmployeeService/EmployeeIntegrationService
+//TODO:       putting this here so that I remember to make sure these functionalities happen/ to use the EmployeeService/EmployeeIntegrationService
+///   left only functions as MEMOs for me to see that we implement/redirect these functionalities in the correct places.
+
 //    public String giveADriverAManagersPermissionRank(int empid){
 //        if (empid < 0) { return "Employee ID cannot be negative"; }
 //        try {
@@ -147,40 +33,6 @@
 //        }
 //        return "Success";
 //    }
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//    public int getEmployeePermissionsRank(int loginIDGiven) {
-//        int res = 0;
-//        if (loginIDGiven < 0) { return -1; }
-//        try {
-//            res = ef.getEmployeePermissionsRank(loginIDGiven);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return -1;
-//        }
-//        return res;
-//    }
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 //
 //
 //
@@ -228,57 +80,6 @@
 //    }
 //
 //
-//
-//
-//
-//
-//
-//    public String showEmployee(int id) {
-//        if (id < 0){ return "ID cannot be negative"; }
-//        String res = "";
-//        try {
-//            res = ef.showEmployee(id);
-//        } catch (ArrayStoreException e) {
-//            return "The Employee(ID) you want to show, doesn't exist";
-//        }catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return res;
-//    }
-//
-//
-//    public String showDrivers(){
-//        String res = "";
-//        try {
-//            res = ef.showDrivers();
-//        }catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return res;
-//    }
-//
-//
-//    public String showEmployees(){
-//        String res = "";
-//        try {
-//            res = ef.showEmployees();
-//        }catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return res;
-//    }
-//
-//
-//
-//    public String showManagers(){
-//        String res = "";
-//        try {
-//            res = ef.showManagers();
-//        }catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return res;
-//    }
 //
 //
 //}

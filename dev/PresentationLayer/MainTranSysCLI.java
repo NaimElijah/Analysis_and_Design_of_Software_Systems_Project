@@ -5,15 +5,15 @@ import ServiceLayer.*;
 import java.util.Scanner;
 
 public class MainTranSysCLI {
-    private DriverCLI drCont;
-    private TranSysAdCLI sysAdCont;
+    private TranDriverCLI drCont;
     private TranManCLI tranManCont;
     private StartUpController startUpCont;
+    private EmployeeIntegrationService employeeIntegrationService;
     private Scanner scanner;
 
-    public MainTranSysCLI(TruckService ts, TransportService trs, SiteService sis, StartUpStateService starUpStService) {
+    public MainTranSysCLI(TruckService ts, TransportService trs, SiteService sis, EmployeeIntegrationService eis, StartUpStateService starUpStService) {
         this.scanner = new Scanner(System.in);
-//        this.drCont = new DriverCLI(this, trs, es, this.scanner);
+//        this.drCont = new TranDriverCLI(this, trs, es, this.scanner);
 //        this.sysAdCont = new TranSysAdCLI(this, es, this.scanner);
 //        this.tranManCont = new TranManCLI(this, ts, trs, sis, es, this.scanner);
 //        this.startUpCont = new StartUpController(starUpStService, es);
@@ -33,28 +33,22 @@ public class MainTranSysCLI {
         String choice = scanner.nextLine();
 
         if(choice.equals("1")){
-            System.out.println("\n    --------    ID Authentication Screen    -------    (Secure Login)");
-            System.out.println("Enter Your ID:");
-            int loginID = scanner.nextInt();
+            System.out.println("\n    --------    ID Authentication Screen    -------    (Secure Login)");  //TODO:  give to all functions below the ID of the user using the system.
+            System.out.println("Enter Your ID:");  //TODO:  give to all functions below the ID of the user using the system.      <<<------------------
+            long loginID = scanner.nextLong();
             scanner.nextLine(); // consume the leftover newline
 
-//            int permission = this.startUpCont.getEmployeePermissionsRank(loginID);
-//
-//            /// For each Permissions Rank there is a Different Options Menu
-//            if(permission == 0){
-//                System.out.println("\n   --------    Welcome, System Administrator.    -------\n");  // welcome message upon login
-//                sysAdCont.systemAdminMainMenu();
-//
-//            } else if(permission == 1){
-//                System.out.println("\n   --------    Welcome, Transport Manager    -------\n");  // welcome message upon login
-//                tranManCont.transportManagerMainMenu();
-//
-//            } else if(permission == 2){
-//                System.out.println("\n   --------    Welcome, Transport Driver.    -------\n");  // welcome message upon login
-//                drCont.driverMainMenu(loginID);
-//            } else {   // returns -1
-//                System.out.println("ID not in the System, Access Denied.\n");
-//            }
+            boolean isDriver = this.employeeIntegrationService.hasRole(loginID, "DriverA") || this.employeeIntegrationService.hasRole(loginID, "DriverB") || this.employeeIntegrationService.hasRole(loginID, "DriverC") || this.employeeIntegrationService.hasRole(loginID, "DriverD") || this.employeeIntegrationService.hasRole(loginID, "DriverE");
+
+            if (!this.employeeIntegrationService.isActive(loginID)){   //  if not in the System
+                System.out.println("ID not in the System, Access Denied.\n");
+            } else if (this.employeeIntegrationService.hasRole(loginID, "Transport manager")) {
+                System.out.println("\n   --------    Welcome, Transport Manager    -------\n");  // welcome message upon login
+                tranManCont.transportManagerMainMenu(loginID);
+            } else if (isDriver) {
+                System.out.println("\n   --------    Welcome, Transport Driver.    -------\n");  // welcome message upon login
+                drCont.driverMainMenu(loginID);
+            }
 
         } else if (choice.equals("2")){
             System.out.println("\nExiting The System, Goodbye.\n");

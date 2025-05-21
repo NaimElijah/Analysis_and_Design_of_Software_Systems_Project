@@ -2,12 +2,14 @@ package DomainLayer.TranSubModule;
 
 import DomainLayer.SiteSubModule.Site;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 
 public class ItemsDoc {
     private int itemsDoc_num;
     private Site src_site;
     private Site dest_site;
+    private LocalDateTime estimatedArrivalTime;   // TODO:     <<<-----------------------------------  ** NEW **  estimatedArrivalTime
     private HashMap<Item, Integer> goodItems;   //  separate the good items and the bad items
     private HashMap<Item, Integer> badItems;
 
@@ -15,6 +17,7 @@ public class ItemsDoc {
         this.itemsDoc_num = itemDoc_num;
         this.src_site = src_site;
         this.dest_site = dest_site;
+        this.estimatedArrivalTime = null;   ///   Is set a bit later, when a TransportDoc calculates it.
         this.goodItems = new HashMap<Item, Integer>();
         this.badItems = new HashMap<Item, Integer>();
     }
@@ -25,6 +28,8 @@ public class ItemsDoc {
     public void setSrc_site(Site src_site) {this.src_site = src_site;}
     public Site getDest_site() {return dest_site;}
     public void setDest_site(Site dest_site) {this.dest_site = dest_site;}
+    public LocalDateTime getEstimatedArrivalTime() {return estimatedArrivalTime;}
+    public void setEstimatedArrivalTime(LocalDateTime estimatedArrivalTime) {this.estimatedArrivalTime = estimatedArrivalTime;}
     public HashMap<Item, Integer> getGoodItems() {return goodItems;}
     public void setGoodItems(HashMap<Item, Integer> goodItems) {this.goodItems = goodItems;}
     public HashMap<Item, Integer> getBadItems() {return badItems;}
@@ -84,6 +89,7 @@ public class ItemsDoc {
     @Override
     public String toString() {
         String res = "-- Items Document #" + itemsDoc_num + " Details: from Source Site: " + src_site + " to Destination Site: " + dest_site + ". Items Included:\n";
+        res += "- Estimated Arrival Time: " + estimatedArrivalTime.toString() + ".\n";
         res += "- Good Items:\n";
         for (Item item : goodItems.keySet()) {
             res += item.toString() + ", Amount: " + goodItems.get(item) + ".\n";

@@ -1,20 +1,43 @@
 package ServiceLayer;
 
+import DTOs.EmployeeDTO;
+import DTOs.ItemQuantityDTO;
+import DTOs.ItemsDocDTO;
+import DTOs.TransportDTO;
+import DomainLayer.EmployeeSubModule.Employee;
+import DomainLayer.SiteSubModule.Site;
 import DomainLayer.TranSubModule.TransportController;
+import DomainLayer.TranSubModule.TransportDoc;
+import DomainLayer.TruSubModule.Truck;
+import DomainLayer.enums.enumTranStatus;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.management.AttributeNotFoundException;
 import javax.management.openmbean.KeyAlreadyExistsException;
 import javax.naming.CommunicationException;
 import java.io.FileNotFoundException;
 import java.nio.file.FileAlreadyExistsException;
+import java.util.ArrayList;
 
 public class TransportService {
+    private EmployeeIntegrationService employeeIntegrationServiceService;
     private TransportController tran_f;
-    public TransportService(TransportController tf) { this.tran_f = tf; }
+    private ObjectMapper objectMapper;
 
+    public TransportService(TransportController tf, EmployeeIntegrationService es) {
+        this.employeeIntegrationServiceService = es;
+        this.tran_f = tf;
+        this.objectMapper = new ObjectMapper();
+    }
 
-    public String createTransport(String transportDTO, int queuedIndexIfWasQueued){
+    //TODO:  We need to add a Permission checking function to the EmployeeIntegrationService.
+    //TODO:  We need to add a Permission checking function to the EmployeeIntegrationService.
+    //TODO:  We need to add a Permission checking function to the EmployeeIntegrationService.
+    //TODO:  We need to add a Permission checking function to the EmployeeIntegrationService.
+    //TODO:  We need to add a Permission checking function to the EmployeeIntegrationService.
+
+    public String createTransport(long loggedID, String transportDTO, int queuedIndexIfWasQueued){
         try {
             this.tran_f.createTransport(transportDTO, queuedIndexIfWasQueued);
         } catch (JsonProcessingException e) {
@@ -26,7 +49,7 @@ public class TransportService {
         return "Success";  //  if All Good
     }
 
-    public String deleteTransport(int transportID){
+    public String deleteTransport(long loggedID, int transportID){
         if (transportID < 0){ return "Can't Enter a negative Transport ID number"; }
         try {
             this.tran_f.deleteTransport(transportID);
@@ -45,13 +68,13 @@ public class TransportService {
 
 
 
-    public String setTransportStatus(int TranDocID, String menu_status_option){
+    public String setTransportStatus(long loggedID, int TranDocID, String menu_status_option){
         int intMenuStatusOption = Integer.parseInt(menu_status_option);
         if (intMenuStatusOption < 1 || intMenuStatusOption > 6){
             return "Invalid menu status option - enter a number between 1 and 6";
         }
         try {
-            this.tran_f.setTransportStatus(TranDocID, intMenuStatusOption);
+            this.tran_f.setTransportStatus(TranDocID, intMenuStatusOption, this.employeeIntegrationServiceService.isActive(this.tran_f.getTransports().get(TranDocID).getTransportDriverId()));
         } catch (FileNotFoundException e) {
             return "The Transport ID you have entered doesn't exist.";
         } catch (FileAlreadyExistsException e) {
@@ -74,10 +97,10 @@ public class TransportService {
 
 
 
-    public String setTransportTruck(int TranDocID, int truckNum){
+    public String setTransportTruck(long loggedID, int TranDocID, int truckNum){
         if (TranDocID < 0 || truckNum < 0){ return "Transport Document number, Truck number values cannot be negative."; }
         try {
-            this.tran_f.setTransportTruck(TranDocID, truckNum);
+            this.tran_f.setTransportTruck(TranDocID, truckNum, this.employeeIntegrationServiceService.hasRole(this.tran_f.getTransports().get(TranDocID).getTransportDriverId(), this.tran_f.getTruckLicenseAsStringRole(truckNum)));
         } catch (FileNotFoundException e) {
             return "The Transport ID you have entered doesn't exist.";
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -101,10 +124,12 @@ public class TransportService {
 
 
 
-    public String setTransportDriver(int TranDocID, int DriverID){
+    public String setTransportDriver(long loggedID, int TranDocID, int DriverID){
         if (TranDocID < 0 || DriverID < 0){ return "Transport Document number, Driver ID values cannot be negative."; }
         try {
-            this.tran_f.setTransportDriver(TranDocID, DriverID);
+            boolean isNotDriver = !this.employeeIntegrationServiceService.hasRole(DriverID, "DriverA") && !this.employeeIntegrationServiceService.hasRole(DriverID, "DriverB") && !this.employeeIntegrationServiceService.hasRole(DriverID, "DriverC") && !this.employeeIntegrationServiceService.hasRole(DriverID, "DriverD") && !this.employeeIntegrationServiceService.hasRole(DriverID, "DriverE");
+            String lice = this.tran_f.getTruckLicenseAsStringRole(this.tran_f.getTransports().get(TranDocID).getTransportTruck().getTruck_num());
+            this.tran_f.setTransportDriver(TranDocID, DriverID, isNotDriver, this.employeeIntegrationServiceService.isActive(DriverID), this.employeeIntegrationServiceService.hasRole(DriverID, lice));
         } catch (FileNotFoundException e) {
             return "The Transport ID you have entered doesn't exist.";
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -129,11 +154,30 @@ public class TransportService {
 
 
 
-
-    public String isTruckDriverPairingGood(int truckNum, int driverID) {
+    //TODO: refactor to timing and specific site workers elements.  (also refactor other functions in here)
+    public String isTruckDriverPairingGood(long loggedID, int truckNum, int driverID) {
         if (truckNum < 0 || driverID < 0){ return "Truck number/Driver ID values cannot be negative."; }
         try {
-            this.tran_f.isTruckDriverPairingGood(truckNum, driverID);
+            ArrayList<EmployeeDTO> employeesDTOs = new ArrayList<>();
+            for (String emp : this.employeeIntegrationServiceService.getAllDrivers()){
+                employeesDTOs.add(this.objectMapper.readValue(emp, EmployeeDTO.class));
+            }
+            String lice = this.tran_f.getTruckLicenseAsStringRole(truckNum);
+            boolean isThereAvailableDriverMatchingThisTruck = false;
+
+            for(EmployeeDTO driver : employeesDTOs){
+                if (this.employeeIntegrationServiceService.hasRole(driver.getIsraeliId(), lice) && !this.tran_f.getDriverIdToInTransportID().containsKey(driver.getIsraeliId())){  // if driver compatible and free
+                    isThereAvailableDriverMatchingThisTruck = true;
+                }
+            }
+            if (!isThereAvailableDriverMatchingThisTruck){
+                throw new ClassNotFoundException("There isn't a Driver that is available right now and compatible, license wise, with the Truck you chose");
+            }
+
+            boolean isNotDriver = !this.employeeIntegrationServiceService.hasRole(driverID, "DriverA") && !this.employeeIntegrationServiceService.hasRole(driverID, "DriverB") && !this.employeeIntegrationServiceService.hasRole(driverID, "DriverC") && !this.employeeIntegrationServiceService.hasRole(driverID, "DriverD") && !this.employeeIntegrationServiceService.hasRole(driverID, "DriverE");
+            boolean hasRole22 = this.employeeIntegrationServiceService.hasRole(driverID, lice);
+            this.tran_f.isTruckDriverPairingGood(truckNum, driverID, isNotDriver, hasRole22);
+
         } catch (FileNotFoundException e) {
             return "Truck Number entered doesn't exist";
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -142,7 +186,9 @@ public class TransportService {
             return "The Truck you chose is partaking in another Active Transport right now";
         } catch (ClassNotFoundException e) {
             return "There isn't a Driver that is available right now and compatible, license wise, with the Truck you chose";
-        } catch (Exception e) {
+        } catch (CommunicationException e) {
+            return "The Driver you chose doesn't have the fitting license for the Truck you chose";
+        }catch (Exception e) {
             e.printStackTrace();
             return "Exception";
         }
@@ -156,11 +202,33 @@ public class TransportService {
 
 
 
-
-    public String checkTransportValidity(String transportDTO) {  ///  returns: "Valid", "BadLicenses", "<overallWeight-truckMaxCarryWeight>", "Queue", "Occupied"
-        String res = "";
+    //TODO: refactor to timing and specific site workers elements.  (also refactor other functions in here)
+    public String checkTransportValidity(long loggedID, String DTO_OfTransport) {  ///  returns: "Valid", "BadLicenses", "<overallWeight-truckMaxCarryWeight>", "Queue", "Occupied"
+        String res = "Valid";
         try {
-            res = this.tran_f.checkTransportValidity(transportDTO);
+            /// /////////////////////////////////    <<-------------------------------------   checking if there's a Driver-Truck Pairing At All Right Now, from the Free ones
+            ArrayList<EmployeeDTO> employeesDTOs = new ArrayList<>();
+            for (String emp : this.employeeIntegrationServiceService.getAllDrivers()){
+                employeesDTOs.add(this.objectMapper.readValue(emp, EmployeeDTO.class));
+            }
+            ///  checking if there is a match at all, --> from those who are free right now
+            boolean isThereMatchAtAllBetweenLicenses = false;
+            for (EmployeeDTO employee : employeesDTOs){
+                for (int trucNum : this.tran_f.getTruckFacade().getTrucksWareHouse().keySet()){
+                    if (this.employeeIntegrationServiceService.hasRole(employee.getIsraeliId(), this.tran_f.getTruckLicenseAsStringRole(trucNum))){  //  if compatible
+                        if ((!this.tran_f.isDriverActive(employee.getIsraeliId())) && (!this.tran_f.isTruckActive(trucNum))){   // searching only the free ones, like in the Requirements
+                            isThereMatchAtAllBetweenLicenses = true;  // if found
+                            break;   // because already found
+                        }
+                    }
+                }
+                if (isThereMatchAtAllBetweenLicenses){break;}  // if already found
+            }
+            // else: continue to check other stuff inside this function
+            TransportDTO transport_DTO = this.objectMapper.readValue(DTO_OfTransport, TransportDTO.class);
+            boolean hasRole11 = this.employeeIntegrationServiceService.hasRole(transport_DTO.getTransportDriverID(), this.tran_f.getTruckLicenseAsStringRole(transport_DTO.getTransportTruckNum()));
+            res = this.tran_f.checkTransportValidity(DTO_OfTransport, hasRole11, isThereMatchAtAllBetweenLicenses);
+
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return "JsonProcessingException";
@@ -175,7 +243,7 @@ public class TransportService {
 
 
 
-    public String getAQueuedTransportAsDTOJson(int index){
+    public String getAQueuedTransportAsDTOJson(long loggedID, int index){
         String res = "";
         if (index < 1){ return "The index you've entered in invalid. (it's below the Starting index which is 1)"; }
         try {
@@ -209,7 +277,7 @@ public class TransportService {
 
 
 
-    public String addDestSite(int tran_ID, int itemsDoc_num, int destSiteArea, String destSiteAddress, String contName, long contNum) {
+    public String addDestSite(long loggedID, int tran_ID, int itemsDoc_num, int destSiteArea, String destSiteAddress, String contName, long contNum) {
         if (tran_ID < 0 || itemsDoc_num < 0 || destSiteArea < 0 || contNum < 0){
             return "The info numbers you have entered cannot be negative";
         }
@@ -236,7 +304,7 @@ public class TransportService {
     }
 
 
-    public String removeDestSite(int tran_ID, int itemsDoc_num){
+    public String removeDestSite(long loggedID, int tran_ID, int itemsDoc_num){
         if (tran_ID < 0 || itemsDoc_num < 0){
             return "The info you entered cannot be negative";
         }
@@ -258,7 +326,7 @@ public class TransportService {
 
 
 
-    public String setSiteArrivalIndexInTransport(int transportID, int siteArea, String siteAddress, String index){
+    public String setSiteArrivalIndexInTransport(long loggedID, int transportID, int siteArea, String siteAddress, String index){
         int intIndex = Integer.parseInt(index);
         if (intIndex < 0){    //  index should be 1, 2, ....
             return "The Site Index in the arrival order cannot be negative";
@@ -284,7 +352,7 @@ public class TransportService {
 
 
 
-    public String changeAnItemsDocNum(int oldItemsDocNum, int newItemsDocNum) {
+    public String changeAnItemsDocNum(long loggedID, int oldItemsDocNum, int newItemsDocNum) {
         if (oldItemsDocNum == newItemsDocNum) {
             return "Changing Process finished because before and after values are the same";
         }
@@ -302,7 +370,7 @@ public class TransportService {
     }
 
 
-    public boolean checkValidItemsDocID(int currItemsDocNum) {  // very basic check
+    public boolean checkValidItemsDocID(long loggedID, int currItemsDocNum) {  // very basic check
         if (currItemsDocNum < 0){ return false; }
         boolean res = false;
         try {
@@ -315,10 +383,11 @@ public class TransportService {
 
 
 
-    public String checkIfDriverDrivesThisItemsDoc(int id, int itemsDocId) {
+    public String checkIfDriverDrivesThisItemsDoc(long loggedID, long id, int itemsDocId) {
         if (id < 0 || itemsDocId < 0){ return "The IDs you enter cannot be negative"; }
         try {
-            tran_f.checkIfDriverDrivesThisItemsDoc(id, itemsDocId);
+            boolean isNotDriver = !this.employeeIntegrationServiceService.hasRole(id, "DriverA") && !this.employeeIntegrationServiceService.hasRole(id, "DriverB") && !this.employeeIntegrationServiceService.hasRole(id, "DriverC") && !this.employeeIntegrationServiceService.hasRole(id, "DriverD") && !this.employeeIntegrationServiceService.hasRole(id, "DriverE");
+            tran_f.checkIfDriverDrivesThisItemsDoc(id, itemsDocId, isNotDriver);
         } catch (FileNotFoundException e) {
             return "Items Document ID not found.";
         }catch (ClassNotFoundException e) {
@@ -340,7 +409,7 @@ public class TransportService {
 
 
 
-    public String addTransportProblem(int TransportID, String menu_Problem_option){
+    public String addTransportProblem(long loggedID, int TransportID, String menu_Problem_option){
         int intMenuProblemOption = Integer.parseInt(menu_Problem_option);
         if (intMenuProblemOption < 1 || intMenuProblemOption > 6){ return "The Problem option number you have entered is out of existing problem's numbers bounds"; }
         if (TransportID < 0){ return "The Transport ID you've entered is invalid (it's negative)"; }
@@ -357,7 +426,7 @@ public class TransportService {
         return "Success";  //  if All Good
     }
 
-    public String removeTransportProblem(int TransportID, String menu_Problem_option){
+    public String removeTransportProblem(long loggedID, int TransportID, String menu_Problem_option){
         int intMenuProblemOption = Integer.parseInt(menu_Problem_option);
         if (intMenuProblemOption < 1 || intMenuProblemOption > 6){ return "The Problem option number you have entered is out of existing problem's numbers bounds"; }
         if (TransportID < 0){ return "The Transport ID you've entered is invalid (it's negative)"; }
@@ -403,7 +472,7 @@ public class TransportService {
 
 
 
-    public String addItem(int itemsDocNum, String itemName, double itemWeight, int amount, boolean cond){
+    public String addItem(long loggedID, int itemsDocNum, String itemName, double itemWeight, int amount, boolean cond){
         if (itemName.isEmpty() || itemName.isBlank()){ return "Item's name cannot be empty"; }
         if (itemsDocNum < 0 || itemWeight < 0 || amount < 0){ return "Item's document number/weight/amount cannot be negative"; }
         try {
@@ -420,7 +489,7 @@ public class TransportService {
     }
 
 
-    public String removeItem(int itemsDocNum, String itemName, double itemWeight, int amount, boolean cond){
+    public String removeItem(long loggedID, int itemsDocNum, String itemName, double itemWeight, int amount, boolean cond){
         if (itemName.isEmpty() || itemName.isBlank()){ return "Item's name cannot be empty"; }
         if (itemsDocNum < 0 || itemWeight < 0 || amount < 0){ return "Item's document number/weight/amount cannot be negative"; }
         try {
@@ -437,7 +506,7 @@ public class TransportService {
     }
 
 
-    public String setItemCond(int itemsDocNum, String itemName, double itemWeight, int amount, boolean cond){
+    public String setItemCond(long loggedID, int itemsDocNum, String itemName, double itemWeight, int amount, boolean cond){
         if (itemName.isEmpty() || itemName.isBlank()){ return "Item's name cannot be empty"; }
         if (itemsDocNum < 0 || itemWeight < 0 || amount < 0){ return "Item's document number/weight/amount cannot be negative"; }
         try {
@@ -462,11 +531,12 @@ public class TransportService {
 
 
 
-    public String showTransportsOfDriver(int id) {
+    public String showTransportsOfDriver(long id) {
         if (id < 0){ return "The Driver(ID) you want to show is invalid (it's negative)"; }
         String res = "";
         try {
-            res = tran_f.showTransportsOfDriver(id);
+            boolean isNotDriver = !this.employeeIntegrationServiceService.hasRole(id, "DriverA") && !this.employeeIntegrationServiceService.hasRole(id, "DriverB") && !this.employeeIntegrationServiceService.hasRole(id, "DriverC") && !this.employeeIntegrationServiceService.hasRole(id, "DriverD") && !this.employeeIntegrationServiceService.hasRole(id, "DriverE");
+            res = tran_f.showTransportsOfDriver(id, isNotDriver);
         } catch (ArrayStoreException e) {
             return "The Driver(ID) to show Transports for was not found";
         }catch (Exception e){
@@ -476,7 +546,7 @@ public class TransportService {
     }
 
 
-    public String showAllQueuedTransports() {
+    public String showAllQueuedTransports(long loggedID) {
         String resOfAllQueuedTransports = "";
         try {
             resOfAllQueuedTransports = tran_f.showAllQueuedTransports();
@@ -487,7 +557,7 @@ public class TransportService {
     }
 
 
-    public String showAllTransports() {
+    public String showAllTransports(long loggedID) {
         String resOfAllTransports = "";
         try {
             resOfAllTransports = tran_f.showAllTransports();
