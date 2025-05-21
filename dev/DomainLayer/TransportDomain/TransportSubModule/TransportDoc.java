@@ -38,22 +38,26 @@ public class TransportDoc {
 
 
     public LocalDateTime getDeparture_dt() {return departure_dt;}
-    public void setDeparture_dt(LocalDateTime departure_dt) {
-        this.departure_dt = departure_dt;
-        Site beforeSite = null;
+    public void setDeparture_dt(LocalDateTime departure_dt) { this.departure_dt = departure_dt; }
+
+    public void calculateItemsDocsArrivalTimesInTransport(){
+        LocalDateTime dateTimeCounter = this.getDeparture_dt().plusMinutes(0);  // to get a copy
+        int beforeSiteArea = this.src_site.getAddress().getArea();
+
         for (ItemsDoc itemsDoc : dests_Docs) {
-            //TODO:      <<<----------------------------    <<---------------------
-            //TODO:      <<<----------------------------    <<---------------------   Go over the ItemsDocs and set each of the iteratively    <<----------------
-            //TODO:      <<<----------------------------    <<---------------------
-            //TODO:      <<<----------------------------    <<---------------------
-            //TODO:      <<<----------------------------    <<---------------------
+            if (beforeSiteArea == itemsDoc.getDest_site().getAddress().getArea()) {
+                itemsDoc.setEstimatedArrivalTime(dateTimeCounter.plusMinutes(30));
+                dateTimeCounter = dateTimeCounter.plusMinutes(30);
+            } else {
+                itemsDoc.setEstimatedArrivalTime(dateTimeCounter.plusHours(1));
+                dateTimeCounter = dateTimeCounter.plusHours(1);
+            }
+            beforeSiteArea = itemsDoc.getDest_site().getAddress().getArea();
         }
     }
 
 
-
     public Truck getTransportTruck() {return transportTruck;}
-
 
     public void setTransportTruck(Truck transportTruck) {
         if (this.transportTruck.getInTransportID() == this.tran_Doc_ID) {  // if another truck belongs to the transport already
@@ -87,51 +91,29 @@ public class TransportDoc {
             }
         }
         ItemsDoc addition = new ItemsDoc(itemsDoc_num, this.src_site, dest);
-
-        LocalDateTime additionsArrivalTime = null;
-        if (dests_Docs.isEmpty()) {
-            if (this.src_site.getAddress().getArea() == addition.getDest_site().getAddress().getArea()){
-                additionsArrivalTime = this.departure_dt.plusMinutes(30); // if the new one is in the same area as the current last one, it will take 30 minutes.
-            } else {
-                additionsArrivalTime = this.departure_dt.plusHours(1); // if the new one isn't in the same area as the current last one, it will take 1 hour.
-            }
-        } else if (dests_Docs.get(dests_Docs.size()-1).getDest_site().getAddress().getArea() == addition.getDest_site().getAddress().getArea()) {
-            additionsArrivalTime = dests_Docs.get(dests_Docs.size()-1).getEstimatedArrivalTime().plusMinutes(30); // if the new one is in the same area as the current last one, it will take 30 minutes.
-        } else {
-            additionsArrivalTime = dests_Docs.get(dests_Docs.size()-1).getEstimatedArrivalTime().plusHours(1); // if the new one isn't in the same area as the current last one, it will take 1 hour.
-        }
-        addition.setEstimatedArrivalTime(additionsArrivalTime);
-
         dests_Docs.add(addition);
+        this.calculateItemsDocsArrivalTimesInTransport();
         return addition;  // all good
     }
 
 
     public int removeDestSite(int itemsDoc_num){
         ItemsDoc temp = null;
-        boolean found = false;
         for (ItemsDoc itemsDoc : dests_Docs) {
             if(itemsDoc.getItemDoc_num() == itemsDoc_num){
                 temp = itemsDoc;
-                found = true;
-                continue;
-            }
-            if(found){
-                itemsDoc.setEstimatedArrivalTime(itemsDoc.getEstimatedArrivalTime().minusMinutes(30)); //  the arrival time of the following sites after the removed one is 30 minutes earlier.
             }
         }
         if (temp == null) {
             return -1;  // cannot remove a dest site that isn't in this transport
         }
         dests_Docs.remove(temp);
+        this.calculateItemsDocsArrivalTimesInTransport();
         return 0;  //  all good
     }
 
 
 
-
-    //TODO:   add Time element like I did in the previous functions    <<---------------------    <<------------------
-    //TODO:   add Time element like I did in the previous functions    <<---------------------    <<------------------
     public void setSiteArrivalIndexInTransport(int siteArea, String siteAddress, int index) {
         ItemsDoc tempForReInsertionAtGivenIndex = null;
         for (ItemsDoc itemsDoc : dests_Docs) {
@@ -142,9 +124,8 @@ public class TransportDoc {
         }
         this.dests_Docs.remove(tempForReInsertionAtGivenIndex);
         this.dests_Docs.add(index - 1, tempForReInsertionAtGivenIndex);
+        this.calculateItemsDocsArrivalTimesInTransport();
     }
-    //TODO:   add Time element like I did in the previous functions    <<---------------------    <<------------------
-    //TODO:   add Time element like I did in the previous functions    <<---------------------    <<------------------
 
 
 
@@ -230,7 +211,6 @@ public class TransportDoc {
         res += "}, Destination Sites & Items (In order of arrival):\n";
 
         for (ItemsDoc itemsdoc : dests_Docs) { res += itemsdoc.toString() + "\n"; }
-
         return res;
     }
 

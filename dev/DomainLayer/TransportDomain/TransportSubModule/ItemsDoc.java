@@ -88,8 +88,8 @@ public class ItemsDoc {
 
     @Override
     public String toString() {
-        String res = "-- Items Document #" + itemsDoc_num + " Details: from Source Site: " + src_site + " to Destination Site: " + dest_site + ". Items Included:\n";
-        res += "- Estimated Arrival Time: " + estimatedArrivalTime.toString() + ".\n";
+        String res = "-- Items Document #" + itemsDoc_num + " Details: from Source Site: " + src_site + " to Destination Site: " + dest_site + ".\nEstimated Arrival Time: " + this.estimatedArrivalTime.toString();
+        res += ", Items Included:\n";
         res += "- Good Items:\n";
         for (Item item : goodItems.keySet()) {
             res += item.toString() + ", Amount: " + goodItems.get(item) + ".\n";

@@ -96,6 +96,7 @@ public class TransportController {
         this.driverIdToInTransportID.put(driverId, newTransportBeingCreated.getTran_Doc_ID());   ///  NEW
         newTransportBeingCreated.setTruck_Depart_Weight(newTransportBeingCreated.calculateTransportItemsWeight());
         newTransportBeingCreated.setDeparture_dt(LocalDateTime.now());  //  the time is set already in the constructor of the Transport, but just to be accurate :)
+        newTransportBeingCreated.calculateItemsDocsArrivalTimesInTransport();
 
         for (ItemsDoc itemsDoc : newTransportBeingCreated.getDests_Docs()){
             this.itemsDocs.put(itemsDoc.getItemDoc_num(), itemsDoc);

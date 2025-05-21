@@ -15,23 +15,21 @@ import java.nio.file.FileAlreadyExistsException;
 import java.util.ArrayList;
 
 public class TransportService {
-    private EmployeeIntegrationService employeeIntegrationServiceService;
+    private EmployeeIntegrationService employeeIntegrationService;
     private TransportController tran_f;
     private ObjectMapper objectMapper;
 
     public TransportService(TransportController tf, EmployeeIntegrationService es) {
-        this.employeeIntegrationServiceService = es;
+        this.employeeIntegrationService = es;
         this.tran_f = tf;
         this.objectMapper = new ObjectMapper();
     }
 
-    //TODO:  We need to add a Permission checking function to the EmployeeIntegrationService.
-    //TODO:  We need to add a Permission checking function to the EmployeeIntegrationService.
-    //TODO:  We need to add a Permission checking function to the EmployeeIntegrationService.
-    //TODO:  We need to add a Permission checking function to the EmployeeIntegrationService.
-    //TODO:  We need to add a Permission checking function to the EmployeeIntegrationService.
 
     public String createTransport(long loggedID, String transportDTO, int queuedIndexIfWasQueued){
+        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "CREATE_TRANSPORT")){
+            return "You are not authorized to make this action !";
+        }
         try {
             this.tran_f.createTransport(transportDTO, queuedIndexIfWasQueued);
         } catch (JsonProcessingException e) {
@@ -44,6 +42,9 @@ public class TransportService {
     }
 
     public String deleteTransport(long loggedID, int transportID){
+        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "DELETE_TRANSPORT")){
+            return "You are not authorized to make this action !";
+        }
         if (transportID < 0){ return "Can't Enter a negative Transport ID number"; }
         try {
             this.tran_f.deleteTransport(transportID);
@@ -63,12 +64,15 @@ public class TransportService {
 
 
     public String setTransportStatus(long loggedID, int TranDocID, String menu_status_option){
+        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
+            return "You are not authorized to make this action !";
+        }
         int intMenuStatusOption = Integer.parseInt(menu_status_option);
         if (intMenuStatusOption < 1 || intMenuStatusOption > 6){
             return "Invalid menu status option - enter a number between 1 and 6";
         }
         try {
-            this.tran_f.setTransportStatus(TranDocID, intMenuStatusOption, this.employeeIntegrationServiceService.isActive(this.tran_f.getTransports().get(TranDocID).getTransportDriverId()));
+            this.tran_f.setTransportStatus(TranDocID, intMenuStatusOption, this.employeeIntegrationService.isActive(this.tran_f.getTransports().get(TranDocID).getTransportDriverId()));
         } catch (FileNotFoundException e) {
             return "The Transport ID you have entered doesn't exist.";
         } catch (FileAlreadyExistsException e) {
@@ -92,9 +96,12 @@ public class TransportService {
 
 
     public String setTransportTruck(long loggedID, int TranDocID, int truckNum){
+        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
+            return "You are not authorized to make this action !";
+        }
         if (TranDocID < 0 || truckNum < 0){ return "Transport Document number, Truck number values cannot be negative."; }
         try {
-            this.tran_f.setTransportTruck(TranDocID, truckNum, this.employeeIntegrationServiceService.hasRole(this.tran_f.getTransports().get(TranDocID).getTransportDriverId(), this.tran_f.getTruckLicenseAsStringRole(truckNum)));
+            this.tran_f.setTransportTruck(TranDocID, truckNum, this.employeeIntegrationService.hasRole(this.tran_f.getTransports().get(TranDocID).getTransportDriverId(), this.tran_f.getTruckLicenseAsStringRole(truckNum)));
         } catch (FileNotFoundException e) {
             return "The Transport ID you have entered doesn't exist.";
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -119,11 +126,14 @@ public class TransportService {
 
 
     public String setTransportDriver(long loggedID, int TranDocID, int DriverID){
+        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
+            return "You are not authorized to make this action !";
+        }
         if (TranDocID < 0 || DriverID < 0){ return "Transport Document number, Driver ID values cannot be negative."; }
         try {
-            boolean isNotDriver = !this.employeeIntegrationServiceService.hasRole(DriverID, "DriverA") && !this.employeeIntegrationServiceService.hasRole(DriverID, "DriverB") && !this.employeeIntegrationServiceService.hasRole(DriverID, "DriverC") && !this.employeeIntegrationServiceService.hasRole(DriverID, "DriverD") && !this.employeeIntegrationServiceService.hasRole(DriverID, "DriverE");
+            boolean isNotDriver = !this.employeeIntegrationService.hasRole(DriverID, "DriverA") && !this.employeeIntegrationService.hasRole(DriverID, "DriverB") && !this.employeeIntegrationService.hasRole(DriverID, "DriverC") && !this.employeeIntegrationService.hasRole(DriverID, "DriverD") && !this.employeeIntegrationService.hasRole(DriverID, "DriverE");
             String lice = this.tran_f.getTruckLicenseAsStringRole(this.tran_f.getTransports().get(TranDocID).getTransportTruck().getTruck_num());
-            this.tran_f.setTransportDriver(TranDocID, DriverID, isNotDriver, this.employeeIntegrationServiceService.isActive(DriverID), this.employeeIntegrationServiceService.hasRole(DriverID, lice));
+            this.tran_f.setTransportDriver(TranDocID, DriverID, isNotDriver, this.employeeIntegrationService.isActive(DriverID), this.employeeIntegrationService.hasRole(DriverID, lice));
         } catch (FileNotFoundException e) {
             return "The Transport ID you have entered doesn't exist.";
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -153,14 +163,14 @@ public class TransportService {
         if (truckNum < 0 || driverID < 0){ return "Truck number/Driver ID values cannot be negative."; }
         try {
             ArrayList<EmployeeDTO> employeesDTOs = new ArrayList<>();
-            for (String emp : this.employeeIntegrationServiceService.getAllDrivers()){
+            for (String emp : this.employeeIntegrationService.getAllDrivers()){
                 employeesDTOs.add(this.objectMapper.readValue(emp, EmployeeDTO.class));
             }
             String lice = this.tran_f.getTruckLicenseAsStringRole(truckNum);
             boolean isThereAvailableDriverMatchingThisTruck = false;
 
             for(EmployeeDTO driver : employeesDTOs){
-                if (this.employeeIntegrationServiceService.hasRole(driver.getIsraeliId(), lice) && !this.tran_f.getDriverIdToInTransportID().containsKey(driver.getIsraeliId())){  // if driver compatible and free
+                if (this.employeeIntegrationService.hasRole(driver.getIsraeliId(), lice) && !this.tran_f.getDriverIdToInTransportID().containsKey(driver.getIsraeliId())){  // if driver compatible and free
                     isThereAvailableDriverMatchingThisTruck = true;
                 }
             }
@@ -168,8 +178,8 @@ public class TransportService {
                 throw new ClassNotFoundException("There isn't a Driver that is available right now and compatible, license wise, with the Truck you chose");
             }
 
-            boolean isNotDriver = !this.employeeIntegrationServiceService.hasRole(driverID, "DriverA") && !this.employeeIntegrationServiceService.hasRole(driverID, "DriverB") && !this.employeeIntegrationServiceService.hasRole(driverID, "DriverC") && !this.employeeIntegrationServiceService.hasRole(driverID, "DriverD") && !this.employeeIntegrationServiceService.hasRole(driverID, "DriverE");
-            boolean hasRole22 = this.employeeIntegrationServiceService.hasRole(driverID, lice);
+            boolean isNotDriver = !this.employeeIntegrationService.hasRole(driverID, "DriverA") && !this.employeeIntegrationService.hasRole(driverID, "DriverB") && !this.employeeIntegrationService.hasRole(driverID, "DriverC") && !this.employeeIntegrationService.hasRole(driverID, "DriverD") && !this.employeeIntegrationService.hasRole(driverID, "DriverE");
+            boolean hasRole22 = this.employeeIntegrationService.hasRole(driverID, lice);
             this.tran_f.isTruckDriverPairingGood(truckNum, driverID, isNotDriver, hasRole22);
 
         } catch (FileNotFoundException e) {
@@ -202,14 +212,14 @@ public class TransportService {
         try {
             /// /////////////////////////////////    <<-------------------------------------   checking if there's a Driver-Truck Pairing At All Right Now, from the Free ones
             ArrayList<EmployeeDTO> employeesDTOs = new ArrayList<>();
-            for (String emp : this.employeeIntegrationServiceService.getAllDrivers()){
+            for (String emp : this.employeeIntegrationService.getAllDrivers()){
                 employeesDTOs.add(this.objectMapper.readValue(emp, EmployeeDTO.class));
             }
             ///  checking if there is a match at all, --> from those who are free right now
             boolean isThereMatchAtAllBetweenLicenses = false;
             for (EmployeeDTO employee : employeesDTOs){
                 for (int trucNum : this.tran_f.getTruckFacade().getTrucksWareHouse().keySet()){
-                    if (this.employeeIntegrationServiceService.hasRole(employee.getIsraeliId(), this.tran_f.getTruckLicenseAsStringRole(trucNum))){  //  if compatible
+                    if (this.employeeIntegrationService.hasRole(employee.getIsraeliId(), this.tran_f.getTruckLicenseAsStringRole(trucNum))){  //  if compatible
                         if ((!this.tran_f.isDriverActive(employee.getIsraeliId())) && (!this.tran_f.isTruckActive(trucNum))){   // searching only the free ones, like in the Requirements
                             isThereMatchAtAllBetweenLicenses = true;  // if found
                             break;   // because already found
@@ -220,7 +230,7 @@ public class TransportService {
             }
             // else: continue to check other stuff inside this function
             TransportDTO transport_DTO = this.objectMapper.readValue(DTO_OfTransport, TransportDTO.class);
-            boolean hasRole11 = this.employeeIntegrationServiceService.hasRole(transport_DTO.getTransportDriverID(), this.tran_f.getTruckLicenseAsStringRole(transport_DTO.getTransportTruckNum()));
+            boolean hasRole11 = this.employeeIntegrationService.hasRole(transport_DTO.getTransportDriverID(), this.tran_f.getTruckLicenseAsStringRole(transport_DTO.getTransportTruckNum()));
             res = this.tran_f.checkTransportValidity(DTO_OfTransport, hasRole11, isThereMatchAtAllBetweenLicenses);
 
         } catch (JsonProcessingException e) {
@@ -272,6 +282,9 @@ public class TransportService {
 
 
     public String addDestSite(long loggedID, int tran_ID, int itemsDoc_num, int destSiteArea, String destSiteAddress, String contName, long contNum) {
+        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
+            return "You are not authorized to make this action !";
+        }
         if (tran_ID < 0 || itemsDoc_num < 0 || destSiteArea < 0 || contNum < 0){
             return "The info numbers you have entered cannot be negative";
         }
@@ -299,6 +312,9 @@ public class TransportService {
 
 
     public String removeDestSite(long loggedID, int tran_ID, int itemsDoc_num){
+        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
+            return "You are not authorized to make this action !";
+        }
         if (tran_ID < 0 || itemsDoc_num < 0){
             return "The info you entered cannot be negative";
         }
@@ -321,6 +337,9 @@ public class TransportService {
 
 
     public String setSiteArrivalIndexInTransport(long loggedID, int transportID, int siteArea, String siteAddress, String index){
+        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
+            return "You are not authorized to make this action !";
+        }
         int intIndex = Integer.parseInt(index);
         if (intIndex < 0){    //  index should be 1, 2, ....
             return "The Site Index in the arrival order cannot be negative";
@@ -347,6 +366,9 @@ public class TransportService {
 
 
     public String changeAnItemsDocNum(long loggedID, int oldItemsDocNum, int newItemsDocNum) {
+        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
+            return "You are not authorized to make this action !";
+        }
         if (oldItemsDocNum == newItemsDocNum) {
             return "Changing Process finished because before and after values are the same";
         }
@@ -378,10 +400,12 @@ public class TransportService {
 
 
     public String checkIfDriverDrivesThisItemsDoc(long loggedID, int itemsDocId) {
-        //TODO:  check the loggedID's permissions
+        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
+            return "You are not authorized to make this action !";
+        }
         if (loggedID < 0 || itemsDocId < 0){ return "The IDs you enter cannot be negative"; }
         try {
-            boolean isNotDriver = !this.employeeIntegrationServiceService.hasRole(loggedID, "DriverA") && !this.employeeIntegrationServiceService.hasRole(loggedID, "DriverB") && !this.employeeIntegrationServiceService.hasRole(loggedID, "DriverC") && !this.employeeIntegrationServiceService.hasRole(loggedID, "DriverD") && !this.employeeIntegrationServiceService.hasRole(loggedID, "DriverE");
+            boolean isNotDriver = !this.employeeIntegrationService.hasRole(loggedID, "DriverA") && !this.employeeIntegrationService.hasRole(loggedID, "DriverB") && !this.employeeIntegrationService.hasRole(loggedID, "DriverC") && !this.employeeIntegrationService.hasRole(loggedID, "DriverD") && !this.employeeIntegrationService.hasRole(loggedID, "DriverE");
             tran_f.checkIfDriverDrivesThisItemsDoc(loggedID, itemsDocId, isNotDriver);
         } catch (FileNotFoundException e) {
             return "Items Document ID not found.";
@@ -405,6 +429,9 @@ public class TransportService {
 
 
     public String addTransportProblem(long loggedID, int TransportID, String menu_Problem_option){
+        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
+            return "You are not authorized to make this action !";
+        }
         int intMenuProblemOption = Integer.parseInt(menu_Problem_option);
         if (intMenuProblemOption < 1 || intMenuProblemOption > 6){ return "The Problem option number you have entered is out of existing problem's numbers bounds"; }
         if (TransportID < 0){ return "The Transport ID you've entered is invalid (it's negative)"; }
@@ -422,6 +449,9 @@ public class TransportService {
     }
 
     public String removeTransportProblem(long loggedID, int TransportID, String menu_Problem_option){
+        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
+            return "You are not authorized to make this action !";
+        }
         int intMenuProblemOption = Integer.parseInt(menu_Problem_option);
         if (intMenuProblemOption < 1 || intMenuProblemOption > 6){ return "The Problem option number you have entered is out of existing problem's numbers bounds"; }
         if (TransportID < 0){ return "The Transport ID you've entered is invalid (it's negative)"; }
@@ -468,6 +498,9 @@ public class TransportService {
 
 
     public String addItem(long loggedID, int itemsDocNum, String itemName, double itemWeight, int amount, boolean cond){
+        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "ADD_ITEM_TO_TRANSPORT")){
+            return "You are not authorized to make this action !";
+        }
         if (itemName.isEmpty() || itemName.isBlank()){ return "Item's name cannot be empty"; }
         if (itemsDocNum < 0 || itemWeight < 0 || amount < 0){ return "Item's document number/weight/amount cannot be negative"; }
         try {
@@ -485,6 +518,9 @@ public class TransportService {
 
 
     public String removeItem(long loggedID, int itemsDocNum, String itemName, double itemWeight, int amount, boolean cond){
+        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "DELETE_ITEM_FROM_TRANSPORT")){
+            return "You are not authorized to make this action !";
+        }
         if (itemName.isEmpty() || itemName.isBlank()){ return "Item's name cannot be empty"; }
         if (itemsDocNum < 0 || itemWeight < 0 || amount < 0){ return "Item's document number/weight/amount cannot be negative"; }
         try {
@@ -502,6 +538,9 @@ public class TransportService {
 
 
     public String setItemCond(long loggedID, int itemsDocNum, String itemName, double itemWeight, int amount, boolean cond){
+        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT_ITEM_CONDITION")){
+            return "You are not authorized to make this action !";
+        }
         if (itemName.isEmpty() || itemName.isBlank()){ return "Item's name cannot be empty"; }
         if (itemsDocNum < 0 || itemWeight < 0 || amount < 0){ return "Item's document number/weight/amount cannot be negative"; }
         try {
@@ -527,10 +566,13 @@ public class TransportService {
 
 
     public String showTransportsOfDriver(long id) {
+        if (!this.employeeIntegrationService.isEmployeeAuthorised(id, "VIEW_RELEVANT_TRANSPORTS")){
+            return "You are not authorized to make this action !";
+        }
         if (id < 0){ return "The Driver(ID) you want to show is invalid (it's negative)"; }
         String res = "";
         try {
-            boolean isNotDriver = !this.employeeIntegrationServiceService.hasRole(id, "DriverA") && !this.employeeIntegrationServiceService.hasRole(id, "DriverB") && !this.employeeIntegrationServiceService.hasRole(id, "DriverC") && !this.employeeIntegrationServiceService.hasRole(id, "DriverD") && !this.employeeIntegrationServiceService.hasRole(id, "DriverE");
+            boolean isNotDriver = !this.employeeIntegrationService.hasRole(id, "DriverA") && !this.employeeIntegrationService.hasRole(id, "DriverB") && !this.employeeIntegrationService.hasRole(id, "DriverC") && !this.employeeIntegrationService.hasRole(id, "DriverD") && !this.employeeIntegrationService.hasRole(id, "DriverE");
             res = tran_f.showTransportsOfDriver(id, isNotDriver);
         } catch (ArrayStoreException e) {
             return "The Driver(ID) to show Transports for was not found";
@@ -542,6 +584,9 @@ public class TransportService {
 
 
     public String showAllQueuedTransports(long loggedID) {
+        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "VIEW_TRANSPORT")){
+            return "You are not authorized to make this action !";
+        }
         String resOfAllQueuedTransports = "";
         try {
             resOfAllQueuedTransports = tran_f.showAllQueuedTransports();
@@ -553,6 +598,9 @@ public class TransportService {
 
 
     public String showAllTransports(long loggedID) {
+        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "VIEW_TRANSPORT")){
+            return "You are not authorized to make this action !";
+        }
         String resOfAllTransports = "";
         try {
             resOfAllTransports = tran_f.showAllTransports();
