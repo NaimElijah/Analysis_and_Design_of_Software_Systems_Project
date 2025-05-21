@@ -49,7 +49,7 @@ public class EmployeeIntegrationService {
     }
 
 
-    public boolean isDriverOnShiftAt(LocalDateTime dateTime, String address, int areaCode) {
+    public boolean isDriverOnShiftAt(long driverId, LocalDateTime dateTime, String address, int areaCode) {
         // TODO: Add Driver ID to the method signature, func needs to check if his on shift
         LocalDate date = dateTime.toLocalDate();
         LocalTime time = dateTime.toLocalTime();

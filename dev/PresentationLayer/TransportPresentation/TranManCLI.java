@@ -6,6 +6,7 @@ import ServiceLayer.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import ServiceLayer.EmployeeSubModule.EmployeeService;
 import ServiceLayer.TransportServices.SiteService;
 import ServiceLayer.TransportServices.TransportService;
 import ServiceLayer.TransportServices.TruckService;
