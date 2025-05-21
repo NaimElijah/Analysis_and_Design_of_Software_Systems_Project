@@ -1,6 +1,6 @@
-package ServiceLayer;
+package ServiceLayer.TransportServices;
 
-import DTOs.*;
+import DTOs.TransportModuleDTOs.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;

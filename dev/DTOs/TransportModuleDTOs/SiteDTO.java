@@ -1,4 +1,4 @@
-package DTOs;
+package DTOs.TransportModuleDTOs;
 
 public class SiteDTO {
     private int siteAreaNum;

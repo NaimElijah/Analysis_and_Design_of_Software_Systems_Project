@@ -1,10 +1,6 @@
-package DomainLayer.SiteSubModule;
+package DomainLayer.TransportDomain.SiteSubModule;
 
-import java.io.Serializable;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Spliterator;
-import java.util.function.Consumer;
 
 public class ShippingArea {
     private HashMap<String, Site> sites;

@@ -1,6 +1,5 @@
 package DomainLayerTests;
-import DomainLayer.SiteSubModule.SiteFacade;
-import org.junit.jupiter.api.AfterEach;
+import DomainLayer.TransportDomain.SiteSubModule.SiteFacade;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

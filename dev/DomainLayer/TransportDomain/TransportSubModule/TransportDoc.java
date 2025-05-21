@@ -1,7 +1,7 @@
-package DomainLayer.TranSubModule;
+package DomainLayer.TransportDomain.TransportSubModule;
 
-import DomainLayer.SiteSubModule.Site;
-import DomainLayer.TruSubModule.Truck;
+import DomainLayer.TransportDomain.SiteSubModule.Site;
+import DomainLayer.TransportDomain.TruckSubModule.Truck;
 import DomainLayer.enums.enumTranProblem;
 import DomainLayer.enums.enumTranStatus;
 
@@ -95,16 +95,17 @@ public class TransportDoc {
             } else {
                 additionsArrivalTime = this.departure_dt.plusHours(1); // if the new one isn't in the same area as the current last one, it will take 1 hour.
             }
-        } else if (dests_Docs.getLast().getDest_site().getAddress().getArea() == addition.getDest_site().getAddress().getArea()) {
-            additionsArrivalTime = dests_Docs.getLast().getEstimatedArrivalTime().plusMinutes(30); // if the new one is in the same area as the current last one, it will take 30 minutes.
+        } else if (dests_Docs.get(dests_Docs.size()-1).getDest_site().getAddress().getArea() == addition.getDest_site().getAddress().getArea()) {
+            additionsArrivalTime = dests_Docs.get(dests_Docs.size()-1).getEstimatedArrivalTime().plusMinutes(30); // if the new one is in the same area as the current last one, it will take 30 minutes.
         } else {
-            additionsArrivalTime = dests_Docs.getLast().getEstimatedArrivalTime().plusHours(1); // if the new one isn't in the same area as the current last one, it will take 1 hour.
+            additionsArrivalTime = dests_Docs.get(dests_Docs.size()-1).getEstimatedArrivalTime().plusHours(1); // if the new one isn't in the same area as the current last one, it will take 1 hour.
         }
         addition.setEstimatedArrivalTime(additionsArrivalTime);
 
         dests_Docs.add(addition);
         return addition;  // all good
     }
+
 
     public int removeDestSite(int itemsDoc_num){
         ItemsDoc temp = null;
@@ -128,8 +129,7 @@ public class TransportDoc {
 
 
 
-    //TODO:   add Time element like I did in the previous functions    <<---------------------    <<------------------
-    //TODO:   add Time element like I did in the previous functions    <<---------------------    <<------------------
+
     //TODO:   add Time element like I did in the previous functions    <<---------------------    <<------------------
     //TODO:   add Time element like I did in the previous functions    <<---------------------    <<------------------
     public void setSiteArrivalIndexInTransport(int siteArea, String siteAddress, int index) {
@@ -143,6 +143,8 @@ public class TransportDoc {
         this.dests_Docs.remove(tempForReInsertionAtGivenIndex);
         this.dests_Docs.add(index - 1, tempForReInsertionAtGivenIndex);
     }
+    //TODO:   add Time element like I did in the previous functions    <<---------------------    <<------------------
+    //TODO:   add Time element like I did in the previous functions    <<---------------------    <<------------------
 
 
 

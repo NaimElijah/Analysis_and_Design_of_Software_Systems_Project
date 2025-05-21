@@ -1,6 +1,6 @@
-package DomainLayer.TranSubModule;
+package DomainLayer.TransportDomain.TransportSubModule;
 
-import DomainLayer.SiteSubModule.Site;
+import DomainLayer.TransportDomain.SiteSubModule.Site;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;

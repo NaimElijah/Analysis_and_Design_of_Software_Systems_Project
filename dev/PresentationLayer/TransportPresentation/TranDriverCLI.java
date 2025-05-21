@@ -1,8 +1,7 @@
-package PresentationLayer;
+package PresentationLayer.TransportPresentation;
 
 //import ServiceLayer.TranEmployeeService;
-import ServiceLayer.EmployeeService;
-import ServiceLayer.TransportService;
+import ServiceLayer.TransportServices.TransportService;
 
 import java.util.Scanner;
 
@@ -18,7 +17,7 @@ public class TranDriverCLI {
     }
 
 
-    void driverMainMenu(long id){
+    void driverMainMenu(long loggedID){
         System.out.println("\n           --------    Driver Menu    -------");
         System.out.println("(1)  View All Transports Related to me (all Statuses)");
         System.out.println("(2)  Edit an Item's Condition in a Transport that I'm a Driver in");
@@ -29,11 +28,11 @@ public class TranDriverCLI {
         String choice = scanner.nextLine();
         if(choice.equals("1")){
             System.out.println("All Transports Related to me: ");
-            System.out.println(this.tran_s.showTransportsOfDriver(id));
+            System.out.println(this.tran_s.showTransportsOfDriver(loggedID));
             System.out.println();
 
         }else if(choice.equals("2")){
-            editItemsConditionInMyTransport(id);
+            editItemsConditionInMyTransport(loggedID);
 
         } else if (choice.equals("3")) {
             System.out.println("\nGoing Back to Main Program Authentication Screen.\n");
@@ -41,19 +40,19 @@ public class TranDriverCLI {
         } else {
             System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
         }
-        driverMainMenu(id);
+        driverMainMenu(loggedID);
     }
 
 
 
-    private void editItemsConditionInMyTransport(long id){
+    private void editItemsConditionInMyTransport(long loggedID){
         System.out.println("Ok, let's Edit an Item's Condition in a Transport that You're a Driver in:");
         System.out.println("Enter Items Document ID, that that Item is in:");
         int itemsDoc_id = this.scanner.nextInt();
         scanner.nextLine(); // consume the leftover newline
 
         // check if the itemsDoc_id is really in a Transport he is involved in
-        String resCheckIfHeIsInvolved = this.tran_s.checkIfDriverDrivesThisItemsDoc(id, itemsDoc_id);
+        String resCheckIfHeIsInvolved = this.tran_s.checkIfDriverDrivesThisItemsDoc(loggedID, itemsDoc_id);
         if (!resCheckIfHeIsInvolved.equals("Yes")){
             System.out.println("You are not involved in a Transport that handles the Items Document with that ID, therefore, you can't edit in that Items Document(ID).\n");
             System.out.println("Returning to Driver Menu...");
@@ -70,7 +69,7 @@ public class TranDriverCLI {
         System.out.println("Enter the New Item Condition you want to set: ( 'Good' / 'Bad'(or any other String) )");
         boolean new_item_condition = this.scanner.nextLine().equals("Good");
 
-        String res = this.tran_s.setItemCond(id, itemsDoc_id, item_name, item_weight, item_amount_to_change, new_item_condition);
+        String res = this.tran_s.setItemCond(loggedID, itemsDoc_id, item_name, item_weight, item_amount_to_change, new_item_condition);
         if(res.equals("Success")){
             System.out.println("Successfully Changed Item's Condition.\n");
         } else if(res.equals("Exception")){

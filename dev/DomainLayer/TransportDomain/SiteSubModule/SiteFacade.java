@@ -1,4 +1,4 @@
-package DomainLayer.SiteSubModule;
+package DomainLayer.TransportDomain.SiteSubModule;
 
 import javax.management.AttributeNotFoundException;
 import javax.management.openmbean.KeyAlreadyExistsException;

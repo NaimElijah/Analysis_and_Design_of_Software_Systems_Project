@@ -1,11 +1,11 @@
-package DomainLayer.TranSubModule;
+package DomainLayer.TransportDomain.TransportSubModule;
 
-import DTOs.*;
-import DomainLayer.SiteSubModule.Address;
-import DomainLayer.SiteSubModule.Site;
-import DomainLayer.SiteSubModule.SiteFacade;
-import DomainLayer.TruSubModule.Truck;
-import DomainLayer.TruSubModule.TruckFacade;
+import DTOs.TransportModuleDTOs.*;
+import DomainLayer.TransportDomain.SiteSubModule.Address;
+import DomainLayer.TransportDomain.SiteSubModule.Site;
+import DomainLayer.TransportDomain.SiteSubModule.SiteFacade;
+import DomainLayer.TransportDomain.TruckSubModule.Truck;
+import DomainLayer.TransportDomain.TruckSubModule.TruckFacade;
 import DomainLayer.enums.enumDriLicense;
 import DomainLayer.enums.enumTranProblem;
 import DomainLayer.enums.enumTranStatus;

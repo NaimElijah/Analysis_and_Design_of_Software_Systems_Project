@@ -1,4 +1,4 @@
-package DomainLayer.SiteSubModule;
+package DomainLayer.TransportDomain.SiteSubModule;
 
 public class Site {
     private int site_id;

@@ -1,15 +1,9 @@
-package ServiceLayer;
+package ServiceLayer.TransportServices;
 
 import DTOs.EmployeeDTO;
-import DTOs.ItemQuantityDTO;
-import DTOs.ItemsDocDTO;
-import DTOs.TransportDTO;
-import DomainLayer.EmployeeSubModule.Employee;
-import DomainLayer.SiteSubModule.Site;
-import DomainLayer.TranSubModule.TransportController;
-import DomainLayer.TranSubModule.TransportDoc;
-import DomainLayer.TruSubModule.Truck;
-import DomainLayer.enums.enumTranStatus;
+import DTOs.TransportModuleDTOs.TransportDTO;
+import DomainLayer.TransportDomain.TransportSubModule.TransportController;
+import ServiceLayer.EmployeeIntegrationService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -383,11 +377,12 @@ public class TransportService {
 
 
 
-    public String checkIfDriverDrivesThisItemsDoc(long loggedID, long id, int itemsDocId) {
-        if (id < 0 || itemsDocId < 0){ return "The IDs you enter cannot be negative"; }
+    public String checkIfDriverDrivesThisItemsDoc(long loggedID, int itemsDocId) {
+        //TODO:  check the loggedID's permissions
+        if (loggedID < 0 || itemsDocId < 0){ return "The IDs you enter cannot be negative"; }
         try {
-            boolean isNotDriver = !this.employeeIntegrationServiceService.hasRole(id, "DriverA") && !this.employeeIntegrationServiceService.hasRole(id, "DriverB") && !this.employeeIntegrationServiceService.hasRole(id, "DriverC") && !this.employeeIntegrationServiceService.hasRole(id, "DriverD") && !this.employeeIntegrationServiceService.hasRole(id, "DriverE");
-            tran_f.checkIfDriverDrivesThisItemsDoc(id, itemsDocId, isNotDriver);
+            boolean isNotDriver = !this.employeeIntegrationServiceService.hasRole(loggedID, "DriverA") && !this.employeeIntegrationServiceService.hasRole(loggedID, "DriverB") && !this.employeeIntegrationServiceService.hasRole(loggedID, "DriverC") && !this.employeeIntegrationServiceService.hasRole(loggedID, "DriverD") && !this.employeeIntegrationServiceService.hasRole(loggedID, "DriverE");
+            tran_f.checkIfDriverDrivesThisItemsDoc(loggedID, itemsDocId, isNotDriver);
         } catch (FileNotFoundException e) {
             return "Items Document ID not found.";
         }catch (ClassNotFoundException e) {

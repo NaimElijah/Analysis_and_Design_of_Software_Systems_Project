@@ -1,4 +1,4 @@
-package DomainLayer.TruSubModule;
+package DomainLayer.TransportDomain.TruckSubModule;
 
 import DomainLayer.enums.enumDriLicense;
 

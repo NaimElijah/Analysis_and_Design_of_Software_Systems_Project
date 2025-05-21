@@ -1,4 +1,4 @@
-package DTOs;
+package DTOs.TransportModuleDTOs;
 
 public class ItemQuantityDTO {
     private ItemDTO item;

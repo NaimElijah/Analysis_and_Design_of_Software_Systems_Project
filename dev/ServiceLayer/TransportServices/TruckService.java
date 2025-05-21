@@ -1,6 +1,7 @@
-package ServiceLayer;
+package ServiceLayer.TransportServices;
 
-import DomainLayer.TruSubModule.TruckFacade;
+import DomainLayer.TransportDomain.TruckSubModule.TruckFacade;
+import ServiceLayer.EmployeeIntegrationService;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
 

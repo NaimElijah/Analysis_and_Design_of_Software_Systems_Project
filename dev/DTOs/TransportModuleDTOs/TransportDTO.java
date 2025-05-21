@@ -1,4 +1,4 @@
-package DTOs;
+package DTOs.TransportModuleDTOs;
 
 import java.util.ArrayList;
 

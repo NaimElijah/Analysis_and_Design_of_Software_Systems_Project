@@ -1,9 +1,8 @@
 package DomainLayerTests;
 
-import DomainLayer.TruSubModule.Truck;
-import DomainLayer.TruSubModule.TruckFacade;
+import DomainLayer.TransportDomain.TruckSubModule.Truck;
+import DomainLayer.TransportDomain.TruckSubModule.TruckFacade;
 import DomainLayer.enums.enumDriLicense;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import javax.management.openmbean.KeyAlreadyExistsException;

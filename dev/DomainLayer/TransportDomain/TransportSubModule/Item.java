@@ -1,19 +1,19 @@
-package DTOs;
+package DomainLayer.TransportDomain.TransportSubModule;
 
 import java.util.Objects;
 
-public class ItemDTO {
+public class Item {
     private String name;
-    private double weight;   // In whole numbers, in grams.
+    private double weight;   // In Kilos
     private Boolean condition;
 
-    public ItemDTO() {}
-    public ItemDTO(String name, double weight, Boolean condition){
+    public Item(String name, double weight, Boolean condition){
         this.name = name;
         this.weight = weight;
         this.condition = condition;
     }
-    public ItemDTO(String name, double weight){
+
+    public Item(String name, double weight){
         this.name = name;
         this.weight = weight;
         this.condition = true;
@@ -30,7 +30,7 @@ public class ItemDTO {
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
-        ItemDTO item = (ItemDTO) obj;
+        Item item = (Item) obj;
         return Double.compare(item.weight, weight) == 0 &&
                 condition == item.condition &&
                 name.equals(item.name);
@@ -41,9 +41,11 @@ public class ItemDTO {
         return Objects.hash(name, weight, condition);
     }
 
+
     @Override
     public String toString() {
-        String res = "Item Name: " + name + ", Item Weight: " + weight + ", Item Condition: " + condition;
+        String res = "";
+        res += "Item Name: " + name + ", Item Weight: " + weight + ", Item Condition: " + (condition ? "Good" : "Bad");
         return res;
     }
 }

@@ -1,10 +1,14 @@
-package PresentationLayer;
+package PresentationLayer.TransportPresentation;
 
-import DTOs.*;
+import DTOs.TransportModuleDTOs.*;
 import ServiceLayer.*;
 
 import java.util.ArrayList;
 import java.util.Scanner;
+
+import ServiceLayer.TransportServices.SiteService;
+import ServiceLayer.TransportServices.TransportService;
+import ServiceLayer.TransportServices.TruckService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class TranManCLI {

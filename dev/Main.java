@@ -4,8 +4,6 @@ import DomainLayer.EmployeeSubModule.AuthorisationController;
 import DomainLayer.EmployeeSubModule.AvailabilityController;
 import DomainLayer.EmployeeSubModule.EmployeeController;
 import DomainLayer.EmployeeSubModule.ShiftController;
-import DomainLayer.SiteSubModule.SiteFacade;
-import DomainLayer.TruSubModule.TruckFacade;
 import PresentationLayer.MainCLI;
 import java.io.IOException;
 import java.util.Scanner;
