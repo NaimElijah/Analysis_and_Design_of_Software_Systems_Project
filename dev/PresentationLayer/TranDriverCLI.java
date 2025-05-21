@@ -70,7 +70,7 @@ public class TranDriverCLI {
         System.out.println("Enter the New Item Condition you want to set: ( 'Good' / 'Bad'(or any other String) )");
         boolean new_item_condition = this.scanner.nextLine().equals("Good");
 
-        String res = this.tran_s.setItemCond(itemsDoc_id, item_name, item_weight, item_amount_to_change, new_item_condition);
+        String res = this.tran_s.setItemCond(id, itemsDoc_id, item_name, item_weight, item_amount_to_change, new_item_condition);
         if(res.equals("Success")){
             System.out.println("Successfully Changed Item's Condition.\n");
         } else if(res.equals("Exception")){

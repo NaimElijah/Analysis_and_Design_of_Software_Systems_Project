@@ -7,14 +7,25 @@ import javax.management.openmbean.KeyAlreadyExistsException;
 import javax.naming.ContextNotEmptyException;
 
 public class SiteService {
+    private EmployeeIntegrationService employeeIntegrationService;
     private SiteFacade sf;
 
-    public SiteService(SiteFacade ssff) {
+    public SiteService(SiteFacade ssff, EmployeeIntegrationService eis) {
         this.sf = ssff;
+        this.employeeIntegrationService = eis;
     }
 
 
-    public String addShippingArea(int areaNum, String areaName){
+    public String addShippingArea(long loggedID, int areaNum, String areaName){
+        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't add Shipping Areas"; }
+        if (!this.employeeIntegrationService.hasRole(loggedID, "Admin") && !this.employeeIntegrationService.hasRole(loggedID, "Transport manager")){
+            return "You don't have the required role to add Shipping Areas, you can only add Shipping Areas if you are an Admin or a Transport Manager";
+        }
+        //TODO:  We need to add a Permission checking function to the EmployeeIntegrationService.
+        //TODO:  We need to add a Permission checking function to the EmployeeIntegrationService.
+        //TODO:  We need to add a Permission checking function to the EmployeeIntegrationService.
+        //TODO:  We need to add a Permission checking function to the EmployeeIntegrationService.
+        //TODO:  We need to add a Permission checking function to the EmployeeIntegrationService.
         try {
             if(areaName.isEmpty() || areaName.isBlank()){
                 return "It seems some values you've entered are Empty or Blank, Please Insert proper values";
@@ -29,7 +40,7 @@ public class SiteService {
         return "Success";  //  if All Good
     }
 
-    public String deleteShippingArea(int areaNum){
+    public String deleteShippingArea(long loggedID, int areaNum){
         try {
             sf.deleteShippingArea(areaNum);
         } catch (AttributeNotFoundException e){
@@ -45,7 +56,7 @@ public class SiteService {
 
 
 
-    public String setShippingAreaNum(int OldareaNum, int NewAreaNum){
+    public String setShippingAreaNum(long loggedID, int OldareaNum, int NewAreaNum){
         try {
             if(OldareaNum == NewAreaNum){
                 return "The Edition process Finished because you set the same Area Number value as the value that is already there";
@@ -63,7 +74,7 @@ public class SiteService {
     }
 
 
-    public String setShippingAreaName(int areaNum, String NewareaName){
+    public String setShippingAreaName(long loggedID, int areaNum, String NewareaName){
         try {
             if(NewareaName.isEmpty() || NewareaName.isBlank()){
                 return "It seems some values you've entered are Empty or Blank, Please Insert proper values";
@@ -93,7 +104,7 @@ public class SiteService {
 
 
 
-    public String addSite(int areaNum, String address, String cont_name, long Cont_Num){
+    public String addSite(long loggedID, int areaNum, String address, String cont_name, long Cont_Num){
         try {
             if (address.isEmpty() || cont_name.isEmpty() || address.isBlank() || cont_name.isBlank() || Cont_Num == 0) {
                 return "It seems some values you've entered are Empty or Blank, Please Insert proper values";
@@ -110,7 +121,7 @@ public class SiteService {
         return "Success";
     }
 
-    public String deleteSite(int areaNum, String address){
+    public String deleteSite(long loggedID, int areaNum, String address){
         try {
             if (address.isEmpty() || address.isBlank()) {
                 return "It seems some values you've entered are Empty or Blank, Please Insert proper values";
@@ -126,12 +137,12 @@ public class SiteService {
     }
 
 
-    public boolean doesSiteExist(Integer currSiteAreaNum, String currDestinationAddress) {
+    public boolean doesSiteExist(long loggedID, Integer currSiteAreaNum, String currDestinationAddress) {
         return this.sf.doesSiteExist(currSiteAreaNum, currDestinationAddress);
     }
 
 
-    public String setSiteAddress(int areaNum, String Oldaddress, String NewAddress){
+    public String setSiteAddress(long loggedID, int areaNum, String Oldaddress, String NewAddress){
         try {
             if (NewAddress.isEmpty() || Oldaddress.isEmpty() || NewAddress.isBlank() || Oldaddress.isBlank()) {
                 return "It seems some values you've entered are Empty or Blank, Please Insert proper values";
@@ -150,7 +161,7 @@ public class SiteService {
         return "Success";
     }
 
-    public String setSiteAreaNum(int OldareaNum, int NewAreaNum, String address){
+    public String setSiteAreaNum(long loggedID, int OldareaNum, int NewAreaNum, String address){
         try {
             if (address.isEmpty() || address.isBlank()) {
                 return "It seems some values you've entered are Empty or Blank, Please Insert proper values";
@@ -169,7 +180,7 @@ public class SiteService {
         return "Success";
     }
 
-    public String setSiteContName(int areaNum, String address, String contName){
+    public String setSiteContName(long loggedID, int areaNum, String address, String contName){
         try {
             if (address.isEmpty() || contName.isEmpty() || address.isBlank() || contName.isBlank()) {
                 return "It seems some values you've entered are Empty or Blank, Please Insert proper values";
@@ -184,7 +195,7 @@ public class SiteService {
         return "Success";
     }
 
-    public String setSiteContNum(int areaNum, String address, long contNum){
+    public String setSiteContNum(long loggedID, int areaNum, String address, long contNum){
         try {
             if (address.isEmpty() || address.isBlank()) {
                 return "It seems some values you've entered are Empty or Blank, Please Insert proper values";
@@ -213,7 +224,7 @@ public class SiteService {
 
 
 
-    public String showAllSites(){
+    public String showAllSites(long loggedID){
         String res = "";
         try {
             res = sf.showAllSites();
@@ -223,7 +234,7 @@ public class SiteService {
         return res;
     }
 
-    public String showAllShippingAreas(){
+    public String showAllShippingAreas(long loggedID){
         String res = "";
         try {
             res = sf.showAllShippingAreas();

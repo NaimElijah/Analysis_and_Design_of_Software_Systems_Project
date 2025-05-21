@@ -12,10 +12,8 @@ public class TransportDoc {
     private enumTranStatus status;
     private int tran_Doc_ID;
     private LocalDateTime departure_dt;
-    //TODO:  Add another Time element, here or for each ItemsDoc.    <<<-----------------------------------
     private Truck transportTruck;
-//    private Driver transportDriver;
-    private long transportDriverId;   //TODO: change to long transportDriverId
+    private long transportDriverId;
     private double truck_Depart_Weight;
     private Site src_site;
     private ArrayList<ItemsDoc> dests_Docs;  ///  <<<--------------  In Order of visit   <<<--------------------
@@ -37,8 +35,23 @@ public class TransportDoc {
     public void setStatus(enumTranStatus status) {this.status = status;}
     public int getTran_Doc_ID() {return tran_Doc_ID;}
     public void setTran_Doc_ID(int tran_Doc_ID) {this.tran_Doc_ID = tran_Doc_ID;}
+
+
     public LocalDateTime getDeparture_dt() {return departure_dt;}
-    public void setDeparture_dt(LocalDateTime departure_dt) {this.departure_dt = departure_dt;}
+    public void setDeparture_dt(LocalDateTime departure_dt) {
+        this.departure_dt = departure_dt;
+        Site beforeSite = null;
+        for (ItemsDoc itemsDoc : dests_Docs) {
+            //TODO:      <<<----------------------------    <<---------------------
+            //TODO:      <<<----------------------------    <<---------------------   Go over the ItemsDocs and set each of the iteratively    <<----------------
+            //TODO:      <<<----------------------------    <<---------------------
+            //TODO:      <<<----------------------------    <<---------------------
+            //TODO:      <<<----------------------------    <<---------------------
+        }
+    }
+
+
+
     public Truck getTransportTruck() {return transportTruck;}
 
 
@@ -74,15 +87,36 @@ public class TransportDoc {
             }
         }
         ItemsDoc addition = new ItemsDoc(itemsDoc_num, this.src_site, dest);
+
+        LocalDateTime additionsArrivalTime = null;
+        if (dests_Docs.isEmpty()) {
+            if (this.src_site.getAddress().getArea() == addition.getDest_site().getAddress().getArea()){
+                additionsArrivalTime = this.departure_dt.plusMinutes(30); // if the new one is in the same area as the current last one, it will take 30 minutes.
+            } else {
+                additionsArrivalTime = this.departure_dt.plusHours(1); // if the new one isn't in the same area as the current last one, it will take 1 hour.
+            }
+        } else if (dests_Docs.getLast().getDest_site().getAddress().getArea() == addition.getDest_site().getAddress().getArea()) {
+            additionsArrivalTime = dests_Docs.getLast().getEstimatedArrivalTime().plusMinutes(30); // if the new one is in the same area as the current last one, it will take 30 minutes.
+        } else {
+            additionsArrivalTime = dests_Docs.getLast().getEstimatedArrivalTime().plusHours(1); // if the new one isn't in the same area as the current last one, it will take 1 hour.
+        }
+        addition.setEstimatedArrivalTime(additionsArrivalTime);
+
         dests_Docs.add(addition);
         return addition;  // all good
     }
 
     public int removeDestSite(int itemsDoc_num){
         ItemsDoc temp = null;
+        boolean found = false;
         for (ItemsDoc itemsDoc : dests_Docs) {
             if(itemsDoc.getItemDoc_num() == itemsDoc_num){
                 temp = itemsDoc;
+                found = true;
+                continue;
+            }
+            if(found){
+                itemsDoc.setEstimatedArrivalTime(itemsDoc.getEstimatedArrivalTime().minusMinutes(30)); //  the arrival time of the following sites after the removed one is 30 minutes earlier.
             }
         }
         if (temp == null) {
@@ -94,7 +128,10 @@ public class TransportDoc {
 
 
 
-
+    //TODO:   add Time element like I did in the previous functions    <<---------------------    <<------------------
+    //TODO:   add Time element like I did in the previous functions    <<---------------------    <<------------------
+    //TODO:   add Time element like I did in the previous functions    <<---------------------    <<------------------
+    //TODO:   add Time element like I did in the previous functions    <<---------------------    <<------------------
     public void setSiteArrivalIndexInTransport(int siteArea, String siteAddress, int index) {
         ItemsDoc tempForReInsertionAtGivenIndex = null;
         for (ItemsDoc itemsDoc : dests_Docs) {

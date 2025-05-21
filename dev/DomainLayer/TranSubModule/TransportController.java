@@ -155,9 +155,7 @@ public class TransportController {
 
 
     public void setTransportStatus(int TranDocID, int menu_status_option, boolean isActiveHelper) throws FileNotFoundException, FileAlreadyExistsException, CommunicationException, CloneNotSupportedException, IndexOutOfBoundsException {
-        if(!transports.containsKey(TranDocID)){
-            throw new FileNotFoundException("The Transport ID you have entered doesn't exist in the Transports.");
-        }
+        if(!transports.containsKey(TranDocID)){ throw new FileNotFoundException("The Transport ID you have entered doesn't exist in the Transports."); }
         TransportDoc transport = transports.get(TranDocID);
 
         enumTranStatus currStatus = transports.get(TranDocID).getStatus();
@@ -212,6 +210,7 @@ public class TransportController {
             }
         }
 
+        //TODO:   also check again if the Driver is an eligible site for him to drive that Transport's Truck.
 
         /// scenario 2 & 3
         if (newStatus == enumTranStatus.Canceled || newStatus == enumTranStatus.Completed || newStatus == enumTranStatus.Queued) {  // if newStatus is Not Active
@@ -279,7 +278,7 @@ public class TransportController {
 
 
 
-
+    //  TODO:   check if that Driver is in an eligible site for him to drive the Truck of this Transport.
     public void setTransportDriver(int TranDocID, long DriverID, boolean isNotDriver, boolean isActive, boolean hasRole) throws FileNotFoundException, ArrayIndexOutOfBoundsException, FileAlreadyExistsException, CloneNotSupportedException, CommunicationException, ClassNotFoundException {
         if(!transports.containsKey(TranDocID)){
             throw new FileNotFoundException("The Transport ID you have entered doesn't exist.");
@@ -607,11 +606,12 @@ public class TransportController {
         }
 
         ItemsDoc addition = this.transports.get(tran_ID).addDestSite(itemsDoc_num, new Site(new Address(destSiteArea, destSiteAddress), contName, contNum));
+        // recalculates arrival times within ItemsDocs of this Transport in the TransportDoc.
         if (addition == null){
             throw new CommunicationException("Destination Site already in this Transport, you can add items to that site instead.");
         }
 
-        //TODO:  recalculate arrival times within ItemsDocs of this Transport
+        //TODO:  Maybe see if new times for the following sites are okay now.
         this.itemsDocs.put(itemsDoc_num, addition);
     }
 
@@ -623,8 +623,8 @@ public class TransportController {
             throw new CommunicationException("The Site's Items Document Number you are trying to remove doesn't exist in the system.");
         }
         if (this.transports.get(tran_ID).removeDestSite(itemsDoc_num) == -1){ throw new ClassNotFoundException("The Site's Items Document Number is not in that Transport"); }
-
-        //TODO:  recalculate arrival times within ItemsDocs of this Transport
+        // recalculates arrival times within ItemsDocs of this Transport in the TransportDoc.
+        //TODO:  Maybe see if new times for the following sites are okay now.
         this.itemsDocs.remove(itemsDoc_num);
     }
 
@@ -649,9 +649,9 @@ public class TransportController {
             throw new AbstractMethodError("The Index entered is bigger than the amount of sites in the Transport, so can't put that site in that bigger index");
         }
 
-        //TODO:  recalculate arrival times within ItemsDocs of this Transport
+        //TODO:  Maybe see if new times for the following sites are okay now.
 
-        this.transports.get(transportID).setSiteArrivalIndexInTransport(siteArea, siteAddress, index);
+        this.transports.get(transportID).setSiteArrivalIndexInTransport(siteArea, siteAddress, index); // recalculates arrival times within ItemsDocs of this Transport in the TransportDoc.
     }
 
 

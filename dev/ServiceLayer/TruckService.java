@@ -5,13 +5,21 @@ import DomainLayer.TruSubModule.TruckFacade;
 import javax.management.openmbean.KeyAlreadyExistsException;
 
 public class TruckService {
+    private EmployeeIntegrationService employeeIntegrationServiceService;
     private TruckFacade tru_f;
 
-    public TruckService(TruckFacade ttff) {
+    public TruckService(TruckFacade ttff, EmployeeIntegrationService eis) {
         this.tru_f = ttff;
+        this.employeeIntegrationServiceService = eis;
     }
 
-    public String addTruck(int num, String model, double net_wei, double max_carry, String license){
+    //TODO:  We need to add a Permission checking function to the EmployeeIntegrationService.
+    //TODO:  We need to add a Permission checking function to the EmployeeIntegrationService.
+    //TODO:  We need to add a Permission checking function to the EmployeeIntegrationService.
+    //TODO:  We need to add a Permission checking function to the EmployeeIntegrationService.
+    //TODO:  We need to add a Permission checking function to the EmployeeIntegrationService.
+
+    public String addTruck(long loggedID, int num, String model, double net_wei, double max_carry, String license){
         if (num < 0 || net_wei < 0 || max_carry < 0){ return "The Truck's Number/Net.Weight/MaxCarryWeight you enter cannot be negative"; }
         if (model.isEmpty() || model.isBlank() || license.isEmpty() || license.isBlank()){ return "The Truck's Model/license you enter cannot be empty"; }
         if (!(license.equals("A") || license.equals("B") || license.equals("C") || license.equals("D") || license.equals("E"))){
@@ -30,7 +38,7 @@ public class TruckService {
 
 
 
-    public String removeTruck(int num){
+    public String removeTruck(long loggedID, int num){
         if (num < 0){ return "The Truck Number you enter cannot be negative"; }
         try {
             this.tru_f.removeTruck(num);
@@ -48,7 +56,7 @@ public class TruckService {
 
 
 
-    public String showTrucks(){
+    public String showTrucks(long loggedID){
         String res = "";
         try {
             res = tru_f.showAllTrucks();
