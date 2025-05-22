@@ -310,6 +310,17 @@ public class EmployeeService {
             throw new ServiceException("Error retrieving role details: " + e.getMessage(), e);
         }
     }
+    public RoleDTO getRoleDTO(String roleName) {
+        try {
+            return authorisationController.getRoleDTO(roleName);
+        } catch (ValidationException e) {
+            throw e; // Rethrow validation exceptions
+        } catch (InvalidInputException e) {
+            throw new ValidationException(e.getMessage(), e);
+        } catch (Exception e) {
+            throw new ServiceException("Error retrieving role details: " + e.getMessage(), e);
+        }
+    }
 
     // ========================
     // Employee related methods

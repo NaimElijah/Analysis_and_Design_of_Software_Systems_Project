@@ -1,5 +1,6 @@
 package DomainLayer.EmployeeSubModule;
 
+import DTOs.RoleDTO;
 import DomainLayer.EmployeeSubModule.Repository.AuthorisationRepository;
 import DomainLayer.exception.InvalidInputException;
 import DomainLayer.exception.UnauthorizedPermissionException;
@@ -313,5 +314,15 @@ public class AuthorisationController {
             roleDetails.put(roleName, new HashSet<>(permissions));
         }
         return roleDetails;
+    }
+    public RoleDTO getRoleDTO(String roleName) {
+        if (roleName == null || roleName.trim().isEmpty()) {
+            throw new InvalidInputException("Role name cannot be null or empty");
+        }
+        if (!authorisationRepository.roleExists(roleName)) {
+            throw new InvalidInputException("Role does not exist: " + roleName);
+        }
+        Set<String> permissions = authorisationRepository.getPermissionsForRole(roleName);
+        return new RoleDTO(roleName, permissions);
     }
 }

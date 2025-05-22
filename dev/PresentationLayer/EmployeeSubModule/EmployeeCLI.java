@@ -141,7 +141,7 @@ public class EmployeeCLI {
             menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Remove Permission from Role");
         }
 
-        menuOptions.add(CliUtil.YELLOW + optionNumber + CliUtil.RESET + ". Back To Main Menu");
+        menuOptions.add(CliUtil.YELLOW + "0" + CliUtil.RESET + ". Back To Main Menu");
 
         // Print the menu options
         for (String option : menuOptions) {
@@ -167,8 +167,14 @@ public class EmployeeCLI {
             int choiceNum = Integer.parseInt(choice);
             int currentOption = 1;
 
-            if (choiceNum < 1 || choiceNum > max) {
-                printError("Invalid choice. Please enter a number between 1 and " + max + ".");
+            // Handle the exit option (0)
+            if (choiceNum == 0) {
+                CliUtil.printReturnMessage("main menu");
+                return false;
+            }
+
+            if (choiceNum < 1 || choiceNum > max - 1) {
+                printError("Invalid choice. Please enter a number between 0 and " + (max - 1) + ".");
                 return true;
             }
 
@@ -213,9 +219,10 @@ public class EmployeeCLI {
             }
 
             if (choiceNum == currentOption++) {
-                CliUtil.printBold("Enter Role Name:");
-                String roleName = scanner.nextLine();
-                printRoleDetails(roleName);
+//                CliUtil.printBold("Enter Role Name:");
+//                String roleName = scanner.nextLine();
+//                printRoleDetails(roleName);
+                showRoleDetails();
                 return true;
             }
 
@@ -271,17 +278,35 @@ public class EmployeeCLI {
                 }
             }
 
-            if (choiceNum == currentOption++) {
-                CliUtil.printReturnMessage("main menu");
-                return false;
-            }
-
             printError("Invalid choice. Please try again.");
             return true;
         } catch (NumberFormatException e) {
             printError("Please enter a valid input.");
             return true;
         }
+    }
+
+    private void showRoleDetails() {
+        printSectionHeader("Role Details - Select role to view");
+        // Show all roles
+        CliUtil.printInfo("Current roles:");
+        String[] roles = employeeService.getAllRoles();
+        List<String> roleList = new ArrayList<>();
+        List<RoleDTO> roleDTOList = new ArrayList<>();
+        for (String role : roles) {
+            RoleDTO roleDTO = deserializeRole(role);
+            roleDTOList.add(roleDTO);
+            roleList.add(roleDTO.getName());
+        }
+        CliUtil.printNumberedList(roleList, 1);
+        CliUtil.printBold("Enter Role Number: ");
+        int roleNumber = Integer.parseInt(scanner.nextLine());
+        if (roleNumber < 1 || roleNumber > roleList.size()) {
+            printError("Invalid choice.");
+        }
+        RoleDTO selectedRole = roleDTOList.get(roleNumber - 1);
+        printSuccess("Role Details for " + CliUtil.YELLOW + selectedRole.getName() + CliUtil.RESET + ":");
+        printRoleDetails(selectedRole.getName());
     }
 
     //==========================================================================================
@@ -433,246 +458,474 @@ public class EmployeeCLI {
     }
 
     private void createEmployee() {
-        printSectionHeader("Create Employee");
+        boolean retry = true;
 
-        try {
-            CliUtil.printBold("Israeli ID: ");
-            long israeliId = Long.parseLong(scanner.nextLine());
+        while (retry) {
+            printSectionHeader("Create Employee");
 
-            CliUtil.printBold("First Name: ");
-            String firstName = scanner.nextLine();
+            try {
+                CliUtil.printBold("Israeli ID: ");
+                long israeliId = Long.parseLong(scanner.nextLine());
 
-            CliUtil.printBold("Last Name: ");
-            String lastName = scanner.nextLine();
+                CliUtil.printBold("First Name: ");
+                String firstName = scanner.nextLine();
 
-            CliUtil.printBold("Salary: ");
-            long salary = Long.parseLong(scanner.nextLine());
+                CliUtil.printBold("Last Name: ");
+                String lastName = scanner.nextLine();
 
-            CliUtil.printBold("Start Date (dd-MM-yyyy): ");
-            LocalDate startDate = LocalDate.parse(scanner.nextLine(), dateFormatter);
+                CliUtil.printBold("Salary: ");
+                long salary = Long.parseLong(scanner.nextLine());
 
-            CliUtil.printBold("Branch ID: ");
-            long branch = Long.parseLong(scanner.nextLine());
+                CliUtil.printBold("Start Date (dd-MM-yyyy): ");
+                LocalDate startDate = LocalDate.parse(scanner.nextLine(), dateFormatter);
+
+                CliUtil.printBold("Branch ID: ");
+                long branch = Long.parseLong(scanner.nextLine());
 
 
-            Map<String, Object> termsOfEmployment = new HashMap<>();
-            CliUtil.printEmptyLine();
-            CliUtil.printSectionWithIcon("TERMS OF EMPLOYMENT", "📋");
-            CliUtil.printInfo("Enter key-value pairs. Type 'done' when finished.");
-            CliUtil.printEmptyLine();
+                Map<String, Object> termsOfEmployment = new HashMap<>();
+                CliUtil.printEmptyLine();
+                CliUtil.printSectionWithIcon("TERMS OF EMPLOYMENT", "📋");
+                CliUtil.printInfo("Enter key-value pairs. Type 'done' when finished.");
+                CliUtil.printEmptyLine();
 
-            while (true) {
-                CliUtil.printBold("Key (or 'done'): ");
-                String key = scanner.nextLine();
-                if (key.equalsIgnoreCase("done")) break;
+                while (true) {
+                    CliUtil.printBold("Key (or 'done' or '0' to exit): ");
+                    String key = scanner.nextLine();
+                    if (key.equalsIgnoreCase("done") || key.equals("0")) break;
 
-                CliUtil.printBold("Value: ");
-                String value = scanner.nextLine();
-                termsOfEmployment.put(key, value);
-                CliUtil.printSuccessWithCheckmark("Added: " + key + " = " + value);
+                    CliUtil.printBold("Value: ");
+                    String value = scanner.nextLine();
+                    termsOfEmployment.put(key, value);
+                    CliUtil.printSuccessWithCheckmark("Added: " + key + " = " + value);
+                }
+                String result = employeeService.createEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, startDate, branch);
+
+                if (result.contains("successfully")) {
+                    printSuccess(result);
+                    retry = false; // Success, exit the retry loop
+                } else {
+                    int choice = CliUtil.handleError(result, scanner);
+                    if (choice == 0) { // Cancel operation
+                        CliUtil.printOperationCancelled();
+                        retry = false;
+                    } else if (choice == 2) { // Return to previous menu
+                        retry = false;
+                    }
+                    // If choice == 1, retry is still true, so we'll loop again
+                }
+            } catch (NumberFormatException e) {
+                int choice = CliUtil.handleError("Please enter valid numeric input.", scanner);
+                if (choice == 0) { // Cancel operation
+                    CliUtil.printOperationCancelled();
+                    retry = false;
+                } else if (choice == 2) { // Return to previous menu
+                    retry = false;
+                }
+                // If choice == 1, retry is still true, so we'll loop again
+            } catch (DateTimeParseException e) {
+                int choice = CliUtil.handleError("Please enter date in format dd-MM-yyyy.", scanner);
+                if (choice == 0) { // Cancel operation
+                    CliUtil.printOperationCancelled();
+                    retry = false;
+                } else if (choice == 2) { // Return to previous menu
+                    retry = false;
+                }
+                // If choice == 1, retry is still true, so we'll loop again
+            } catch (Exception e) {
+                int choice = CliUtil.handleError("An error occurred: " + e.getMessage(), scanner);
+                if (choice == 0) { // Cancel operation
+                    CliUtil.printOperationCancelled();
+                    retry = false;
+                } else if (choice == 2) { // Return to previous menu
+                    retry = false;
+                }
+                // If choice == 1, retry is still true, so we'll loop again
             }
-            String result = employeeService.createEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, startDate, branch);
-
-            if (result.contains("successfully")) {
-                printSuccess(result);
-            } else {
-                printError(result);
-            }
-        } catch (NumberFormatException e) {
-            printError("Please enter valid input.");
-        } catch (DateTimeParseException e) {
-            printError("Please enter date in format dd-MM-yyyy.");
-        } catch (Exception e) {
-            printError("An error occurred: " + e.getMessage());
         }
 
         CliUtil.waitForEnter(scanner);
     }
     private void updateEmployee() {
-        printSectionHeader("Update Employee");
-        CliUtil.printBold("Israeli ID: ");
-        long israeliId = Long.parseLong(scanner.nextLine());
+        boolean retry = true;
 
-        EmployeeDTO existing = employeeService.getEmployeeByIdAsDTO(israeliId);
-        if (existing == null) {
-            printError("Employee not found.");
-            return;
-        }
+        while (retry) {
+            printSectionHeader("Update Employee");
 
-        printSectionHeader("Edit Employee: " + CliUtil.YELLOW + existing.getFullName() + CliUtil.RESET);
+            try {
+                CliUtil.printBold("Israeli ID: ");
+                long israeliId = Long.parseLong(scanner.nextLine());
 
-        CliUtil.printInfo("Leave field empty to keep current value");
-        CliUtil.printEmptyLine();
+                EmployeeDTO existing = employeeService.getEmployeeByIdAsDTO(israeliId);
+                if (existing == null) {
+                    int choice = CliUtil.handleError("Employee not found.", scanner);
+                    if (choice == 0) { // Cancel operation
+                        CliUtil.printOperationCancelled();
+                        retry = false;
+                    } else if (choice == 2) { // Return to previous menu
+                        retry = false;
+                    }
+                    continue; // Skip the rest of this iteration
+                }
 
-        CliUtil.printBold("Current First Name: " + existing.getFirstName());
-        CliUtil.printBold("New First Name: ");
-        String firstName = scanner.nextLine();
-        if (firstName.isBlank()) firstName = existing.getFirstName();
+                printSectionHeader("Edit Employee: " + CliUtil.YELLOW + existing.getFullName() + CliUtil.RESET);
 
-        CliUtil.printBold("Current Last Name: " + existing.getLastName());
-        CliUtil.printBold("New Last Name: ");
-        String lastName = scanner.nextLine();
-        if (lastName.isBlank()) lastName = existing.getLastName();
+                CliUtil.printInfo("Leave field empty to keep current value");
+                CliUtil.printEmptyLine();
 
-        CliUtil.printBold("Current Salary: " + existing.getSalary());
-        CliUtil.printBold("New Salary: ");
-        String salaryInput = scanner.nextLine();
-        long salary = salaryInput.isBlank() ? existing.getSalary() : Long.parseLong(salaryInput);
+                CliUtil.printBold("Current First Name: " + existing.getFirstName());
+                CliUtil.printBold("New First Name: ");
+                String firstName = scanner.nextLine();
+                if (firstName.isBlank()) firstName = existing.getFirstName();
 
-        CliUtil.printBold("Current Active Status: " + existing.isActive());
-        CliUtil.printBold("Is Active? (true/false): ");
-        String activeInput = scanner.nextLine();
-        boolean active = activeInput.isBlank() ? existing.isActive() : Boolean.parseBoolean(activeInput);
+                CliUtil.printBold("Current Last Name: " + existing.getLastName());
+                CliUtil.printBold("New Last Name: ");
+                String lastName = scanner.nextLine();
+                if (lastName.isBlank()) lastName = existing.getLastName();
 
-        CliUtil.printEmptyLine();
-        CliUtil.printSectionWithIcon("CURRENT TERMS OF EMPLOYMENT", "📋");
-        if (existing.getTermsOfEmployment().isEmpty()) {
-            CliUtil.printInfo("  No terms defined");
-        } else {
-            existing.getTermsOfEmployment().forEach((k, v) -> 
-                CliUtil.print("  " + CliUtil.BOLD + k + CliUtil.RESET + ": " + v));
-        }
+                CliUtil.printBold("Current Salary: " + existing.getSalary());
+                CliUtil.printBold("New Salary: ");
+                String salaryInput = scanner.nextLine();
+                long salary = salaryInput.isBlank() ? existing.getSalary() : Long.parseLong(salaryInput);
 
-        CliUtil.printEmptyLine();
-        CliUtil.printSectionWithIcon("UPDATE TERMS OF EMPLOYMENT", "📝");
-        CliUtil.printInfo("Enter key-value pairs. Type 'done' when finished.");
-        CliUtil.printInfo("To remove a term, enter its key with an empty value.");
-        CliUtil.printEmptyLine();
+                CliUtil.printBold("Current Active Status: " + existing.isActive());
 
-        Map<String, Object> termsOfEmployment = new HashMap<>(existing.getTermsOfEmployment());
-        while (true) {
-            CliUtil.printBold("Key (or 'done'): ");
-            String key = scanner.nextLine();
-            if (key.equalsIgnoreCase("done")) break;
+                // Display numbered options for employee status
+                System.out.println("Select employee status:");
+                System.out.println(CliUtil.YELLOW + "1" + CliUtil.RESET + ". Active");
+                System.out.println(CliUtil.YELLOW + "2" + CliUtil.RESET + ". Inactive");
+                System.out.println(CliUtil.YELLOW + "0" + CliUtil.RESET + ". Cancel (keep current)");
 
-            CliUtil.printBold("Value: ");
-            String value = scanner.nextLine();
+                CliUtil.printPrompt("Enter your choice: ");
+                String activeInput = scanner.nextLine();
 
-            if (value.isEmpty()) {
-                termsOfEmployment.remove(key);
-                CliUtil.printSuccessWithCheckmark("Removed: " + key);
-            } else {
-                termsOfEmployment.put(key, value);
-                CliUtil.printSuccessWithCheckmark("Updated: " + key + " = " + value);
+                boolean active;
+                if (activeInput.equals("0") || activeInput.isBlank()) {
+                    // Keep current value
+                    active = existing.isActive();
+                } else if (activeInput.equals("1")) {
+                    active = true;
+                } else if (activeInput.equals("2")) {
+                    active = false;
+                } else {
+                    // Invalid input, keep current value
+                    int choice = CliUtil.handleError("Invalid choice. Keeping current status.", scanner);
+                    if (choice == 0) { // Cancel operation
+                        CliUtil.printOperationCancelled();
+                        retry = false;
+                        continue;
+                    } else if (choice == 2) { // Return to previous menu
+                        retry = false;
+                        continue;
+                    }
+                    active = existing.isActive();
+                }
+
+                CliUtil.printEmptyLine();
+                CliUtil.printSectionWithIcon("CURRENT TERMS OF EMPLOYMENT", "📋");
+                if (existing.getTermsOfEmployment().isEmpty()) {
+                    CliUtil.printInfo("  No terms defined");
+                } else {
+                    existing.getTermsOfEmployment().forEach((k, v) -> 
+                        CliUtil.print("  " + CliUtil.BOLD + k + CliUtil.RESET + ": " + v));
+                }
+
+                CliUtil.printEmptyLine();
+                CliUtil.printSectionWithIcon("UPDATE TERMS OF EMPLOYMENT", "📝");
+                CliUtil.printInfo("Enter key-value pairs. Type 'done' when finished.");
+                CliUtil.printInfo("To remove a term, enter its key with an empty value.");
+                CliUtil.printEmptyLine();
+
+                Map<String, Object> termsOfEmployment = new HashMap<>(existing.getTermsOfEmployment());
+                while (true) {
+                    CliUtil.printBold("Key (or 'done' or '0' to exit): ");
+                    String key = scanner.nextLine();
+                    if (key.equalsIgnoreCase("done") || key.equals("0")) break;
+
+                    CliUtil.printBold("Value: ");
+                    String value = scanner.nextLine();
+
+                    if (value.isEmpty()) {
+                        termsOfEmployment.remove(key);
+                        CliUtil.printSuccessWithCheckmark("Removed: " + key);
+                    } else {
+                        termsOfEmployment.put(key, value);
+                        CliUtil.printSuccessWithCheckmark("Updated: " + key + " = " + value);
+                    }
+                }
+
+                String result = employeeService.updateEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, active);
+
+                if (result.contains("successfully")) {
+                    printSuccess(result);
+                    retry = false; // Success, exit the retry loop
+                } else {
+                    int choice = CliUtil.handleError(result, scanner);
+                    if (choice == 0) { // Cancel operation
+                        CliUtil.printOperationCancelled();
+                        retry = false;
+                    } else if (choice == 2) { // Return to previous menu
+                        retry = false;
+                    }
+                    // If choice == 1, retry is still true, so we'll loop again
+                }
+            } catch (NumberFormatException e) {
+                int choice = CliUtil.handleError("Please enter valid numeric input.", scanner);
+                if (choice == 0) { // Cancel operation
+                    CliUtil.printOperationCancelled();
+                    retry = false;
+                } else if (choice == 2) { // Return to previous menu
+                    retry = false;
+                }
+                // If choice == 1, retry is still true, so we'll loop again
+            } catch (Exception e) {
+                int choice = CliUtil.handleError("An error occurred: " + e.getMessage(), scanner);
+                if (choice == 0) { // Cancel operation
+                    CliUtil.printOperationCancelled();
+                    retry = false;
+                } else if (choice == 2) { // Return to previous menu
+                    retry = false;
+                }
+                // If choice == 1, retry is still true, so we'll loop again
             }
-        }
-
-        String result = employeeService.updateEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, active);
-
-        if (result.contains("successfully")) {
-            printSuccess(result);
-        } else {
-            printError(result);
         }
 
         CliUtil.waitForEnter(scanner);
     }
     private void addRoleToEmployee() {
-        printSectionHeader("Add Role to Employee");
+        boolean retry = true;
 
-        //String[] allRoles = employeeService.getAllRoles();
-        RoleDTO[] allRoles = deserializeRoles(employeeService.getAllRoles());
-        if (allRoles.length == 0) {
-            printError("No roles defined in the system");
-            return;
-        }
+        while (retry) {
+            printSectionHeader("Add Role to Employee");
 
-        CliUtil.printBold("Employee Israeli ID: ");
-        long israeliId = Long.parseLong(scanner.nextLine());
-        boolean stop = false;
-
-        try {
-            EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(israeliId);
-            CliUtil.printSuccess("Employee: " + employee.getFullName());
-
-            CliUtil.printEmptyLine();
-            CliUtil.printSectionWithIcon("CURRENT ROLES", "👤");
-            if (employee.getRoles().isEmpty()) {
-                CliUtil.printInfo("  No roles assigned");
-            } else {
-                List<String> roles = new ArrayList<>(employee.getRoles());
-                CliUtil.printHierarchicalList(roles, "•", 2);
-            }
-        } catch (Exception e) {
-            stop = true;
-            printError("Could not retrieve employee details: " + e.getMessage());
-        }
-        try {
-            if (stop) {
-                return;
-            }
-            CliUtil.printEmptyLine();
-            CliUtil.printSectionWithIcon("AVAILABLE ROLES", "🔑");
-            List<String> rolesList = Arrays.asList(Arrays.stream(allRoles).map(RoleDTO::getName).toArray(String[]::new));
-            CliUtil.printNumberedList(rolesList, 1);
-
-            CliUtil.printEmptyLine();
-            CliUtil.printBold("Role Number to Add: ");
-            int roleNumber = scanner.nextInt();
-            String roleName = rolesList.get(roleNumber - 1);
-            scanner.nextLine(); // Consume the newline character
-
-            // Confirm
-            boolean confirmed = confirm("Confirm adding role '" + roleName + "' to employee #" + israeliId + "?");
-            if (confirmed) {
-                String result = employeeService.addRoleToEmployee(doneBy, israeliId, roleName);
-
-                if (result.contains("successfully")) {
-                    printSuccess(result);
-                } else {
-                    printError(result);
+            // Get all roles
+            RoleDTO[] allRoles = deserializeRoles(employeeService.getAllRoles());
+            if (allRoles.length == 0) {
+                int choice = CliUtil.handleError("No roles defined in the system", scanner);
+                if (choice == 0 || choice == 2) { // Cancel operation or return to previous menu
+                    retry = false;
                 }
-            } else {
-                CliUtil.printOperationCancelled();
+                continue; // Skip the rest of this iteration
             }
 
-            CliUtil.waitForEnter(scanner);
-        } catch (IndexOutOfBoundsException e) {
-            printError("Invalid role number. Please try again.");
-        } catch (Exception e) {
-            printError("An error occurred: " + e.getMessage());
+            try {
+                // Get employee ID
+                CliUtil.printBold("Employee Israeli ID: ");
+                long israeliId = Long.parseLong(scanner.nextLine());
+
+                // Get employee details
+                EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(israeliId);
+                if (employee == null) {
+                    int choice = CliUtil.handleError("Employee not found.", scanner);
+                    if (choice == 0) { // Cancel operation
+                        CliUtil.printOperationCancelled();
+                        retry = false;
+                    } else if (choice == 2) { // Return to previous menu
+                        retry = false;
+                    }
+                    continue; // Skip the rest of this iteration
+                }
+
+                CliUtil.printSuccess("Employee: " + employee.getFullName());
+
+                // Display current roles
+                CliUtil.printEmptyLine();
+                CliUtil.printSectionWithIcon("CURRENT ROLES", "👤");
+                if (employee.getRoles().isEmpty()) {
+                    CliUtil.printInfo("  No roles assigned");
+                } else {
+                    List<String> roles = new ArrayList<>(employee.getRoles());
+                    CliUtil.printHierarchicalList(roles, "•", 2);
+                }
+
+                // Display available roles
+                CliUtil.printEmptyLine();
+                CliUtil.printSectionWithIcon("AVAILABLE ROLES", "🔑");
+                List<String> rolesList = Arrays.asList(Arrays.stream(allRoles).map(RoleDTO::getName).toArray(String[]::new));
+                CliUtil.printNumberedList(rolesList, 1);
+
+                // Get role selection
+                CliUtil.printEmptyLine();
+                CliUtil.printBold("Role Number to Add (or 0 to cancel): ");
+                String roleInput = scanner.nextLine();
+
+                // Check for cancel
+                if (roleInput.equals("0")) {
+                    CliUtil.printOperationCancelled();
+                    retry = false;
+                    continue;
+                }
+
+                int roleNumber = Integer.parseInt(roleInput);
+                if (roleNumber < 1 || roleNumber > rolesList.size()) {
+                    int choice = CliUtil.handleError("Invalid role number. Please enter a number between 1 and " + rolesList.size() + ".", scanner);
+                    if (choice == 0) { // Cancel operation
+                        CliUtil.printOperationCancelled();
+                        retry = false;
+                    } else if (choice == 2) { // Return to previous menu
+                        retry = false;
+                    }
+                    continue; // Skip the rest of this iteration
+                }
+
+                String roleName = rolesList.get(roleNumber - 1);
+
+                // Confirm
+                boolean confirmed = confirm("Confirm adding role '" + roleName + "' to employee #" + israeliId + "?");
+                if (confirmed) {
+                    String result = employeeService.addRoleToEmployee(doneBy, israeliId, roleName);
+
+                    if (result.contains("successfully")) {
+                        printSuccess(result);
+                        retry = false; // Success, exit the retry loop
+                    } else {
+                        int choice = CliUtil.handleError(result, scanner);
+                        if (choice == 0) { // Cancel operation
+                            CliUtil.printOperationCancelled();
+                            retry = false;
+                        } else if (choice == 2) { // Return to previous menu
+                            retry = false;
+                        }
+                        // If choice == 1, retry is still true, so we'll loop again
+                    }
+                } else {
+                    CliUtil.printOperationCancelled();
+                    retry = false;
+                }
+            } catch (NumberFormatException e) {
+                int choice = CliUtil.handleError("Please enter a valid number.", scanner);
+                if (choice == 0) { // Cancel operation
+                    CliUtil.printOperationCancelled();
+                    retry = false;
+                } else if (choice == 2) { // Return to previous menu
+                    retry = false;
+                }
+                // If choice == 1, retry is still true, so we'll loop again
+            } catch (IndexOutOfBoundsException e) {
+                int choice = CliUtil.handleError("Invalid role number. Please try again.", scanner);
+                if (choice == 0) { // Cancel operation
+                    CliUtil.printOperationCancelled();
+                    retry = false;
+                } else if (choice == 2) { // Return to previous menu
+                    retry = false;
+                }
+                // If choice == 1, retry is still true, so we'll loop again
+            } catch (Exception e) {
+                int choice = CliUtil.handleError("An error occurred: " + e.getMessage(), scanner);
+                if (choice == 0) { // Cancel operation
+                    CliUtil.printOperationCancelled();
+                    retry = false;
+                } else if (choice == 2) { // Return to previous menu
+                    retry = false;
+                }
+                // If choice == 1, retry is still true, so we'll loop again
+            }
         }
+
+        CliUtil.waitForEnter(scanner);
     }
 
     private void removeRoleFromEmployee() {
-        printSectionHeader("Remove Role from Employee");
+        boolean retry = true;
 
-        CliUtil.printBold("Employee Israeli ID: ");
-        long israeliId = Long.parseLong(scanner.nextLine());
+        while (retry) {
+            printSectionHeader("Remove Role from Employee");
 
-        try {
-            EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(israeliId);
-            CliUtil.printSuccess("Employee: " + employee.getFullName());
+            try {
+                // Get employee ID
+                CliUtil.printBold("Employee Israeli ID (or 0 to cancel): ");
+                String idInput = scanner.nextLine();
 
-            CliUtil.printEmptyLine();
-            CliUtil.printSectionWithIcon("CURRENT ROLES", "👤");
-            if (employee.getRoles().isEmpty()) {
-                CliUtil.printInfo("  No roles assigned");
-                CliUtil.waitForEnter(scanner);
-                return;
-            } else {
-                List<String> roles = new ArrayList<>(employee.getRoles());
-                CliUtil.printHierarchicalList(roles, "•", 2);
-            }
-
-            CliUtil.printEmptyLine();
-            CliUtil.printBold("Role Name to Remove: ");
-            String roleName = scanner.nextLine();
-
-            // Confirm
-            if (confirm("Confirm removing role '" + roleName + "' from employee #" + israeliId + "?")) {
-                String result = employeeService.removeRoleFromEmployee(doneBy, israeliId, roleName);
-
-                if (result.contains("successfully")) {
-                    printSuccess(result);
-                } else {
-                    printError(result);
+                // Check for cancel
+                if (idInput.equals("0")) {
+                    CliUtil.printOperationCancelled();
+                    retry = false;
+                    continue;
                 }
-            } else {
-                CliUtil.printOperationCancelled();
+
+                long israeliId = Long.parseLong(idInput);
+
+                // Get employee details
+                EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(israeliId);
+                if (employee == null) {
+                    int choice = CliUtil.handleError("Employee not found.", scanner);
+                    if (choice == 0) { // Cancel operation
+                        CliUtil.printOperationCancelled();
+                        retry = false;
+                    } else if (choice == 2) { // Return to previous menu
+                        retry = false;
+                    }
+                    continue; // Skip the rest of this iteration
+                }
+
+                CliUtil.printSuccess("Employee: " + employee.getFullName());
+
+                // Display current roles
+                CliUtil.printEmptyLine();
+                CliUtil.printSectionWithIcon("CURRENT ROLES", "👤");
+                if (employee.getRoles().isEmpty()) {
+                    int choice = CliUtil.handleError("No roles assigned to this employee.", scanner);
+                    if (choice == 0 || choice == 2) { // Cancel operation or return to previous menu
+                        retry = false;
+                    }
+                    continue; // Skip the rest of this iteration
+                } else {
+                    List<String> roles = new ArrayList<>(employee.getRoles());
+                    CliUtil.printHierarchicalList(roles, "•", 2);
+                }
+
+                // Get role to remove
+                CliUtil.printEmptyLine();
+                CliUtil.printBold("Role Name to Remove (or 'cancel' to cancel): ");
+                String roleName = scanner.nextLine();
+
+                // Check for cancel
+                if (roleName.equalsIgnoreCase("cancel")) {
+                    CliUtil.printOperationCancelled();
+                    retry = false;
+                    continue;
+                }
+
+                // Confirm
+                if (confirm("Confirm removing role '" + roleName + "' from employee #" + israeliId + "?")) {
+                    String result = employeeService.removeRoleFromEmployee(doneBy, israeliId, roleName);
+
+                    if (result.contains("successfully")) {
+                        printSuccess(result);
+                        retry = false; // Success, exit the retry loop
+                    } else {
+                        int choice = CliUtil.handleError(result, scanner);
+                        if (choice == 0) { // Cancel operation
+                            CliUtil.printOperationCancelled();
+                            retry = false;
+                        } else if (choice == 2) { // Return to previous menu
+                            retry = false;
+                        }
+                        // If choice == 1, retry is still true, so we'll loop again
+                    }
+                } else {
+                    CliUtil.printOperationCancelled();
+                    retry = false;
+                }
+            } catch (NumberFormatException e) {
+                int choice = CliUtil.handleError("Please enter a valid number for the employee ID.", scanner);
+                if (choice == 0) { // Cancel operation
+                    CliUtil.printOperationCancelled();
+                    retry = false;
+                } else if (choice == 2) { // Return to previous menu
+                    retry = false;
+                }
+                // If choice == 1, retry is still true, so we'll loop again
+            } catch (Exception e) {
+                int choice = CliUtil.handleError("An error occurred: " + e.getMessage(), scanner);
+                if (choice == 0) { // Cancel operation
+                    CliUtil.printOperationCancelled();
+                    retry = false;
+                } else if (choice == 2) { // Return to previous menu
+                    retry = false;
+                }
+                // If choice == 1, retry is still true, so we'll loop again
             }
-        } catch (Exception e) {
-            printError("Could not retrieve employee details: " + e.getMessage());
         }
 
         CliUtil.waitForEnter(scanner);
@@ -685,10 +938,21 @@ public class EmployeeCLI {
         String roleName = scanner.nextLine();
 
         CliUtil.printEmptyLine();
-        CliUtil.printBold("Do you want to add permissions now? (yes/no): ");
+
+        // Display numbered options for adding permissions
+        System.out.println("Do you want to add permissions now?");
+        System.out.println(CliUtil.YELLOW + "1" + CliUtil.RESET + ". Yes");
+        System.out.println(CliUtil.YELLOW + "2" + CliUtil.RESET + ". No");
+        System.out.println(CliUtil.YELLOW + "0" + CliUtil.RESET + ". Cancel");
+
+        CliUtil.printPrompt("Enter your choice: ");
         String addPermissions = scanner.nextLine();
 
-        if (addPermissions.equalsIgnoreCase("yes")) {
+        if (addPermissions.equals("0")) {
+            CliUtil.printOperationCancelled();
+            CliUtil.waitForEnter(scanner);
+            return;
+        } else if (addPermissions.equals("1")) {
             CliUtil.printEmptyLine();
             CliUtil.printSectionWithIcon("AVAILABLE PERMISSIONS", "🔑");
             String[] allPermissions = employeeService.getAllPermissions();
@@ -707,9 +971,9 @@ public class EmployeeCLI {
 
             HashSet<String> permissions = new HashSet<>();
             while (true) {
-                CliUtil.printBold("Permission (or 'done'): ");
+                CliUtil.printBold("Permission (or 'done' or '0' to exit): ");
                 String permission = scanner.nextLine();
-                if (permission.equalsIgnoreCase("done")) break;
+                if (permission.equalsIgnoreCase("done") || permission.equals("0")) break;
                 permissions.add(permission);
                 CliUtil.printSuccessWithCheckmark("Added: " + permission);
             }
@@ -726,7 +990,7 @@ public class EmployeeCLI {
             } else {
                 CliUtil.printOperationCancelled();
             }
-        } else {
+        } else if (addPermissions.equals("2")) {
             // Confirm
             if (confirm("Confirm creating role '" + roleName + "' with no permissions?")) {
                 // Create role without permissions
@@ -740,6 +1004,11 @@ public class EmployeeCLI {
             } else {
                 CliUtil.printOperationCancelled();
             }
+        } else {
+            // Invalid input
+            printError("Invalid choice. Operation cancelled.");
+            CliUtil.waitForEnter(scanner);
+            return;
         }
 
         CliUtil.waitForEnter(scanner);
@@ -969,18 +1238,21 @@ public class EmployeeCLI {
     private void printAllRoles() {
         // Convert array to list for pagination
         List<String> rolesList = Arrays.asList(employeeService.getAllRoles());
+        List<RoleDTO> rolesDTOList = new ArrayList<>();
+        for (String role : rolesList) {
+            RoleDTO roleDTO = RoleDTO.deserialize(role);
+            if (roleDTO != null) {
+                rolesDTOList.add(roleDTO);
+            }
+        }
+
 
         // Define how many roles to show per page
-        final int ITEMS_PER_PAGE = 5;
+        final int ITEMS_PER_PAGE = 10;
 
         // Use the pagination utility to display roles
         CliUtil.displayPaginatedList(
-            "All Roles",
-            rolesList,
-            ITEMS_PER_PAGE,
-            role -> role,  // Simple display function as roles are just strings
-            scanner
-        );
+            "All Roles", rolesDTOList, ITEMS_PER_PAGE, role -> role.getName(), scanner);
 
         // Display tip after exiting the paginated view
         CliUtil.printSectionWithIcon("Use 'View Role Details' to see permissions for each role","💡");
@@ -993,10 +1265,9 @@ public class EmployeeCLI {
      * @param roleName The name of the role to display
      */
     private void printRoleDetails(String roleName) {
-        printSectionHeader("Role Details");
 
         try {
-            RoleDTO roleDTO = employeeService.getRoleDetailsAsDTO(roleName);
+            RoleDTO roleDTO = employeeService.getRoleDTO(roleName);
 
             if (roleDTO != null) {
                 // Create headers for the table sections

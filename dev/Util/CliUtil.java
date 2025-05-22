@@ -224,6 +224,40 @@ public class CliUtil {
     }
 
     /**
+     * Displays an error message with numbered options for retry, return, or cancel
+     * 
+     * @param message The error message to display
+     * @param scanner The scanner to use for input
+     * @return An integer indicating the user's choice: 1 for retry, 2 for return to previous menu, 0 for cancel
+     */
+    public static int handleError(String message, Scanner scanner) {
+        printError(message);
+        printEmptyLine();
+        System.out.println("Please select:");
+        System.out.println(YELLOW + "1" + RESET + ". Try again");
+        System.out.println(YELLOW + "2" + RESET + ". Return to previous menu");
+        System.out.println(YELLOW + "0" + RESET + ". Cancel operation");
+
+        printEmptyLine();
+        printPrompt("Enter your choice: ");
+
+        while (true) {
+            try {
+                String input = scanner.nextLine();
+                int choice = Integer.parseInt(input);
+
+                if (choice == 0 || choice == 1 || choice == 2) {
+                    return choice;
+                } else {
+                    printError("Invalid choice. Please enter 0, 1, or 2.");
+                }
+            } catch (NumberFormatException e) {
+                printError("Please enter a valid number.");
+            }
+        }
+    }
+
+    /**
      * Prints a tip or hint message with formatting
      *
      * @param message The tip message to display
@@ -344,9 +378,9 @@ public class CliUtil {
      */
     public static boolean confirm(String message, Scanner scanner) {
         System.out.println();
-        System.out.print(YELLOW + message + " (y/n): " + RESET);
+        System.out.print(YELLOW + message + " (1=yes/0=no): " + RESET);
         String input = scanner.nextLine();
-        return input.equalsIgnoreCase("y") || input.equalsIgnoreCase("yes");
+        return input.equals("1") || input.equalsIgnoreCase("y") || input.equalsIgnoreCase("yes");
     }
 
     /**
@@ -768,5 +802,4 @@ public class CliUtil {
 
         return true;
     }
-
 }
