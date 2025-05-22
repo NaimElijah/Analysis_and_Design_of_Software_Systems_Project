@@ -168,7 +168,7 @@ public class Employee {
     /**
      * Sets the branch that the employee is assigned to.
      * 
-     * @param branch The branch name
+     * @param branchId The branch ID
      */
     public void setBranch(long branchId) {
         this.branchId = branchId;

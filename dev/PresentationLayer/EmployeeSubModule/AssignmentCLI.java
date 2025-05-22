@@ -173,13 +173,14 @@ public class AssignmentCLI {
     private String formatEmployeeDisplay(long employeeId) {
         try {
             EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(employeeId);
-            String branch = employee.getBranchId() != null ? " [" + employee.getBranchId() + "]" : "";
+            String branch = employeeService.getEmployeeBranchName(employee.getBranchId()) != null ? " [" + employeeService.getEmployeeBranchName(employee.getBranchId()) + "]" : "";
             return employee.getFullName() + " (#" + employeeId + ")" + branch;
         } catch (ServiceException e) {
             // If we can't get the employee name, just return the ID
             return "Employee #" + employeeId;
         }
     }
+
 
     /**
      * Formats employee display with name, number, branch, and roles to show availability
@@ -190,7 +191,7 @@ public class AssignmentCLI {
     private String formatUnassignedEmployeeDisplay(long employeeId) {
         try {
             EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(employeeId);
-            String branch = employee.getBranchId() != null ? " [" + employee.getBranchId() + "]" : "";
+            String branch = employeeService.getEmployeeBranchName(employee.getBranchId()) != null ? " [" + employeeService.getEmployeeBranchName(employee.getBranchId()) + "]" : "";
             return employee.getFullName() + " (#" + employeeId + ")" + branch + " {" + employee.getRoles() + "}" + CliUtil.RESET;
 
         } catch (ServiceException e) {

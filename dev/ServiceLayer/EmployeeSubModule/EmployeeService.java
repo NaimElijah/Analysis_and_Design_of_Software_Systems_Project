@@ -410,25 +410,6 @@ public class EmployeeService {
     }
 
     /**
-     * Creates a new employee with no branch assigned.
-     * NOTE: CreateEmployee with NO roles or permissions need to be added to the employee in another action!
-     *
-     * @param doneBy         The ID of the user who is creating the employee.
-     * @param israeliId      The Israeli ID of the employee.
-     * @param firstName      The first name of the employee.
-     * @param lastName       The last name of the employee.
-     * @param salary         The salary of the employee.
-     * @param termsOfEmployment The terms of employment for the employee.
-     * @param startOfEmployment The start date of employment for the employee.
-     * @return A message indicating whether the employee was created successfully or not.
-     * @throws ValidationException if any input parameters are invalid
-     * @throws AuthorizationException if the user doesn't have permission to create employees
-     * @throws ServiceException if an unexpected error occurs
-     */
-    public String createEmployee(long doneBy, long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, LocalDate startOfEmployment, long branchId) {
-        return createEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, startOfEmployment, branchId);
-    }
-    /**
      * Updates an existing employee.
      *
      * @param doneBy         The ID of the user who is updating the employee.

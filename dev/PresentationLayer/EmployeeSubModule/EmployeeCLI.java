@@ -610,6 +610,7 @@ public class EmployeeCLI {
             CliUtil.printBold("Role Number to Add: ");
             int roleNumber = scanner.nextInt();
             String roleName = rolesList.get(roleNumber - 1);
+            scanner.nextLine(); // Consume the newline character
 
             // Confirm
             boolean confirmed = confirm("Confirm adding role '" + roleName + "' to employee #" + israeliId + "?");

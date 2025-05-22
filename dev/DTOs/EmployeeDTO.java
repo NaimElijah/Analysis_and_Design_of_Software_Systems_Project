@@ -65,9 +65,6 @@ public class EmployeeDTO {
         this.branchId = branchId;
     }
 
-    public EmployeeDTO(long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, Set<String> roles, LocalDate startOfEmployment, boolean active, LocalDate creationDate, LocalDate updateDate, long branchId) {
-    }
-
     // Getters and setters
     public long getIsraeliId() {
         return israeliId;

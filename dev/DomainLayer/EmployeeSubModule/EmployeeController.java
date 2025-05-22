@@ -1,6 +1,10 @@
 package DomainLayer.EmployeeSubModule;
 
+import DTOs.BranchDTO;
 import DTOs.EmployeeDTO;
+import DomainLayer.EmployeeSubModule.Repository.AuthorisationRepository;
+import DomainLayer.EmployeeSubModule.Repository.BranchRepository;
+import DomainLayer.EmployeeSubModule.Repository.EmployeeRepository;
 import DomainLayer.exception.InvalidInputException;
 import DomainLayer.exception.UnauthorizedPermissionException;
 
@@ -8,16 +12,34 @@ import java.time.LocalDate;
 import java.util.*;
 
 public class EmployeeController {
-    private final Set<Employee> employees;
-    private final Set<Branch> branches;
+    private final EmployeeRepository employeeRepository;
+    private final BranchRepository branchRepository;
+    private final AuthorisationRepository authorisationRepository;
     private final AuthorisationController authorisationController;
     ///   Naim: I think you need the Transport Facade connected here to update the   <<-----------------   NOTE
     ///         driverIdToInTransportID hashmap when adding/removing a Driver   <<------------   NOTE
 
-    public EmployeeController(Set<Employee> employees , AuthorisationController authorisationController, Set<Branch> branches) {
-        this.employees = new HashSet<>(employees);
+    public EmployeeController(EmployeeRepository employeeRepository, BranchRepository branchRepository, 
+                             AuthorisationRepository authorisationRepository, AuthorisationController authorisationController) {
+        this.employeeRepository = employeeRepository;
+        this.branchRepository = branchRepository;
+        this.authorisationRepository = authorisationRepository;
         this.authorisationController = authorisationController;
-        this.branches = new HashSet<>(branches);
+    }
+
+    /**
+     * Constructor that accepts in-memory collections for backward compatibility.
+     * This constructor is deprecated and will be removed in a future version.
+     *
+     * @param employees The set of employees
+     * @param authorisationController The authorisation controller
+     * @param branches The set of branches
+     */
+    @Deprecated
+    public EmployeeController(Set<Employee> employees, AuthorisationController authorisationController, Set<Branch> branches) {
+        // This constructor is kept for backward compatibility
+        // It should not be used in new code
+        throw new UnsupportedOperationException("This constructor is deprecated. Use the repository-based constructor instead.");
     }
 
     /**
@@ -26,7 +48,63 @@ public class EmployeeController {
      * @return The employee with the given Israeli ID, or null if not found
      */
     public Employee getEmployeeByIsraeliId(long israeliId) {
-        return employees.stream().filter(e -> e.getIsraeliId() == israeliId).findFirst().orElse(null);
+        EmployeeDTO employeeDTO = employeeRepository.getById(israeliId);
+        if (employeeDTO == null) {
+            return null;
+        }
+        return convertToEntity(employeeDTO);
+    }
+
+    /**
+     * Converts an EmployeeDTO to an Employee domain object.
+     *
+     * @param dto The EmployeeDTO to convert
+     * @return The corresponding Employee domain object
+     */
+    private Employee convertToEntity(EmployeeDTO dto) {
+        if (dto == null) {
+            return null;
+        }
+
+        return new Employee(
+            dto.getIsraeliId(),
+            dto.getFirstName(),
+            dto.getLastName(),
+            dto.getSalary(),
+            dto.getTermsOfEmployment(),
+            dto.getRoles(),
+            dto.getStartOfEmployment(),
+            dto.isActive(),
+            dto.getCreationDate(),
+            dto.getUpdateDate(),
+            dto.getBranchId()
+        );
+    }
+
+    /**
+     * Converts an Employee domain object to an EmployeeDTO.
+     *
+     * @param employee The Employee domain object to convert
+     * @return The corresponding EmployeeDTO
+     */
+    private EmployeeDTO convertToDTO(Employee employee) {
+        if (employee == null) {
+            return null;
+        }
+
+        return new EmployeeDTO(
+            employee.getIsraeliId(),
+            employee.getFirstName(),
+            employee.getLastName(),
+            employee.getSalary(),
+            employee.getTermsOfEmployment(),
+            employee.getRoles(),
+            employee.getStartOfEmployment(),
+            employee.isActive(),
+            employee.getCreationDate(),
+            employee.getUpdateDate(),
+            employee.getBranchId()
+        );
     }
 
     /**
@@ -58,7 +136,7 @@ public class EmployeeController {
         }
 
         // Check if employee already exists
-        if (employees.stream().anyMatch(e -> e.getIsraeliId() == israeliId)) {
+        if (employeeRepository.exists(israeliId)) {
             throw new InvalidInputException("Employee with ID " + israeliId + " already exists");
         }
 
@@ -82,20 +160,33 @@ public class EmployeeController {
             throw new InvalidInputException("Israeli ID must be 9 digits");
         }
         if (roles == null) {
-            roles = new HashSet<>();
+            roles = new HashSet<String>();
         }
         if (!isBranchIdValid(branchId)) {
             throw new InvalidInputException("Branch info is invalid");
         }
 
-        // Create new employee
-        Employee newEmployee = new Employee(israeliId, firstName, lastName, salary, termsOfEmployment, roles, startOfEmployment, true, LocalDate.now(), LocalDate.now(), branchId);
-        employees.add(newEmployee);
-        return true;
+        // Create new employee DTO
+        EmployeeDTO employeeDTO = new EmployeeDTO(
+            israeliId, 
+            firstName, 
+            lastName, 
+            salary, 
+            termsOfEmployment, 
+            roles, 
+            startOfEmployment, 
+            true, 
+            LocalDate.now(), 
+            LocalDate.now(), 
+            branchId
+        );
+
+        // Create employee in repository
+        return employeeRepository.create(employeeDTO);
     }
 
     private boolean isBranchIdValid(long branchId) {
-        return branches.stream().anyMatch(b -> b.getBranchId() == branchId);
+        return branchRepository.exists(branchId);
     }
 
     /**
@@ -125,13 +216,13 @@ public class EmployeeController {
         }
 
         // Check if employee exists
-        Employee employee = employees.stream().filter(e -> e.getIsraeliId() == israeliId).findFirst().orElse(null);
-        if (employee == null) {
+        EmployeeDTO employeeDTO = employeeRepository.getById(israeliId);
+        if (employeeDTO == null) {
             throw new InvalidInputException("Employee with ID " + israeliId + " not found");
         }
 
         // Check if employee is active
-        if (!employee.isActive()) {
+        if (!employeeDTO.isActive()) {
             throw new InvalidInputException("Employee with ID " + israeliId + " is not active - cannot update information");
         }
 
@@ -153,13 +244,15 @@ public class EmployeeController {
         }
 
         // Update employee details
-        employee.setFirstName(firstName);
-        employee.setLastName(lastName);
-        employee.setSalary(salary);
-        employee.setTermsOfEmployment(termsOfEmployment);
-        employee.setActive(active);
-        employee.setUpdateDate(LocalDate.now());
-        return true;
+        employeeDTO.setFirstName(firstName);
+        employeeDTO.setLastName(lastName);
+        employeeDTO.setSalary(salary);
+        employeeDTO.setTermsOfEmployment(termsOfEmployment);
+        employeeDTO.setActive(active);
+        employeeDTO.setUpdateDate(LocalDate.now());
+
+        // Update employee in repository
+        return employeeRepository.update(employeeDTO);
     }
 
     /**
@@ -179,19 +272,18 @@ public class EmployeeController {
         }
 
         // Check if employee exists
-        Employee employee = employees.stream().filter(e -> e.getIsraeliId() == israeliId).findFirst().orElse(null);
-        if (employee == null) {
+        EmployeeDTO employeeDTO = employeeRepository.getById(israeliId);
+        if (employeeDTO == null) {
             throw new InvalidInputException("Employee with ID " + israeliId + " not found");
         }
 
         // Check if employee is active
-        if (!employee.isActive()) {
+        if (!employeeDTO.isActive()) {
             throw new InvalidInputException("Employee with ID " + israeliId + " is not active - cannot delete");
         }
 
         // Delete employee
-        employees.remove(employee);
-        return true;
+        return employeeRepository.delete(israeliId);
     }
 
     /**
@@ -205,14 +297,19 @@ public class EmployeeController {
      */
     public boolean isEmployeeAuthorised(long israeliId, String permission) {
         // Check if employee exists
-        Employee employee = getEmployeeByIsraeliId(israeliId);
-        if (employee == null) {
+        EmployeeDTO employeeDTO = employeeRepository.getById(israeliId);
+        if (employeeDTO == null) {
             throw new InvalidInputException("Employee with ID " + israeliId + " not found");
         }
+
+        // Convert DTO to domain entity for authorization check
+        Employee employee = convertToEntity(employeeDTO);
+
         boolean has = authorisationController.hasPermission(employee, permission);
         if (!has) {
             throw new UnauthorizedPermissionException("Employee does not have permission: " + permission);
         }
+
         // Check if employee has the required permission
         return true;
     }
@@ -245,25 +342,29 @@ public class EmployeeController {
         }
 
         // Check if employee exists
-        Employee employee = employees.stream().filter(e -> e.getIsraeliId() == israeliId).findFirst().orElse(null);
-        if (employee == null) {
+        EmployeeDTO employeeDTO = employeeRepository.getById(israeliId);
+        if (employeeDTO == null) {
             throw new InvalidInputException("Employee with ID " + israeliId + " not found");
         }
 
         // Check if role exists
-        if (!authorisationController.isRoleExists(roleName)) {
+        if (!authorisationRepository.roleExists(roleName)) {
             throw new InvalidInputException("Role '" + roleName + "' does not exist");
         }
 
         // Check if employee already has the role
-        if (employee.getRoles().contains(roleName)) {
+        if (employeeDTO.getRoles().contains(roleName)) {
             throw new InvalidInputException("Employee with ID " + israeliId + " already has role '" + roleName + "'");
         }
 
         // Add role to employee
-        employee.getRoles().add(roleName);
-        employee.setUpdateDate(LocalDate.now());
-        return true;
+        Set<String> roles = new HashSet<>(employeeDTO.getRoles());
+        roles.add(roleName);
+        employeeDTO.setRoles(roles);
+        employeeDTO.setUpdateDate(LocalDate.now());
+
+        // Update employee in repository
+        return employeeRepository.update(employeeDTO);
     }
     /**
      * Removes a role from an employee.
@@ -293,25 +394,29 @@ public class EmployeeController {
         }
 
         // Check if employee exists
-        Employee employee = employees.stream().filter(e -> e.getIsraeliId() == israeliId).findFirst().orElse(null);
-        if (employee == null) {
+        EmployeeDTO employeeDTO = employeeRepository.getById(israeliId);
+        if (employeeDTO == null) {
             throw new InvalidInputException("Employee with ID " + israeliId + " not found");
         }
 
         // Check if role exists
-        if (!authorisationController.isRoleExists(roleName)) {
+        if (!authorisationRepository.roleExists(roleName)) {
             throw new InvalidInputException("Role '" + roleName + "' does not exist");
         }
 
         // Check if employee has the role
-        if (!employee.getRoles().contains(roleName)) {
+        if (!employeeDTO.getRoles().contains(roleName)) {
             throw new InvalidInputException("Employee with ID " + israeliId + " does not have role '" + roleName + "'");
         }
 
         // Remove role from employee
-        employee.getRoles().remove(roleName);
-        employee.setUpdateDate(LocalDate.now());
-        return true;
+        Set<String> roles = new HashSet<>(employeeDTO.getRoles());
+        roles.remove(roleName);
+        employeeDTO.setRoles(roles);
+        employeeDTO.setUpdateDate(LocalDate.now());
+
+        // Update employee in repository
+        return employeeRepository.update(employeeDTO);
     }
 
     /**
@@ -336,20 +441,22 @@ public class EmployeeController {
         }
 
         // Check if employee exists
-        Employee employee = employees.stream().filter(e -> e.getIsraeliId() == israeliId).findFirst().orElse(null);
-        if (employee == null) {
+        EmployeeDTO employeeDTO = employeeRepository.getById(israeliId);
+        if (employeeDTO == null) {
             throw new InvalidInputException("Employee with ID " + israeliId + " not found");
         }
 
         // Check if employee is already inactive
-        if (!employee.isActive()) {
+        if (!employeeDTO.isActive()) {
             throw new InvalidInputException("Employee with ID " + israeliId + " is already inactive");
         }
 
         // Deactivate employee
-        employee.setActive(false);
-        employee.setUpdateDate(LocalDate.now());
-        return true;
+        employeeDTO.setActive(false);
+        employeeDTO.setUpdateDate(LocalDate.now());
+
+        // Update employee in repository
+        return employeeRepository.update(employeeDTO);
     }
 
     /**
@@ -359,7 +466,9 @@ public class EmployeeController {
      */
     public Map<Long, Employee> getAllEmployees() {
         Map<Long, Employee> employeesMap = new HashMap<>();
-        for (Employee employee : employees) {
+        List<EmployeeDTO> employeeDTOs = employeeRepository.getAll();
+        for (EmployeeDTO employeeDTO : employeeDTOs) {
+            Employee employee = convertToEntity(employeeDTO);
             employeesMap.put(employee.getIsraeliId(), employee);
         }
         return employeesMap;
@@ -378,10 +487,14 @@ public class EmployeeController {
     // Functions for integration with Transport module
     // ===========================
     public boolean hasPermission(long israeliId, String permission) {
-        Employee employee = getEmployeeByIsraeliId(israeliId);
-        if (employee == null) {
+        EmployeeDTO employeeDTO = employeeRepository.getById(israeliId);
+        if (employeeDTO == null) {
             throw new InvalidInputException("Employee with ID " + israeliId + " not found");
         }
+
+        // Convert DTO to domain entity for authorization check
+        Employee employee = convertToEntity(employeeDTO);
+
         return authorisationController.hasPermission(employee, permission);
     }
 
@@ -392,8 +505,10 @@ public class EmployeeController {
      * @return True if the employee is active, false otherwise.
      */
     public boolean isEmployeeActive(long employeeId) {
-        return employees.stream().anyMatch(e -> e.getIsraeliId() == employeeId && e.isActive());
+        EmployeeDTO employeeDTO = employeeRepository.getById(employeeId);
+        return employeeDTO != null && employeeDTO.isActive();
     }
+
     public boolean isActive(long israeliId) {
         return isEmployeeActive(israeliId);
     }
@@ -405,77 +520,81 @@ public class EmployeeController {
      * @param role The role to check for.
      * @return True if the employee has the specified role, false otherwise.
      */
-    public boolean isEmployeeHaveRole( long employeeId, String role){
-        return employees.stream().anyMatch(e -> e.getIsraeliId() == employeeId && e.getRoles().contains(role));
+    public boolean isEmployeeHaveRole(long employeeId, String role){
+        EmployeeDTO employeeDTO = employeeRepository.getById(employeeId);
+        return employeeDTO != null && employeeDTO.getRoles().contains(role);
     }
 
     public String[] getAllDrivers() {
-        // Filter employees to get only those with the "Driver" role
-        Employee[] drivers = employees.stream()
-                .filter(e -> e.getRoles().contains("Driver"))
-                .toArray(Employee[]::new);
-        // Convert the filtered employees to EmployeeDTO objects
-        EmployeeDTO[] driverDTOs = Arrays.stream(drivers)
-                .map(e -> new EmployeeDTO(e.getIsraeliId(), e.getFirstName(), e.getLastName(), e.getSalary(), e.getTermsOfEmployment(), e.getRoles(), e.getStartOfEmployment(), e.isActive(), e.getCreationDate(), e.getUpdateDate(), e.getBranchId()))
-                .toArray(EmployeeDTO[]::new);
+        // Get all employees with the "Driver" role
+        List<EmployeeDTO> driverDTOs = employeeRepository.getByRole("Driver");
+
         // Serialize the EmployeeDTO objects to strings
-        String[] serializedDrivers = new String[drivers.length];
+        String[] serializedDrivers = new String[driverDTOs.size()];
+
         // Serialize each EmployeeDTO object to a string
-        for (int i = 0; i < drivers.length; i++) {
-            serializedDrivers[i] = driverDTOs[i].serialize();
+        for (int i = 0; i < driverDTOs.size(); i++) {
+            serializedDrivers[i] = driverDTOs.get(i).serialize();
         }
 
         return serializedDrivers;
-
     }
     public boolean updateEmployeeBranch(long israeliId, long branchId) {
         // Check if the employee exists
-        Employee employee = getEmployeeByIsraeliId(israeliId);
-        if (employee == null) {
+        EmployeeDTO employeeDTO = employeeRepository.getById(israeliId);
+        if (employeeDTO == null) {
             throw new InvalidInputException("Employee with ID " + israeliId + " not found");
         }
 
         // Check if the branch ID is valid
         if (!isBranchIdValid(branchId)) {
-            throw new InvalidInputException( "Invalid branch ID: " + branchId);
+            throw new InvalidInputException("Invalid branch ID: " + branchId);
         }
 
         // Update the employee's branch
-        employee.setBranch(branchId);
-        throw new InvalidInputException( "Employee with ID " + israeliId + " updated to branch ID " + branchId);
+        employeeDTO.setBranchId(branchId);
+        employeeDTO.setUpdateDate(LocalDate.now());
+
+        // Update the employee in the repository
+        return employeeRepository.update(employeeDTO);
     }
     public long getEmployeeBranch(long israeliId) {
         // Check if the employee exists
-        Employee employee = getEmployeeByIsraeliId(israeliId);
-        if (employee == null) {
+        EmployeeDTO employeeDTO = employeeRepository.getById(israeliId);
+        if (employeeDTO == null) {
             throw new InvalidInputException("Employee with ID " + israeliId + " not found");
         }
         // Return the employee's branch ID
-        return employee.getBranchId();
+        return employeeDTO.getBranchId();
     }
 
     public long getBranchIdByAddress(String address, int areaCode) {
         // Check if the branch exists
-        Branch branch = branches.stream().filter(b -> b.getBranchAddress().equals(address) && b.getAreaCode() == areaCode).findFirst().orElse(null);
-        if (branch == null) {
+        BranchDTO branchDTO = branchRepository.getByAddressAndAreaCode(address, areaCode);
+        if (branchDTO == null) {
             throw new InvalidInputException("Branch with address " + address + " and area code " + areaCode + " not found");
         }
         // Return the branch ID
-        return branch.getBranchId();
+        return branchDTO.getBranchId();
     }
 
     public String getEmployeeBranchName(long israeliId) {
         // Check if the employee exists
-        Employee employee = getEmployeeByIsraeliId(israeliId);
-        if (employee == null) {
+        EmployeeDTO employeeDTO = employeeRepository.getById(israeliId);
+        if (employeeDTO == null) {
             throw new InvalidInputException("Employee with ID " + israeliId + " not found");
         }
-        // Return the employee's branch name
-        return branches.stream().filter(b -> b.getBranchId() == employee.getBranchId()).map(Branch::getBranchName).findFirst().orElse(null);
+
+        // Get the employee's branch
+        long branchId = employeeDTO.getBranchId();
+
+        // Get the branch details and return the branch name
+        BranchDTO branchDTO = branchRepository.getById(branchId);
+        return branchDTO != null ? branchDTO.getBranchName() : null;
     }
 
-    public boolean isBranchExists(long branch) {
-        // Check if the branch exists
-        return branches.stream().anyMatch(b -> b.getBranchId() == branch);
+    public boolean isBranchExists(long branchId) {
+        // Check if the branch exists using the repository
+        return branchRepository.exists(branchId);
     }
 }

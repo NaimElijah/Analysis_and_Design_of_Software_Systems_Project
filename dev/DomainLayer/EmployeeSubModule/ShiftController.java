@@ -741,18 +741,23 @@ public class ShiftController {
                 .add(shift);
     }
 
-    public Shift getShiftbyDateAndTime(long doneBy, LocalDate date, LocalTime hour) {
-        return getShiftbyDateTimeAndBranch( date, hour, null);
+    public Shift getShiftbyDateAndTime(long doneBy, LocalDate date, LocalTime hour, long branchId) {
+        return getShiftbyDateTimeAndBranch( date, hour, branchId);
     }
 
     /**
-     * Get a shift by date, time, and branch
-     * @param date date of the shift
-     * @param hour time to check if it falls within the shift hours
-     * @param branch branch of the shift (if null, returns shift for any branch)
-     * @return the shift if it exists, null otherwise
+     * Retrieves a shift for a given date, time, and branch ID.
+     *
+     * Filters the list of shifts to find the one that matches the specified date and branch ID,
+     * and checks if the given time falls within the shift's start and end hours.
+     *
+     * @param date the date for which the shift is being retrieved; must not be null
+     * @param hour the time of day for which the shift is being retrieved; must not be null
+     * @param branchId the unique identifier of the branch for which the shift is being retrieved
+     * @return the shift that matches the specified criteria, or null if no such shift exists
+     * @throws IllegalArgumentException if date or hour is null
      */
-    public Shift getShiftbyDateTimeAndBranch( LocalDate date, LocalTime hour, String branch) {
+    public Shift getShiftbyDateTimeAndBranch( LocalDate date, LocalTime hour, long branchId) {
         String PERMISSION_REQUIRED = "GET_SHIFT";
 //        if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
 //            throw new UnauthorizedPermissionException("User does not have permission to get shifts by date and time");
@@ -763,7 +768,7 @@ public class ShiftController {
         // Filter shifts by date and branch if specified
         return shifts.stream()
                 .filter(shift -> shift.getShiftDate().equals(date) && shift.getStartHour().isBefore(hour) && shift.getEndHour().isAfter(hour))
-                .filter(shift -> branch == null || branch.equals(shift.getBranchId()))
+                .filter(shift ->  branchId == shift.getBranchId())
                 .findFirst()
                 .orElse(null);
     }

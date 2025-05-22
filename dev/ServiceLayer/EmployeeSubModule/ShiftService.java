@@ -377,18 +377,18 @@ public class ShiftService {
     }
 
     /**
-     * Checks if an employee is assigned to a shift at a specific date, time, and branch.
+     * Checks if a specific employee is assigned to a shift at a given date, time, and branch location.
      *
-     * @param doneBy the ID of the user performing the check
-     * @param date the date of the shift
-     * @param hour the time of the shift
-     * @param employeeId the ID of the employee to check
-     * @param branch the branch where the shift is located
-     * @return true if the employee is assigned to the shift, false otherwise
+     * @param doneBy The ID of the user performing the check.
+     * @param date The date of the shift being checked.
+     * @param hour The start time of the shift being checked.
+     * @param employeeId The ID of the employee whose assignment status is being verified.
+     * @param branchId The branch location where the shift is scheduled.
+     * @return true if the specified employee is assigned to the shift at the given date, time, and branch location; false otherwise.
      */
-    public boolean isAssignedByDateTimeBranch(long doneBy, LocalDate date, LocalTime hour, long employeeId, String branch) {
+    public boolean isAssignedByDateTimeBranch(long doneBy, LocalDate date, LocalTime hour, long employeeId, long branchId) {
         try {
-            return assignmentController.isAssignedEmployeeByDateTimeBranch(doneBy, date, hour, employeeId, branch);
+            return assignmentController.isAssignedEmployeeByDateTimeBranch(doneBy, date, hour, employeeId, branchId);
         } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }
