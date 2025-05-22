@@ -24,7 +24,7 @@ public class ShiftController {
     private long shiftIdCounter = 1;
 
     // Magic Number
-    private final String ShiftManagerStr = config.ROLE_SHIFT_MANAGER; // TODO: for some reason the initdata is adding a space in the start of each role name after DAL integration we must remove the space here!
+    private final String ShiftManagerStr = config.ROLE_SHIFT_MANAGER; // TODO: check if this is the correct role name
 
     public ShiftController(Set<Shift> shifts, AuthorisationController authorizationController, EmployeeController employeeController) {
         this.shifts = shifts;

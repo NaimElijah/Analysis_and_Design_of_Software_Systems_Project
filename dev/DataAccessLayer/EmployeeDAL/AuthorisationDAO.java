@@ -1,17 +1,22 @@
 package DataAccessLayer.EmployeeDAL;
 
+import DTOs.RoleDTO;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
  * Data Access Object for authorization-related entities.
  * This class provides methods to interact with the Roles and Permissions tables in the database.
+ * Uses RoleDTO for data transfer between layers where appropriate.
  */
 public class AuthorisationDAO {
     private Connection connection;
@@ -224,35 +229,39 @@ public class AuthorisationDAO {
     /**
      * Retrieves all roles with their associated permissions.
      *
-     * @return A map of role names to sets of permission names
+     * @return A list of RoleDTO objects
      * @throws SQLException if a database access error occurs
      */
-    public Map<String, HashSet<String>> getAllRolesWithPermissions() throws SQLException {
-        Map<String, HashSet<String>> rolesWithPermissions = new HashMap<>();
+    public List<RoleDTO> getAllRolesWithPermissions() throws SQLException {
+        List<RoleDTO> roleDTOs = new ArrayList<>();
 
         // First get all roles
         Set<String> roles = getAllRoles();
-        for (String role : roles) {
-            rolesWithPermissions.put(role, new HashSet<>());
+
+        // For each role, get its permissions and create a RoleDTO
+        for (String roleName : roles) {
+            Set<String> permissions = getPermissionsForRole(roleName);
+            RoleDTO roleDTO = new RoleDTO(roleName, permissions);
+            roleDTOs.add(roleDTO);
         }
 
-        // Then get all role-permission associations
-        String sql = "SELECT roleName, permissionName FROM RolePermissions";
+        return roleDTOs;
+    }
 
-        try (PreparedStatement pstmt = connection.prepareStatement(sql);
-             ResultSet rs = pstmt.executeQuery()) {
-
-            while (rs.next()) {
-                String roleName = rs.getString("roleName");
-                String permissionName = rs.getString("permissionName");
-
-                if (rolesWithPermissions.containsKey(roleName)) {
-                    rolesWithPermissions.get(roleName).add(permissionName);
-                }
-            }
-
-            return rolesWithPermissions;
+    /**
+     * Retrieves a specific role with its associated permissions.
+     *
+     * @param roleName The name of the role to retrieve
+     * @return The RoleDTO if found, null otherwise
+     * @throws SQLException if a database access error occurs
+     */
+    public RoleDTO getRole(String roleName) throws SQLException {
+        if (!roleExists(roleName)) {
+            return null;
         }
+
+        Set<String> permissions = getPermissionsForRole(roleName);
+        return new RoleDTO(roleName, permissions);
     }
 
     /**

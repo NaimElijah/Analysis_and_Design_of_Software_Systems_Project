@@ -1,5 +1,6 @@
 package DomainLayer.EmployeeSubModule;
 
+import DomainLayer.EmployeeSubModule.Repository.AuthorisationRepository;
 import DomainLayer.exception.InvalidInputException;
 import DomainLayer.exception.UnauthorizedPermissionException;
 
@@ -7,16 +8,14 @@ import java.util.*;
 
 public class AuthorisationController {
 
-    private final Map<String, HashSet<String>> roles; // Set of all roles
-    private final Set<String> permissions; // Set of all permissions
+    private final AuthorisationRepository authorisationRepository;
 
-    public AuthorisationController(Map<String, HashSet<String>> roles, Set<String> permissions) {
-        this.roles = new HashMap<>(roles);
-        this.permissions = new HashSet<>(permissions);
+    public AuthorisationController(AuthorisationRepository authorisationRepository) {
+        this.authorisationRepository = authorisationRepository;
     }
 
     public boolean isRoleExists(String role) {
-        return roles.containsKey(role);
+        return authorisationRepository.roleExists(role);
     }
 
     /**
@@ -35,9 +34,10 @@ public class AuthorisationController {
             throw new InvalidInputException("Permission required cannot be null or empty");
         }
 
+        Map<String, HashSet<String>> rolesWithPermissions = authorisationRepository.getAllRolesWithPermissions();
         boolean hasPermission = employee.getRoles()
                 .stream()
-                .anyMatch(role -> roles.containsKey(role) && roles.get(role).contains(permissionRequired));
+                .anyMatch(role -> rolesWithPermissions.containsKey(role) && rolesWithPermissions.get(role).contains(permissionRequired));
 
         if (!hasPermission) {
             throw new UnauthorizedPermissionException("Employee does not have the required permission: " + permissionRequired);
@@ -79,7 +79,7 @@ public class AuthorisationController {
         if (role == null || role.isEmpty()) {
             throw new InvalidInputException("Role cannot be null or empty");
         }
-        if (!isRoleExists(role)) {
+        if (!authorisationRepository.roleExists(role)) {
             throw new InvalidInputException("Role does not exist: " + role);
         }
         if (employee.getRoles().contains(role)) {
@@ -122,20 +122,23 @@ public class AuthorisationController {
         }
 
         // Check if role exists
-        if (!roles.containsKey(role)) {
+        if (!authorisationRepository.roleExists(role)) {
             throw new InvalidInputException("Role does not exist: " + role);
         }
 
         // Check if permission exists
-        if (!permissions.contains(permission)) {
+        if (!authorisationRepository.permissionExists(permission)) {
             throw new InvalidInputException("Permission does not exist: " + permission);
         }
 
-        if (roles.get(role).contains(permission)) {
+        // Check if permission already exists in role
+        Set<String> rolePermissions = authorisationRepository.getPermissionsForRole(role);
+        if (rolePermissions.contains(permission)) {
             return false; // Permission already exists
         }
-        roles.get(role).add(permission);
-        return true;
+
+        // Add permission to role
+        return authorisationRepository.addPermissionToRole(role, permission);
     }
 
     /**
@@ -156,15 +159,18 @@ public class AuthorisationController {
         }
 
         // Check if role exists
-        if (!roles.containsKey(roleName)) {
+        if (!authorisationRepository.roleExists(roleName)) {
             throw new InvalidInputException("Role does not exist: " + roleName);
         }
 
-        if (!roles.get(roleName).contains(permissionName)) {
+        // Check if permission exists in role
+        Set<String> rolePermissions = authorisationRepository.getPermissionsForRole(roleName);
+        if (!rolePermissions.contains(permissionName)) {
             return false; // Permission does not exist in this role
         }
-        roles.get(roleName).remove(permissionName);
-        return true;
+
+        // Remove permission from role
+        return authorisationRepository.removePermissionFromRole(roleName, permissionName);
     }
 
     /**
@@ -189,15 +195,27 @@ public class AuthorisationController {
 
         // Check if all permissions exist
         for (String permission : permissions) {
-            if (!this.permissions.contains(permission)) {
+            if (!authorisationRepository.permissionExists(permission)) {
                 throw new InvalidInputException("Permission does not exist: " + permission);
             }
         }
 
-        if (roles.containsKey(roleName)) {
+        // Check if role already exists
+        if (authorisationRepository.roleExists(roleName)) {
             return false; // Role already exists
         }
-        roles.put(roleName.trim(), new HashSet<>(permissions));
+
+        // Create role
+        boolean created = authorisationRepository.createRole(roleName.trim());
+        if (!created) {
+            return false;
+        }
+
+        // Add permissions to role
+        for (String permission : permissions) {
+            authorisationRepository.addPermissionToRole(roleName.trim(), permission);
+        }
+
         return true;
     }
 
@@ -213,11 +231,11 @@ public class AuthorisationController {
             throw new InvalidInputException("Role name cannot be null or empty");
         }
 
-        if (!roles.containsKey(roleToDelete)) {
+        if (!authorisationRepository.roleExists(roleToDelete)) {
             return false; // Role does not exist
         }
-        roles.remove(roleToDelete);
-        return true;
+        
+        return authorisationRepository.deleteRole(roleToDelete);
     }
 
     /**
@@ -234,12 +252,11 @@ public class AuthorisationController {
         }
 
         String trimmedPermissionName = permissionName.trim();
-        if (permissions.contains(trimmedPermissionName)) {
+        if (authorisationRepository.permissionExists(trimmedPermissionName)) {
             return false; // Permission already exists
         }
 
-        permissions.add(trimmedPermissionName);
-        return true;
+        return authorisationRepository.createPermission(trimmedPermissionName);
     }
 
     /**
@@ -254,28 +271,30 @@ public class AuthorisationController {
             throw new InvalidInputException("Permission name cannot be null or empty");
         }
 
-        if (!permissions.contains(permission)) {
+        if (!authorisationRepository.permissionExists(permission)) {
             return false; // Permission does not exist
         }
 
         // Check if any role uses this permission
-        for (HashSet<String> rolePermissions : roles.values()) {
+        Map<String, HashSet<String>> rolesWithPermissions = authorisationRepository.getAllRolesWithPermissions();
+        for (HashSet<String> rolePermissions : rolesWithPermissions.values()) {
             if (rolePermissions.contains(permission)) {
                 throw new InvalidInputException("Cannot delete permission that is in use by a role");
             }
         }
 
-        permissions.remove(permission);
-        return true;
+        return authorisationRepository.deletePermission(permission);
     }
 
     public Set<String> getAllRoles() {
-        return new HashSet<>(roles.keySet());
+        return authorisationRepository.getAllRoles();
     }
 
     public Map<String,String[]> getAllRolesWithPermissions() {
         Map<String,String[]> rolesMap = new HashMap<>();
-        for (Map.Entry<String, HashSet<String>> entry : roles.entrySet()) {
+        Map<String, HashSet<String>> rolesWithPermissions = authorisationRepository.getAllRolesWithPermissions();
+        
+        for (Map.Entry<String, HashSet<String>> entry : rolesWithPermissions.entrySet()) {
             String roleName = entry.getKey();
             String[] permissionsArray = entry.getValue().toArray(new String[0]);
             rolesMap.put(roleName, permissionsArray);
@@ -284,13 +303,14 @@ public class AuthorisationController {
     }
 
     public Set<String> getAllPermissions() {
-        return new HashSet<>(permissions);
+        return authorisationRepository.getAllPermissions();
     }
 
     public Map<String, HashSet<String>> getRoleDetails(String roleName) {
         Map<String, HashSet<String>> roleDetails = new HashMap<>();
-        if (roles.containsKey(roleName)) {
-            roleDetails.put(roleName, roles.get(roleName));
+        if (authorisationRepository.roleExists(roleName)) {
+            Set<String> permissions = authorisationRepository.getPermissionsForRole(roleName);
+            roleDetails.put(roleName, new HashSet<>(permissions));
         }
         return roleDetails;
     }

@@ -2,12 +2,11 @@ package DomainLayer.EmployeeSubModule.Repository;
 
 import DataAccessLayer.EmployeeDAL.BranchDAO;
 import DataAccessLayer.EmployeeDAL.EmployeeDALFactory;
-import DomainLayer.EmployeeSubModule.Branch;
 import DTOs.BranchDTO;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 /**
  * Implementation of the BranchRepository interface.
@@ -37,51 +36,10 @@ public class BranchRepositoryImpl implements BranchRepository {
         this.branchDAO = branchDAO;
     }
     
-    /**
-     * Converts a Branch domain object to a BranchDTO.
-     *
-     * @param branch The Branch domain object to convert
-     * @return The corresponding BranchDTO
-     */
-    private BranchDTO convertToDTO(Branch branch) {
-        if (branch == null) {
-            return null;
-        }
-        
-        return new BranchDTO(
-            branch.getBranchId(),
-            branch.getBranchName(),
-            branch.getAreaCode(),
-            branch.getBranchAddress(),
-            branch.getManagerID()
-        );
-    }
-    
-    /**
-     * Converts a BranchDTO to a Branch domain object.
-     *
-     * @param dto The BranchDTO to convert
-     * @return The corresponding Branch domain object
-     */
-    private Branch convertToEntity(BranchDTO dto) {
-        if (dto == null) {
-            return null;
-        }
-        
-        return new Branch(
-            dto.getBranchId(),
-            dto.getBranchName(),
-            dto.getAreaCode(),
-            dto.getBranchAddress(),
-            dto.getManagerID()
-        );
-    }
-    
     @Override
     public BranchDTO getById(long branchId) {
         try {
-            Branch branch = branchDAO.getById(branchId);
-            return convertToDTO(branch);
+            return branchDAO.getById(branchId);
         } catch (SQLException e) {
             throw new RuntimeException("Failed to get branch by ID: " + branchId, e);
         }
@@ -90,10 +48,7 @@ public class BranchRepositoryImpl implements BranchRepository {
     @Override
     public List<BranchDTO> getAll() {
         try {
-            List<Branch> branches = branchDAO.getAll();
-            return branches.stream()
-                    .map(this::convertToDTO)
-                    .collect(Collectors.toList());
+            return branchDAO.getAll();
         } catch (SQLException e) {
             throw new RuntimeException("Failed to get all branches", e);
         }
@@ -102,10 +57,7 @@ public class BranchRepositoryImpl implements BranchRepository {
     @Override
     public List<BranchDTO> getByAreaCode(int areaCode) {
         try {
-            List<Branch> branches = branchDAO.getByAreaCode(areaCode);
-            return branches.stream()
-                    .map(this::convertToDTO)
-                    .collect(Collectors.toList());
+            return branchDAO.getByAreaCode(areaCode);
         } catch (SQLException e) {
             throw new RuntimeException("Failed to get branches by area code: " + areaCode, e);
         }
@@ -114,8 +66,7 @@ public class BranchRepositoryImpl implements BranchRepository {
     @Override
     public BranchDTO getByManager(String managerId) {
         try {
-            Branch branch = branchDAO.getByManager(managerId);
-            return convertToDTO(branch);
+            return branchDAO.getByManager(managerId);
         } catch (SQLException e) {
             throw new RuntimeException("Failed to get branch by manager: " + managerId, e);
         }
@@ -124,8 +75,7 @@ public class BranchRepositoryImpl implements BranchRepository {
     @Override
     public boolean create(BranchDTO branchDTO) {
         try {
-            Branch branch = convertToEntity(branchDTO);
-            return branchDAO.insert(branch);
+            return branchDAO.insert(branchDTO);
         } catch (SQLException e) {
             throw new RuntimeException("Failed to create branch: " + branchDTO.getBranchId(), e);
         }
@@ -134,8 +84,7 @@ public class BranchRepositoryImpl implements BranchRepository {
     @Override
     public boolean update(BranchDTO branchDTO) {
         try {
-            Branch branch = convertToEntity(branchDTO);
-            return branchDAO.update(branch);
+            return branchDAO.update(branchDTO);
         } catch (SQLException e) {
             throw new RuntimeException("Failed to update branch: " + branchDTO.getBranchId(), e);
         }
@@ -158,12 +107,11 @@ public class BranchRepositoryImpl implements BranchRepository {
     @Override
     public BranchDTO getByAddressAndAreaCode(String address, int areaCode) {
         try {
-            List<Branch> branches = branchDAO.getAll();
-            Branch branch = branches.stream()
+            List<BranchDTO> branches = branchDAO.getAll();
+            return branches.stream()
                     .filter(b -> b.getBranchAddress().equals(address) && b.getAreaCode() == areaCode)
                     .findFirst()
                     .orElse(null);
-            return convertToDTO(branch);
         } catch (SQLException e) {
             throw new RuntimeException("Failed to get branch by address and area code: " + address + ", " + areaCode, e);
         }

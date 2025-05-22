@@ -2,9 +2,12 @@ package DomainLayer.EmployeeSubModule.Repository;
 
 import DataAccessLayer.EmployeeDAL.AuthorisationDAO;
 import DataAccessLayer.EmployeeDAL.EmployeeDALFactory;
+import DTOs.RoleDTO;
 
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,9 +16,9 @@ import java.util.Set;
  * This class uses the AuthorisationDAO to interact with the database.
  */
 public class AuthorisationRepositoryImpl implements AuthorisationRepository {
-    
+
     private final AuthorisationDAO authorisationDAO;
-    
+
     /**
      * Constructor that initializes the repository with the AuthorisationDAO.
      */
@@ -26,7 +29,7 @@ public class AuthorisationRepositoryImpl implements AuthorisationRepository {
             throw new RuntimeException("Failed to initialize AuthorisationRepository", e);
         }
     }
-    
+
     /**
      * Constructor that accepts an AuthorisationDAO for testing purposes.
      *
@@ -35,7 +38,7 @@ public class AuthorisationRepositoryImpl implements AuthorisationRepository {
     public AuthorisationRepositoryImpl(AuthorisationDAO authorisationDAO) {
         this.authorisationDAO = authorisationDAO;
     }
-    
+
     @Override
     public boolean createRole(String roleName) {
         try {
@@ -44,7 +47,7 @@ public class AuthorisationRepositoryImpl implements AuthorisationRepository {
             throw new RuntimeException("Failed to create role: " + roleName, e);
         }
     }
-    
+
     @Override
     public boolean deleteRole(String roleName) {
         try {
@@ -53,7 +56,7 @@ public class AuthorisationRepositoryImpl implements AuthorisationRepository {
             throw new RuntimeException("Failed to delete role: " + roleName, e);
         }
     }
-    
+
     @Override
     public boolean createPermission(String permissionName) {
         try {
@@ -62,7 +65,7 @@ public class AuthorisationRepositoryImpl implements AuthorisationRepository {
             throw new RuntimeException("Failed to create permission: " + permissionName, e);
         }
     }
-    
+
     @Override
     public boolean deletePermission(String permissionName) {
         try {
@@ -71,7 +74,7 @@ public class AuthorisationRepositoryImpl implements AuthorisationRepository {
             throw new RuntimeException("Failed to delete permission: " + permissionName, e);
         }
     }
-    
+
     @Override
     public boolean addPermissionToRole(String roleName, String permissionName) {
         try {
@@ -80,7 +83,7 @@ public class AuthorisationRepositoryImpl implements AuthorisationRepository {
             throw new RuntimeException("Failed to add permission to role: " + permissionName + " to " + roleName, e);
         }
     }
-    
+
     @Override
     public boolean removePermissionFromRole(String roleName, String permissionName) {
         try {
@@ -89,7 +92,7 @@ public class AuthorisationRepositoryImpl implements AuthorisationRepository {
             throw new RuntimeException("Failed to remove permission from role: " + permissionName + " from " + roleName, e);
         }
     }
-    
+
     @Override
     public Set<String> getAllRoles() {
         try {
@@ -98,7 +101,7 @@ public class AuthorisationRepositoryImpl implements AuthorisationRepository {
             throw new RuntimeException("Failed to get all roles", e);
         }
     }
-    
+
     @Override
     public Set<String> getAllPermissions() {
         try {
@@ -107,16 +110,24 @@ public class AuthorisationRepositoryImpl implements AuthorisationRepository {
             throw new RuntimeException("Failed to get all permissions", e);
         }
     }
-    
+
     @Override
     public Map<String, HashSet<String>> getAllRolesWithPermissions() {
         try {
-            return authorisationDAO.getAllRolesWithPermissions();
+            List<RoleDTO> roleDTOs = authorisationDAO.getAllRolesWithPermissions();
+            Map<String, HashSet<String>> rolesWithPermissions = new HashMap<>();
+
+            for (RoleDTO roleDTO : roleDTOs) {
+                HashSet<String> permissions = new HashSet<>(roleDTO.getPermissions());
+                rolesWithPermissions.put(roleDTO.getName(), permissions);
+            }
+
+            return rolesWithPermissions;
         } catch (SQLException e) {
             throw new RuntimeException("Failed to get all roles with permissions", e);
         }
     }
-    
+
     @Override
     public Set<String> getPermissionsForRole(String roleName) {
         try {
@@ -125,7 +136,7 @@ public class AuthorisationRepositoryImpl implements AuthorisationRepository {
             throw new RuntimeException("Failed to get permissions for role: " + roleName, e);
         }
     }
-    
+
     @Override
     public boolean roleExists(String roleName) {
         try {
@@ -134,7 +145,7 @@ public class AuthorisationRepositoryImpl implements AuthorisationRepository {
             throw new RuntimeException("Failed to check if role exists: " + roleName, e);
         }
     }
-    
+
     @Override
     public boolean permissionExists(String permissionName) {
         try {

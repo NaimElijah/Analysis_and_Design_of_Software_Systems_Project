@@ -40,8 +40,7 @@ public class SystemFactory {
 
         // Initialize controllers with repositories
         AuthorisationController authController = new AuthorisationController(
-            authorisationRepository.getAllRolesWithPermissions(),
-            authorisationRepository.getAllPermissions()
+            authorisationRepository
         );
 
         EmployeeController employeeController = new EmployeeController(
