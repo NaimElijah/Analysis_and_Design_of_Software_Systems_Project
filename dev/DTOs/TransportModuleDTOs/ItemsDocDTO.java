@@ -1,18 +1,21 @@
 package DTOs.TransportModuleDTOs;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class ItemsDocDTO {
     private int itemsDoc_num;
     private SiteDTO src_siteDTO;
     private SiteDTO dest_siteDTO;
+    private LocalDateTime estimatedArrivalTime;
     private ArrayList<ItemQuantityDTO> itemQuantityDTOs;
 
     public ItemsDocDTO() {}
-    public ItemsDocDTO(int itemsDoc_num, SiteDTO src_siteDTO, SiteDTO dest_siteDTO, ArrayList<ItemQuantityDTO> itemQuantityDTOs) {
+    public ItemsDocDTO(int itemsDoc_num, SiteDTO src_siteDTO, SiteDTO dest_siteDTO, ArrayList<ItemQuantityDTO> itemQuantityDTOs, LocalDateTime estimatedArrivalTime) {
         this.itemsDoc_num = itemsDoc_num;
         this.src_siteDTO = src_siteDTO;
         this.dest_siteDTO = dest_siteDTO;
+        this.estimatedArrivalTime = estimatedArrivalTime;
         this.itemQuantityDTOs = itemQuantityDTOs;
     }
 
@@ -22,6 +25,8 @@ public class ItemsDocDTO {
     public void setSrc_siteDTO(SiteDTO src_siteDTO) {this.src_siteDTO = src_siteDTO;}
     public SiteDTO getDest_siteDTO() {return dest_siteDTO;}
     public void setDest_siteDTO(SiteDTO dest_siteDTO) {this.dest_siteDTO = dest_siteDTO;}
+    public LocalDateTime getEstimatedArrivalTime() {return estimatedArrivalTime;}
+    public void setEstimatedArrivalTime(LocalDateTime estimatedArrivalTime) {this.estimatedArrivalTime = estimatedArrivalTime;}
     public ArrayList<ItemQuantityDTO> getItemQuantityDTOs() {return itemQuantityDTOs;}
     public void setItemQuantityDTOs(ArrayList<ItemQuantityDTO> itemQuantityDTOs) {this.itemQuantityDTOs = itemQuantityDTOs;}
 

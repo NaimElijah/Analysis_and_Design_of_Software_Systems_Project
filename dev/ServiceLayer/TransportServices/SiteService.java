@@ -19,7 +19,7 @@ public class SiteService {
 
     public String addShippingArea(long loggedID, int areaNum, String areaName){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "ADD_SHIPPING_AREA")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't add Shipping Areas"; }
         if (!this.employeeIntegrationService.hasRole(loggedID, "Admin") && !this.employeeIntegrationService.hasRole(loggedID, "Transport manager")){
@@ -41,7 +41,7 @@ public class SiteService {
 
     public String deleteShippingArea(long loggedID, int areaNum){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "DELETE_SHIPPING_AREA")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         try {
             sf.deleteShippingArea(areaNum);
@@ -60,7 +60,7 @@ public class SiteService {
 
     public String setShippingAreaNum(long loggedID, int OldareaNum, int NewAreaNum){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_SHIPPING_AREA")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         try {
             if(OldareaNum == NewAreaNum){
@@ -81,7 +81,7 @@ public class SiteService {
 
     public String setShippingAreaName(long loggedID, int areaNum, String NewareaName){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_SHIPPING_AREA")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         try {
             if(NewareaName.isEmpty() || NewareaName.isBlank()){
@@ -114,7 +114,7 @@ public class SiteService {
 
     public String addSite(long loggedID, int areaNum, String address, String cont_name, long Cont_Num){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "ADD_SITE")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         try {
             if (address.isEmpty() || cont_name.isEmpty() || address.isBlank() || cont_name.isBlank() || Cont_Num == 0) {
@@ -134,7 +134,7 @@ public class SiteService {
 
     public String deleteSite(long loggedID, int areaNum, String address){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "DELETE_SITE")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         try {
             if (address.isEmpty() || address.isBlank()) {
@@ -158,7 +158,7 @@ public class SiteService {
 
     public String setSiteAddress(long loggedID, int areaNum, String Oldaddress, String NewAddress){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_SITE")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         try {
             if (NewAddress.isEmpty() || Oldaddress.isEmpty() || NewAddress.isBlank() || Oldaddress.isBlank()) {
@@ -180,7 +180,7 @@ public class SiteService {
 
     public String setSiteAreaNum(long loggedID, int OldareaNum, int NewAreaNum, String address){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_SITE")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         try {
             if (address.isEmpty() || address.isBlank()) {
@@ -202,7 +202,7 @@ public class SiteService {
 
     public String setSiteContName(long loggedID, int areaNum, String address, String contName){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_SITE")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         try {
             if (address.isEmpty() || contName.isEmpty() || address.isBlank() || contName.isBlank()) {
@@ -220,7 +220,7 @@ public class SiteService {
 
     public String setSiteContNum(long loggedID, int areaNum, String address, long contNum){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_SITE")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         try {
             if (address.isEmpty() || address.isBlank()) {
@@ -252,7 +252,7 @@ public class SiteService {
 
     public String showAllSites(long loggedID){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "SHOW_SITES")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         String res = "";
         try {
@@ -265,7 +265,7 @@ public class SiteService {
 
     public String showAllShippingAreas(long loggedID){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "SHOW_SHIPPING_AREAS")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         String res = "";
         try {

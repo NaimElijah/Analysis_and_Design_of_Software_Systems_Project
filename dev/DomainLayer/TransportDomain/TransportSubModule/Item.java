@@ -3,6 +3,7 @@ package DomainLayer.TransportDomain.TransportSubModule;
 import java.util.Objects;
 
 public class Item {
+    private int itemInItemsDocId;    //   TODO:   for database               <<<---------------------------    <<-----------------------
     private String name;
     private double weight;   // In Kilos
     private Boolean condition;

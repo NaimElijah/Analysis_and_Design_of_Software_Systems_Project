@@ -6,10 +6,11 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 
 public class ItemsDoc {
+    private int ItemsDocInTransportID;    //   TODO:   for database               <<<---------------------------    <<-----------------------
     private int itemsDoc_num;
     private Site src_site;
     private Site dest_site;
-    private LocalDateTime estimatedArrivalTime;   // TODO:     <<<-----------------------------------  ** NEW **  estimatedArrivalTime
+    private LocalDateTime estimatedArrivalTime;
     private HashMap<Item, Integer> goodItems;   //  separate the good items and the bad items
     private HashMap<Item, Integer> badItems;
 
@@ -17,7 +18,7 @@ public class ItemsDoc {
         this.itemsDoc_num = itemDoc_num;
         this.src_site = src_site;
         this.dest_site = dest_site;
-        this.estimatedArrivalTime = null;   ///   Is set a bit later, when a TransportDoc calculates it.
+        this.estimatedArrivalTime = null;   ///   Is set a bit later, when a TransportDoc calculates it with it's calculation function.
         this.goodItems = new HashMap<Item, Integer>();
         this.badItems = new HashMap<Item, Integer>();
     }

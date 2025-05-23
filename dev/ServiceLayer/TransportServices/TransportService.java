@@ -1,17 +1,23 @@
 package ServiceLayer.TransportServices;
 
 import DTOs.EmployeeDTO;
+import DTOs.TransportModuleDTOs.ItemsDocDTO;
+import DTOs.TransportModuleDTOs.SiteDTO;
 import DTOs.TransportModuleDTOs.TransportDTO;
+import DomainLayer.TransportDomain.SiteSubModule.Address;
 import DomainLayer.TransportDomain.TransportSubModule.TransportController;
 import ServiceLayer.EmployeeIntegrationService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import javax.management.AttributeNotFoundException;
 import javax.management.openmbean.KeyAlreadyExistsException;
 import javax.naming.CommunicationException;
 import java.io.FileNotFoundException;
 import java.nio.file.FileAlreadyExistsException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class TransportService {
@@ -23,12 +29,15 @@ public class TransportService {
         this.employeeIntegrationService = es;
         this.tran_f = tf;
         this.objectMapper = new ObjectMapper();
+//        this.objectMapper = new ObjectMapper();   //  if needed
+//        mapper.registerModule(new JavaTimeModule());   //  if needed
+//        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);   //  if needed
     }
 
-
+    /// NOTE: This function is called only when a Transport has passed the Transport checks and can fully be registered.
     public String createTransport(long loggedID, String transportDTO, int queuedIndexIfWasQueued){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "CREATE_TRANSPORT")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         try {
             this.tran_f.createTransport(transportDTO, queuedIndexIfWasQueued);
@@ -43,7 +52,7 @@ public class TransportService {
 
     public String deleteTransport(long loggedID, int transportID){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "DELETE_TRANSPORT")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         if (transportID < 0){ return "Can't Enter a negative Transport ID number"; }
         try {
@@ -65,17 +74,31 @@ public class TransportService {
 
     public String setTransportStatus(long loggedID, int TranDocID, String menu_status_option){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         int intMenuStatusOption = Integer.parseInt(menu_status_option);
-        if (intMenuStatusOption < 1 || intMenuStatusOption > 6){
-            return "Invalid menu status option - enter a number between 1 and 6";
-        }
+        if (intMenuStatusOption < 1 || intMenuStatusOption > 6){ return "Invalid menu status option - enter a number between 1 and 6"; }
+        if (TranDocID < 0){ return "Can't Enter a negative Transport ID number"; }
         try {
+            if (!this.tran_f.doesTranIDExist(TranDocID)){ throw new FileNotFoundException("The Transport ID you have entered doesn't exist."); }
+
+            TransportDTO testingTransport = this.objectMapper.readValue(this.tran_f.getTransportAsDTOJson(TranDocID), TransportDTO.class);
+
+            if (intMenuStatusOption == 1 || intMenuStatusOption == 3 || intMenuStatusOption == 6){   // active transport statuses
+                if(!isTranDriverTimeAndPlaceValid(testingTransport)){
+                    return "Cannot change this transport's status to an active one because, this transport has a Driver Unavailability issue.";
+                } else if (!areWareHouseMenTimeAndPlacesValid(testingTransport)) {
+                    return "Cannot change this transport's status to an active one because, this transport has a WareHousemen Unavailability issue.";
+                }
+            }
+
+            ///    and then the other checks
             this.tran_f.setTransportStatus(TranDocID, intMenuStatusOption, this.employeeIntegrationService.isActive(this.tran_f.getTransports().get(TranDocID).getTransportDriverId()));
         } catch (FileNotFoundException e) {
             return "The Transport ID you have entered doesn't exist.";
-        } catch (FileAlreadyExistsException e) {
+        } catch (StringIndexOutOfBoundsException e){
+            return "You cannot set a queued Transport's status as something other than Queued or Canceled.";
+        }catch (FileAlreadyExistsException e) {
             return "The status you are trying to set already is the status of this Transport";
         } catch (CommunicationException e) {
             return "cannot change Transport Status because it wants to change to an active one, but the Driver is already active in another Transport.";
@@ -97,7 +120,7 @@ public class TransportService {
 
     public String setTransportTruck(long loggedID, int TranDocID, int truckNum){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         if (TranDocID < 0 || truckNum < 0){ return "Transport Document number, Truck number values cannot be negative."; }
         try {
@@ -127,13 +150,21 @@ public class TransportService {
 
     public String setTransportDriver(long loggedID, int TranDocID, int DriverID){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         if (TranDocID < 0 || DriverID < 0){ return "Transport Document number, Driver ID values cannot be negative."; }
         try {
+            if (!this.tran_f.doesTranIDExist(TranDocID)){ throw new FileNotFoundException("The Transport ID you have entered doesn't exist."); }
+
+            TransportDTO testingTransport = this.objectMapper.readValue(this.tran_f.getTransportAsDTOJson(TranDocID), TransportDTO.class);
+            testingTransport.setTransportDriverID(DriverID);  // the change to check if valid
+
+            if(!isTranDriverTimeAndPlaceValid(testingTransport)){ return "Cannot change this transport's Driver to that because, this transport will have a Driver Unavailability issue.\n(The new Driver probably isn't from the sites associated with this Transport)"; }
+            ///    and then the other checks
             boolean isNotDriver = !this.employeeIntegrationService.hasRole(DriverID, "DriverA") && !this.employeeIntegrationService.hasRole(DriverID, "DriverB") && !this.employeeIntegrationService.hasRole(DriverID, "DriverC") && !this.employeeIntegrationService.hasRole(DriverID, "DriverD") && !this.employeeIntegrationService.hasRole(DriverID, "DriverE");
             String lice = this.tran_f.getTruckLicenseAsStringRole(this.tran_f.getTransports().get(TranDocID).getTransportTruck().getTruck_num());
             this.tran_f.setTransportDriver(TranDocID, DriverID, isNotDriver, this.employeeIntegrationService.isActive(DriverID), this.employeeIntegrationService.hasRole(DriverID, lice));
+
         } catch (FileNotFoundException e) {
             return "The Transport ID you have entered doesn't exist.";
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -158,7 +189,7 @@ public class TransportService {
 
 
 
-    //TODO: refactor to timing and specific site workers elements.  (also refactor other functions in here)
+    ///   Note:  this is licenses wise and free wise.  NOT time and place wise.
     public String isTruckDriverPairingGood(long loggedID, int truckNum, int driverID) {
         if (truckNum < 0 || driverID < 0){ return "Truck number/Driver ID values cannot be negative."; }
         try {
@@ -206,8 +237,57 @@ public class TransportService {
 
 
 
-    //TODO: refactor to timing and specific site workers elements.  (also refactor other functions in here)
-    public String checkTransportValidity(long loggedID, String DTO_OfTransport) {  ///  returns: "Valid", "BadLicenses", "<overallWeight-truckMaxCarryWeight>", "Queue", "Occupied"
+
+
+
+
+    private boolean isTranDriverTimeAndPlaceValid(TransportDTO transport_DTO){    //TODO:     <<<-------------------------   use this helper function where needed
+        long transportDriverID = transport_DTO.getTransportDriverID();
+        LocalDateTime transportDepar_t = transport_DTO.getDeparture_dt();
+        String transportSrcAddressString = transport_DTO.getSrc_site().getSiteAddressString();
+        int transportSrcAreaNum = transport_DTO.getSrc_site().getSiteAreaNum();
+
+        /// check if the driver is valid time and place wise.
+        if (this.employeeIntegrationService.isDriverOnShiftAt(transportDriverID, transportDepar_t, transportSrcAddressString, transportSrcAreaNum)){
+            // driver belongs to src site and is there at the right time
+            return true;
+        } else {
+            // so we need to check if that driver is from any destination site
+            for (ItemsDocDTO itemsDocDTO : transport_DTO.getDests_Docs()){
+                if (this.employeeIntegrationService.isDriverOnShiftAt(transportDriverID, transportDepar_t, itemsDocDTO.getDest_siteDTO().getSiteAddressString(), itemsDocDTO.getDest_siteDTO().getSiteAreaNum())){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+
+
+
+    private boolean areWareHouseMenTimeAndPlacesValid(TransportDTO transportDto) {    //TODO:     <<<-------------------------   use this helper function where needed
+        if (!this.employeeIntegrationService.isWarehousemanOnShiftAt(transportDto.getDeparture_dt(), transportDto.getSrc_site().getSiteAddressString(), transportDto.getSrc_site().getSiteAreaNum())){
+            return false;   //  because there won't be any warehouseman to load the truck at the src site
+        }
+        for (ItemsDocDTO itemsDocDTO : transportDto.getDests_Docs()){
+            if (!this.employeeIntegrationService.isWarehousemanOnShiftAt(itemsDocDTO.getEstimatedArrivalTime(), itemsDocDTO.getDest_siteDTO().getSiteAddressString(), itemsDocDTO.getDest_siteDTO().getSiteAreaNum())){
+                return false;   //  because there won't be any warehouseman to offload the truck at the dest site
+            }
+        }
+        return true;
+    }
+
+
+
+
+
+
+
+
+
+
+    ///  returns: "Valid", "BadLicenses", "overallWeight-truckMaxCarryWeight", "Queue", "Occupied", "WareHouseManUnavailable", "DriverUnavailable"
+    public String checkTransportValidity(long loggedID, String DTO_OfTransport) {
         String res = "Valid";
         try {
             /// /////////////////////////////////    <<-------------------------------------   checking if there's a Driver-Truck Pairing At All Right Now, from the Free ones
@@ -215,7 +295,8 @@ public class TransportService {
             for (String emp : this.employeeIntegrationService.getAllDrivers()){
                 employeesDTOs.add(this.objectMapper.readValue(emp, EmployeeDTO.class));
             }
-            ///  checking if there is a match at all, --> from those who are free right now
+
+            ///  checking if there is a match at all, --> from those who are free right now, generally in all sites
             boolean isThereMatchAtAllBetweenLicenses = false;
             for (EmployeeDTO employee : employeesDTOs){
                 for (int trucNum : this.tran_f.getTruckFacade().getTrucksWareHouse().keySet()){
@@ -229,7 +310,18 @@ public class TransportService {
                 if (isThereMatchAtAllBetweenLicenses){break;}  // if already found
             }
             // else: continue to check other stuff inside this function
+
+
             TransportDTO transport_DTO = this.objectMapper.readValue(DTO_OfTransport, TransportDTO.class);
+
+            if(!isTranDriverTimeAndPlaceValid(transport_DTO)){
+                this.tran_f.addFromTransportDTOStringToWaitQueue(DTO_OfTransport);
+                return "DriverUnavailable";
+            } else if (!areWareHouseMenTimeAndPlacesValid(transport_DTO)) {
+                this.tran_f.addFromTransportDTOStringToWaitQueue(DTO_OfTransport);
+                return "WareHouseManUnavailable";
+            }
+
             boolean hasRole11 = this.employeeIntegrationService.hasRole(transport_DTO.getTransportDriverID(), this.tran_f.getTruckLicenseAsStringRole(transport_DTO.getTransportTruckNum()));
             res = this.tran_f.checkTransportValidity(DTO_OfTransport, hasRole11, isThereMatchAtAllBetweenLicenses);
 
@@ -242,6 +334,9 @@ public class TransportService {
         }
         return res;  //  if All Good
     }
+
+
+
 
 
 
@@ -283,16 +378,41 @@ public class TransportService {
 
     public String addDestSite(long loggedID, int tran_ID, int itemsDoc_num, int destSiteArea, String destSiteAddress, String contName, long contNum) {
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
-        if (tran_ID < 0 || itemsDoc_num < 0 || destSiteArea < 0 || contNum < 0){
-            return "The info numbers you have entered cannot be negative";
-        }
-        if (destSiteAddress.isEmpty() || destSiteAddress.isBlank() || contName.isEmpty() || contName.isBlank()){
-            return "The info strings you've entered cannot be empty";
-        }
+        if (tran_ID < 0 || itemsDoc_num < 0 || destSiteArea < 0 || contNum < 0){ return "The info numbers you have entered cannot be negative"; }
+        if (destSiteAddress.isEmpty() || destSiteAddress.isBlank() || contName.isEmpty() || contName.isBlank()){ return "The info strings you've entered cannot be empty"; }
+        if (!tran_f.doesTranIDExist(tran_ID)){ return "The Transport ID you've entered doesn't exist."; }
+
         try {
+            /// checking if the change will affect a warehouse men availability
+            TransportDTO testingTransport = this.objectMapper.readValue(this.tran_f.getTransportAsDTOJson(tran_ID), TransportDTO.class);
+
+            /// adding the ItemsDocDTO and after this we will check the whole TransportDTO for good time matching
+
+            ItemsDocDTO newItemsDoc = new ItemsDocDTO(itemsDoc_num, testingTransport.getSrc_site(), new SiteDTO(destSiteArea, destSiteAddress), new ArrayList<>(), null);
+
+            if (testingTransport.getDests_Docs().size() > 0){  // there are other sites in the transport
+                if (testingTransport.getDests_Docs().get(testingTransport.getDests_Docs().size()-1).getDest_siteDTO().getSiteAreaNum() == destSiteArea){
+                    newItemsDoc.setEstimatedArrivalTime(testingTransport.getDests_Docs().get(testingTransport.getDests_Docs().size()-1).getEstimatedArrivalTime().plusMinutes(30));
+                } else {
+                    newItemsDoc.setEstimatedArrivalTime(testingTransport.getDests_Docs().get(testingTransport.getDests_Docs().size()-1).getEstimatedArrivalTime().plusHours(1));
+                }
+            } else {   //  if there are no other sites in this Transport
+                if (testingTransport.getSrc_site().getSiteAreaNum() == destSiteArea){
+                    newItemsDoc.setEstimatedArrivalTime(testingTransport.getDeparture_dt().plusMinutes(30));
+                } else {
+                    newItemsDoc.setEstimatedArrivalTime(testingTransport.getDeparture_dt().plusHours(1));
+                }
+            }
+
+            testingTransport.getDests_Docs().add(newItemsDoc);
+
+            if (!areWareHouseMenTimeAndPlacesValid(testingTransport)) { return "Cannot add Site to this transport, adding this site will cause a WareHouseMan Unavailability issue"; }
+
+            ///    all the other checks
             this.tran_f.addDestSiteToTransport(tran_ID, itemsDoc_num, destSiteArea, destSiteAddress, contName, contNum);
+
         } catch (FileNotFoundException e) {
             return "The Transport ID you've entered doesn't exist.";
         } catch (FileAlreadyExistsException e) {
@@ -311,15 +431,65 @@ public class TransportService {
     }
 
 
+
     public String removeDestSite(long loggedID, int tran_ID, int itemsDoc_num){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
-        if (tran_ID < 0 || itemsDoc_num < 0){
-            return "The info you entered cannot be negative";
-        }
+        if (tran_ID < 0 || itemsDoc_num < 0){ return "The info you entered cannot be negative"; }
+        if (!tran_f.doesTranIDExist(tran_ID)){ return "The Transport ID you've entered doesn't exist."; }
         try {
+            if (!tran_f.doesItemsDocIDExistInTransport(itemsDoc_num, tran_ID)){ throw new ClassNotFoundException("The Site's Items Document Number is not in that Transport"); }
+
+            /// checking if the change will affect availability factors
+            TransportDTO testingTransport = this.objectMapper.readValue(this.tran_f.getTransportAsDTOJson(tran_ID), TransportDTO.class);
+
+            /// removing the ItemsDocDTO and after this we will check the whole TransportDTO for good time matching
+
+            int removal_index = 0, before_area = testingTransport.getSrc_site().getSiteAreaNum();
+            boolean found_removable = false, beforeBeforeWasDifferentArea = false;
+            for (ItemsDocDTO itemsDocDTO : testingTransport.getDests_Docs()){
+                if (itemsDocDTO.getItemsDoc_num() == itemsDoc_num){
+                    found_removable = true;
+                    continue;
+                }
+                if (!found_removable){
+                    removal_index++;
+                } else {
+                    // after was found, we update (reduce) the transport's following itemsDoc's arrival times
+                    if (itemsDocDTO.getDest_siteDTO().getSiteAreaNum() == before_area){
+                        if (beforeBeforeWasDifferentArea){
+                            itemsDocDTO.setEstimatedArrivalTime(itemsDocDTO.getEstimatedArrivalTime().minusMinutes(90));  // 2 waiting times deducted
+                        } else {
+                            itemsDocDTO.setEstimatedArrivalTime(itemsDocDTO.getEstimatedArrivalTime().minusHours(1));  // 2 waiting times deducted
+                        }
+                    } else {
+                        if (beforeBeforeWasDifferentArea){
+                            itemsDocDTO.setEstimatedArrivalTime(itemsDocDTO.getEstimatedArrivalTime().minusHours(2));  // 2 waiting times deducted
+                        } else {
+                            itemsDocDTO.setEstimatedArrivalTime(itemsDocDTO.getEstimatedArrivalTime().minusMinutes(90));  // 2 waiting times deducted
+                        }
+
+                    }
+                }
+                if (itemsDocDTO.getDest_siteDTO().getSiteAreaNum() != before_area){
+                    beforeBeforeWasDifferentArea = true;
+                } else { beforeBeforeWasDifferentArea = false; }
+                before_area = itemsDocDTO.getDest_siteDTO().getSiteAreaNum();
+            }
+
+            testingTransport.getDests_Docs().remove(removal_index);  //  removing the ItemsDocDTO from the TransportDTO
+
+            // now we removed the ItemsDocDTO and adjusted the following arrival times, and now we'll check time and place validities:
+            if(!isTranDriverTimeAndPlaceValid(testingTransport)){
+                return "Cannot remove Dest Site from this transport, removing this site will cause a Driver Unavailability issue (the driver is probably from that site)";
+            } else if (!areWareHouseMenTimeAndPlacesValid(testingTransport)) {
+                return "Cannot remove Dest Site from this transport, removing this site will cause a WareHouseMan Unavailability issue";
+            }
+
+            ///    all the other checks
             this.tran_f.removeDestSiteFromTransport(tran_ID, itemsDoc_num);
+
         } catch (FileNotFoundException e) {
             return "The Transport ID you've entered doesn't exist.";
         } catch (CommunicationException e) {
@@ -336,20 +506,117 @@ public class TransportService {
 
 
 
+
     public String setSiteArrivalIndexInTransport(long loggedID, int transportID, int siteArea, String siteAddress, String index){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         int intIndex = Integer.parseInt(index);
         if (intIndex < 0){    //  index should be 1, 2, ....
             return "The Site Index in the arrival order cannot be negative";
         }
-        if(transportID < 0 || siteArea < 0){
-            return "The Transport ID and the Site Area cannot be negative";
-        }
+        if(transportID < 0 || siteArea < 0){ return "The Transport ID and the Site Area cannot be negative"; }
+        if (!tran_f.doesTranIDExist(transportID)){ return "The Transport ID you've entered doesn't exist."; }
         try {
+            if (!tran_f.doesAddressExistInTransport(transportID, siteArea, siteAddress)){ throw new ClassNotFoundException("The Site's Items Document Number is not in that Transport"); }
+
+
+            /// checking if the change will affect availability factors
+            TransportDTO testingTransport = this.objectMapper.readValue(this.tran_f.getTransportAsDTOJson(transportID), TransportDTO.class);
+
+            /// ***  removing  *** the ItemsDocDTO and after this we will add again and check the whole TransportDTO for good time matching
+
+            int removal_index = 0, before_area = testingTransport.getSrc_site().getSiteAreaNum();
+            boolean found_removable = false, beforeBeforeWasDifferentArea = false;
+            for (ItemsDocDTO itemsDocDTO : testingTransport.getDests_Docs()){
+                if (itemsDocDTO.getDest_siteDTO().getSiteAreaNum() == siteArea && itemsDocDTO.getDest_siteDTO().getSiteAddressString().equals(siteAddress)){
+                    found_removable = true;
+                    continue;
+                }
+                if (!found_removable){
+                    removal_index++;
+                } else {
+                    // after was found, we update (reduce) the transport's following itemsDoc's arrival times
+                    if (itemsDocDTO.getDest_siteDTO().getSiteAreaNum() == before_area){
+                        if (beforeBeforeWasDifferentArea){
+                            itemsDocDTO.setEstimatedArrivalTime(itemsDocDTO.getEstimatedArrivalTime().minusMinutes(90));  // 2 waiting times deducted
+                        } else {
+                            itemsDocDTO.setEstimatedArrivalTime(itemsDocDTO.getEstimatedArrivalTime().minusHours(1));  // 2 waiting times deducted
+                        }
+                    } else {
+                        if (beforeBeforeWasDifferentArea){
+                            itemsDocDTO.setEstimatedArrivalTime(itemsDocDTO.getEstimatedArrivalTime().minusHours(2));  // 2 waiting times deducted
+                        } else {
+                            itemsDocDTO.setEstimatedArrivalTime(itemsDocDTO.getEstimatedArrivalTime().minusMinutes(90));  // 2 waiting times deducted
+                        }
+
+                    }
+                }
+                if (itemsDocDTO.getDest_siteDTO().getSiteAreaNum() != before_area){
+                    beforeBeforeWasDifferentArea = true;
+                } else { beforeBeforeWasDifferentArea = false; }
+                before_area = itemsDocDTO.getDest_siteDTO().getSiteAreaNum();
+            }
+
+            ItemsDocDTO itemsDoc_removed = testingTransport.getDests_Docs().remove(removal_index);  //  removing the ItemsDocDTO from the TransportDTO
+            int itemsDoc_num = itemsDoc_removed.getItemsDoc_num();  //  removing the ItemsDocDTO from the TransportDTO
+
+
+            ///      from here we are ***  adding  *** that ItemsDoc into the correct index and updating the arrival times accordingly        <<<--------------------------
+            LocalDateTime beforeElementArrivalTime;
+            if (intIndex == 1) { // If inserting as first destination
+                beforeElementArrivalTime = testingTransport.getDeparture_dt();
+            } else {
+                beforeElementArrivalTime = testingTransport.getDests_Docs().get(intIndex - 2).getEstimatedArrivalTime();
+            }
+
+            // Create new itemsDoc with same data but recalculated arrival time
+            ItemsDocDTO newItemsDoc = new ItemsDocDTO(itemsDoc_num, testingTransport.getSrc_site(), new SiteDTO(siteArea, siteAddress),
+                    itemsDoc_removed.getItemQuantityDTOs(), null);
+
+            // Calculate arrival time based on previous site
+            int prevArea = (intIndex == 1) ? testingTransport.getSrc_site().getSiteAreaNum()
+                    : testingTransport.getDests_Docs().get(intIndex - 2).getDest_siteDTO().getSiteAreaNum();
+
+            if (siteArea == prevArea) {
+                newItemsDoc.setEstimatedArrivalTime(beforeElementArrivalTime.plusMinutes(30));
+            } else {
+                newItemsDoc.setEstimatedArrivalTime(beforeElementArrivalTime.plusHours(1));
+            }
+
+            // Insert the new ItemsDoc
+            testingTransport.getDests_Docs().add(intIndex - 1, newItemsDoc);
+
+            // Update arrival times for following destinations
+            LocalDateTime lastArrivalTime = newItemsDoc.getEstimatedArrivalTime();
+            int lastArea = siteArea;
+
+            for (int i = intIndex; i < testingTransport.getDests_Docs().size(); i++) {    //  adding to the arrival times of the following ItemsDocs after the new insertion index
+                ItemsDocDTO currDoc = testingTransport.getDests_Docs().get(i);
+                if (currDoc.getDest_siteDTO().getSiteAreaNum() == lastArea) {
+                    currDoc.setEstimatedArrivalTime(lastArrivalTime.plusMinutes(30));
+                } else {
+                    currDoc.setEstimatedArrivalTime(lastArrivalTime.plusHours(1));
+                }
+                lastArrivalTime = currDoc.getEstimatedArrivalTime();
+                lastArea = currDoc.getDest_siteDTO().getSiteAreaNum();
+            }
+
+            // Check validity of new schedule
+            if (!isTranDriverTimeAndPlaceValid(testingTransport)) {
+                return "Cannot change Site's arrival order in this Transport, the new order will cause a Driver Unavailability issue";
+            } else if (!areWareHouseMenTimeAndPlacesValid(testingTransport)) {
+                return "Cannot change Site's arrival order in this Transport, the new order will cause a WareHouseMan Unavailability issue";
+            }
+
+            ///    all the other checks
             this.tran_f.setSiteArrivalIndexInTransport(transportID, siteArea, siteAddress, intIndex);
-        } catch (FileNotFoundException e) {
+
+        } catch (IndexOutOfBoundsException e) {
+            return "You entered a Site with a non existent area number.";
+        } catch (CommunicationException e) {
+            return "You entered a site address String that doesn't exist in that area.";
+        }catch (FileNotFoundException e) {
             return "The transport ID given was not found";
         } catch (ClassNotFoundException e) {
             return "Site not found inside of that transport";
@@ -367,7 +634,7 @@ public class TransportService {
 
     public String changeAnItemsDocNum(long loggedID, int oldItemsDocNum, int newItemsDocNum) {
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         if (oldItemsDocNum == newItemsDocNum) {
             return "Changing Process finished because before and after values are the same";
@@ -401,7 +668,7 @@ public class TransportService {
 
     public String checkIfDriverDrivesThisItemsDoc(long loggedID, int itemsDocId) {
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         if (loggedID < 0 || itemsDocId < 0){ return "The IDs you enter cannot be negative"; }
         try {
@@ -430,7 +697,7 @@ public class TransportService {
 
     public String addTransportProblem(long loggedID, int TransportID, String menu_Problem_option){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         int intMenuProblemOption = Integer.parseInt(menu_Problem_option);
         if (intMenuProblemOption < 1 || intMenuProblemOption > 6){ return "The Problem option number you have entered is out of existing problem's numbers bounds"; }
@@ -450,7 +717,7 @@ public class TransportService {
 
     public String removeTransportProblem(long loggedID, int TransportID, String menu_Problem_option){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         int intMenuProblemOption = Integer.parseInt(menu_Problem_option);
         if (intMenuProblemOption < 1 || intMenuProblemOption > 6){ return "The Problem option number you have entered is out of existing problem's numbers bounds"; }
@@ -499,7 +766,7 @@ public class TransportService {
 
     public String addItem(long loggedID, int itemsDocNum, String itemName, double itemWeight, int amount, boolean cond){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "ADD_ITEM_TO_TRANSPORT")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         if (itemName.isEmpty() || itemName.isBlank()){ return "Item's name cannot be empty"; }
         if (itemsDocNum < 0 || itemWeight < 0 || amount < 0){ return "Item's document number/weight/amount cannot be negative"; }
@@ -519,7 +786,7 @@ public class TransportService {
 
     public String removeItem(long loggedID, int itemsDocNum, String itemName, double itemWeight, int amount, boolean cond){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "DELETE_ITEM_FROM_TRANSPORT")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         if (itemName.isEmpty() || itemName.isBlank()){ return "Item's name cannot be empty"; }
         if (itemsDocNum < 0 || itemWeight < 0 || amount < 0){ return "Item's document number/weight/amount cannot be negative"; }
@@ -539,7 +806,7 @@ public class TransportService {
 
     public String setItemCond(long loggedID, int itemsDocNum, String itemName, double itemWeight, int amount, boolean cond){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT_ITEM_CONDITION")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         if (itemName.isEmpty() || itemName.isBlank()){ return "Item's name cannot be empty"; }
         if (itemsDocNum < 0 || itemWeight < 0 || amount < 0){ return "Item's document number/weight/amount cannot be negative"; }
@@ -567,7 +834,7 @@ public class TransportService {
 
     public String showTransportsOfDriver(long id) {
         if (!this.employeeIntegrationService.isEmployeeAuthorised(id, "VIEW_RELEVANT_TRANSPORTS")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         if (id < 0){ return "The Driver(ID) you want to show is invalid (it's negative)"; }
         String res = "";
@@ -585,7 +852,7 @@ public class TransportService {
 
     public String showAllQueuedTransports(long loggedID) {
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "VIEW_TRANSPORT")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         String resOfAllQueuedTransports = "";
         try {
@@ -599,7 +866,7 @@ public class TransportService {
 
     public String showAllTransports(long loggedID) {
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "VIEW_TRANSPORT")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         String resOfAllTransports = "";
         try {

@@ -25,7 +25,7 @@ import java.util.HashMap;
 public class TransportController {
     private HashMap<Integer, TransportDoc> transports;
     private int transportIDCounter;
-    private HashMap<Integer, ItemsDoc> itemsDocs;  // to know an ItemsDoc's num is unique like required.
+    private HashMap<Integer, ItemsDoc> itemsDocs; // to know an ItemsDoc's num is unique like required, and to address an ItemsDoc specifiically.
     private ArrayList<TransportDoc> queuedTransports;
     private HashMap<Long, Integer> driverIdToInTransportID;  //  employee is added to here if he is an active driver in an active Transport.
 
@@ -76,7 +76,7 @@ public class TransportController {
             tra_id = this.transportIDCounter;
         }
 
-        TransportDoc newTransportBeingCreated = new TransportDoc(enumTranStatus.BeingAssembled, tra_id, truck, driverId, srcSite);
+        TransportDoc newTransportBeingCreated = new TransportDoc(enumTranStatus.BeingAssembled, tra_id, truck, driverId, srcSite, transport_DTO.getDeparture_dt());
 
         /// add the ItemsDocs and the Items that should be in them from the itemsDocDTOs:
         for (ItemsDocDTO itemsDocDTO : transport_DTO.getDests_Docs()){
@@ -99,8 +99,8 @@ public class TransportController {
         newTransportBeingCreated.calculateItemsDocsArrivalTimesInTransport();
 
         for (ItemsDoc itemsDoc : newTransportBeingCreated.getDests_Docs()){
-            this.itemsDocs.put(itemsDoc.getItemDoc_num(), itemsDoc);
-        }
+            this.itemsDocs.put(itemsDoc.getItemDoc_num(), itemsDoc); // if this is a queued transport, the ItemsDocs will override themselves so ok.
+        }     //TODO: if this doesn't work well with a queued transport being sent then just do this "for" if it's a new transport.
         this.transports.put(newTransportBeingCreated.getTran_Doc_ID(), newTransportBeingCreated);
     }
 
@@ -154,12 +154,8 @@ public class TransportController {
 
 
 
-
+    //TODO:   see if we need to check here if the times are correct or have the times been put together well from other function and it implies here is good.
     public void setTransportStatus(int TranDocID, int menu_status_option, boolean isActiveHelper) throws FileNotFoundException, FileAlreadyExistsException, CommunicationException, CloneNotSupportedException, IndexOutOfBoundsException {
-        if(!transports.containsKey(TranDocID)){ throw new FileNotFoundException("The Transport ID you have entered doesn't exist in the Transports."); }
-        TransportDoc transport = transports.get(TranDocID);
-
-        enumTranStatus currStatus = transports.get(TranDocID).getStatus();
         enumTranStatus newStatus = null;
         if (menu_status_option == 1){
             newStatus = enumTranStatus.BeingAssembled;
@@ -174,6 +170,22 @@ public class TransportController {
         } else if (menu_status_option == 6) {
             newStatus = enumTranStatus.BeingDelayed;
         }
+
+        for (TransportDoc queuedTransportDoc : this.queuedTransports) {
+            if (queuedTransportDoc.getTran_Doc_ID() == TranDocID){
+                if (newStatus != enumTranStatus.Queued && newStatus != enumTranStatus.Canceled){
+                    throw new StringIndexOutOfBoundsException("You cannot set a queued Transport's status as something other than Queued or Canceled.");
+                } else {
+                    queuedTransportDoc.setStatus(newStatus);
+                }
+                return;
+            }
+        }
+
+        if(!transports.containsKey(TranDocID)){ throw new FileNotFoundException("The Transport ID you have entered doesn't exist in the Transports."); }
+        TransportDoc transport = transports.get(TranDocID);
+
+        enumTranStatus currStatus = transports.get(TranDocID).getStatus();
 
         if (currStatus == newStatus) { throw new FileAlreadyExistsException("The status you are trying to set already is the status of this Transport"); }
 
@@ -211,7 +223,7 @@ public class TransportController {
             }
         }
 
-        //TODO:   also check again if the Driver is an eligible site for him to drive that Transport's Truck.
+        //   seems that also checking if the Driver is an eligible site for him to drive that Transport's Truck is not necessary becasue when we set the transport we check this.
 
         /// scenario 2 & 3
         if (newStatus == enumTranStatus.Canceled || newStatus == enumTranStatus.Completed || newStatus == enumTranStatus.Queued) {  // if newStatus is Not Active
@@ -244,30 +256,40 @@ public class TransportController {
 
 
     public void setTransportTruck(int TranDocID, int truckNum, boolean hasRoleHelper) throws FileNotFoundException, ArrayIndexOutOfBoundsException, CommunicationException, FileAlreadyExistsException, CloneNotSupportedException, AbstractMethodError, ClassNotFoundException {
-        if(!transports.containsKey(TranDocID)){
-            throw new FileNotFoundException("The Transport ID you have entered doesn't exist.");
+        // check NewTruck - Driver Licenses Compatability
+        if (!hasRoleHelper){
+            throw new CommunicationException("The transport's driver doesn't have the fitting license for the new Truck you want to set.");
         } else if (!this.truckFacade.getTrucksWareHouse().containsKey(truckNum)){
             throw new ArrayIndexOutOfBoundsException("The Truck number you have entered doesn't exist.");
-        } else if (this.transports.get(TranDocID).getTransportTruck().getTruck_num() == truckNum) {
-            throw new FileAlreadyExistsException("This Truck is already the Truck of this Transport");
         } else if (truckFacade.getTrucksWareHouse().get(truckNum).getIsDeleted()) {   // if the Truck has been deleted
             throw new ClassNotFoundException("the Truck of this Transport have been Deleted, you can view available Trucks using the menu and set appropriately");
+        }
+        Truck truck = this.truckFacade.getTrucksWareHouse().get(truckNum);  // the truck in contention to be set in the Transport
+
+        for (TransportDoc queuedTransportDoc : this.queuedTransports) {   // checking the queued Transports first
+            if (TranDocID == queuedTransportDoc.getTran_Doc_ID()){
+                //  also CHECK IF THE TRUCK CAN CARRY THE WEIGHT OF THAT TRANSPORT   <<-----------------------
+                if (queuedTransportDoc.calculateTransportItemsWeight() > truck.getMax_carry_weight()){
+                    throw new AbstractMethodError("The Truck you are trying to set to this Transport can't carry this Transport's Weight.");
+                }
+                queuedTransportDoc.setTransportTruck(truck);
+                return;
+            }
+        }
+        if(!transports.containsKey(TranDocID)){
+            throw new FileNotFoundException("The Transport ID you have entered doesn't exist.");
+        } else if (this.transports.get(TranDocID).getTransportTruck().getTruck_num() == truckNum) {
+            throw new FileAlreadyExistsException("This Truck is already the Truck of this Transport");
         }
 
         /// Note:  a Truck cannot be in more than 1 active Transport
 
-        Truck truck = this.truckFacade.getTrucksWareHouse().get(truckNum);  // the truck in contention to be set in the Transport
         if(truck.getInTransportID() != -1){    // so it belong to another Transport Active right now, ----->>  We take care of the Transport's status in the setTransportStatus() function
             if (this.transports.get(TranDocID).getStatus() == enumTranStatus.InTransit || this.transports.get(TranDocID).getStatus() == enumTranStatus.BeingDelayed || this.transports.get(TranDocID).getStatus() == enumTranStatus.BeingAssembled) {
                 throw new CloneNotSupportedException("The Transport you are trying to set to is Active and The Truck you are trying to set is already Occupied with another Active Transport right now");
             }
         }
         // if we got to here so the truck is not in an active transport OR/AND the Transport we are trying to set is not active
-
-        // check NewTruck - Driver Compatability
-        if (!hasRoleHelper){
-            throw new CommunicationException("The transport's driver doesn't have the fitting license for the new Truck you want to set.");
-        }
 
         //  CHECK IF THE TRUCK CAN CARRY THE WEIGHT OF THAT TRANSPORT   <<-----------------------
         if (this.transports.get(TranDocID).calculateTransportItemsWeight() > truck.getMax_carry_weight()){
@@ -281,29 +303,34 @@ public class TransportController {
 
     //  TODO:   check if that Driver is in an eligible site for him to drive the Truck of this Transport.
     public void setTransportDriver(int TranDocID, long DriverID, boolean isNotDriver, boolean isActive, boolean hasRole) throws FileNotFoundException, ArrayIndexOutOfBoundsException, FileAlreadyExistsException, CloneNotSupportedException, CommunicationException, ClassNotFoundException {
-        if(!transports.containsKey(TranDocID)){
-            throw new FileNotFoundException("The Transport ID you have entered doesn't exist.");
-        } else if (isNotDriver){
+        if (isNotDriver){
             throw new ArrayIndexOutOfBoundsException("The Driver ID you have entered doesn't exist.");
-        } else if (this.transports.get(TranDocID).getTransportDriverId() == DriverID) {
-            throw new FileAlreadyExistsException("This Driver is already the Driver of this Transport");
         } else if (!isActive) {   // if the Driver has been deleted
             throw new ClassNotFoundException("the Driver of this Transport have been Deleted, you can view available Drivers using the menu and set appropriately");
+        } else if (!hasRole){   // Check Truck - NewDriver Licenses Compatability
+            throw new CommunicationException("The New Driver you are trying to set doesn't have the fitting license for the Truck that is in the Transport.");
+        }
+
+        for (TransportDoc queuedTransportDoc : this.queuedTransports) {   // checking the queued Transports first
+            if (TranDocID == queuedTransportDoc.getTran_Doc_ID()){
+                queuedTransportDoc.setTransportDriverId(DriverID);
+                return;
+            }
+        }
+
+        if(!transports.containsKey(TranDocID)){
+            throw new FileNotFoundException("The Transport ID you have entered doesn't exist.");
+        } else if (this.transports.get(TranDocID).getTransportDriverId() == DriverID) {
+            throw new FileAlreadyExistsException("This Driver is already the Driver of this Transport");
         }
 
         // Note:  a Driver cannot be in more than 1 active Transport
-//        Driver driver = this.employeeFacade.getDrivers().get(DriverID);  // the driver in contention to be set in the Transport
         if(this.driverIdToInTransportID.containsKey(DriverID)){    // so it belong to another Transport Active right now, We take care of the Transport's status in the setTransportStatus() function
             if (this.transports.get(TranDocID).getStatus() == enumTranStatus.InTransit || this.transports.get(TranDocID).getStatus() == enumTranStatus.BeingDelayed || this.transports.get(TranDocID).getStatus() == enumTranStatus.BeingAssembled) {
                 throw new CloneNotSupportedException("The Transport you are trying to set to is Active and The Driver you are trying to set is already Occupied with another Active Transport right now");
             }
         }
         // if we got to here so the driver is not in an active transport OR/AND the Transport we are trying to set is not active
-
-        // check Truck - NewDriver Compatability
-        if (!hasRole){
-            throw new CommunicationException("The New Driver you are trying to set doesn't have the fitting license for the Truck that is in the Transport.");
-        }
 
         long DriverIDToRemoveFromTran = -1;
         for (long driverID : this.driverIdToInTransportID.keySet()){ // changes the old driver to InTransportID = -1
@@ -366,17 +393,26 @@ public class TransportController {
             this.transportIDCounter++;
             tempTransport.setTran_Doc_ID(this.transportIDCounter);
             tempTransport.setStatus(enumTranStatus.Queued);
+            for (ItemsDoc itemsDoc : tempTransport.getDests_Docs()){
+                this.itemsDocs.put(itemsDoc.getItemDoc_num(), itemsDoc);
+            }
             this.queuedTransports.add(tempTransport);
         }
     }
 
 
 
+    public void addFromTransportDTOStringToWaitQueue(String DTO_OfTransport) throws JsonProcessingException {
+        TransportDTO transport_DTO = this.objectMapper.readValue(DTO_OfTransport, TransportDTO.class);
+        TransportDoc tempTransport = convertTransportDTOToTransportDoc(transport_DTO);
+        this.addTransportToWaitQueue(tempTransport);
+    }
 
 
 
 
 
+    //TODO: ALSO DO TIME AND PLACE CHECKING.
     public String checkTransportValidity(String DTO_OfTransport, boolean hasRole11, boolean isThereMatchAtAllBetweenLicenses) throws JsonProcessingException {  ///  returns: "Valid", "BadLicenses", "overallWeight-truckMaxCarryWeight", "Queue", "Occupied"
         TransportDTO transport_DTO = this.objectMapper.readValue(DTO_OfTransport, TransportDTO.class);
         TransportDoc tempTransport = convertTransportDTOToTransportDoc(transport_DTO);
@@ -439,7 +475,19 @@ public class TransportController {
 
 
 
-
+    public String getTransportAsDTOJson(int tranId) throws JsonProcessingException {
+        for (TransportDoc transportDoc : this.transports.values()){
+            if (transportDoc.getTran_Doc_ID() == tranId){
+                return this.objectMapper.writeValueAsString(convertTransportDocToTransportDTO(transportDoc));
+            }
+        }
+        for (TransportDoc queuedTransportDoc : this.queuedTransports){
+            if (queuedTransportDoc.getTran_Doc_ID() == tranId){
+                return this.objectMapper.writeValueAsString(convertTransportDocToTransportDTO(queuedTransportDoc));
+            }
+        }
+        return null;
+    }
 
 
 
@@ -484,10 +532,10 @@ public class TransportController {
                 ItemDTO itemDTO = new ItemDTO(item.getName(), item.getWeight(), item.getCondition());
                 itemQuantityDTOS.add(new ItemQuantityDTO(itemDTO, itemsDoc.getGoodItems().get(item)));
             }
-            listOfItemsDocDTOs.add(new ItemsDocDTO(itemsDoc.getItemDoc_num(), srcSiteDTO, destSiteDTO, itemQuantityDTOS));
+            listOfItemsDocDTOs.add(new ItemsDocDTO(itemsDoc.getItemDoc_num(), srcSiteDTO, destSiteDTO, itemQuantityDTOS, itemsDoc.getEstimatedArrivalTime()));
         }
 
-        TransportDTO transportDTO = new TransportDTO(transportDoc.getTran_Doc_ID(), transportDoc.getTransportTruck().getTruck_num(), transportDoc.getTransportDriverId(), srcSiteDTO, listOfItemsDocDTOs);
+        TransportDTO transportDTO = new TransportDTO(transportDoc.getTran_Doc_ID(), transportDoc.getTransportTruck().getTruck_num(), transportDoc.getTransportDriverId(), srcSiteDTO, listOfItemsDocDTOs, transportDoc.getDeparture_dt());
         return transportDTO;
     }
 
@@ -498,11 +546,12 @@ public class TransportController {
         Truck truck = this.truckFacade.getTrucksWareHouse().get(transport_DTO.getTransportTruckNum());
         Site srcSite = this.siteFacade.getShippingAreas().get(transport_DTO.getSrc_site().getSiteAreaNum()).getSites().get(transport_DTO.getSrc_site().getSiteAddressString());
 
-        TransportDoc tempTransport = new TransportDoc(enumTranStatus.BeingAssembled, transport_DTO.getTransport_ID(), truck, driverID, srcSite);
+        TransportDoc tempTransport = new TransportDoc(enumTranStatus.BeingAssembled, transport_DTO.getTransport_ID(), truck, driverID, srcSite, transport_DTO.getDeparture_dt());
 
         for (ItemsDocDTO itemsDocDTO : transport_DTO.getDests_Docs()){
             Site destSiteTemp = this.siteFacade.getShippingAreas().get(itemsDocDTO.getDest_siteDTO().getSiteAreaNum()).getSites().get(itemsDocDTO.getDest_siteDTO().getSiteAddressString());
             tempTransport.addDestSite(itemsDocDTO.getItemsDoc_num(), destSiteTemp);
+            // calculates the arrival times of the itemsDocs accordingly
 
             for (ItemQuantityDTO itemQuantityDTO : itemsDocDTO.getItemQuantityDTOs()){
                 tempTransport.addItem(itemsDocDTO.getItemsDoc_num(), itemQuantityDTO.getItem().getName(), itemQuantityDTO.getItem().getWeight(), itemQuantityDTO.getQuantity(), itemQuantityDTO.getItem().getCondition());
@@ -533,10 +582,6 @@ public class TransportController {
 
 
     public void addTransportProblem(int TransportID, int menu_Problem_option) throws FileNotFoundException, FileAlreadyExistsException {
-        if (!this.transports.containsKey(TransportID)) {
-            throw new FileNotFoundException("Transport ID doesn't exist in the Transports.");
-        }
-
         enumTranProblem probEnum = null;
         if(menu_Problem_option == 1){
             probEnum = enumTranProblem.Puncture;
@@ -550,6 +595,19 @@ public class TransportController {
             probEnum = enumTranProblem.TruckVehicleProblem;
         }else if (menu_Problem_option == 6){
             probEnum = enumTranProblem.EmptyTruckGasTank;
+        }
+
+        for (TransportDoc queuedTransport : this.queuedTransports){  // checking if in queuedTransports
+            if (TransportID == queuedTransport.getTran_Doc_ID()){
+                if (queuedTransport.addTransportProblem(probEnum) == -1){
+                    throw new FileAlreadyExistsException("The problem you entered already exists in this Transport");
+                }
+                return;
+            }
+        }
+
+        if (!this.transports.containsKey(TransportID)) {
+            throw new FileNotFoundException("Transport ID doesn't exist in the Transports.");
         }
 
         if (this.transports.get(TransportID).addTransportProblem(probEnum) == -1){
@@ -559,10 +617,6 @@ public class TransportController {
 
 
     public void removeTransportProblem(int TransportID, int menu_Problem_option) throws FileNotFoundException, FileAlreadyExistsException {
-        if (!this.transports.containsKey(TransportID)) {
-            throw new FileNotFoundException("Transport ID doesn't exist.");
-        }
-
         enumTranProblem probEnum = null;
         if(menu_Problem_option == 1){
             probEnum = enumTranProblem.Puncture;
@@ -576,6 +630,19 @@ public class TransportController {
             probEnum = enumTranProblem.TruckVehicleProblem;
         }else if (menu_Problem_option == 6){
             probEnum = enumTranProblem.EmptyTruckGasTank;
+        }
+
+        for (TransportDoc queuedTransport : this.queuedTransports){
+            if (TransportID == queuedTransport.getTran_Doc_ID()){
+                if (queuedTransport.removeTransportProblem(probEnum) == -1){
+                    throw new FileAlreadyExistsException("The problem you entered already doesn't exists in this Transport");
+                }
+                return;
+            }
+        }
+
+        if (!this.transports.containsKey(TransportID)) {
+            throw new FileNotFoundException("Transport ID doesn't exist.");
         }
 
         if (this.transports.get(TransportID).removeTransportProblem(probEnum) == -1){
@@ -588,6 +655,15 @@ public class TransportController {
 
 
 
+    public boolean doesTranIDExist(int TranID){
+        boolean exists = this.transports.containsKey(TranID);
+        for (TransportDoc queuedTransport : this.queuedTransports){
+            if (TranID == queuedTransport.getTran_Doc_ID()){
+                return true;
+            }
+        }
+        return exists;
+    }
 
 
 
@@ -596,9 +672,7 @@ public class TransportController {
 
 
     public void addDestSiteToTransport(int tran_ID, int itemsDoc_num, int destSiteArea, String destSiteAddress, String contName, long contNum) throws FileNotFoundException, FileAlreadyExistsException, CommunicationException, IndexOutOfBoundsException, ClassNotFoundException {
-        if (!transports.containsKey(tran_ID)) {
-            throw new FileNotFoundException("The Transport ID you've entered doesn't exist in the Transports.");
-        } else if (this.itemsDocs.containsKey(itemsDoc_num)) {
+        if (this.itemsDocs.containsKey(itemsDoc_num)) {
             throw new FileAlreadyExistsException("The Site's Items Document Number you are trying to add already exists.");
         } else if (!this.siteFacade.getShippingAreas().containsKey(destSiteArea)) {
             throw new IndexOutOfBoundsException("Cannot add a Site with a non existent area number.");
@@ -606,41 +680,96 @@ public class TransportController {
             throw new ClassNotFoundException("Cannot add a site with a not found address String in its area.");
         }
 
+        for (TransportDoc queuedTransport : this.queuedTransports){   //  first checking in the queuedTransports
+            if (tran_ID == queuedTransport.getTran_Doc_ID()){
+                ItemsDoc addition = queuedTransport.addDestSite(itemsDoc_num, new Site(new Address(destSiteArea, destSiteAddress), contName, contNum));
+                // ALSO recalculates arrival times within ItemsDocs of this Transport in the TransportDoc.
+                if (addition == null){
+                    throw new CommunicationException("Destination Site already in this Transport, you can add items to that site instead.");
+                }
+                this.itemsDocs.put(itemsDoc_num, addition);
+                return;
+            }
+        }
+
+        if (!transports.containsKey(tran_ID)) {
+            throw new FileNotFoundException("The Transport ID you've entered doesn't exist in the Transports.");
+        }
         ItemsDoc addition = this.transports.get(tran_ID).addDestSite(itemsDoc_num, new Site(new Address(destSiteArea, destSiteAddress), contName, contNum));
         // recalculates arrival times within ItemsDocs of this Transport in the TransportDoc.
         if (addition == null){
             throw new CommunicationException("Destination Site already in this Transport, you can add items to that site instead.");
         }
 
-        //TODO:  Maybe see if new times for the following sites are okay now.
         this.itemsDocs.put(itemsDoc_num, addition);
     }
 
 
     public void removeDestSiteFromTransport(int tran_ID, int itemsDoc_num) throws FileNotFoundException, CommunicationException, ClassNotFoundException {
-        if (!transports.containsKey(tran_ID)) {
-            throw new FileNotFoundException("The Transport ID you've entered doesn't exist.");
-        } else if (!this.itemsDocs.containsKey(itemsDoc_num)) {
+        if (!this.itemsDocs.containsKey(itemsDoc_num)) {
             throw new CommunicationException("The Site's Items Document Number you are trying to remove doesn't exist in the system.");
         }
-        if (this.transports.get(tran_ID).removeDestSite(itemsDoc_num) == -1){ throw new ClassNotFoundException("The Site's Items Document Number is not in that Transport"); }
+
+        for (TransportDoc queuedTransport : this.queuedTransports){
+            if (tran_ID == queuedTransport.getTran_Doc_ID()){
+                if (queuedTransport.removeDestSite(itemsDoc_num) == -1){
+                    throw new ClassNotFoundException("The Site's Items Document Number is not in that Transport");
+                }
+                // also recalculates arrival times within ItemsDocs of this Transport in the TransportDoc.
+                this.itemsDocs.remove(itemsDoc_num);
+                return;
+            }
+        }
+
+        if (!transports.containsKey(tran_ID)) {
+            throw new FileNotFoundException("The Transport ID you've entered doesn't exist.");
+        }
+
+        if (this.transports.get(tran_ID).removeDestSite(itemsDoc_num) == -1){
+            throw new ClassNotFoundException("The Site's Items Document Number is not in that Transport");
+        }
         // recalculates arrival times within ItemsDocs of this Transport in the TransportDoc.
-        //TODO:  Maybe see if new times for the following sites are okay now.
         this.itemsDocs.remove(itemsDoc_num);
     }
 
 
 
 
-    public void setSiteArrivalIndexInTransport(int transportID, int siteArea, String siteAddress, int index) throws FileNotFoundException, ClassNotFoundException, AbstractMethodError {
+    public void setSiteArrivalIndexInTransport(int transportID, int siteArea, String siteAddress, int index) throws FileNotFoundException, ClassNotFoundException, AbstractMethodError, CommunicationException {
+        if (!this.siteFacade.getShippingAreas().containsKey(siteArea)) {
+            throw new IndexOutOfBoundsException("You entered a Site with a non existent area number.");
+        } else if (!this.siteFacade.getShippingAreas().get(siteArea).getSites().containsKey(siteAddress)) {
+            throw new CommunicationException("You entered a site address String that doesn't exist in that area.");
+        }
+
+        for (TransportDoc queuedTransport : this.queuedTransports){  //  checking the queuedTransports first here
+            if (transportID == queuedTransport.getTran_Doc_ID()){
+
+                boolean siteResidesInQueuedTransport = false;
+                for (ItemsDoc itemsDoc : queuedTransport.getDests_Docs()){
+                    if (itemsDoc.getDest_site().getAddress().getArea() == siteArea && itemsDoc.getDest_site().getAddress().getAddress().equals(siteAddress)){
+                        siteResidesInQueuedTransport = true;
+                    }
+                }
+
+                if(!siteResidesInQueuedTransport){
+                    throw new ClassNotFoundException("Site not found inside of that transport");
+                } else if (index > queuedTransport.getDests_Docs().size()) {   // if the index is valid    //  index should be 1, 2, ....
+                    throw new AbstractMethodError("The Index entered is bigger than the amount of sites in the Transport, so can't put that site in that bigger index");
+                }
+
+                // also recalculates arrival times within ItemsDocs of this Transport in the TransportDoc.
+                queuedTransport.setSiteArrivalIndexInTransport(siteArea, siteAddress, index);
+                return;
+            }
+        }
+
         if (!this.transports.containsKey(transportID)){ throw new FileNotFoundException("The transport ID given was not found"); }
 
         boolean siteResidesInTransport = false;
-        ItemsDoc itemsDocToMove = null;
         for (ItemsDoc itemsDoc : this.transports.get(transportID).getDests_Docs()){
             if (itemsDoc.getDest_site().getAddress().getArea() == siteArea && itemsDoc.getDest_site().getAddress().getAddress().equals(siteAddress)){
                 siteResidesInTransport = true;
-                itemsDocToMove = itemsDoc;
             }
         }
 
@@ -650,11 +779,54 @@ public class TransportController {
             throw new AbstractMethodError("The Index entered is bigger than the amount of sites in the Transport, so can't put that site in that bigger index");
         }
 
-        //TODO:  Maybe see if new times for the following sites are okay now.
-
-        this.transports.get(transportID).setSiteArrivalIndexInTransport(siteArea, siteAddress, index); // recalculates arrival times within ItemsDocs of this Transport in the TransportDoc.
+        this.transports.get(transportID).setSiteArrivalIndexInTransport(siteArea, siteAddress, index); // also recalculates arrival times within ItemsDocs of this Transport in the TransportDoc.
     }
 
+
+
+
+    public boolean doesAddressExistInTransport(int transportID, int siteArea, String siteAddress) {
+        for (TransportDoc queuedTransport : this.queuedTransports){
+            if (transportID == queuedTransport.getTran_Doc_ID()){
+                for (ItemsDoc itemsDoc : queuedTransport.getDests_Docs()){
+                    if (itemsDoc.getDest_site().getAddress().getArea() == siteArea && itemsDoc.getDest_site().getAddress().getAddress().equals(siteAddress)){
+                        return true;
+                    }
+                }
+            }
+        }
+        //  now searching in the regular transports
+        if (!this.transports.containsKey(transportID)) { return false; }
+        for (ItemsDoc itemsDoc : this.transports.get(transportID).getDests_Docs()){
+            if (itemsDoc.getDest_site().getAddress().getArea() == siteArea && itemsDoc.getDest_site().getAddress().getAddress().equals(siteAddress)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+
+
+    public boolean doesItemsDocIDExistInTransport(int itemsDocNum, int tranId) {     ///   helper function
+        for (TransportDoc queuedTransport : this.queuedTransports){
+            if (queuedTransport.getTran_Doc_ID() == tranId){
+                for (ItemsDoc itemsDoc : queuedTransport.getDests_Docs()){
+                    if (itemsDocNum == itemsDoc.getItemDoc_num()){
+                        return true;
+                    }
+                }
+            }
+        }
+        if (this.transports.containsKey(tranId)){
+            for (ItemsDoc itemsDoc : this.transports.get(tranId).getDests_Docs()){
+                if (itemsDoc.getItemDoc_num() == itemsDocNum){
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
 
 
@@ -682,14 +854,15 @@ public class TransportController {
 
 
 
-
+    //NOTE: only if he actively drives a transport, for: a driver can edit items condition in a transport he is driving now.
     public void checkIfDriverDrivesThisItemsDoc(long id, int itemsDocId, boolean isNotDriver) throws FileNotFoundException, IllegalAccessException, ClassNotFoundException {
         if (!this.itemsDocs.containsKey(itemsDocId)) { throw new FileNotFoundException("Items Document ID not found."); }
         if (isNotDriver){ throw new ClassNotFoundException("Driver ID doesn't exist."); }
 
         boolean driverDrivesThisItemsDoc = false;
         for (TransportDoc transportDoc : this.transports.values()) {
-            if (transportDoc.getTransportDriverId() == id){
+            if (transportDoc.getTransportDriverId() == id && this.driverIdToInTransportID.get(id) == transportDoc.getTran_Doc_ID()){
+                // now here we know that he actively drives this transport.
                 for (ItemsDoc itemsDoc : transportDoc.getDests_Docs()) {
                     if (itemsDoc.getItemDoc_num() == itemsDocId) {
                         driverDrivesThisItemsDoc = true;
@@ -722,11 +895,18 @@ public class TransportController {
 
 
     public void addItem(int itemsDoc_num, String itemName, double itemWeight, int amount, boolean cond) throws FileNotFoundException, IndexOutOfBoundsException {
-        if (!this.itemsDocs.containsKey(itemsDoc_num)) {
-            throw new FileNotFoundException("Item's Document ID not found");
-        }
+        if (!this.itemsDocs.containsKey(itemsDoc_num)) { throw new FileNotFoundException("Item's Document ID not found within sent Transports"); }
 
-        for (TransportDoc transportDoc : this.transports.values()) {
+        for (TransportDoc queuedtransportDoc : this.queuedTransports) {   // checking in the queuedTransports first if there. // weight checking
+            for (ItemsDoc itemsDoc : queuedtransportDoc.getDests_Docs()) {
+                if (itemsDoc.getItemDoc_num() == itemsDoc_num) {
+                    if (queuedtransportDoc.getTruck_Depart_Weight() + (itemWeight*amount) > queuedtransportDoc.getTransportTruck().getMax_carry_weight()){
+                        throw new IndexOutOfBoundsException("Cannot add Item to transport because the new weight exceeds the maximum carry weight");
+                    }
+                }
+            }
+        }
+        for (TransportDoc transportDoc : this.transports.values()) { // weight checking in the regular transports hashmap, if there
             for (ItemsDoc itemsDoc : transportDoc.getDests_Docs()) {
                 if (itemsDoc.getItemDoc_num() == itemsDoc_num) {
                     if (transportDoc.getTruck_Depart_Weight() + (itemWeight*amount) > transportDoc.getTransportTruck().getMax_carry_weight()){
@@ -736,12 +916,24 @@ public class TransportController {
             }
         }
 
+        // adding the item to the ItemsDoc
         int res = this.itemsDocs.get(itemsDoc_num).addItem(itemName, itemWeight, cond, amount);
 
+        // setting the new weight of the Transport if in the queuedTransports
+        for (TransportDoc queuedTransportDoc : this.queuedTransports) {
+            for (ItemsDoc itemsDoc : queuedTransportDoc.getDests_Docs()) {
+                if (itemsDoc.getItemDoc_num() == itemsDoc_num) {
+                    queuedTransportDoc.setTruck_Depart_Weight(queuedTransportDoc.getTruck_Depart_Weight() + (itemWeight*amount));  // updating the weight
+                    return;
+                }
+            }
+        }
+        // setting the new weight of the Transport if in the regular transports hashmap
         for (TransportDoc transportDoc : this.transports.values()) {
             for (ItemsDoc itemsDoc : transportDoc.getDests_Docs()) {
                 if (itemsDoc.getItemDoc_num() == itemsDoc_num) {
                     transportDoc.setTruck_Depart_Weight(transportDoc.getTruck_Depart_Weight() + (itemWeight*amount));  // updating the weight
+                    return;
                 }
             }
         }
@@ -751,15 +943,26 @@ public class TransportController {
 
 
     public void removeItem(int itemsDoc_num, String itemName, double itemWeight, int amount, boolean cond) throws FileNotFoundException, ClassNotFoundException {
-        if (!this.itemsDocs.containsKey(itemsDoc_num)) { throw new FileNotFoundException("Item's Document ID not found"); }
+        if (!this.itemsDocs.containsKey(itemsDoc_num)) { throw new FileNotFoundException("Item's Document ID not found within sent Transports"); }
 
-        int res = this.itemsDocs.get(itemsDoc_num).removeItem(itemName, itemWeight, cond, amount);
-        if (res == -1){ throw new ClassNotFoundException("Item to remove not found in that Items Document"); }
+        int amount_removed = this.itemsDocs.get(itemsDoc_num).removeItem(itemName, itemWeight, cond, amount);
+        if (amount_removed == -1){ throw new ClassNotFoundException("Item to remove not found in that Items Document"); }
 
+        // checking first in the queued transports, and decreasing weight
+        for (TransportDoc queuedTransportDoc : this.queuedTransports) {
+            for (ItemsDoc itemsDoc : queuedTransportDoc.getDests_Docs()) {
+                if (itemsDoc.getItemDoc_num() == itemsDoc_num) {
+                    queuedTransportDoc.setTruck_Depart_Weight(queuedTransportDoc.getTruck_Depart_Weight() - (itemWeight*amount_removed));  // updating the weight
+                    return;
+                }
+            }
+        }
+        // checking in the regular transports, and decreasing weight
         for (TransportDoc transportDoc : this.transports.values()) {
             for (ItemsDoc itemsDoc : transportDoc.getDests_Docs()) {
                 if (itemsDoc.getItemDoc_num() == itemsDoc_num) {
-                    transportDoc.setTruck_Depart_Weight(transportDoc.getTruck_Depart_Weight() - (itemWeight*amount));  // updating the weight
+                    transportDoc.setTruck_Depart_Weight(transportDoc.getTruck_Depart_Weight() - (itemWeight*amount_removed));  // updating the weight
+                    return;
                 }
             }
         }
@@ -768,12 +971,10 @@ public class TransportController {
 
 
     public void setItemCond(int itemsDoc_num, String itemName, double itemWeight, int amount, boolean newCond) throws FileNotFoundException, ClassNotFoundException {
-        if (!this.itemsDocs.containsKey(itemsDoc_num)) { throw new FileNotFoundException("Item's Document ID not found"); }
+        if (!this.itemsDocs.containsKey(itemsDoc_num)) { throw new FileNotFoundException("Item's Document ID not found within sent Transports"); }
 
         int res = this.itemsDocs.get(itemsDoc_num).setItemCond(itemName, itemWeight, amount, newCond);
-        if (res == -1){
-            throw new ClassNotFoundException("Item to change condition to was not found in that Items Document");
-        }
+        if (res == -1){ throw new ClassNotFoundException("Item to change condition to was not found in that Items Document"); }
     }
 
 

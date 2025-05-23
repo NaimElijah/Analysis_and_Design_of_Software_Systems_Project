@@ -13,16 +13,17 @@ public class TransportDoc {
     private int tran_Doc_ID;
     private LocalDateTime departure_dt;
     private Truck transportTruck;
+//    private int transportTruckNumber;    //   TODO:   for database               <<<---------------------------    <<-----------------------
     private long transportDriverId;
     private double truck_Depart_Weight;
     private Site src_site;
     private ArrayList<ItemsDoc> dests_Docs;  ///  <<<--------------  In Order of visit   <<<--------------------
     private ArrayList<enumTranProblem> problems;
 
-    public TransportDoc(enumTranStatus status, int tran_Doc_ID, Truck transportTruck, long tranDriverId, Site src_site) {
+    public TransportDoc(enumTranStatus status, int tran_Doc_ID, Truck transportTruck, long tranDriverId, Site src_site, LocalDateTime departure_dt_p) {
         this.status = status;
         this.tran_Doc_ID = tran_Doc_ID;
-        this.departure_dt = LocalDateTime.now();   // In the code, if it doesn't depart immediately, this always updates right before genuine departure.
+        this.departure_dt = departure_dt_p;
         this.transportTruck = transportTruck;
         this.transportDriverId = tranDriverId;
         this.truck_Depart_Weight = -1;   //  Initialization, calculated before being sent
