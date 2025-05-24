@@ -8,7 +8,6 @@ import java.sql.Statement;
 
 public final class Database {
     // SQLite database properties
-    private static final String DB_URL = "jdbc:sqlite:superLee.db";
     private static Connection conn;
 
     // Tables creation
@@ -139,7 +138,7 @@ public final class Database {
     static {
         try {
             Class.forName("org.sqlite.JDBC");
-            conn = DriverManager.getConnection(DB_URL);
+            conn = DriverManager.getConnection(config.DB_URL);
 
             try (Statement st = conn.createStatement()) {
                 // Create table's
@@ -152,12 +151,12 @@ public final class Database {
                 st.executeUpdate(EmployeeTermsTable);
                 st.executeUpdate(RolePermissionsTable);
 
-                st.executeUpdate(TransportsTable);
-                st.executeUpdate(ItemsDocsTable);
-                st.executeUpdate(ItemsTable);
-                st.executeUpdate(TrucksTable);
-                st.executeUpdate(ShippingAreasTable);
-                st.executeUpdate(SitesTable);
+//                st.executeUpdate(TransportsTable);
+//                st.executeUpdate(ItemsDocsTable);
+//                st.executeUpdate(ItemsTable);
+//                st.executeUpdate(TrucksTable);
+//                st.executeUpdate(ShippingAreasTable);
+//                st.executeUpdate(SitesTable);
                 // ***ADD YOUR TABLES HERE***
 
             }

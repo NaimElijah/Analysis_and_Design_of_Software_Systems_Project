@@ -1,156 +1,127 @@
 package PresentationLayer;
 
-import DTOs.EmployeeDTO;
-import DomainLayer.exception.UnauthorizedPermissionException;
-import PresentationLayer.EmployeeSubModule.AssignmentCLI;
-import PresentationLayer.EmployeeSubModule.AvailabilityCLI;
-import PresentationLayer.EmployeeSubModule.EmployeeCLI;
-import PresentationLayer.EmployeeSubModule.ShiftCLI;
-import ServiceLayer.EmployeeSubModule.EmployeeService;
-import ServiceLayer.EmployeeSubModule.ShiftService;
-import ServiceLayer.exception.ServiceException;
+import DomainLayer.SystemFactory;
+import PresentationLayer.EmployeeSubModule.HR_MainCLI;
 import Util.CliUtil;
+import Util.config;
 
+import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class MainCLI {
-    private final EmployeeService employeeService;
-    private final ShiftService shiftService;
-    private final long doneBy;
-    private final Scanner scanner;
 
-    private final EmployeeCLI employeeCLI;
-    private final AssignmentCLI assignmentCLI;
-    private final AvailabilityCLI availabilityCLI;
-    private final ShiftCLI shiftCLI;
+    private static final Scanner scanner = new Scanner(System.in);
 
-    public MainCLI(EmployeeService employeeService, ShiftService shiftService, long doneBy) {
-        this.employeeService = employeeService;
-        this.shiftService = shiftService;
-        this.doneBy = doneBy;
-        this.scanner = new Scanner(System.in);
-
-        this.employeeCLI = new EmployeeCLI(employeeService, doneBy);
-        this.assignmentCLI = new AssignmentCLI(shiftService, employeeService, doneBy);
-        this.availabilityCLI = new AvailabilityCLI(shiftService, employeeService, doneBy);
-        this.shiftCLI = new ShiftCLI(shiftService, employeeService, doneBy);
-    }
-
-    public void start() {
-        printWelcomeBanner();
-        boolean running = true;
-
-        while (running) {
-            displayMenu();
-            String choice = scanner.nextLine().trim();
-            running = processMenuChoice(choice);
-        }
-
-        CliUtil.printInfo("Thank you for using the Employee Module. Goodbye!");
-    }
-
-    private void displayMenu() {
-        CliUtil.printSectionHeader("Main Menu", true, "Employee Module");
-        int option = 1;
-
-        if (hasPermission("EDIT_EMPLOYEE") || hasPermission("VIEW_EMPLOYEE")) {
-            System.out.println(CliUtil.YELLOW + option++ + CliUtil.RESET + ". Employees");
-        }
-
-        if (hasPermission("EDIT_SHIFT") || hasPermission("VIEW_SHIFT")) {
-            System.out.println(CliUtil.YELLOW + option++ + CliUtil.RESET + ". Shifts");
-        }
-
-        if (hasPermission("ASSIGN_EMPLOYEE")) {
-            System.out.println(CliUtil.YELLOW + option++ + CliUtil.RESET + ". Assignment Board");
-        }
-
-        if (hasPermission("UPDATE_AVAILABLE")) {
-            System.out.println(CliUtil.YELLOW + option++ + CliUtil.RESET + ". Availability Board");
-        }
-
-        System.out.println("0. Exit");
-        CliUtil.printPrompt("Enter your choice: ");
-    }
-
-    private boolean processMenuChoice(String choice) {
+    public static void start() throws IOException {
         try {
-            switch (choice) {
-                case "1":
-                    if (hasPermission("EDIT_EMPLOYEE") || hasPermission("VIEW_EMPLOYEE")) {
-                        employeeCLI.start();
-                    } else if (hasPermission("EDIT_SHIFT") || hasPermission("VIEW_SHIFT")) {
-                        shiftCLI.start();
-                    } else {
-                        CliUtil.printWarning("You do not have permission.");
-                    }
+            CliUtil.printWelcomeBanner("Welcome to SuperLee System Assgiment 2", LocalDate.now().toString(),
+                    "Not Logged In");
+
+            while (true) {
+                ExitAction action = loginAndRoute();
+                if (action == ExitAction.EXIT_PROGRAM) {
+                    CliUtil.printInfo("Thanks for using the system! Exiting...");
                     break;
-                case "2":
-                    if ((hasPermission("EDIT_EMPLOYEE") || hasPermission("VIEW_EMPLOYEE")) &&
-                            (hasPermission("EDIT_SHIFT") || hasPermission("VIEW_SHIFT"))) {
-                        shiftCLI.start();
-                    } else if (hasPermission("UPDATE_AVAILABLE")) {
-                        availabilityCLI.start();
-                    } else {
-                        CliUtil.printWarning("You do not have permission.");
-                    }
-                    break;
-                case "3":
-                    if (hasPermission("ASSIGN_EMPLOYEE")) {
-                        assignmentCLI.start();
-                    } else if (hasPermission("UPDATE_AVAILABLE") &&
-                            (hasPermission("EDIT_EMPLOYEE") || hasPermission("VIEW_EMPLOYEE"))) {
-                        availabilityCLI.start();
-                    } else {
-                        CliUtil.printWarning("You do not have permission.");
-                    }
-                    break;
-                case "4":
-                    if (hasPermission("UPDATE_AVAILABLE") &&
-                            (hasPermission("EDIT_EMPLOYEE") || hasPermission("VIEW_EMPLOYEE") || hasPermission("ASSIGN_EMPLOYEE"))) {
-                        availabilityCLI.start();
-                    } else {
-                        CliUtil.printWarning("You do not have permission.");
-                    }
-                    break;
-                case "0":
-                    return false;
-                default:
-                    CliUtil.printError("Invalid choice.");
+                }
+                // else: action == LOGOUT, loop continues and presents login again
             }
-        } catch (UnauthorizedPermissionException e) {
-            CliUtil.printError("Access denied: " + e.getMessage());
+        } catch (IOException e) {
+            CliUtil.printError("Error: " + e.getMessage());
         }
-        return true;
     }
 
-    private void printWelcomeBanner() {
-        String currentDate = LocalDate.now().format(CliUtil.dateFormatter);
-        CliUtil.printWelcomeBanner("Employee Module", currentDate, formatEmployeeDisplay(doneBy));
+    // Enum to signal whether to logout or exit completely
+    private enum ExitAction {
+        LOGOUT,
+        EXIT_PROGRAM
     }
 
-    private boolean hasPermission(String permission) {
-        try {
-            return employeeService.hasPermission(doneBy, permission);
-        } catch (Exception e) {
-            return false;
+    private static ExitAction loginAndRoute() throws IOException {
+        CliUtil.printSectionHeader("Login", false, "" );
+        CliUtil.printTip("Enter 0 to exit the program.");
+        long userId = CliUtil.getLongInput("Please enter your ID: ", scanner);
+        if (userId == 0) {
+            return ExitAction.EXIT_PROGRAM; // User chose to exit
+        }
+        SystemFactory factory = new SystemFactory();
+        boolean minimalMode = config.LOAD_DATA_FROM_DB;
+        boolean canAccessTransportModule = false;
+
+        // System Factory creates the Modules components
+        SystemFactory.EmployeeModuleComponents employeeComponents = factory.createEmployeeModule(minimalMode);
+        // TODO: ADD TRANSPORT MODULE COMPONENTS IF NEEDED
+
+
+        if (!employeeComponents.getEmployeeService().isEmployeeActive(userId)) {
+            CliUtil.printError("User ID cannot access the system.");
+            return ExitAction.LOGOUT;
+        }
+        if (!employeeComponents.getEmployeeService().canAccessTransportModule(userId))
+            canAccessTransportModule = true;
+
+        if (!canAccessTransportModule) {
+            HR_MainCLI mainCLI = factory.createEmployeeCLI(
+                    employeeComponents.getEmployeeService(),
+                    employeeComponents.getShiftService(),
+                    userId
+            );
+            mainCLI.start();
+            // After finishing HR_MainCLI, just return LOGOUT (i.e., return to login screen)
+            return ExitAction.LOGOUT;
+        } else {
+            return mainMenuLoop(factory, employeeComponents, userId);
         }
     }
-    /**
-     * Formats employee display with name, number, and branch
-     *
-     * @param employeeId The ID of the employee
-     * @return A formatted string with employee name, number, and branch
-     */
-    private String formatEmployeeDisplay(long employeeId) {
-        try {
-            EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(employeeId);
-            String branch = employeeService.getEmployeeBranchName(employee.getIsraeliId()) != null ? " [" + employeeService.getEmployeeBranchName(employee.getIsraeliId()) + "]" : "";
-            return employee.getFullName() + " (#" + employeeId + ")" + branch;
-        } catch (ServiceException e) {
-            // If we can't get the employee name, just return the ID
-            return "Employee #" + employeeId;
+
+    private static ExitAction mainMenuLoop(SystemFactory factory, SystemFactory.EmployeeModuleComponents employeeComponents, long userId) throws IOException {
+        while (true) {
+            CliUtil.printSectionHeader("Main Menu", true, "SuperLee System");
+            // List of options for the main menu
+            List<String> options = new ArrayList<>();
+            options.add("Employee Module");
+            options.add("Transport Module");
+            options.add("Exit");
+            // Print the options with numbering
+            CliUtil.printNumberedList(options, 1);
+
+            int choice = CliUtil.getMenuChoice("Enter your choice (1-" + options.size() + "): ", 1, options.size(), scanner);
+            switch (choice) {
+                case 1:
+                    CliUtil.printInfo("Starting Employee Module...");
+                    HR_MainCLI employeeCLI = factory.createEmployeeCLI(
+                            employeeComponents.getEmployeeService(),
+                            employeeComponents.getShiftService(),
+                            userId
+                    );
+                    employeeCLI.start();
+                    break;
+                case 2:
+                    CliUtil.printInfo("Starting Transport Module...");
+                    CliUtil.printError("Transport Module is not implemented yet.");
+                    break;
+                case 3:
+                    if (logoutOrExitPrompt()) {
+                        // true: user wants to exit program
+                        return ExitAction.EXIT_PROGRAM;
+                    } else {
+                        // false: user wants to logout & return to main login screen
+                        return ExitAction.LOGOUT;
+                    }
+                default:
+                    CliUtil.printError("Invalid choice. Please try again.");
+                    break;
+            }
         }
+    }
+
+    // Ask the user: Do you want to log out, or exit program?
+    private static boolean logoutOrExitPrompt() {
+        CliUtil.printSectionHeader("Logout or Exit", false, "SuperLee System");
+        CliUtil.printBold("Do you want to log out or exit the program? ");
+        int subChoice = CliUtil.getMenuChoice("type 1 to log out, or 2 to exit the program: ", 1, 2, scanner);
+        return subChoice == 2;
     }
 }
