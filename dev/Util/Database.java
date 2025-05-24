@@ -72,6 +72,54 @@ public final class Database {
         "FOREIGN KEY (permissionName) REFERENCES Permissions(permissionName)" +
         ")";
 
+    private static final String ShiftType =
+            "CREATE TYPE IF NOT EXISTS ShiftTypeEnum as ENUM ('MORNING', 'EVENING')";
+
+    private static final String ShiftsTable =
+            "CREATE TABLE IF NOT EXISTS Shifts (" +
+                    "id BIGINT PRIMARY KEY, " +
+                    "shiftType ShiftTypeEnum NOT NULL, " +
+                    "shiftDate TEXT NOT NULL, " +
+                    "isAssignedShiftManager BOOLEAN NOT NULL, " +
+                    "isOpen BOOLEAN NOT NULL, " +
+                    "startHour TEXT NOT NULL, " +
+                    "endHour TEXT NOT NULL, " +
+                    "creationDate TEXT NOT NULL, " +
+                    "updateDate TEXT NOT NULL, " +
+                    "branchId BIGINT NOT NULL, " +
+                    "FOREIGN KEY (branchId) REFERENCES Branches(branchId)" +
+                    ")";
+
+    private static final String RoleRequiredTable =
+            "CREATE TABLE IF NOT EXISTS RoleRequired (" +
+                    "shiftId BIGINT NOT NULL, " +
+                    "roleName TEXT NOT NULL, " +
+                    "requiredCount INTEGER NOT NULL, " +
+                    "PRIMARY KEY (shiftId, roleName), " +
+                    "FOREIGN KEY (id) REFERENCES Shifts(id), " +
+                    "FOREIGN KEY (roleName) REFERENCES Roles(roleName)" +
+                    ")";
+
+    private static final String AssignedEmployeesTable =
+            "CREATE TABLE IF NOT EXISTS AssignedEmployees (" +
+                    "shiftId BIGINT NOT NULL, " +
+                    "roleName TEXT NOT NULL, " +
+                    "employeeId BIGINT NOT NULL, " +
+                    "PRIMARY KEY (shiftId, roleName, employeeId), " +
+                    "FOREIGN KEY (shiftId) REFERENCES Shifts(id), " +
+                    "FOREIGN KEY (roleName) REFERENCES Roles(roleName), " +
+                    "FOREIGN KEY (employeeId) REFERENCES Employees(israeliId)" +
+                    ")";
+
+    private static final String AvailableEmployeesTable =
+            "CREATE TABLE IF NOT EXISTS AvailableEmployees (" +
+                    "shiftId BIGINT NOT NULL, " +
+                    "employeeId BIGINT NOT NULL, " +
+                    "PRIMARY KEY (shiftId, employeeId), " +
+                    "FOREIGN KEY (shiftId) REFERENCES Shifts(id), " +
+                    "FOREIGN KEY (employeeId) REFERENCES Employees(israeliId)" +
+                    ")";
+
     static {
         try {
             Class.forName("org.sqlite.JDBC");
@@ -87,6 +135,11 @@ public final class Database {
                 st.executeUpdate(EmployeeRolesTable);
                 st.executeUpdate(EmployeeTermsTable);
                 st.executeUpdate(RolePermissionsTable);
+                st.executeUpdate(ShiftType);
+                st.executeUpdate(ShiftsTable);
+                st.executeUpdate(RoleRequiredTable);
+                st.executeUpdate(AssignedEmployeesTable);
+                st.executeUpdate(AvailableEmployeesTable);
                 // ***ADD YOUR TABLES HERE***
 
             }

@@ -14,6 +14,7 @@ public class EmployeeDALFactory {
     private final EmployeeDAO employeeDAO;
     private final BranchDAO branchDAO;
     private final AuthorisationDAO authorisationDAO;
+    private final ShiftDAO shiftDAO;
 
     /**
      * Private constructor to enforce singleton pattern.
@@ -26,6 +27,7 @@ public class EmployeeDALFactory {
         this.employeeDAO = new EmployeeDAO(connection);
         this.branchDAO = new BranchDAO(connection);
         this.authorisationDAO = new AuthorisationDAO(connection);
+        this.shiftDAO = new ShiftDAO(connection);
     }
 
     /**
@@ -67,4 +69,11 @@ public class EmployeeDALFactory {
     public AuthorisationDAO getAuthorisationDAO() {
         return authorisationDAO;
     }
+
+    /**
+     * Gets the ShiftDAO instance.
+     *
+     * @return The ShiftDAO instance
+     */
+    public ShiftDAO getShiftDAO() { return shiftDAO; }
 }
