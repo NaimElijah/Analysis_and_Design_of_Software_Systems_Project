@@ -72,41 +72,48 @@ public final class Database {
         "FOREIGN KEY (permissionName) REFERENCES Permissions(permissionName)" +
         ")";
 
+
+
     private static final String TransportsTable =
             "CREATE TABLE IF NOT EXISTS Transports (" +
                     "tranDocId BIGINT PRIMARY KEY, " +
-                    "firstName TEXT NOT NULL, " +
-                    "lastName TEXT NOT NULL, " +
-                    "salary BIGINT NOT NULL, " +
-                    "startOfEmployment TEXT NOT NULL, " +
-                    "isActive BOOLEAN NOT NULL, " +
-                    "creationDate TEXT NOT NULL, " +
-                    "updateDate TEXT NOT NULL, " +
+                    "status TEXT NOT NULL, " +
+                    "departure_dt TEXT NOT NULL, " +
+                    "transportTruckNumber BIGINT NOT NULL, " +
+                    "transportDriverId TEXT NOT NULL, " +
+                    "truck_Depart_Weight BOOLEAN NOT NULL, " +
+                    "srcSiteArea TEXT NOT NULL, " +
+                    "srcSiteString BIGINT NOT NULL, " +
                     "branchId BIGINT, " +
                     "FOREIGN KEY (branchId) REFERENCES Branches(branchId)" +
                     ")";
 
+    private static final String TransportsProblemsTable =
+            "CREATE TABLE IF NOT EXISTS TransportsProblems (" +
+                    "problemOfTranDocId BIGINT PRIMARY KEY, " +
+                    "problem TEXT NOT NULL, " +
+                    "FOREIGN KEY (problemOfTranDocId) REFERENCES Transports(tranDocId)" +
+                    ")";
+
     private static final String ItemsDocsTable =
             "CREATE TABLE IF NOT EXISTS ItemsDocs (" +
-                    "israeliId BIGINT PRIMARY KEY, " +
-                    "firstName TEXT NOT NULL, " +
-                    "lastName TEXT NOT NULL, " +
-                    "salary BIGINT NOT NULL, " +
-                    "startOfEmployment TEXT NOT NULL, " +
-                    "isActive BOOLEAN NOT NULL, " +
-                    "creationDate TEXT NOT NULL, " +
-                    "updateDate TEXT NOT NULL, " +
-                    "branchId BIGINT, " +
-                    "FOREIGN KEY (branchId) REFERENCES Branches(branchId)" +
+                    "ItemsDocInTransportID BIGINT PRIMARY KEY, " +
+                    "itemsDocNum TEXT NOT NULL, " +
+                    "srcSiteArea TEXT NOT NULL, " +
+                    "srcSiteString BIGINT NOT NULL, " +
+                    "destSiteArea TEXT NOT NULL, " +
+                    "destSiteString BIGINT NOT NULL, " +
+                    "estimatedArrivalTime TEXT NOT NULL, " +
+                    "FOREIGN KEY (ItemsDocInTransportID) REFERENCES Transports(tranDocId)" +
                     ")";
 
     private static final String ItemsTable =
             "CREATE TABLE IF NOT EXISTS Items (" +
                     "itemInItemsDocId BIGINT PRIMARY KEY, " +
                     "name TEXT NOT NULL, " +
-                    "weight TEXT NOT NULL, " +
-                    "condition BIGINT NOT NULL, " +
-                    "FOREIGN KEY (branchId) REFERENCES ItemsDocs(branchId)" +
+                    "weight BIGINT NOT NULL, " +
+                    "condition BOOLEAN NOT NULL, " +
+                    "FOREIGN KEY (itemInItemsDocId) REFERENCES ItemsDocs(itemsDocNum)" +
                     ")";
 
     private static final String TrucksTable =
@@ -114,10 +121,10 @@ public final class Database {
                     "truckNum BIGINT PRIMARY KEY, " +
                     "model TEXT NOT NULL, " +
                     "netWeight BIGINT NOT NULL, " +
-                    "max_carry_weight BIGINT NOT NULL, " +
-                    "valid_license TEXT NOT NULL, " +
-                    "inTransportID BOOLEAN NOT NULL, " +
-                    "isDeleted TEXT NOT NULL, " +
+                    "maxCarryWeight BIGINT NOT NULL, " +
+                    "validLicense TEXT NOT NULL, " +
+                    "inTransportID BIGINT NOT NULL, " +
+                    "isDeleted BOOLEAN NOT NULL, " +
                     "FOREIGN KEY (inTransportID) REFERENCES Transports(tranDocId)" +
                     ")";
 
@@ -153,6 +160,7 @@ public final class Database {
                 st.executeUpdate(RolePermissionsTable);
 
                 st.executeUpdate(TransportsTable);
+                st.executeUpdate(TransportsProblemsTable);
                 st.executeUpdate(ItemsDocsTable);
                 st.executeUpdate(ItemsTable);
                 st.executeUpdate(TrucksTable);

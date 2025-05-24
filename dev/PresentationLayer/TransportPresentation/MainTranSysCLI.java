@@ -37,8 +37,8 @@ public class MainTranSysCLI {
         String choice = scanner.nextLine();
 
         if(choice.equals("1")){
-            System.out.println("\n    --------    ID Authentication Screen    -------    (Secure Login)");  //TODO:  give to all functions below the ID of the user using the system.
-            System.out.println("Enter Your ID:");  //TODO:  give to all functions below the ID of the user using the system.      <<<------------------
+            System.out.println("\n    --------    ID Authentication Screen    -------    (Secure Login)");
+            System.out.println("Enter Your ID:");
             long loginID = scanner.nextLong();
             scanner.nextLine(); // consume the leftover newline
 
