@@ -818,4 +818,6 @@ public class ShiftController {
     public long getBranchIdByAddress(String address, int areaCode) {
         return empCon.getBranchIdByAddress(address, areaCode);
     }
+
+
 }

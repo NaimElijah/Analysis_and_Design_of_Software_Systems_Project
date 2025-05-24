@@ -597,4 +597,10 @@ public class EmployeeController {
         // Check if the branch exists using the repository
         return branchRepository.exists(branchId);
     }
+
+    public boolean isBranch(String address, int areaCode) {
+        // Check if the branch exists using the repository
+        BranchDTO branchDTO = branchRepository.getByAddressAndAreaCode(address, areaCode);
+        return branchDTO != null;
+    }
 }

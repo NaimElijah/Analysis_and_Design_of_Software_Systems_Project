@@ -922,4 +922,12 @@ public class EmployeeService {
             throw new ServiceException("Error checking if branch exists: " + e.getMessage(), e);
         }
     }
+
+    public boolean isBranch(String address, int areaCode) {
+        try {
+            return employeeController.isBranch(address, areaCode);
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
