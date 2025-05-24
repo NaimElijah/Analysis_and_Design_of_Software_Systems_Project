@@ -9,8 +9,8 @@ import java.util.ArrayList;
 import java.time.LocalDateTime;
 
 public class TransportDoc {
-    private enumTranStatus status;
     private int tran_Doc_ID;
+    private enumTranStatus status;
     private LocalDateTime departure_dt;
     private Truck transportTruck;
 //    private int transportTruckNumber;    //   TODO:   for database               <<<---------------------------    <<-----------------------

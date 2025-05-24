@@ -241,7 +241,7 @@ public class TransportService {
 
 
 
-    private boolean isTranDriverTimeAndPlaceValid(TransportDTO transport_DTO){    //TODO:     <<<-------------------------   use this helper function where needed
+    private boolean isTranDriverTimeAndPlaceValid(TransportDTO transport_DTO){
         long transportDriverID = transport_DTO.getTransportDriverID();
         LocalDateTime transportDepar_t = transport_DTO.getDeparture_dt();
         String transportSrcAddressString = transport_DTO.getSrc_site().getSiteAddressString();
@@ -265,7 +265,7 @@ public class TransportService {
 
 
 
-    private boolean areWareHouseMenTimeAndPlacesValid(TransportDTO transportDto) {    //TODO:     <<<-------------------------   use this helper function where needed
+    private boolean areWareHouseMenTimeAndPlacesValid(TransportDTO transportDto) {
         if (!this.employeeIntegrationService.isWarehousemanOnShiftAt(transportDto.getDeparture_dt(), transportDto.getSrc_site().getSiteAddressString(), transportDto.getSrc_site().getSiteAreaNum())){
             return false;   //  because there won't be any warehouseman to load the truck at the src site
         }

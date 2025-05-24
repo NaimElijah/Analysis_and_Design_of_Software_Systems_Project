@@ -11,12 +11,6 @@ public class Site {
         this.cNumber = cNumber;
     }
 
-    public Site(int site_id, Address address, String cName, long cNumber) {   //TODO:   new one
-        this.address = address;
-        this.cName = cName;
-        this.cNumber = cNumber;
-    }
-
     public void setAddress(Address address) {this.address = address;}
     public void setcName(String cName) {this.cName = cName;}
     public void setcNumber(long cNumber) {this.cNumber = cNumber;}

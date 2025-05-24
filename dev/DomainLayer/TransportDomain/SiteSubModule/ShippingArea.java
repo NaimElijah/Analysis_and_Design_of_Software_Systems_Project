@@ -3,9 +3,9 @@ package DomainLayer.TransportDomain.SiteSubModule;
 import java.util.HashMap;
 
 public class ShippingArea {
-    private HashMap<String, Site> sites;
     private int area_number;
     private String area_name;
+    private HashMap<String, Site> sites;
 
     public ShippingArea(int area_number, String area_name) {
         this.area_number = area_number;

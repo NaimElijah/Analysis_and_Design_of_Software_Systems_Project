@@ -154,7 +154,7 @@ public class TransportController {
 
 
 
-    //TODO:   see if we need to check here if the times are correct or have the times been put together well from other function and it implies here is good.
+
     public void setTransportStatus(int TranDocID, int menu_status_option, boolean isActiveHelper) throws FileNotFoundException, FileAlreadyExistsException, CommunicationException, CloneNotSupportedException, IndexOutOfBoundsException {
         enumTranStatus newStatus = null;
         if (menu_status_option == 1){
@@ -301,7 +301,7 @@ public class TransportController {
 
 
 
-    //  TODO:   check if that Driver is in an eligible site for him to drive the Truck of this Transport.
+
     public void setTransportDriver(int TranDocID, long DriverID, boolean isNotDriver, boolean isActive, boolean hasRole) throws FileNotFoundException, ArrayIndexOutOfBoundsException, FileAlreadyExistsException, CloneNotSupportedException, CommunicationException, ClassNotFoundException {
         if (isNotDriver){
             throw new ArrayIndexOutOfBoundsException("The Driver ID you have entered doesn't exist.");
@@ -348,7 +348,6 @@ public class TransportController {
 
     public HashMap<Long, Integer> getDriverIdToInTransportID() {return driverIdToInTransportID;}
     public TruckFacade getTruckFacade() {return truckFacade;}
-    public SiteFacade getSiteFacade() {return siteFacade;}
 
 
     public void isTruckDriverPairingGood(int truckNum, long driverID, boolean isNotDriver, boolean hasRole22) throws FileNotFoundException, ArrayIndexOutOfBoundsException, ClassNotFoundException, CloneNotSupportedException, CommunicationException {
@@ -412,7 +411,7 @@ public class TransportController {
 
 
 
-    //TODO: ALSO DO TIME AND PLACE CHECKING.
+
     public String checkTransportValidity(String DTO_OfTransport, boolean hasRole11, boolean isThereMatchAtAllBetweenLicenses) throws JsonProcessingException {  ///  returns: "Valid", "BadLicenses", "overallWeight-truckMaxCarryWeight", "Queue", "Occupied"
         TransportDTO transport_DTO = this.objectMapper.readValue(DTO_OfTransport, TransportDTO.class);
         TransportDoc tempTransport = convertTransportDTOToTransportDoc(transport_DTO);

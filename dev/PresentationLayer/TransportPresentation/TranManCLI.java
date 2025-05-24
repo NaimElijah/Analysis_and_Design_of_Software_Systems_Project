@@ -35,15 +35,7 @@ public class TranManCLI {
     }
 
 
-    //TODO: add Time checks here where needed and if needed here     <<<--------------------------    <<-----------------------
-    //TODO: add Time checks here where needed and if needed here     <<<--------------------------    <<-----------------------
-    //TODO: add Time checks here where needed and if needed here     <<<--------------------------    <<-----------------------
-    //TODO: add Time checks here where needed and if needed here     <<<--------------------------    <<-----------------------
 
-    //TODO: add Employee Site Placement checks here where needed and if needed here     <<<--------------------------    <<-----------------------
-    //TODO: add Employee Site Placement checks here where needed and if needed here     <<<--------------------------    <<-----------------------
-    //TODO: add Employee Site Placement checks here where needed and if needed here     <<<--------------------------    <<-----------------------
-    //TODO: add Employee Site Placement checks here where needed and if needed here     <<<--------------------------    <<-----------------------
 
     void transportManagerMainMenu(long loggedID){   ////////////////////////////////   Main Menu   <<<--------------------------------------------
         System.out.println("\n       --------    Transport Manager Menu    -------");
@@ -366,7 +358,7 @@ public class TranManCLI {
 
         /// ////////////////////////////////////////////    NOW WE'LL DO THE CHECKS          <<<-----------------------------------------
 
-        String resValid = checkIfTransportDTOIsValid(loggedID, transportDTO);          //TODO:  loggedID not needed here   <<---------------
+        String resValid = checkIfTransportDTOIsValid(loggedID, transportDTO);
 
         if (resValid.equals("Valid")){
             System.out.println("Okay, Transport is Valid :)");
@@ -536,7 +528,7 @@ public class TranManCLI {
         System.out.println("Checking Transport Validity...");
 
         String resOfTransportCheck = "";
-        try {    //TODO:   time and place checking inside here   <<<-----------------------     <<------------------------
+        try {
             resOfTransportCheck = this.tra_ser.checkTransportValidity(loggedID, objectMapper.writeValueAsString(transportDTO));  //  check Transport Validity
             ///  returns: "Valid", "BadLicenses", "overallWeight-truckMaxCarryWeight", "Queue", "Occupied", "WareHouseManUnavailable", "DriverUnavailable"
         } catch (Exception e) {
@@ -565,11 +557,11 @@ public class TranManCLI {
             } else if (resOfTransportCheck.equals("WareHouseManUnavailable")) {
                 System.out.println("It seems that at least one of the Sites is missing a WareHouse Man Employee at the time the Transport is visiting that site, can't handle the load this way.");
                 System.out.println("\nThis Transport is going to the Queued Transport, where it is saved, you can change it's details or wait for the right moment and try to send this Transport again later");
-                break;  //TODO:  update checkIfCanGo function to support times checking (might already be supporting this)
+                break;
             } else if (resOfTransportCheck.equals("DriverUnavailable")) {
                 System.out.println("It seems that the Driver you chose isn't at any of the sites associated in this Transport at this time, so we're missing a Legitimate Driver.");
                 System.out.println("\nThis Transport is going to the Queued Transport, where it is saved, you can change it's details or wait for the right moment and try to send this Transport again later");
-                break;  //TODO:  update checkIfCanGo function to support times checking (might already be supporting this)
+                break;
             } else {    ///  "overallWeight-truckMaxCarryWeight" Case
                 transportWeightRePlanning(loggedID, transportDTO, resOfTransportCheck);
             }

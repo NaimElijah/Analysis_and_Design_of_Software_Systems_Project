@@ -72,6 +72,70 @@ public final class Database {
         "FOREIGN KEY (permissionName) REFERENCES Permissions(permissionName)" +
         ")";
 
+    private static final String TransportsTable =
+            "CREATE TABLE IF NOT EXISTS Transports (" +
+                    "tranDocId BIGINT PRIMARY KEY, " +
+                    "firstName TEXT NOT NULL, " +
+                    "lastName TEXT NOT NULL, " +
+                    "salary BIGINT NOT NULL, " +
+                    "startOfEmployment TEXT NOT NULL, " +
+                    "isActive BOOLEAN NOT NULL, " +
+                    "creationDate TEXT NOT NULL, " +
+                    "updateDate TEXT NOT NULL, " +
+                    "branchId BIGINT, " +
+                    "FOREIGN KEY (branchId) REFERENCES Branches(branchId)" +
+                    ")";
+
+    private static final String ItemsDocsTable =
+            "CREATE TABLE IF NOT EXISTS ItemsDocs (" +
+                    "israeliId BIGINT PRIMARY KEY, " +
+                    "firstName TEXT NOT NULL, " +
+                    "lastName TEXT NOT NULL, " +
+                    "salary BIGINT NOT NULL, " +
+                    "startOfEmployment TEXT NOT NULL, " +
+                    "isActive BOOLEAN NOT NULL, " +
+                    "creationDate TEXT NOT NULL, " +
+                    "updateDate TEXT NOT NULL, " +
+                    "branchId BIGINT, " +
+                    "FOREIGN KEY (branchId) REFERENCES Branches(branchId)" +
+                    ")";
+
+    private static final String ItemsTable =
+            "CREATE TABLE IF NOT EXISTS Items (" +
+                    "itemInItemsDocId BIGINT PRIMARY KEY, " +
+                    "name TEXT NOT NULL, " +
+                    "weight TEXT NOT NULL, " +
+                    "condition BIGINT NOT NULL, " +
+                    "FOREIGN KEY (branchId) REFERENCES ItemsDocs(branchId)" +
+                    ")";
+
+    private static final String TrucksTable =
+            "CREATE TABLE IF NOT EXISTS Trucks (" +
+                    "truckNum BIGINT PRIMARY KEY, " +
+                    "model TEXT NOT NULL, " +
+                    "netWeight BIGINT NOT NULL, " +
+                    "max_carry_weight BIGINT NOT NULL, " +
+                    "valid_license TEXT NOT NULL, " +
+                    "inTransportID BOOLEAN NOT NULL, " +
+                    "isDeleted TEXT NOT NULL, " +
+                    "FOREIGN KEY (inTransportID) REFERENCES Transports(tranDocId)" +
+                    ")";
+
+    private static final String ShippingAreasTable =
+            "CREATE TABLE IF NOT EXISTS ShippingAreas (" +
+                    "areaNumber BIGINT PRIMARY KEY, " +
+                    "areaName TEXT NOT NULL, " +
+                    ")";
+
+    private static final String SitesTable =
+            "CREATE TABLE IF NOT EXISTS Sites (" +
+                    "areaNum BIGINT PRIMARY KEY, " +
+                    "addressStr TEXT PRIMARY KEY, " +
+                    "contName TEXT NOT NULL, " +
+                    "contNumber BIGINT NOT NULL, " +
+                    "FOREIGN KEY (areaNum) REFERENCES ShippingAreas(areaNumber)" +
+                    ")";
+
     static {
         try {
             Class.forName("org.sqlite.JDBC");
@@ -87,6 +151,13 @@ public final class Database {
                 st.executeUpdate(EmployeeRolesTable);
                 st.executeUpdate(EmployeeTermsTable);
                 st.executeUpdate(RolePermissionsTable);
+
+                st.executeUpdate(TransportsTable);
+                st.executeUpdate(ItemsDocsTable);
+                st.executeUpdate(ItemsTable);
+                st.executeUpdate(TrucksTable);
+                st.executeUpdate(ShippingAreasTable);
+                st.executeUpdate(SitesTable);
                 // ***ADD YOUR TABLES HERE***
 
             }
