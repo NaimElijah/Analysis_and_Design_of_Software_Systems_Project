@@ -396,7 +396,7 @@ public class CliUtil {
                 System.out.print(BOLD + prompt + RESET);
                 return Long.parseLong(scanner.nextLine());
             } catch (NumberFormatException e) {
-                printError("Please enter a valid number.");
+                printError("Please enter a valid input.");
             }
         }
     }

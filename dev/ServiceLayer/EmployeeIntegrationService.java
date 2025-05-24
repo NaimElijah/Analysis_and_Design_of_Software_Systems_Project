@@ -87,4 +87,8 @@ public class EmployeeIntegrationService {
         return employeeService.isEmployeeAuthorised(doneBy, permission);
     }
 
+    public boolean isBranch(String address, int areaCode) {
+        return employeeService.isBranch(address, areaCode);
+    }
+
 }

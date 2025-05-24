@@ -7,6 +7,7 @@ import DomainLayer.EmployeeSubModule.Repository.BranchRepository;
 import DomainLayer.EmployeeSubModule.Repository.EmployeeRepository;
 import DomainLayer.exception.InvalidInputException;
 import DomainLayer.exception.UnauthorizedPermissionException;
+import Util.config;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -596,5 +597,34 @@ public class EmployeeController {
     public boolean isBranchExists(long branchId) {
         // Check if the branch exists using the repository
         return branchRepository.exists(branchId);
+    }
+
+    /**
+     * Determines whether the user with the specified ID can access the Transport module.
+     *
+     * This method checks if the user exists and has the necessary roles to access
+     * the Transport module, such as Driver roles or the Transport Manager role.
+     *
+     * @param userId The ID of the user to check.
+     * @return true if the user can access the Transport module; false otherwise.
+     * @throws InvalidInputException if the user does not exist.
+     */
+    public boolean canAccessTransportModule(long userId) {
+        // Check if the user has the "Transport" role
+        EmployeeDTO employeeDTO = employeeRepository.getById(userId);
+        if (employeeDTO == null) {
+            throw new InvalidInputException("Employee with ID " + userId + " not found");
+        }
+
+        // Check if the employee has the one of the Driver roles or the Transport Manager role
+        Set<String> roles = employeeDTO.getRoles();
+        return roles.contains(config.ROLE_DRIVER_A) || roles.contains(config.ROLE_DRIVER_B) || roles.contains(config.ROLE_DRIVER_C) ||
+               roles.contains(config.ROLE_DRIVER_D) || roles.contains(config.ROLE_DRIVER_E) || roles.contains(config.ROLE_TRANSPORT_MANAGER);
+    }
+
+    public boolean isBranch(String address, int areaCode) {
+        // Check if the branch exists using the repository
+        BranchDTO branchDTO = branchRepository.getByAddressAndAreaCode(address, areaCode);
+        return branchDTO != null;
     }
 }

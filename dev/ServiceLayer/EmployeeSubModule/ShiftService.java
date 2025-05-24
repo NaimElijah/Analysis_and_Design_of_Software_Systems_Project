@@ -436,4 +436,5 @@ public class ShiftService {
         return availabilityController.isWeekendBlocked();
     }
 
+
 }

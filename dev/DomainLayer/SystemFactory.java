@@ -9,7 +9,7 @@ import ServiceLayer.*;
 import ServiceLayer.EmployeeSubModule.EmployeeService;
 import ServiceLayer.EmployeeSubModule.ShiftService;
 import ServiceLayer.TransportServices.*;
-import PresentationLayer.MainCLI;
+import PresentationLayer.EmployeeSubModule.HR_MainCLI;
 import PresentationLayer.TransportPresentation.MainTranSysCLI;
 import PresentationLayer.TransportPresentation.TranManCLI;
 
@@ -124,8 +124,8 @@ public class SystemFactory {
      * @param loginId The ID of the logged-in employee.
      * @return A MainCLI instance.
      */
-    public MainCLI createEmployeeCLI(EmployeeService employeeService, ShiftService shiftService, long loginId) {
-        return new MainCLI(employeeService, shiftService, loginId);
+    public HR_MainCLI createEmployeeCLI(EmployeeService employeeService, ShiftService shiftService, long loginId) {
+        return new HR_MainCLI(employeeService, shiftService, loginId);
     }
 
     /**

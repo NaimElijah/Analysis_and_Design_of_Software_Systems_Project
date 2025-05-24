@@ -907,6 +907,12 @@ public class EmployeeService {
         }
     }
 
+    /**
+     * Retrieves a list of all drivers as strings of EmployeeDTOs.
+     *
+     * @return an array of strings containing driver information
+     * @throws ServiceException if an error occurs while retrieving the drivers
+     */
     public String[] getAllDrivers() {
         try {
             return employeeController.getAllDrivers();
@@ -920,6 +926,30 @@ public class EmployeeService {
             return employeeController.isBranchExists(branch);
         } catch (Exception e) {
             throw new ServiceException("Error checking if branch exists: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Determines if a user has the required permissions to access the Transport Module.
+     *
+     * @param userId the unique identifier of the user whose access is being verified
+     * @return true if the user has access to the Transport Module, false otherwise
+     * @throws ServiceException if an error occurs while checking access permissions
+     */
+    public boolean canAccessTransportModule(long userId) {
+    try {
+            // Check if the user has the required permission to access the Transport Module
+            return employeeController.canAccessTransportModule(userId);
+        } catch (Exception e) {
+            throw new ServiceException("Error checking access to Transport Module: " + e.getMessage(), e);
+        }
+    }
+
+    public boolean isBranch(String address, int areaCode) {
+        try {
+            return employeeController.isBranch(address, areaCode);
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
         }
     }
 }

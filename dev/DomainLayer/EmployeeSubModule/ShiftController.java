@@ -162,7 +162,6 @@ public class ShiftController {
     }
 
 
-
     /**
      * Create shifts from the next Sunday after the given date for one full week (Sunday to Saturday).
      * The shifts will be created for the branch of the employee creating the shifts.
@@ -819,4 +818,6 @@ public class ShiftController {
     public long getBranchIdByAddress(String address, int areaCode) {
         return empCon.getBranchIdByAddress(address, areaCode);
     }
+
+
 }

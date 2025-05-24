@@ -6,7 +6,6 @@ INSERT INTO Branches (branchId, branchName, areaCode, branchAddress, managerID) 
 
 -- Permissions
 INSERT INTO Permissions (permissionName) VALUES ('UPDATE_SHIFT');
-INSERT INTO Permissions (permissionName) VALUES ('ASSIGN_EMPLOYEE_TO_SHIFT');
 INSERT INTO Permissions (permissionName) VALUES ('DELETE_SITE');
 INSERT INTO Permissions (permissionName) VALUES ('EDIT_SHIFT');
 INSERT INTO Permissions (permissionName) VALUES ('EDIT_ITEM_IN_TRANSPORT');
