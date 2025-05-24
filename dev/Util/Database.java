@@ -78,7 +78,7 @@ public final class Database {
             "CREATE TABLE IF NOT EXISTS Transports (" +
                     "tranDocId BIGINT PRIMARY KEY, " +
                     "status TEXT NOT NULL, " +
-                    "departure_dt TEXT NOT NULL, " +
+                    "departure_dt TIMESTAMP NOT NULL, " +
                     "transportTruckNumber BIGINT NOT NULL, " +
                     "transportDriverId TEXT NOT NULL, " +
                     "truck_Depart_Weight BOOLEAN NOT NULL, " +
@@ -103,7 +103,7 @@ public final class Database {
                     "srcSiteString BIGINT NOT NULL, " +
                     "destSiteArea TEXT NOT NULL, " +
                     "destSiteString BIGINT NOT NULL, " +
-                    "estimatedArrivalTime TEXT NOT NULL, " +
+                    "estimatedArrivalTime TIMESTAMP NOT NULL, " +
                     "FOREIGN KEY (ItemsDocInTransportID) REFERENCES Transports(tranDocId)" +
                     ")";
 
