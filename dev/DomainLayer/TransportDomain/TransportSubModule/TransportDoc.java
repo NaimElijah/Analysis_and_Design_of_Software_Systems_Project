@@ -9,21 +9,23 @@ import java.util.ArrayList;
 import java.time.LocalDateTime;
 
 public class TransportDoc {
-    private enumTranStatus status;
     private int tran_Doc_ID;
+    private enumTranStatus status;
     private LocalDateTime departure_dt;
     private Truck transportTruck;
+    private int transportTruckNumber;   //  TODO:   for database        <<<---------------------------    <<-----------------------
     private long transportDriverId;
     private double truck_Depart_Weight;
     private Site src_site;
     private ArrayList<ItemsDoc> dests_Docs;  ///  <<<--------------  In Order of visit   <<<--------------------
     private ArrayList<enumTranProblem> problems;
 
-    public TransportDoc(enumTranStatus status, int tran_Doc_ID, Truck transportTruck, long tranDriverId, Site src_site) {
+    public TransportDoc(enumTranStatus status, int tran_Doc_ID, Truck transportTruck, long tranDriverId, Site src_site, LocalDateTime departure_dt_p) {
         this.status = status;
         this.tran_Doc_ID = tran_Doc_ID;
-        this.departure_dt = LocalDateTime.now();   // In the code, if it doesn't depart immediately, this always updates right before genuine departure.
+        this.departure_dt = departure_dt_p;
         this.transportTruck = transportTruck;
+        this.transportTruckNumber = this.transportTruck.getTruck_num();
         this.transportDriverId = tranDriverId;
         this.truck_Depart_Weight = -1;   //  Initialization, calculated before being sent
         this.src_site = src_site;
@@ -31,6 +33,8 @@ public class TransportDoc {
         this.problems = new ArrayList<enumTranProblem>();
     }
 
+    public int getTransportTruckNumber() {return transportTruckNumber;}
+    public void setTransportTruckNumber(int transportTruckNumber) {this.transportTruckNumber = transportTruckNumber;}
     public enumTranStatus getStatus() {return status;}
     public void setStatus(enumTranStatus status) {this.status = status;}
     public int getTran_Doc_ID() {return tran_Doc_ID;}
@@ -90,7 +94,7 @@ public class TransportDoc {
                 return null;  //  Destination Site already in this Transport, do add/remove item from that site instead. Every Site has a primary key which is the address.
             }
         }
-        ItemsDoc addition = new ItemsDoc(itemsDoc_num, this.src_site, dest);
+        ItemsDoc addition = new ItemsDoc(itemsDoc_num, this.src_site, dest, this.tran_Doc_ID);
         dests_Docs.add(addition);
         this.calculateItemsDocsArrivalTimesInTransport();
         return addition;  // all good

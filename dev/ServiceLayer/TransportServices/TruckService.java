@@ -14,15 +14,10 @@ public class TruckService {
         this.employeeIntegrationService = eis;
     }
 
-    //TODO:  We need to add a Permission checking function to the EmployeeIntegrationService.
-    //TODO:  We need to add a Permission checking function to the EmployeeIntegrationService.
-    //TODO:  We need to add a Permission checking function to the EmployeeIntegrationService.
-    //TODO:  We need to add a Permission checking function to the EmployeeIntegrationService.
-    //TODO:  We need to add a Permission checking function to the EmployeeIntegrationService.
 
     public String addTruck(long loggedID, int num, String model, double net_wei, double max_carry, String license){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "ADD_TRUCK")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         if (num < 0 || net_wei < 0 || max_carry < 0){ return "The Truck's Number/Net.Weight/MaxCarryWeight you enter cannot be negative"; }
         if (model.isEmpty() || model.isBlank() || license.isEmpty() || license.isBlank()){ return "The Truck's Model/license you enter cannot be empty"; }
@@ -44,7 +39,7 @@ public class TruckService {
 
     public String removeTruck(long loggedID, int num){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "DELETE_TRUCK")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         if (num < 0){ return "The Truck Number you enter cannot be negative"; }
         try {
@@ -65,7 +60,7 @@ public class TruckService {
 
     public String showTrucks(long loggedID){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "SHOW_TRUCKS")){
-            return "You are not authorized to make this action !";
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
         String res = "";
         try {

@@ -3,6 +3,7 @@ package PresentationLayer.TransportPresentation;
 import DTOs.TransportModuleDTOs.*;
 import ServiceLayer.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -34,15 +35,7 @@ public class TranManCLI {
     }
 
 
-    //TODO: add Time checks here where needed and if needed here     <<<--------------------------    <<-----------------------
-    //TODO: add Time checks here where needed and if needed here     <<<--------------------------    <<-----------------------
-    //TODO: add Time checks here where needed and if needed here     <<<--------------------------    <<-----------------------
-    //TODO: add Time checks here where needed and if needed here     <<<--------------------------    <<-----------------------
 
-    //TODO: add Employee Site Placement checks here where needed and if needed here     <<<--------------------------    <<-----------------------
-    //TODO: add Employee Site Placement checks here where needed and if needed here     <<<--------------------------    <<-----------------------
-    //TODO: add Employee Site Placement checks here where needed and if needed here     <<<--------------------------    <<-----------------------
-    //TODO: add Employee Site Placement checks here where needed and if needed here     <<<--------------------------    <<-----------------------
 
     void transportManagerMainMenu(long loggedID){   ////////////////////////////////   Main Menu   <<<--------------------------------------------
         System.out.println("\n       --------    Transport Manager Menu    -------");
@@ -187,6 +180,55 @@ public class TranManCLI {
         }
 
 
+
+        //TODO:  also add transport departure set option and flow down to the other layers and create and check    <<<----------------  <<----
+        boolean validTime = false, validPick = false;
+        LocalDateTime selectedDepartureDT = null;
+        while (!validPick){
+            System.out.println("Ok, when do you want to your new Transport to depart the source site ?\n");
+            System.out.println(".1. Now.");
+            System.out.println(".2. Let me pick a future time.");
+            System.out.println("enter your selection:");
+            int pick = scanner.nextInt();
+            scanner.nextLine(); // consume the leftover newline
+
+            if (pick == 1){
+                selectedDepartureDT = LocalDateTime.now();
+                validPick = true;
+            } else if (pick == 2){
+                System.out.println("Ok, let's pick a future time for your Transport to depart the source site:");
+                while (!validTime){
+                    System.out.println("Year:");
+                    int Syear = scanner.nextInt();
+                    scanner.nextLine(); // consume the leftover newline
+                    System.out.println("Month:");
+                    int Smonth = scanner.nextInt();
+                    scanner.nextLine(); // consume the leftover newline
+                    System.out.println("Day:");
+                    int Sday = scanner.nextInt();
+                    scanner.nextLine(); // consume the leftover newline
+                    System.out.println("Hour:");
+                    int Shour = scanner.nextInt();
+                    scanner.nextLine(); // consume the leftover newline
+                    System.out.println("Minute:");
+                    int Sminute = scanner.nextInt();
+                    scanner.nextLine(); // consume the leftover newline
+                    selectedDepartureDT = LocalDateTime.of(Syear, Smonth, Sday, Shour, Sminute);
+
+                    if (selectedDepartureDT.isBefore(LocalDateTime.now())){
+                        System.out.println("You cannot choose a departure time in the past :(  try again:\n");
+                    } else {
+                        validTime = true;
+                    }
+                }
+                validPick = true;
+            } else {
+                System.out.println("--->  Please enter a number between the menu's margins  <---  try again:\n");
+            }
+        }
+
+
+
         ///  Starting with the Sites and Items for the Transport
         ArrayList<ItemsDocDTO> dests_Docs_for_Transport = new ArrayList<ItemsDocDTO>();  //  for the Transport's field
 
@@ -200,6 +242,7 @@ public class TranManCLI {
         ArrayList<Integer> areasNumsUptoNow = new ArrayList<Integer>();  //  for the area numbers in this Transport
         ArrayList<Integer> ItemsDocsNumsUsed = new ArrayList<>();  // for the items Docs numbers in this Transport
         areasNumsUptoNow.add(sourceAreaNum);
+        LocalDateTime timeCounter = selectedDepartureDT.plusMinutes(0);    //  to create a copy
 
         while (continueAnotherSite){   ///   Sites WHILE(TRUE) LOOP
             siteExists = false;
@@ -221,8 +264,10 @@ public class TranManCLI {
                             continue;  ///  continue this Loop
                         }
                         areasNumsUptoNow.add(currSiteAreaNum);
+                        timeCounter = timeCounter.plusHours(1);
                         continueAskingDifferentAreaNum = false;  ///  breaks from this Loop
                     }else {
+                        timeCounter = timeCounter.plusMinutes(30);
                         continueAskingDifferentAreaNum = false;  ///  breaks from this Loop
                     }
                 }
@@ -291,7 +336,7 @@ public class TranManCLI {
 
 
 
-            ItemsDocDTO itemsDocAddition = new ItemsDocDTO(currItemsDocNum, srcSitedto, destSitedto, itemsListToCurrDestSite);
+            ItemsDocDTO itemsDocAddition = new ItemsDocDTO(currItemsDocNum, srcSitedto, destSitedto, itemsListToCurrDestSite, timeCounter);
             System.out.println("Ok, Finished adding the current destination Site's items");
             dests_Docs_for_Transport.add(itemsDocAddition);   //  adding new ItemsDoc to the destSitesDocs
 
@@ -306,7 +351,7 @@ public class TranManCLI {
         System.out.println("Ok, Finished adding the Sites & Items to the Transport");
 
         // And create the DTO object (The Package to send downwards):
-        TransportDTO transportDTO = new TransportDTO(-99, truckNum, driverID, srcSitedto, dests_Docs_for_Transport);
+        TransportDTO transportDTO = new TransportDTO(-99, truckNum, driverID, srcSitedto, dests_Docs_for_Transport, selectedDepartureDT);
 
         ////////////////////////////////////////////////    NOW WE HAVE THE WHOLE TRANSPORT's DTO     <<<-----------------------------------------
 
@@ -485,7 +530,7 @@ public class TranManCLI {
         String resOfTransportCheck = "";
         try {
             resOfTransportCheck = this.tra_ser.checkTransportValidity(loggedID, objectMapper.writeValueAsString(transportDTO));  //  check Transport Validity
-            ///  returns: "Valid", "BadLicenses", "overallWeight-truckMaxCarryWeight", "Queue", "Occupied"
+            ///  returns: "Valid", "BadLicenses", "overallWeight-truckMaxCarryWeight", "Queue", "Occupied", "WareHouseManUnavailable", "DriverUnavailable"
         } catch (Exception e) {
             System.out.println("Serialization's fault");
             e.printStackTrace();
@@ -509,6 +554,14 @@ public class TranManCLI {
                 System.out.println("The Driver you designated doesn't have a License that matches the License required for the Truck you selected");
                 transportPairingRePlanning(loggedID, transportDTO);
 
+            } else if (resOfTransportCheck.equals("WareHouseManUnavailable")) {
+                System.out.println("It seems that at least one of the Sites is missing a WareHouse Man Employee at the time the Transport is visiting that site, can't handle the load this way.");
+                System.out.println("\nThis Transport is going to the Queued Transport, where it is saved, you can change it's details or wait for the right moment and try to send this Transport again later");
+                break;
+            } else if (resOfTransportCheck.equals("DriverUnavailable")) {
+                System.out.println("It seems that the Driver you chose isn't at any of the sites associated in this Transport at this time, so we're missing a Legitimate Driver.");
+                System.out.println("\nThis Transport is going to the Queued Transport, where it is saved, you can change it's details or wait for the right moment and try to send this Transport again later");
+                break;
             } else {    ///  "overallWeight-truckMaxCarryWeight" Case
                 transportWeightRePlanning(loggedID, transportDTO, resOfTransportCheck);
             }
@@ -516,7 +569,7 @@ public class TranManCLI {
             System.out.println("Okay, Let's Check Transport Validity again...");
             try {
                 resOfTransportCheck = this.tra_ser.checkTransportValidity(loggedID, objectMapper.writeValueAsString(transportDTO));  //  check Transport Validity again
-                ///  returns: "Valid", "BadLicenses", "overallWeight-truckMaxCarryWeight", "Queue", "Occupied"
+                ///  returns: "Valid", "BadLicenses", "overallWeight-truckMaxCarryWeight", "Queue", "Occupied", "WareHouseManUnavailable", "DriverUnavailable"
             } catch (Exception e) {
                 System.out.println("Serialization's fault");
                 e.printStackTrace();

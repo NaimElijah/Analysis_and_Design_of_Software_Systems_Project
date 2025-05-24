@@ -1,21 +1,21 @@
 package ServiceLayer.TransportServices;
 
 import DTOs.TransportModuleDTOs.*;
+import ServiceLayer.EmployeeSubModule.EmployeeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class StartUpStateService {
     private TransportService tranSer;
     private TruckService truckSer;
-//    private TranEmployeeService empSer;
     private SiteService siteSer;
     private ObjectMapper objectMapper;
 
     public StartUpStateService(TransportService tranSer, TruckService truckSer, SiteService siteSer) {
         this.tranSer = tranSer;
         this.truckSer = truckSer;
-//        this.empSer = empSer;
         this.siteSer = siteSer;
         this.objectMapper = new ObjectMapper();
     }
@@ -24,20 +24,20 @@ public class StartUpStateService {
     public String loadData() {
         try {
             // shipping area:
-            this.siteSer.addShippingArea(1, "Central District");
-            this.siteSer.addShippingArea(2, "South District");
+            this.siteSer.addShippingArea(222, 1, "Central District");
+            this.siteSer.addShippingArea(222, 2, "South District");
 
             // sites:
-            this.siteSer.addSite(1, "Ramla", "Bob Hanely", 524561234);
-            this.siteSer.addSite(1, "Rishonim", "Jack Graham", 534872456);
-            this.siteSer.addSite(2, "Ashkelon", "Alice Green", 553671958);
-            this.siteSer.addSite(2, "Dimona", "Daniel Greenberg", 586457912);
+            this.siteSer.addSite(222, 1, "Ramla", "Bob Hanely", 524561234);
+            this.siteSer.addSite(222, 1, "Rishonim", "Jack Graham", 534872456);
+            this.siteSer.addSite(222, 2, "Ashkelon", "Alice Green", 553671958);
+            this.siteSer.addSite(222, 2, "Dimona", "Daniel Greenberg", 586457912);
 
 
             // trucks:
-            this.truckSer.addTruck(1010, "Toyota K8", 1200, 100, "D");
-            this.truckSer.addTruck(2020, "Hyundai R6", 1000, 100, "C");
-            this.truckSer.addTruck(3030, "Yamaha Lite", 200, 20, "A");
+            this.truckSer.addTruck(222, 1010, "Toyota K8", 1200, 100, "D");
+            this.truckSer.addTruck(222, 2020, "Hyundai R6", 1000, 100, "C");
+            this.truckSer.addTruck(222, 3030, "Yamaha Lite", 200, 20, "A");
 
 
             //  Admin, Managers, Drivers:
@@ -69,18 +69,18 @@ public class StartUpStateService {
             ArrayList<ItemQuantityDTO> itemQuantityDTOs1 = new ArrayList<>();
             itemQuantityDTOs1.add(new ItemQuantityDTO(new ItemDTO("Water", 0.5, true), 5));
             itemQuantityDTOs1.add(new ItemQuantityDTO(new ItemDTO("Rice", 1, true), 10));
-            ItemsDocDTO itemsDocDTO1 = new ItemsDocDTO(1, new SiteDTO(1,"Ramla"), new SiteDTO(1, "Rishonim"), itemQuantityDTOs1);
+            ItemsDocDTO itemsDocDTO1 = new ItemsDocDTO(1, new SiteDTO(1,"Ramla"), new SiteDTO(1, "Rishonim"), itemQuantityDTOs1, LocalDateTime.now().plusHours(1));
 
             ArrayList<ItemQuantityDTO> itemQuantityDTOs2 = new ArrayList<>();
             itemQuantityDTOs2.add(new ItemQuantityDTO(new ItemDTO("Shampoo", 0.75, true), 10));
             itemQuantityDTOs2.add(new ItemQuantityDTO(new ItemDTO("Toothpaste", 0.2, true), 15));
-            ItemsDocDTO itemsDocDTO2 = new ItemsDocDTO(2, new SiteDTO(1,"Ramla"), new SiteDTO(2, "Dimona"), itemQuantityDTOs2);
+            ItemsDocDTO itemsDocDTO2 = new ItemsDocDTO(2, new SiteDTO(1,"Ramla"), new SiteDTO(2, "Dimona"), itemQuantityDTOs2, LocalDateTime.now().plusMinutes(30));
 
             itemsDocDTOs.add(itemsDocDTO1);
             itemsDocDTOs.add(itemsDocDTO2);
 
-            TransportDTO transportDTO = new TransportDTO(-99, 1010, 555, new SiteDTO(1,"Ramla"), itemsDocDTOs);
-            this.tranSer.createTransport(objectMapper.writeValueAsString(transportDTO), -100);
+            TransportDTO transportDTO = new TransportDTO(-99, 1010, 555, new SiteDTO(1,"Ramla"), itemsDocDTOs, LocalDateTime.now());
+            this.tranSer.createTransport(222, objectMapper.writeValueAsString(transportDTO), -100);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -89,10 +89,6 @@ public class StartUpStateService {
         return "SUCCESS";
     }
 
-
-//    public int getEmployeePermissionsRank(int loginIDGiven) {
-//        return empSer.getEmployeePermissionsRank(loginIDGiven);
-//    }
 
 
 

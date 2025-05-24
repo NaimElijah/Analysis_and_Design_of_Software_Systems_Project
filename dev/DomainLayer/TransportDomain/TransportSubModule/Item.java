@@ -3,22 +3,20 @@ package DomainLayer.TransportDomain.TransportSubModule;
 import java.util.Objects;
 
 public class Item {
+    private int itemInItemsDocId;    //   TODO:   for database               <<<---------------------------    <<-----------------------
     private String name;
     private double weight;   // In Kilos
     private Boolean condition;
 
-    public Item(String name, double weight, Boolean condition){
+    public Item(String name, double weight, Boolean condition, int itemInItemsDocId){
         this.name = name;
+        this.itemInItemsDocId = itemInItemsDocId;
         this.weight = weight;
         this.condition = condition;
     }
 
-    public Item(String name, double weight){
-        this.name = name;
-        this.weight = weight;
-        this.condition = true;
-    }
-
+    public int getItemInItemsDocId() {return itemInItemsDocId;}
+    public void setItemInItemsDocId(int itemInItemsDocId) {this.itemInItemsDocId = itemInItemsDocId;}
     public String getName() {return name;}
     public void setName(String name) {this.name = name;}
     public double getWeight() {return weight;}

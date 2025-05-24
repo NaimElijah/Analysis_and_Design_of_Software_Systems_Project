@@ -81,6 +81,9 @@ public class SystemFactory {
      * @return TransportModuleComponents containing all initialized components.
      */
     public TransportModuleComponents createTransportModule(EmployeeModuleComponents employeeComponents) {
+        // Initialize repositories
+        //TODO           <<<-------------------------     <<---------------------------------
+
         // Initialize facades
         TruckFacade truckFacade = new TruckFacade();
         SiteFacade siteFacade = new SiteFacade();
@@ -100,7 +103,7 @@ public class SystemFactory {
         SiteService siteService = new SiteService(siteFacade, employeeIntegrationService);
 
         // Initialize startup service
-        StartUpStateService startUpService = new StartUpStateService(transportService, truckService, siteService);
+        StartUpStateService startUpService = new StartUpStateService(transportService, truckService, siteService);  // if this specific one needed
 
         return new TransportModuleComponents(
             truckFacade,
