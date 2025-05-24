@@ -14,8 +14,9 @@ public class ItemsDoc {
     private HashMap<Item, Integer> goodItems;   //  separate the good items and the bad items
     private HashMap<Item, Integer> badItems;
 
-    public ItemsDoc(int itemDoc_num, Site src_site, Site dest_site) {
+    public ItemsDoc(int itemDoc_num, Site src_site, Site dest_site, int itemsDocInTransportID) {
         this.itemsDoc_num = itemDoc_num;
+        this.ItemsDocInTransportID = itemsDocInTransportID;
         this.src_site = src_site;
         this.dest_site = dest_site;
         this.estimatedArrivalTime = null;   ///   Is set a bit later, when a TransportDoc calculates it with it's calculation function.
@@ -23,6 +24,8 @@ public class ItemsDoc {
         this.badItems = new HashMap<Item, Integer>();
     }
 
+    public int getItemsDocInTransportID() {return ItemsDocInTransportID;}
+    public void setItemsDocInTransportID(int itemsDocInTransportID) {ItemsDocInTransportID = itemsDocInTransportID;}
     public int getItemDoc_num() {return itemsDoc_num;}
     public void setItemDoc_num(int itemDoc_num) {this.itemsDoc_num = itemDoc_num;}
     public Site getSrc_site() {return src_site;}
@@ -44,7 +47,7 @@ public class ItemsDoc {
                 return 0;  // all good
             }
         }
-        items.put(new Item(itemName, itemWeight, cond), amount);
+        items.put(new Item(itemName, itemWeight, cond, this.itemsDoc_num), amount);
         return 0;  // all good
     }
 
