@@ -3,6 +3,7 @@ package DomainLayer.EmployeeSubModule.Repository;
 import DataAccessLayer.EmployeeDAL.AuthorisationDAO;
 import DataAccessLayer.EmployeeDAL.EmployeeDALFactory;
 import DTOs.RoleDTO;
+import DomainLayer.EmployeeSubModule.Repository.interfaces.AuthorisationRepository;
 
 import java.sql.SQLException;
 import java.util.HashMap;

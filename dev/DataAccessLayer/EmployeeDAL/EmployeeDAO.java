@@ -1,12 +1,14 @@
 package DataAccessLayer.EmployeeDAL;
 
 import DTOs.EmployeeDTO;
+import Util.CliUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,10 +44,10 @@ public class EmployeeDAO {
             pstmt.setString(2, employeeDTO.getFirstName());
             pstmt.setString(3, employeeDTO.getLastName());
             pstmt.setLong(4, employeeDTO.getSalary());
-            pstmt.setString(5, employeeDTO.getStartOfEmployment().toString());
+            pstmt.setString(5, employeeDTO.getStartOfEmployment().format(CliUtil.dateFormatter));
             pstmt.setBoolean(6, employeeDTO.isActive());
-            pstmt.setString(7, employeeDTO.getCreationDate().toString());
-            pstmt.setString(8, employeeDTO.getUpdateDate().toString());
+            pstmt.setString(7, employeeDTO.getCreationDate().format(CliUtil.dateFormatter));
+            pstmt.setString(8, employeeDTO.getUpdateDate().format(CliUtil.dateFormatter));
 
             Long branchId = employeeDTO.getBranchId() == 0 ? null : employeeDTO.getBranchId();
             if (branchId != null) {
@@ -85,9 +87,9 @@ public class EmployeeDAO {
             pstmt.setString(1, employeeDTO.getFirstName());
             pstmt.setString(2, employeeDTO.getLastName());
             pstmt.setLong(3, employeeDTO.getSalary());
-            pstmt.setString(4, employeeDTO.getStartOfEmployment().toString());
+            pstmt.setString(4, employeeDTO.getStartOfEmployment().format(CliUtil.dateFormatter));
             pstmt.setBoolean(5, employeeDTO.isActive());
-            pstmt.setString(6, employeeDTO.getUpdateDate().toString());
+            pstmt.setString(6, employeeDTO.getUpdateDate().format(CliUtil.dateFormatter));
 
             Long branchId = employeeDTO.getBranchId() == 0 ? null : employeeDTO.getBranchId();
             if (branchId != null) {
@@ -216,10 +218,13 @@ public class EmployeeDAO {
         String firstName = rs.getString("firstName");
         String lastName = rs.getString("lastName");
         long salary = rs.getLong("salary");
-        LocalDate startOfEmployment = LocalDate.parse(rs.getString("startOfEmployment"));
+
+        // Parse date strings manually to handle different formats
+        LocalDate startOfEmployment = parseLocalDate(rs.getString("startOfEmployment"));
         boolean isActive = rs.getBoolean("isActive");
-        LocalDate creationDate = LocalDate.parse(rs.getString("creationDate"));
-        LocalDate updateDate = LocalDate.parse(rs.getString("updateDate"));
+        LocalDate creationDate = parseLocalDate(rs.getString("creationDate"));
+        LocalDate updateDate = parseLocalDate(rs.getString("updateDate"));
+
         Long branchId = rs.getLong("branchId");
         if (rs.wasNull()) {
             branchId = null;
@@ -377,6 +382,31 @@ public class EmployeeDAO {
 
                 return termsOfEmployment;
             }
+        }
+    }
+
+    /**
+     * Parses a date string into a LocalDate object.
+     * Only accepts "dd-MM-yyyy" format (e.g., "01-01-2020").
+     *
+     * @param dateStr The date string to parse
+     * @return The parsed LocalDate
+     * @throws SQLException if the date string cannot be parsed
+     */
+    private LocalDate parseLocalDate(String dateStr) throws SQLException {
+        if (dateStr == null || dateStr.trim().isEmpty()) {
+            throw new SQLException("Date string is null or empty");
+        }
+
+        try {
+            // Only accept "dd-MM-yyyy" format (e.g., "01-01-2020")
+            if (dateStr.matches("\\d{2}-\\d{2}-\\d{4}")) {
+                return LocalDate.parse(dateStr, CliUtil.dateFormatter);
+            } else {
+                throw new SQLException("Date format not supported. Please use dd-MM-yyyy format: " + dateStr);
+            }
+        } catch (Exception e) {
+            throw new SQLException("Error parsing date: " + dateStr + ". Please use dd-MM-yyyy format.", e);
         }
     }
 }

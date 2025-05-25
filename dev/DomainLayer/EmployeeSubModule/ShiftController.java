@@ -1,6 +1,8 @@
 package DomainLayer.EmployeeSubModule;
 
 import DTOs.ShiftDTO;
+import DomainLayer.EmployeeSubModule.Repository.interfaces.ShiftReposetory;
+import DomainLayer.EmployeeSubModule.Repository.ShiftRepositoryImpl;
 import DomainLayer.enums.ShiftType;
 import DomainLayer.exception.InvalidInputException;
 import DomainLayer.exception.ShiftNotFoundException;
@@ -17,20 +19,46 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ShiftController {
-    private final Set<Shift> shifts;
-    private final Map<Week, Set<Shift>> weeklyShifts = new TreeMap<>();
     //private final AuthorisationController authorizationController;
     private final EmployeeController empCon;
+    private final ShiftReposetory shiftRepository;
     private long shiftIdCounter = 1;
 
     // Magic Number
     private final String ShiftManagerStr = config.ROLE_SHIFT_MANAGER; // TODO: check if this is the correct role name
 
-    public ShiftController(Set<Shift> shifts, AuthorisationController authorizationController, EmployeeController employeeController) {
-        this.shifts = shifts;
+    public ShiftController(AuthorisationController authorizationController, EmployeeController employeeController) {
         //this.authorizationController = authorizationController;
         this.empCon = employeeController;
-        addShiftsToWeeklyShifts(shifts);
+        this.shiftRepository = new ShiftRepositoryImpl();
+
+        // Initialize the shift ID counter
+        initializeShiftIdCounter();
+    }
+
+    public ShiftController(AuthorisationController authorizationController, EmployeeController employeeController, ShiftReposetory shiftRepository) {
+        //this.authorizationController = authorizationController;
+        this.empCon = employeeController;
+        this.shiftRepository = shiftRepository;
+
+        // Initialize the shift ID counter
+        initializeShiftIdCounter();
+    }
+
+    /**
+     * Initializes the shift ID counter based on the highest shift ID in the repository.
+     * This ensures that new shifts will have unique IDs.
+     */
+    private void initializeShiftIdCounter() {
+        List<ShiftDTO> shiftDTOs = shiftRepository.getAll();
+        if (shiftDTOs != null && !shiftDTOs.isEmpty()) {
+            for (ShiftDTO dto : shiftDTOs) {
+                // Update the shift ID counter to be greater than any existing shift ID
+                if (dto.getId() >= shiftIdCounter) {
+                    shiftIdCounter = dto.getId() + 1;
+                }
+            }
+        }
     }
 
     /**
@@ -120,7 +148,29 @@ public class ShiftController {
         if (shiftId <= 0) {
             throw new IllegalArgumentException("Shift ID must be a positive number");
         }
-        return shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
+
+        // Get the shift from the repository
+        ShiftDTO shiftDTO = shiftRepository.getById(shiftId);
+
+        if (shiftDTO == null) {
+            return null;
+        }
+
+        // Convert DTO to Shift
+        return new Shift(
+            shiftDTO.getId(),
+            shiftDTO.getShiftType(),
+            shiftDTO.getShiftDate(),
+            shiftDTO.getRolesRequired(),
+            shiftDTO.getAssignedEmployees(),
+            shiftDTO.getAvailableEmployees(),
+            shiftDTO.isAssignedShiftManager(),
+            shiftDTO.isOpen(),
+            shiftDTO.getStartHour(),
+            shiftDTO.getEndHour(),
+            shiftDTO.getUpdateDate(),
+            shiftDTO.getBranchId()
+        );
     }
 
     /**
@@ -142,9 +192,15 @@ public class ShiftController {
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to create shift");
         }
-        if (shifts.stream().anyMatch(s -> s.getShiftDate().equals(date) && s.getShiftType().equals(shiftType))) {
+
+        // Check if a shift with the same date and type already exists
+        List<ShiftDTO> existingShifts = shiftRepository.getAll();
+        boolean shiftExists = existingShifts.stream()
+            .anyMatch(s -> s.getShiftDate().equals(date) && s.getShiftType().equals(shiftType));
+        if (shiftExists) {
             throw new RuntimeException("Shift already exists");
         }
+
         if (shiftType == null || date == null || rolesRequired == null || assignedEmployees == null) {
             throw new IllegalArgumentException("Shift type, date, roles required, and assigned employees cannot be null");
         }
@@ -154,11 +210,26 @@ public class ShiftController {
             throw new InvalidInputException("At least one shift manager is required for every shift");
         }
         long branch = empCon.getEmployeeByIsraeliId(doneBy).getBranchId(); // Get the branch of the employee that is creating the shift
-        Shift newShift = new Shift(shiftIdCounter, shiftType, date, rolesRequired, assignedEmployees, availableEmployees, isAssignedShiftManager, isOpen, startHour, endHour, updateDate, branch);
-        shiftIdCounter++;
-        boolean addedToWeekly = addShiftToWeekly(newShift);
-        boolean added = shifts.add(newShift);
-        return addedToWeekly && added;
+
+        // Create a new ShiftDTO
+        ShiftDTO shiftDTO = new ShiftDTO(
+            shiftIdCounter++, 
+            shiftType, 
+            date, 
+            rolesRequired, 
+            assignedEmployees, 
+            availableEmployees, 
+            isAssignedShiftManager, 
+            isOpen, 
+            startHour, 
+            endHour, 
+            LocalDate.now(), // Create date is now
+            updateDate,
+            branch
+        );
+
+        // Persist to database through repository
+        return shiftRepository.create(shiftDTO);
     }
 
 
@@ -217,9 +288,13 @@ public class ShiftController {
      */
     private boolean AddNewShift(LocalDate date, ShiftType type, Map<String, Integer> rolesRequired, long branchId) {
         // Check if a shift of this type already exists for the date
-        if (shifts.stream().anyMatch(s -> s.getShiftDate().equals(date) && s.getShiftType() == type)) {
+        List<ShiftDTO> existingShifts = shiftRepository.getAllByBranchId(branchId);
+        boolean shiftExists = existingShifts.stream()
+            .anyMatch(s -> s.getShiftDate().equals(date) && s.getShiftType() == type);
+        if (shiftExists) {
             throw new RuntimeException(type + " shift already exists for " + date);
         }
+
         // Checks if a shift manager is assigned as a required role
         if (!rolesRequired.containsKey(ShiftManagerStr)) {
             throw new InvalidInputException("Shift manager is required for every shift");
@@ -232,12 +307,26 @@ public class ShiftController {
 
         LocalTime startHour = type == ShiftType.MORNING ? config.START_HOUR_MORNING : config.START_HOUR_EVENING;
         LocalTime endHour = type == ShiftType.MORNING ? config.END_HOUR_MORNING : config.END_HOUR_EVENING;
-        Shift shift = new Shift(shiftIdCounter++, type, date, rolesRequired, assignedEmployees, availableEmployees, false, isOpen, startHour, endHour, LocalDate.now(), branchId);
 
-        boolean added = shifts.add(shift);
-        // Even if the shift wasn't added to the weekly shifts map, it's still in the shifts set
-        addShiftToWeekly(shift);
-        return added;
+        // Create a new ShiftDTO
+        ShiftDTO shiftDTO = new ShiftDTO(
+            shiftIdCounter++, 
+            type, 
+            date, 
+            rolesRequired, 
+            assignedEmployees, 
+            availableEmployees, 
+            false, 
+            isOpen, 
+            startHour, 
+            endHour, 
+            LocalDate.now(), 
+            LocalDate.now(),
+            branchId
+        );
+
+        // Persist to database through repository
+        return shiftRepository.create(shiftDTO);
     }
 
     /**
@@ -254,12 +343,15 @@ public class ShiftController {
         if (shiftId <= 0) {
             throw new IllegalArgumentException("Shift ID must be a positive number");
         }
-        Shift shiftToRemove = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
-        if (shiftToRemove == null) {
+
+        // Check if the shift exists
+        ShiftDTO shiftDTO = shiftRepository.getById(shiftId);
+        if (shiftDTO == null) {
             throw new ShiftNotFoundException("Shift does not exist");
         }
-        shifts.remove(shiftToRemove);
-        return true;
+
+        // Delete from repository
+        return shiftRepository.delete(shiftId);
     }
 
     /**
@@ -272,21 +364,26 @@ public class ShiftController {
      * @throws UnauthorizedPermissionException if the employee does not have sufficient permission to remove a shift.
      * @throws ShiftNotFoundException if the shift does not exist.
      */
-    public boolean removeShift(long doneBy, LocalDate date,ShiftType shiftType) {
+    public boolean removeShift(long doneBy, LocalDate date, ShiftType shiftType) {
         String PERMISSION_REQUIRED = "REMOVE_SHIFT";
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to delete shift");
         }
         long branchId = empCon.getEmployeeByIsraeliId(doneBy).getBranchId(); // Get the branch of the employee that is requesting the shifts
-        Shift shiftToRemove = shifts.stream()
-                .filter(shift -> shift.getShiftDate().equals(date) && shift.getShiftType().equals(shiftType) && shift.getBranchId() == branchId)
+
+        // Find the shift in the repository
+        List<ShiftDTO> branchShifts = shiftRepository.getAllByBranchId(branchId);
+        ShiftDTO shiftToRemove = branchShifts.stream()
+                .filter(shift -> shift.getShiftDate().equals(date) && shift.getShiftType().equals(shiftType))
                 .findFirst()
                 .orElse(null);
+
         if (shiftToRemove == null) {
             throw new ShiftNotFoundException("Shift does not exist");
         }
-        shifts.remove(shiftToRemove);
-        return true;
+
+        // Delete from repository
+        return shiftRepository.delete(shiftToRemove.getId());
     }
 
     /**
@@ -302,7 +399,7 @@ public class ShiftController {
      * @param updateDate             the date of the last update
      * @return true if the shift was updated successfully, false otherwise
      */
-    public boolean updateShift(long doneBy, long shiftId,ShiftType shiftType, LocalDate date, boolean isAssignedShiftManager, boolean isOpen,LocalTime startHour , LocalTime endHour, LocalDate updateDate) {
+    public boolean updateShift(long doneBy, long shiftId, ShiftType shiftType, LocalDate date, boolean isAssignedShiftManager, boolean isOpen, LocalTime startHour, LocalTime endHour, LocalDate updateDate) {
         String PERMISSION_REQUIRED = "UPDATE_SHIFT";
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to update shift");
@@ -310,7 +407,7 @@ public class ShiftController {
         if (shiftId <= 0) {
             throw new IllegalArgumentException("Shift ID must be a positive number");
         }
-        if (shiftType == null || date == null ) {
+        if (shiftType == null || date == null) {
             throw new IllegalArgumentException("Shift type, date cannot be null");
         }
 //        if (date.isBefore(LocalDate.now())) {
@@ -328,18 +425,24 @@ public class ShiftController {
         if (isAssignedShiftManager) {
             throw new IllegalArgumentException("Shift manager must be assigned if isAssignedShiftManager is true");
         }
-        Shift shiftToUpdate = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
-        if (shiftToUpdate == null) {
+
+        // Get the shift from the repository
+        ShiftDTO shiftDTO = shiftRepository.getById(shiftId);
+        if (shiftDTO == null) {
             throw new ShiftNotFoundException("Shift does not exist");
         }
-        shiftToUpdate.setShiftType(shiftType);
-        shiftToUpdate.setShiftDate(date);
-        shiftToUpdate.setAssignedShiftManager(isAssignedShiftManager);
-        shiftToUpdate.setOpen(isOpen);
-        shiftToUpdate.setStartHour(startHour);
-        shiftToUpdate.setEndHour(endHour);
-        shiftToUpdate.setUpdateDate(updateDate);
-        return true;
+
+        // Update the shift DTO
+        shiftDTO.setShiftType(shiftType);
+        shiftDTO.setShiftDate(date);
+        shiftDTO.setAssignedShiftManager(isAssignedShiftManager);
+        shiftDTO.setOpen(isOpen);
+        shiftDTO.setStartHour(startHour);
+        shiftDTO.setEndHour(endHour);
+        shiftDTO.setUpdateDate(updateDate);
+
+        // Persist changes to database through repository
+        return shiftRepository.update(shiftDTO);
     }
 
     /**
@@ -356,12 +459,15 @@ public class ShiftController {
         if (shiftId <= 0) {
             throw new IllegalArgumentException("Shift ID must be a positive number");
         }
-        Shift shiftToGet = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
-        if (shiftToGet == null) {
+
+        // Get the shift from the repository
+        ShiftDTO shiftDTO = shiftRepository.getById(shiftId);
+
+        if (shiftDTO == null) {
             throw new ShiftNotFoundException("Shift does not exist");
         }
-        ShiftDTO dto = new ShiftDTO(shiftToGet.getId(), shiftToGet.getShiftType(), shiftToGet.getShiftDate(), shiftToGet.getRolesRequired(), shiftToGet.getAssignedEmployees(), shiftToGet.getAvailableEmployees(), shiftToGet.isAssignedShiftManager(), shiftToGet.isOpen(), shiftToGet.getStartHour(), shiftToGet.getEndHour(), shiftToGet.getCreateDate(), shiftToGet.getUpdateDate(), shiftToGet.getBranchId());
-        return dto.serialize();
+
+        return shiftDTO.serialize();
     }
 
     /**
@@ -370,12 +476,35 @@ public class ShiftController {
      * @return all shifts
      */
     public String getAllShifts(long doneBy) {
-        String PERMISSION_REQUIRED = "Headquarters"; // TODO: check if this is the correct permission - super user / management user
+        String PERMISSION_REQUIRED = "VIEW_SHIFT"; // TODO: check if this is the correct permission - super user / management user
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
             throw new UnauthorizedPermissionException("User does not have permission to get all shifts");
         }
-        // return all shifts as strings DTO serialized
-        return serializeSetShifts(shifts);
+
+        // Get all shifts from the repository
+        List<ShiftDTO> allShifts = shiftRepository.getAll();
+
+        if (allShifts.isEmpty())
+            return ""; // No shifts found
+
+        // Convert DTOs to Shifts
+        List<Shift> shiftsList = allShifts.stream()
+            .map(dto -> new Shift(
+                dto.getId(),
+                dto.getShiftType(),
+                dto.getShiftDate(),
+                dto.getRolesRequired(),
+                dto.getAssignedEmployees(),
+                dto.getAvailableEmployees(),
+                dto.isAssignedShiftManager(),
+                dto.isOpen(),
+                dto.getStartHour(),
+                dto.getEndHour(),
+                dto.getUpdateDate(),
+                dto.getBranchId()))
+            .collect(Collectors.toList());
+
+        return serializeArrayShifts(shiftsList);
     }
 
     /**
@@ -387,18 +516,31 @@ public class ShiftController {
     public String getAllShiftsByBranch(long doneBy, long branch) {
         String PERMISSION_REQUIRED = "GET_SHIFT";
         if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
-            throw new UnauthorizedPermissionException("User does not have permission to get all dtos");
+            throw new UnauthorizedPermissionException("User does not have permission to get all shifts");
         }
-        // Filter shifts by branch if specified
-        Set<Shift> filteredShifts = shifts.stream()
-            .filter(shift -> branch == shift.getBranchId())
-            .collect(Collectors.toSet());
 
-        if (filteredShifts.isEmpty())
+        // Get all shifts for the branch from the repository
+        List<ShiftDTO> branchShifts = shiftRepository.getAllByBranchId(branch);
+
+        if (branchShifts.isEmpty())
             throw new ShiftNotFoundException("No shifts were found for the branch: " + branch);
 
-        // return all dtos as strings DTO serialized
-        List<Shift> shiftsList = new ArrayList<>(filteredShifts); // Convert Set to List
+        // Convert DTOs to Shifts
+        List<Shift> shiftsList = branchShifts.stream()
+            .map(dto -> new Shift(
+                dto.getId(),
+                dto.getShiftType(),
+                dto.getShiftDate(),
+                dto.getRolesRequired(),
+                dto.getAssignedEmployees(),
+                dto.getAvailableEmployees(),
+                dto.isAssignedShiftManager(),
+                dto.isOpen(),
+                dto.getStartHour(),
+                dto.getEndHour(),
+                dto.getUpdateDate(),
+                dto.getBranchId()))
+            .collect(Collectors.toList());
 
         return serializeArrayShifts(shiftsList);
     }
@@ -429,16 +571,36 @@ public class ShiftController {
         if (date == null) {
             throw new IllegalArgumentException("Date cannot be null");
         }
-        // return all shifts for the date and branch as strings DTO serialized
-        Set<Shift> filteredShifts = shifts.stream()
-            .filter(shift -> shift.getShiftDate().equals(date))
-            .filter(shift -> branchId == shift.getBranchId())
-            .collect(Collectors.toSet());
+
+        // Get all shifts for the branch from the repository
+        List<ShiftDTO> branchShifts = shiftRepository.getAllByBranchId(branchId);
+
+        // Filter shifts by date
+        List<ShiftDTO> filteredShifts = branchShifts.stream()
+            .filter(dto -> dto.getShiftDate().equals(date))
+            .collect(Collectors.toList());
 
         if (filteredShifts.isEmpty())
             throw new ShiftNotFoundException("No shifts found for the date and branch");
 
-        return serializeSetShifts(filteredShifts);
+        // Convert DTOs to Shifts
+        List<Shift> shiftsList = filteredShifts.stream()
+            .map(dto -> new Shift(
+                dto.getId(),
+                dto.getShiftType(),
+                dto.getShiftDate(),
+                dto.getRolesRequired(),
+                dto.getAssignedEmployees(),
+                dto.getAvailableEmployees(),
+                dto.isAssignedShiftManager(),
+                dto.isOpen(),
+                dto.getStartHour(),
+                dto.getEndHour(),
+                dto.getUpdateDate(),
+                dto.getBranchId()))
+            .collect(Collectors.toList());
+
+        return serializeArrayShifts(shiftsList);
     }
 
     /**
@@ -467,16 +629,36 @@ public class ShiftController {
         if (employeeID <= 0) {
             throw new IllegalArgumentException("Employee ID must be a positive number");
         }
-        // return all shifts for the employee and branch as strings DTO serialized
-        Set<Shift> filteredShifts = shifts.stream()
-                .filter(shift -> shift.getAssignedEmployees().values().stream().anyMatch(set -> set.contains(employeeID)))
-                .filter(shift -> branchId == shift.getBranchId())
-                .collect(Collectors.toSet());
+
+        // Get all shifts for the branch from the repository
+        List<ShiftDTO> branchShifts = shiftRepository.getAllByBranchId(branchId);
+
+        // Filter shifts by employee
+        List<ShiftDTO> filteredShifts = branchShifts.stream()
+                .filter(dto -> dto.getAssignedEmployees().values().stream().anyMatch(set -> set.contains(employeeID)))
+                .collect(Collectors.toList());
 
         if (filteredShifts.isEmpty())
             throw new ShiftNotFoundException("No shifts found for the employee in branch: " + branchId);
 
-        return serializeSetShifts(filteredShifts);
+        // Convert DTOs to Shifts
+        List<Shift> shiftsList = filteredShifts.stream()
+            .map(dto -> new Shift(
+                dto.getId(),
+                dto.getShiftType(),
+                dto.getShiftDate(),
+                dto.getRolesRequired(),
+                dto.getAssignedEmployees(),
+                dto.getAvailableEmployees(),
+                dto.isAssignedShiftManager(),
+                dto.isOpen(),
+                dto.getStartHour(),
+                dto.getEndHour(),
+                dto.getUpdateDate(),
+                dto.getBranchId()))
+            .collect(Collectors.toList());
+
+        return serializeArrayShifts(shiftsList);
     }
 
     /**
@@ -507,11 +689,15 @@ public class ShiftController {
         if (date == null || shiftType == null) {
             throw new IllegalArgumentException("Date and shift type cannot be null");
         }
-        return shifts.stream()
-                .filter(shift -> shift.getShiftDate().equals(date) && shift.getShiftType().equals(shiftType))
-                .filter(shift -> branchId == shift.getBranchId())
+
+        // Get all shifts for the branch from the repository
+        List<ShiftDTO> branchShifts = shiftRepository.getAllByBranchId(branchId);
+
+        // Find the shift with the specified date and type
+        return branchShifts.stream()
+                .filter(dto -> dto.getShiftDate().equals(date) && dto.getShiftType().equals(shiftType))
                 .findFirst()
-                .map(this::serializeShift)
+                .map(ShiftDTO::serialize)
                 .orElseThrow(() -> {
                     return new ShiftNotFoundException("Shift does not exist for the specified date, type, and branch: " + branchId);
                 });
@@ -539,15 +725,21 @@ public class ShiftController {
         if (shiftId <= 0) {
             throw new IllegalArgumentException("Shift ID must be a positive number");
         }
-        Shift shiftToUpdate = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
-        if (shiftToUpdate == null) {
+
+        // Get the shift from the repository
+        ShiftDTO shiftDTO = shiftRepository.getById(shiftId);
+        if (shiftDTO == null) {
             throw new ShiftNotFoundException("Shift does not exist");
         }
-        Map <String, Integer> rolesRequiredMap = shiftToUpdate.getRolesRequired();
+
+        // Update the roles required
+        Map<String, Integer> rolesRequiredMap = shiftDTO.getRolesRequired();
         rolesRequiredMap.put(role, rolesRequired);
-        shiftToUpdate.setRolesRequired(rolesRequiredMap);
-        shiftToUpdate.setUpdateDate(LocalDate.now());
-        return true;
+        shiftDTO.setRolesRequired(rolesRequiredMap);
+        shiftDTO.setUpdateDate(LocalDate.now());
+
+        // Persist changes to database through repository
+        return shiftRepository.update(shiftDTO);
     }
 
     /**
@@ -565,13 +757,19 @@ public class ShiftController {
         if (shiftId <= 0) {
             throw new IllegalArgumentException("Shift ID must be a positive number");
         }
-        Shift shiftToUpdate = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
-        if (shiftToUpdate == null) {
+
+        // Get the shift from the repository
+        ShiftDTO shiftDTO = shiftRepository.getById(shiftId);
+        if (shiftDTO == null) {
             throw new ShiftNotFoundException("Shift does not exist");
         }
-        shiftToUpdate.setAssignedShiftManager(isAssignedShiftManager);
-        shiftToUpdate.setUpdateDate(LocalDate.now());
-        return true;
+
+        // Update the shift manager status
+        shiftDTO.setAssignedShiftManager(isAssignedShiftManager);
+        shiftDTO.setUpdateDate(LocalDate.now());
+
+        // Persist changes to database through repository
+        return shiftRepository.update(shiftDTO);
     }
 
     /**
@@ -589,13 +787,19 @@ public class ShiftController {
         if (shiftId <= 0) {
             throw new IllegalArgumentException("Shift ID must be a positive number");
         }
-        Shift shiftToUpdate = shifts.stream().filter(shift -> shift.getId() == shiftId).findFirst().orElse(null);
-        if (shiftToUpdate == null) {
+
+        // Get the shift from the repository
+        ShiftDTO shiftDTO = shiftRepository.getById(shiftId);
+        if (shiftDTO == null) {
             throw new ShiftNotFoundException("Shift does not exist");
         }
-        shiftToUpdate.setOpen(isOpen);
-        shiftToUpdate.setUpdateDate(LocalDate.now());
-        return true;
+
+        // Update the open status
+        shiftDTO.setOpen(isOpen);
+        shiftDTO.setUpdateDate(LocalDate.now());
+
+        // Persist changes to database through repository
+        return shiftRepository.update(shiftDTO);
     }
 
 
@@ -613,14 +817,6 @@ public class ShiftController {
             throw new UnauthorizedPermissionException("User does not have permission to update Role required");
         }
 
-        Shift shiftToUpdate = shifts.stream()
-                .filter(shift -> shift.getId() == shiftId)
-                .findFirst()
-                .orElse(null);
-
-        if (shiftToUpdate == null) {
-            throw new ShiftNotFoundException("Shift does not exist");
-        }
         // Check if its not removing the shift manager role
         if (role.equals(ShiftManagerStr)) {
             throw new IllegalArgumentException("Shift manager role cannot be removed.");
@@ -631,15 +827,34 @@ public class ShiftController {
         if (shiftId <= 0) {
             throw new IllegalArgumentException("Shift ID must be a positive number");
         }
-        if (!shiftToUpdate.getRolesRequired().containsKey(role)) {
+
+        // Get the shift from the repository
+        ShiftDTO shiftDTO = shiftRepository.getById(shiftId);
+        if (shiftDTO == null) {
+            throw new ShiftNotFoundException("Shift does not exist");
+        }
+
+        // Check if the role exists in the shift
+        if (!shiftDTO.getRolesRequired().containsKey(role)) {
             throw new IllegalArgumentException("Role not found in the shift");
         }
-        if (shiftToUpdate.getAssignedEmployees().containsKey(role) && !shiftToUpdate.getAssignedEmployees().get(role).isEmpty()) {
+
+        // Check if there are employees assigned to this role
+        if (shiftDTO.getAssignedEmployees().containsKey(role) && !shiftDTO.getAssignedEmployees().get(role).isEmpty()) {
             throw new IllegalArgumentException("Cannot remove role that has assigned employees");
         }
-        Map<String, Integer> requiredRoles = shiftToUpdate.getRolesRequired();
-        shiftToUpdate.setUpdateDate(LocalDate.now());
-        return requiredRoles.remove(role) != null;
+
+        // Remove the role
+        Map<String, Integer> requiredRoles = shiftDTO.getRolesRequired();
+        boolean removed = requiredRoles.remove(role) != null;
+        shiftDTO.setUpdateDate(LocalDate.now());
+
+        if (removed) {
+            // Persist changes to database through repository
+            return shiftRepository.update(shiftDTO);
+        }
+
+        return false;
     }
 
     public String getRoles(long doneBy) {
@@ -650,10 +865,8 @@ public class ShiftController {
         if (doneBy <= 0) {
             throw new IllegalArgumentException("Employee ID must be a positive number");
         }
-        return shifts.stream()
-                .flatMap(shift -> shift.getRolesRequired().keySet().stream())
-                .distinct()
-                .collect(Collectors.joining(", "));
+
+        return empCon.getAllRolesAsString();
     }
 
 
@@ -674,71 +887,52 @@ public class ShiftController {
             throw new UnauthorizedPermissionException("User does not have permission to get shifts by week");
         }
 
-        Set<Shift> shiftsSet = weeklyShifts.get(week);
-        if (shiftsSet == null || shiftsSet.isEmpty()) {
-            return null; // No shifts for this week
+        // Use the repository to get shifts by week and branch
+        List<ShiftDTO> dtos;
+        if (branch == null) {
+            dtos = shiftRepository.getShiftsByWeek(week);
+        } else {
+            try {
+                long branchId = Long.parseLong(branch);
+                dtos = shiftRepository.getShiftsByWeekAndBranch(week, branchId);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Branch ID must be a number");
+            }
         }
 
-        // Filter shifts by branch if specified
-        List<Shift> filteredShifts = shiftsSet.stream()
-            .filter(shift -> branch == null || branch.equals(shift.getBranchId()))
+        if (dtos == null || dtos.isEmpty()) {
+            return null; // No shifts for this week and branch
+        }
+
+        // Convert DTOs to Shifts
+        List<Shift> shifts = dtos.stream()
+            .map(dto -> new Shift(
+                dto.getId(),
+                dto.getShiftType(),
+                dto.getShiftDate(),
+                dto.getRolesRequired(),
+                dto.getAssignedEmployees(),
+                dto.getAvailableEmployees(),
+                dto.isAssignedShiftManager(),
+                dto.isOpen(),
+                dto.getStartHour(),
+                dto.getEndHour(),
+                dto.getUpdateDate(),
+                dto.getBranchId()))
             .collect(Collectors.toList());
 
-        if (filteredShifts.isEmpty()) {
-            if (branch != null) {
-                return null; // No shifts for this week and branch
-            }
-        }
+        // Sort shifts by date and shift type
+        shifts.sort(Comparator.comparing(Shift::getShiftDate).thenComparing(Shift::getShiftType));
 
-        List<ShiftDTO> dtos = filteredShifts.stream()
-                .map(shift -> new ShiftDTO(
-                    shift.getId(), 
-                    shift.getShiftType(), 
-                    shift.getShiftDate(), 
-                    shift.getRolesRequired(), 
-                    shift.getAssignedEmployees(), 
-                    shift.getAvailableEmployees(), 
-                    shift.isAssignedShiftManager(), 
-                    shift.isOpen(), 
-                    shift.getStartHour(), 
-                    shift.getEndHour(), 
-                    shift.getCreateDate(), 
-                    shift.getUpdateDate(),
-                    shift.getBranchId()))
-                .collect(Collectors.toList());
-
-        dtos.sort(Comparator.comparing(ShiftDTO::getShiftDate).thenComparing(ShiftDTO::getShiftType)); // optional: morning before evening
-
-        return serializeArrayShifts(filteredShifts);
+        return serializeArrayShifts(shifts);
     }
 
 
-    public void addShiftsToWeeklyShifts(Set<Shift> shifts) {
-        if (shifts == null || shifts.isEmpty()) {
-            return; // Nothing to add, just return
-        }
+    // This method is no longer needed as the repository manages the collections
+    // The repository's addShiftsToWeekly method handles this functionality
 
-        for (Shift shift : shifts) {
-            if (shift == null || shift.getShiftDate() == null) {
-                throw new IllegalArgumentException("Shift or shift date cannot be null");
-            }
-            addShiftToWeekly(shift);
-        }
-    }
-
-    public boolean addShiftToWeekly(Shift shift) {
-        Week week = Week.from(shift.getShiftDate());
-
-        // Comparator: first by date, then by shift type (MORNING before EVENING)
-        Comparator<Shift> byDateThenType = Comparator
-                .comparing(Shift::getShiftDate)
-                .thenComparing(Shift::getShiftType); // Ensure ShiftType enum has MORNING < EVENING
-
-        // Add the shift to the proper week, with sorting
-        return weeklyShifts
-                .computeIfAbsent(week, k -> new TreeSet<>(byDateThenType))
-                .add(shift);
-    }
+    // This method is no longer needed as the repository manages the collections
+    // The repository's addShiftToWeekly method handles this functionality
 
     public Shift getShiftbyDateAndTime(long doneBy, LocalDate date, LocalTime hour, long branchId) {
         return getShiftbyDateTimeAndBranch( date, hour, branchId);
@@ -764,10 +958,28 @@ public class ShiftController {
         if (date == null || hour == null) {
             throw new IllegalArgumentException("Date and hour cannot be null");
         }
-        // Filter shifts by date and branch if specified
-        return shifts.stream()
-                .filter(shift -> shift.getShiftDate().equals(date) && shift.getStartHour().isBefore(hour) && shift.getEndHour().isAfter(hour))
-                .filter(shift ->  branchId == shift.getBranchId())
+
+        // Get all shifts for the branch from the repository
+        List<ShiftDTO> branchShifts = shiftRepository.getAllByBranchId(branchId);
+
+        // Filter shifts by date and time
+        return branchShifts.stream()
+                .filter(dto -> dto.getShiftDate().equals(date) && 
+                               dto.getStartHour().isBefore(hour) && 
+                               dto.getEndHour().isAfter(hour))
+                .map(dto -> new Shift(
+                    dto.getId(),
+                    dto.getShiftType(),
+                    dto.getShiftDate(),
+                    dto.getRolesRequired(),
+                    dto.getAssignedEmployees(),
+                    dto.getAvailableEmployees(),
+                    dto.isAssignedShiftManager(),
+                    dto.isOpen(),
+                    dto.getStartHour(),
+                    dto.getEndHour(),
+                    dto.getUpdateDate(),
+                    dto.getBranchId()))
                 .findFirst()
                 .orElse(null);
     }
@@ -807,12 +1019,38 @@ public class ShiftController {
         if (employeeId <= 0) {
             throw new IllegalArgumentException("Employee ID must be a positive number");
         }
-        List<Shift> EmployeeShifts = shifts.stream()
-                .filter(shift -> shift.getAssignedEmployees().values().stream().anyMatch(set -> set.contains(employeeId)))
-                .filter(shift -> branch == null || branch.equals(shift.getBranchId()))
-                .toList();
 
-        return serializeArrayShifts(EmployeeShifts);
+        // Get all shifts from the repository
+        List<ShiftDTO> allShifts = shiftRepository.getAll();
+
+        // Filter shifts by employee and branch
+        List<ShiftDTO> filteredShifts = allShifts.stream()
+                .filter(dto -> dto.getAssignedEmployees().values().stream().anyMatch(set -> set.contains(employeeId)))
+                .filter(dto -> branch == null || branch.equals(String.valueOf(dto.getBranchId())))
+                .collect(Collectors.toList());
+
+        if (filteredShifts.isEmpty()) {
+            return ""; // No shifts found
+        }
+
+        // Convert DTOs to Shifts for serialization
+        List<Shift> employeeShifts = filteredShifts.stream()
+            .map(dto -> new Shift(
+                dto.getId(),
+                dto.getShiftType(),
+                dto.getShiftDate(),
+                dto.getRolesRequired(),
+                dto.getAssignedEmployees(),
+                dto.getAvailableEmployees(),
+                dto.isAssignedShiftManager(),
+                dto.isOpen(),
+                dto.getStartHour(),
+                dto.getEndHour(),
+                dto.getUpdateDate(),
+                dto.getBranchId()))
+            .collect(Collectors.toList());
+
+        return serializeArrayShifts(employeeShifts);
     }
 
     public long getBranchIdByAddress(String address, int areaCode) {

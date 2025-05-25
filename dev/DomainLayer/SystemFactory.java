@@ -2,6 +2,9 @@ package DomainLayer;
 
 import DomainLayer.EmployeeSubModule.*;
 import DomainLayer.EmployeeSubModule.Repository.*;
+import DomainLayer.EmployeeSubModule.Repository.interfaces.AuthorisationRepository;
+import DomainLayer.EmployeeSubModule.Repository.interfaces.BranchRepository;
+import DomainLayer.EmployeeSubModule.Repository.interfaces.EmployeeRepository;
 import DomainLayer.TransportDomain.SiteSubModule.SiteFacade;
 import DomainLayer.TransportDomain.TransportSubModule.TransportController;
 import DomainLayer.TransportDomain.TruckSubModule.TruckFacade;
@@ -14,7 +17,6 @@ import PresentationLayer.TransportPresentation.MainTranSysCLI;
 import PresentationLayer.TransportPresentation.TranManCLI;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Scanner;
 
 /**
@@ -50,10 +52,9 @@ public class SystemFactory {
             authController
         );
 
-        // Initialize ShiftController with an empty set of shifts for now
-        // In the future, this should be replaced with a ShiftRepository
+        // Initialize ShiftController with the AuthorisationController and EmployeeController
+        // The ShiftController will create its own ShiftRepository internally
         ShiftController shiftController = new ShiftController(
-            new HashSet<>(),
             authController,
             employeeController
         );

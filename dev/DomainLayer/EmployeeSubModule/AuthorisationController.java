@@ -1,7 +1,7 @@
 package DomainLayer.EmployeeSubModule;
 
 import DTOs.RoleDTO;
-import DomainLayer.EmployeeSubModule.Repository.AuthorisationRepository;
+import DomainLayer.EmployeeSubModule.Repository.interfaces.AuthorisationRepository;
 import DomainLayer.exception.InvalidInputException;
 import DomainLayer.exception.UnauthorizedPermissionException;
 

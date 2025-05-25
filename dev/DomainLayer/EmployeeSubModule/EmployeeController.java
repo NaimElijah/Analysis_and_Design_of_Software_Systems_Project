@@ -2,9 +2,9 @@ package DomainLayer.EmployeeSubModule;
 
 import DTOs.BranchDTO;
 import DTOs.EmployeeDTO;
-import DomainLayer.EmployeeSubModule.Repository.AuthorisationRepository;
-import DomainLayer.EmployeeSubModule.Repository.BranchRepository;
-import DomainLayer.EmployeeSubModule.Repository.EmployeeRepository;
+import DomainLayer.EmployeeSubModule.Repository.interfaces.AuthorisationRepository;
+import DomainLayer.EmployeeSubModule.Repository.interfaces.BranchRepository;
+import DomainLayer.EmployeeSubModule.Repository.interfaces.EmployeeRepository;
 import DomainLayer.exception.InvalidInputException;
 import DomainLayer.exception.UnauthorizedPermissionException;
 import Util.config;
@@ -626,5 +626,13 @@ public class EmployeeController {
         // Check if the branch exists using the repository
         BranchDTO branchDTO = branchRepository.getByAddressAndAreaCode(address, areaCode);
         return branchDTO != null;
+    }
+
+    public String getAllRolesAsString() {
+        // Retrieve all roles from the authorisation repository
+        Set<String> roles = authorisationRepository.getAllRoles();
+
+        // Convert the set of roles to a single string, separated by commas
+        return String.join(", ", roles);
     }
 }
