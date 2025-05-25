@@ -67,14 +67,14 @@ public class StartUpStateService {
             ArrayList<ItemsDocDTO> itemsDocDTOs = new ArrayList<>();
 
             ArrayList<ItemQuantityDTO> itemQuantityDTOs1 = new ArrayList<>();
-            itemQuantityDTOs1.add(new ItemQuantityDTO(new ItemDTO("Water", 0.5, true), 5));
-            itemQuantityDTOs1.add(new ItemQuantityDTO(new ItemDTO("Rice", 1, true), 10));
-            ItemsDocDTO itemsDocDTO1 = new ItemsDocDTO(1, new SiteDTO(1,"Ramla"), new SiteDTO(1, "Rishonim"), itemQuantityDTOs1, LocalDateTime.now().plusHours(1));
+            itemQuantityDTOs1.add(new ItemQuantityDTO(new ItemDTO("Water", 0.5, true), 5, 1));
+            itemQuantityDTOs1.add(new ItemQuantityDTO(new ItemDTO("Rice", 1, true), 10, 1));
+            ItemsDocDTO itemsDocDTO1 = new ItemsDocDTO(1, new SiteDTO(1,"Ramla"), new SiteDTO(1, "Rishonim"), itemQuantityDTOs1, LocalDateTime.now().plusHours(1), 1);
 
             ArrayList<ItemQuantityDTO> itemQuantityDTOs2 = new ArrayList<>();
-            itemQuantityDTOs2.add(new ItemQuantityDTO(new ItemDTO("Shampoo", 0.75, true), 10));
-            itemQuantityDTOs2.add(new ItemQuantityDTO(new ItemDTO("Toothpaste", 0.2, true), 15));
-            ItemsDocDTO itemsDocDTO2 = new ItemsDocDTO(2, new SiteDTO(1,"Ramla"), new SiteDTO(2, "Dimona"), itemQuantityDTOs2, LocalDateTime.now().plusMinutes(30));
+            itemQuantityDTOs2.add(new ItemQuantityDTO(new ItemDTO("Shampoo", 0.75, true), 10, 2));
+            itemQuantityDTOs2.add(new ItemQuantityDTO(new ItemDTO("Toothpaste", 0.2, true), 15, 2));
+            ItemsDocDTO itemsDocDTO2 = new ItemsDocDTO(2, new SiteDTO(1,"Ramla"), new SiteDTO(2, "Dimona"), itemQuantityDTOs2, LocalDateTime.now().plusMinutes(30), 1);
 
             itemsDocDTOs.add(itemsDocDTO1);
             itemsDocDTOs.add(itemsDocDTO2);

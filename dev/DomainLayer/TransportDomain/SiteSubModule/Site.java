@@ -1,7 +1,7 @@
 package DomainLayer.TransportDomain.SiteSubModule;
 
 public class Site {
-    private Address address;  //  maybe split this to the 2 variables in it so we can map in the database to the area
+    private Address address;
     private String cName;
     private long cNumber;
 

@@ -525,13 +525,13 @@ public class TransportController {
 
             for (Item item : itemsDoc.getBadItems().keySet()){
                 ItemDTO itemDTO = new ItemDTO(item.getName(), item.getWeight(), item.getCondition());
-                itemQuantityDTOS.add(new ItemQuantityDTO(itemDTO, itemsDoc.getBadItems().get(item)));
+                itemQuantityDTOS.add(new ItemQuantityDTO(itemDTO, itemsDoc.getBadItems().get(item), itemsDoc.getItemDoc_num()));
             }
             for (Item item : itemsDoc.getGoodItems().keySet()){
                 ItemDTO itemDTO = new ItemDTO(item.getName(), item.getWeight(), item.getCondition());
-                itemQuantityDTOS.add(new ItemQuantityDTO(itemDTO, itemsDoc.getGoodItems().get(item)));
+                itemQuantityDTOS.add(new ItemQuantityDTO(itemDTO, itemsDoc.getGoodItems().get(item), itemsDoc.getItemDoc_num()));
             }
-            listOfItemsDocDTOs.add(new ItemsDocDTO(itemsDoc.getItemDoc_num(), srcSiteDTO, destSiteDTO, itemQuantityDTOS, itemsDoc.getEstimatedArrivalTime()));
+            listOfItemsDocDTOs.add(new ItemsDocDTO(itemsDoc.getItemDoc_num(), srcSiteDTO, destSiteDTO, itemQuantityDTOS, itemsDoc.getEstimatedArrivalTime(), transportDoc.getTran_Doc_ID()));
         }
 
         TransportDTO transportDTO = new TransportDTO(transportDoc.getTran_Doc_ID(), transportDoc.getTransportTruck().getTruck_num(), transportDoc.getTransportDriverId(), srcSiteDTO, listOfItemsDocDTOs, transportDoc.getDeparture_dt());

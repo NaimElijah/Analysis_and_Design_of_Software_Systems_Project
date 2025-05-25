@@ -326,7 +326,7 @@ public class TranManCLI {
                     }
                 }
                 if (!itemExistsInCurrDestSite){
-                    itemsListToCurrDestSite.add(new ItemQuantityDTO(itemAddition, itemAmount));
+                    itemsListToCurrDestSite.add(new ItemQuantityDTO(itemAddition, itemAmount, currItemsDocNum));
                 }
 
                 System.out.println("Item Added to listed items associated with current Site, do you want to add another Item ? ( Enter 'Y' / 'N'(or any other key) )");
@@ -336,7 +336,7 @@ public class TranManCLI {
 
 
 
-            ItemsDocDTO itemsDocAddition = new ItemsDocDTO(currItemsDocNum, srcSitedto, destSitedto, itemsListToCurrDestSite, timeCounter);
+            ItemsDocDTO itemsDocAddition = new ItemsDocDTO(currItemsDocNum, srcSitedto, destSitedto, itemsListToCurrDestSite, timeCounter, -99);  //TODO: just for creation, just check that isn't problematic.
             System.out.println("Ok, Finished adding the current destination Site's items");
             dests_Docs_for_Transport.add(itemsDocAddition);   //  adding new ItemsDoc to the destSitesDocs
 

@@ -122,59 +122,7 @@ public final class Database {
 
 
 
-    private static final String TransportsTable =
-            "CREATE TABLE IF NOT EXISTS Transports (" +
-                    "tranDocId BIGINT PRIMARY KEY, " +
-                    "status TEXT NOT NULL, " +
-                    "departure_dt TIMESTAMP NOT NULL, " +
-                    "transportTruckNumber BIGINT NOT NULL, " +
-                    "transportDriverId TEXT NOT NULL, " +
-                    "truck_Depart_Weight BOOLEAN NOT NULL, " +
-                    "srcSiteArea TEXT NOT NULL, " +
-                    "srcSiteString BIGINT NOT NULL, " +
-                    "branchId BIGINT, " +
-                    "FOREIGN KEY (branchId) REFERENCES Branches(branchId)" +
-                    ")";
-
-    private static final String TransportsProblemsTable =
-            "CREATE TABLE IF NOT EXISTS TransportsProblems (" +
-                    "problemOfTranDocId BIGINT PRIMARY KEY, " +
-                    "problem TEXT NOT NULL, " +
-                    "FOREIGN KEY (problemOfTranDocId) REFERENCES Transports(tranDocId)" +
-                    ")";
-
-    private static final String ItemsDocsTable =
-            "CREATE TABLE IF NOT EXISTS ItemsDocs (" +
-                    "ItemsDocInTransportID BIGINT PRIMARY KEY, " +
-                    "itemsDocNum TEXT NOT NULL, " +
-                    "srcSiteArea TEXT NOT NULL, " +
-                    "srcSiteString BIGINT NOT NULL, " +
-                    "destSiteArea TEXT NOT NULL, " +
-                    "destSiteString BIGINT NOT NULL, " +
-                    "estimatedArrivalTime TIMESTAMP NOT NULL, " +
-                    "FOREIGN KEY (ItemsDocInTransportID) REFERENCES Transports(tranDocId)" +
-                    ")";
-
-    private static final String ItemsTable =
-            "CREATE TABLE IF NOT EXISTS Items (" +
-                    "itemInItemsDocId BIGINT PRIMARY KEY, " +
-                    "name TEXT NOT NULL, " +
-                    "weight BIGINT NOT NULL, " +
-                    "condition BOOLEAN NOT NULL, " +
-                    "FOREIGN KEY (itemInItemsDocId) REFERENCES ItemsDocs(itemsDocNum)" +
-                    ")";
-
-    private static final String TrucksTable =
-            "CREATE TABLE IF NOT EXISTS Trucks (" +
-                    "truckNum BIGINT PRIMARY KEY, " +
-                    "model TEXT NOT NULL, " +
-                    "netWeight BIGINT NOT NULL, " +
-                    "maxCarryWeight BIGINT NOT NULL, " +
-                    "validLicense TEXT NOT NULL, " +
-                    "inTransportID BIGINT NOT NULL, " +
-                    "isDeleted BOOLEAN NOT NULL, " +
-                    "FOREIGN KEY (inTransportID) REFERENCES Transports(tranDocId)" +
-                    ")";
+    // Transport related tables creation
 
     private static final String ShippingAreasTable =
             "CREATE TABLE IF NOT EXISTS ShippingAreas (" +
@@ -190,6 +138,79 @@ public final class Database {
                     "contNumber BIGINT NOT NULL, " +
                     "FOREIGN KEY (areaNum) REFERENCES ShippingAreas(areaNumber)" +
                     ")";
+
+    private static final String DrivingLicensesTable =
+            "CREATE TABLE IF NOT EXISTS DrivingLicenses (" +
+                    "license TEXT PRIMARY KEY, " +
+                    ")";
+
+    private static final String TrucksTable =
+            "CREATE TABLE IF NOT EXISTS Trucks (" +
+                    "truckNum BIGINT PRIMARY KEY, " +
+                    "model TEXT NOT NULL, " +
+                    "netWeight DOUBLE NOT NULL, " +
+                    "maxCarryWeight DOUBLE NOT NULL, " +
+                    "validLicense TEXT NOT NULL, " +
+                    "inTransportID BIGINT NOT NULL, " +
+                    "isDeleted BOOLEAN NOT NULL, " +
+                    "FOREIGN KEY (validLicense) REFERENCES DrivingLicenses(license)" +
+                    ")";
+
+    private static final String TransportsTable =
+            "CREATE TABLE IF NOT EXISTS Transports (" +
+                    "tranDocId BIGINT PRIMARY KEY, " +
+                    "status TEXT NOT NULL, " +
+                    "departure_dt TIMESTAMP NOT NULL, " +
+                    "transportTruckNumber BIGINT NOT NULL, " +
+                    "transportDriverId BIGINT NOT NULL, " +
+                    "truck_Depart_Weight DOUBLE NOT NULL, " +
+                    "srcSiteArea BIGINT NOT NULL, " +
+                    "srcSiteString TEXT NOT NULL, " +
+                    "FOREIGN KEY (transportTruckNumber) REFERENCES Trucks(truckNum)" +
+                    "FOREIGN KEY (transportDriverId) REFERENCES Employees(israeliId)" +
+                    "FOREIGN KEY (srcSiteArea) REFERENCES Sites(areaNum)" +
+                    "FOREIGN KEY (srcSiteString) REFERENCES Sites(addressStr)" +
+                    ")";
+
+    private static final String ProblemsTable =
+            "CREATE TABLE IF NOT EXISTS Problems (" +
+                    "problem TEXT PRIMARY KEY, " +
+                    ")";
+
+    private static final String TransportsProblemsTable =
+            "CREATE TABLE IF NOT EXISTS TransportsProblems (" +
+                    "problemOfTranDocId BIGINT PRIMARY KEY, " +
+                    "problem TEXT PRIMARY KEY, " +
+                    "FOREIGN KEY (problemOfTranDocId) REFERENCES Transports(tranDocId)" +
+                    "FOREIGN KEY (problem) REFERENCES Problems(problem)" +
+                    ")";
+
+    private static final String ItemsDocsTable =
+            "CREATE TABLE IF NOT EXISTS ItemsDocs (" +
+                    "itemsDocNum BIGINT PRIMARY KEY, " +
+                    "ItemsDocInTransportID BIGINT NOT NULL, " +
+                    "srcSiteArea BIGINT NOT NULL, " +
+                    "srcSiteString TEXT NOT NULL, " +
+                    "destSiteArea BIGINT NOT NULL, " +
+                    "destSiteString TEXT NOT NULL, " +
+                    "estimatedArrivalTime TIMESTAMP NOT NULL, " +
+                    "FOREIGN KEY (ItemsDocInTransportID) REFERENCES Transports(tranDocId)" +
+                    "FOREIGN KEY (srcSiteArea) REFERENCES Sites(areaNum)" +
+                    "FOREIGN KEY (srcSiteString) REFERENCES Sites(addressStr)" +
+                    "FOREIGN KEY (destSiteArea) REFERENCES Sites(areaNum)" +
+                    "FOREIGN KEY (destSiteString) REFERENCES Sites(addressStr)" +
+                    ")";
+
+    private static final String ItemsQTable =
+            "CREATE TABLE IF NOT EXISTS ItemsQ (" +
+                    "itemInItemsDocId BIGINT PRIMARY KEY, " +
+                    "name TEXT PRIMARY KEY, " +
+                    "weight DOUBLE PRIMARY KEY, " +
+                    "condition BOOLEAN PRIMARY KEY, " +
+                    "amount BIGINT NOT NULL, " +
+                    "FOREIGN KEY (itemInItemsDocId) REFERENCES ItemsDocs(itemsDocNum)" +
+                    ")";
+
 
     static {
         try {
@@ -212,13 +233,15 @@ public final class Database {
                 st.executeUpdate(AssignedEmployeesTable);
                 st.executeUpdate(AvailableEmployeesTable);
 
-                st.executeUpdate(TransportsTable);
-                st.executeUpdate(TransportsProblemsTable);
-                st.executeUpdate(ItemsDocsTable);
-                st.executeUpdate(ItemsTable);
-                st.executeUpdate(TrucksTable);
                 st.executeUpdate(ShippingAreasTable);
                 st.executeUpdate(SitesTable);
+                st.executeUpdate(DrivingLicensesTable);
+                st.executeUpdate(TrucksTable);
+                st.executeUpdate(TransportsTable);
+                st.executeUpdate(ProblemsTable);
+                st.executeUpdate(TransportsProblemsTable);
+                st.executeUpdate(ItemsDocsTable);
+                st.executeUpdate(ItemsQTable);
 
                 // ***ADD YOUR TABLES HERE***
 

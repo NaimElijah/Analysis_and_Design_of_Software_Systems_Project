@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class ItemsDocDTO {
+    private int ItemsDocInTransportID;    //   TODO:   for database               <<<---------------------------    <<-----------------------
     private int itemsDoc_num;
     private SiteDTO src_siteDTO;
     private SiteDTO dest_siteDTO;
@@ -11,7 +12,8 @@ public class ItemsDocDTO {
     private ArrayList<ItemQuantityDTO> itemQuantityDTOs;
 
     public ItemsDocDTO() {}
-    public ItemsDocDTO(int itemsDoc_num, SiteDTO src_siteDTO, SiteDTO dest_siteDTO, ArrayList<ItemQuantityDTO> itemQuantityDTOs, LocalDateTime estimatedArrivalTime) {
+    public ItemsDocDTO(int itemsDoc_num, SiteDTO src_siteDTO, SiteDTO dest_siteDTO, ArrayList<ItemQuantityDTO> itemQuantityDTOs, LocalDateTime estimatedArrivalTime, int itemsDocInTransportID) {
+        this.ItemsDocInTransportID = itemsDocInTransportID;
         this.itemsDoc_num = itemsDoc_num;
         this.src_siteDTO = src_siteDTO;
         this.dest_siteDTO = dest_siteDTO;
@@ -19,6 +21,8 @@ public class ItemsDocDTO {
         this.itemQuantityDTOs = itemQuantityDTOs;
     }
 
+    public int getItemsDocInTransportID() {return ItemsDocInTransportID;}
+    public void setItemsDocInTransportID(int itemsDocInTransportID) {ItemsDocInTransportID = itemsDocInTransportID;}
     public int getItemsDoc_num() {return itemsDoc_num;}
     public void setItemsDoc_num(int itemsDoc_num) {this.itemsDoc_num = itemsDoc_num;}
     public SiteDTO getSrc_siteDTO() {return src_siteDTO;}

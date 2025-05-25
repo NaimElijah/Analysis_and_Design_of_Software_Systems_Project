@@ -390,7 +390,7 @@ public class TransportService {
 
             /// adding the ItemsDocDTO and after this we will check the whole TransportDTO for good time matching
 
-            ItemsDocDTO newItemsDoc = new ItemsDocDTO(itemsDoc_num, testingTransport.getSrc_site(), new SiteDTO(destSiteArea, destSiteAddress), new ArrayList<>(), null);
+            ItemsDocDTO newItemsDoc = new ItemsDocDTO(itemsDoc_num, testingTransport.getSrc_site(), new SiteDTO(destSiteArea, destSiteAddress), new ArrayList<>(), null, testingTransport.getTransport_ID());
 
             if (testingTransport.getDests_Docs().size() > 0){  // there are other sites in the transport
                 if (testingTransport.getDests_Docs().get(testingTransport.getDests_Docs().size()-1).getDest_siteDTO().getSiteAreaNum() == destSiteArea){
@@ -572,7 +572,7 @@ public class TransportService {
 
             // Create new itemsDoc with same data but recalculated arrival time
             ItemsDocDTO newItemsDoc = new ItemsDocDTO(itemsDoc_num, testingTransport.getSrc_site(), new SiteDTO(siteArea, siteAddress),
-                    itemsDoc_removed.getItemQuantityDTOs(), null);
+                    itemsDoc_removed.getItemQuantityDTOs(), null, testingTransport.getTransport_ID());
 
             // Calculate arrival time based on previous site
             int prevArea = (intIndex == 1) ? testingTransport.getSrc_site().getSiteAreaNum()
