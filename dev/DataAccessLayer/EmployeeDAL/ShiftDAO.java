@@ -215,13 +215,63 @@ public class ShiftDAO {
                 ShiftDTO shift = new ShiftDTO();
                 shift.setId(rs.getLong("id"));
                 shift.setShiftType(ShiftType.valueOf(rs.getString("shiftType").toUpperCase()));
-                shift.setShiftDate(LocalDate.parse(rs.getString("shiftDate"), DATE_FORMATTER));
+
+                // Handle date parsing with fallback to timestamp conversion
+                String shiftDateStr = rs.getString("shiftDate");
+                try {
+                    shift.setShiftDate(LocalDate.parse(shiftDateStr, DATE_FORMATTER));
+                } catch (DateTimeParseException e) {
+                    // Try to parse as timestamp (milliseconds since epoch)
+                    try {
+                        long timestamp = Long.parseLong(shiftDateStr);
+                        shift.setShiftDate(java.time.Instant.ofEpochMilli(timestamp)
+                            .atZone(java.time.ZoneId.systemDefault())
+                            .toLocalDate());
+                    } catch (NumberFormatException ex) {
+                        // If both parsing attempts fail, rethrow the original exception
+                        throw e;
+                    }
+                }
+
                 shift.setAssignedShiftManager(rs.getBoolean("isAssignedShiftManager"));
                 shift.setOpen(rs.getBoolean("isOpen"));
                 shift.setStartHour(rs.getTime("startHour").toLocalTime());
                 shift.setEndHour(rs.getTime("endHour").toLocalTime());
-                shift.setCreateDate(LocalDate.parse(rs.getString("createDate"), DATE_FORMATTER));
-                shift.setUpdateDate(LocalDate.parse(rs.getString("updateDate"), DATE_FORMATTER));
+
+                // Handle createDate parsing with fallback to timestamp conversion
+                String createDateStr = rs.getString("creationDate");
+                try {
+                    shift.setCreateDate(LocalDate.parse(createDateStr, DATE_FORMATTER));
+                } catch (DateTimeParseException e) {
+                    // Try to parse as timestamp (milliseconds since epoch)
+                    try {
+                        long timestamp = Long.parseLong(createDateStr);
+                        shift.setCreateDate(java.time.Instant.ofEpochMilli(timestamp)
+                            .atZone(java.time.ZoneId.systemDefault())
+                            .toLocalDate());
+                    } catch (NumberFormatException ex) {
+                        // If both parsing attempts fail, rethrow the original exception
+                        throw e;
+                    }
+                }
+
+                // Handle updateDate parsing with fallback to timestamp conversion
+                String updateDateStr = rs.getString("updateDate");
+                try {
+                    shift.setUpdateDate(LocalDate.parse(updateDateStr, DATE_FORMATTER));
+                } catch (DateTimeParseException e) {
+                    // Try to parse as timestamp (milliseconds since epoch)
+                    try {
+                        long timestamp = Long.parseLong(updateDateStr);
+                        shift.setUpdateDate(java.time.Instant.ofEpochMilli(timestamp)
+                            .atZone(java.time.ZoneId.systemDefault())
+                            .toLocalDate());
+                    } catch (NumberFormatException ex) {
+                        // If both parsing attempts fail, rethrow the original exception
+                        throw e;
+                    }
+                }
+
                 shift.setBranchId(rs.getLong("branchId"));
 
                 // Fetch roles required, assigned employees, and available employees
@@ -299,13 +349,63 @@ public class ShiftDAO {
                 ShiftDTO shift = new ShiftDTO();
                 shift.setId(rs.getLong("id"));
                 shift.setShiftType(ShiftType.valueOf(rs.getString("shiftType").toUpperCase()));
-                shift.setShiftDate(LocalDate.parse(rs.getString("shiftDate"), DATE_FORMATTER));
+
+                // Handle date parsing with fallback to timestamp conversion
+                String shiftDateStr = rs.getString("shiftDate");
+                try {
+                    shift.setShiftDate(LocalDate.parse(shiftDateStr, DATE_FORMATTER));
+                } catch (DateTimeParseException e) {
+                    // Try to parse as timestamp (milliseconds since epoch)
+                    try {
+                        long timestamp = Long.parseLong(shiftDateStr);
+                        shift.setShiftDate(java.time.Instant.ofEpochMilli(timestamp)
+                            .atZone(java.time.ZoneId.systemDefault())
+                            .toLocalDate());
+                    } catch (NumberFormatException ex) {
+                        // If both parsing attempts fail, rethrow the original exception
+                        throw e;
+                    }
+                }
+
                 shift.setAssignedShiftManager(rs.getBoolean("isAssignedShiftManager"));
                 shift.setOpen(rs.getBoolean("isOpen"));
                 shift.setStartHour(rs.getTime("startHour").toLocalTime());
                 shift.setEndHour(rs.getTime("endHour").toLocalTime());
-                shift.setCreateDate(LocalDate.parse(rs.getString("createDate"), DATE_FORMATTER));
-                shift.setUpdateDate(LocalDate.parse(rs.getString("updateDate"), DATE_FORMATTER));
+
+                // Handle createDate parsing with fallback to timestamp conversion
+                String createDateStr = rs.getString("creationDate");
+                try {
+                    shift.setCreateDate(LocalDate.parse(createDateStr, DATE_FORMATTER));
+                } catch (DateTimeParseException e) {
+                    // Try to parse as timestamp (milliseconds since epoch)
+                    try {
+                        long timestamp = Long.parseLong(createDateStr);
+                        shift.setCreateDate(java.time.Instant.ofEpochMilli(timestamp)
+                            .atZone(java.time.ZoneId.systemDefault())
+                            .toLocalDate());
+                    } catch (NumberFormatException ex) {
+                        // If both parsing attempts fail, rethrow the original exception
+                        throw e;
+                    }
+                }
+
+                // Handle updateDate parsing with fallback to timestamp conversion
+                String updateDateStr = rs.getString("updateDate");
+                try {
+                    shift.setUpdateDate(LocalDate.parse(updateDateStr, DATE_FORMATTER));
+                } catch (DateTimeParseException e) {
+                    // Try to parse as timestamp (milliseconds since epoch)
+                    try {
+                        long timestamp = Long.parseLong(updateDateStr);
+                        shift.setUpdateDate(java.time.Instant.ofEpochMilli(timestamp)
+                            .atZone(java.time.ZoneId.systemDefault())
+                            .toLocalDate());
+                    } catch (NumberFormatException ex) {
+                        // If both parsing attempts fail, rethrow the original exception
+                        throw e;
+                    }
+                }
+
                 shift.setBranchId(rs.getLong("branchId"));
 
                 // Fetch roles required, assigned employees, and available employees
@@ -332,13 +432,63 @@ public class ShiftDAO {
                 ShiftDTO shift = new ShiftDTO();
                 shift.setId(rs.getLong("id"));
                 shift.setShiftType(ShiftType.valueOf(rs.getString("shiftType").toUpperCase()));
-                shift.setShiftDate(LocalDate.parse(rs.getString("shiftDate"), DATE_FORMATTER));
+
+                // Handle date parsing with fallback to timestamp conversion
+                String shiftDateStr = rs.getString("shiftDate");
+                try {
+                    shift.setShiftDate(LocalDate.parse(shiftDateStr, DATE_FORMATTER));
+                } catch (DateTimeParseException e) {
+                    // Try to parse as timestamp (milliseconds since epoch)
+                    try {
+                        long timestamp = Long.parseLong(shiftDateStr);
+                        shift.setShiftDate(java.time.Instant.ofEpochMilli(timestamp)
+                            .atZone(java.time.ZoneId.systemDefault())
+                            .toLocalDate());
+                    } catch (NumberFormatException ex) {
+                        // If both parsing attempts fail, rethrow the original exception
+                        throw e;
+                    }
+                }
+
                 shift.setAssignedShiftManager(rs.getBoolean("isAssignedShiftManager"));
                 shift.setOpen(rs.getBoolean("isOpen"));
                 shift.setStartHour(rs.getTime("startHour").toLocalTime());
                 shift.setEndHour(rs.getTime("endHour").toLocalTime());
-                shift.setCreateDate(LocalDate.parse(rs.getString("createDate"), DATE_FORMATTER));
-                shift.setUpdateDate(LocalDate.parse(rs.getString("updateDate"), DATE_FORMATTER));
+
+                // Handle createDate parsing with fallback to timestamp conversion
+                String createDateStr = rs.getString("creationDate");
+                try {
+                    shift.setCreateDate(LocalDate.parse(createDateStr, DATE_FORMATTER));
+                } catch (DateTimeParseException e) {
+                    // Try to parse as timestamp (milliseconds since epoch)
+                    try {
+                        long timestamp = Long.parseLong(createDateStr);
+                        shift.setCreateDate(java.time.Instant.ofEpochMilli(timestamp)
+                            .atZone(java.time.ZoneId.systemDefault())
+                            .toLocalDate());
+                    } catch (NumberFormatException ex) {
+                        // If both parsing attempts fail, rethrow the original exception
+                        throw e;
+                    }
+                }
+
+                // Handle updateDate parsing with fallback to timestamp conversion
+                String updateDateStr = rs.getString("updateDate");
+                try {
+                    shift.setUpdateDate(LocalDate.parse(updateDateStr, DATE_FORMATTER));
+                } catch (DateTimeParseException e) {
+                    // Try to parse as timestamp (milliseconds since epoch)
+                    try {
+                        long timestamp = Long.parseLong(updateDateStr);
+                        shift.setUpdateDate(java.time.Instant.ofEpochMilli(timestamp)
+                            .atZone(java.time.ZoneId.systemDefault())
+                            .toLocalDate());
+                    } catch (NumberFormatException ex) {
+                        // If both parsing attempts fail, rethrow the original exception
+                        throw e;
+                    }
+                }
+
                 shift.setBranchId(rs.getLong("branchId"));
 
                 // Fetch roles required, assigned employees, and available employees
