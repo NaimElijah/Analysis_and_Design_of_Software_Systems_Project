@@ -12,10 +12,34 @@ This is a Java-based Supermarket Management System that handles employee managem
 
 ## Prerequisites
 
-- Java 17 or higher
+- **Java 23** or higher
 - Junit 5
 
-## Running the Application
+## Running the Application with Maven
+To run the application using Maven, follow these steps:
+1. Open a terminal and navigate to the root directory of the project.
+2. Run the following command to compile and run the application:
+
+```Bash
+mvn clean compile
+```
+3. After the compilation is successful, run the application with:
+
+```Bash
+mvn exec:java -Dexec.mainClass="Main"
+```
+
+## Building the Application as a JAR
+To build the application as a JAR file, follow these steps:
+1. Open a terminal and navigate to the root directory of the project.
+2. Run the following command to package the application:
+
+```Bash
+mvn clean package
+```
+3. After the build is successful, the JAR file will be located in the `target` directory with the name `adss2025_v02.jar`.
+
+## Running the Application as a JAR
 
 In the root directory of the project, run the following command to execute the application:
 
@@ -30,5 +54,6 @@ The project uses the following dependencies:
 - **Jackson** (version 2.16.0) - For JSON processing
 - **SQLite JDBC** (version 3.45.1.0) - For database connectivity
 - **JUnit Jupiter 5** (version 5.8.1) - For testing
+- **Maven Exec Plugin** (version 3.0.0) - For running the application
 
 
