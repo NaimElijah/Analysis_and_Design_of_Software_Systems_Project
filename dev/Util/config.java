@@ -11,7 +11,7 @@ import java.util.Properties;
 
 public class config {
     private static final Properties properties = new Properties();
-    private static final String CONFIG_FILE = "properties.config";
+    private static final String CONFIG_FILE = "dev/Util/config.properties";
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
     // Default hour values
@@ -49,7 +49,6 @@ public class config {
             //System.out.println("Configuration loaded successfully from " + CONFIG_FILE);
         } catch (IOException e) {
             System.err.println("Warning: Could not load configuration file. Using default values.");
-            e.printStackTrace();
         }
     }
 
