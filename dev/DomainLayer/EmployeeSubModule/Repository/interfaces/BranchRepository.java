@@ -1,6 +1,5 @@
-package DomainLayer.EmployeeSubModule.Repository;
+package DomainLayer.EmployeeSubModule.Repository.interfaces;
 
-import DomainLayer.EmployeeSubModule.Branch;
 import DTOs.BranchDTO;
 
 import java.util.List;

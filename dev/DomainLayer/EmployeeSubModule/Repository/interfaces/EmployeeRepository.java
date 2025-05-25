@@ -1,12 +1,8 @@
-package DomainLayer.EmployeeSubModule.Repository;
+package DomainLayer.EmployeeSubModule.Repository.interfaces;
 
-import DomainLayer.EmployeeSubModule.Employee;
 import DTOs.EmployeeDTO;
 
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Repository interface for Employee entities.

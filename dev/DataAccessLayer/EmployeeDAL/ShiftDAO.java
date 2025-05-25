@@ -9,6 +9,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,13 +21,15 @@ import java.util.Set;
 
 public class ShiftDAO {
     private Connection connection;
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss");
 
     public ShiftDAO(Connection connection) {
         this.connection = connection;
     }
 
     public boolean insert(ShiftDTO shift) throws SQLException {
-        String sql = "INSERT INTO shifts (id, shiftType, shiftDate, isAssignedShiftManager, isOpen, startHour, endHour, createDate, updateDate, branchId)" +
+        String sql = "INSERT INTO Shifts (id, shiftType, shiftDate, isAssignedShiftManager, isOpen, startHour, endHour, creationDate, updateDate, branchId)" +
                 " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -51,11 +56,10 @@ public class ShiftDAO {
 
             return false;
         }
-
     }
 
     public boolean insertRolesRequired(long shiftId, Map<String, Integer> rolesRequired) throws SQLException {
-        String sql = "INSERT INTO roles_required (shiftId, roleName, requiredCount) " +
+        String sql = "INSERT INTO RoleRequired (shiftId, roleName, requiredCount) " +
                 "VALUES (?, ?, ?)";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -71,7 +75,7 @@ public class ShiftDAO {
     }
 
     public boolean insertAssignedEmployees(long shiftId, Map<String, Set<Long>> assignedEmployees) throws SQLException {
-        String sql = "INSERT INTO assigned_employees (shiftId, roleName, employeeId)" +
+        String sql = "INSERT INTO AssignedEmployees (shiftId, roleName, employeeId)" +
                 " VALUES (?, ?, ?)";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -90,7 +94,7 @@ public class ShiftDAO {
     }
 
     public boolean insertAvailableEmployees(long shiftId, Set<Long> availableEmployees) throws SQLException {
-        String sql = "INSERT INTO available_employees (shiftId, employeeId) " +
+        String sql = "INSERT INTO AvailableEmployees (shiftId, employeeId) " +
                 "VALUES (?, ?)";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -105,7 +109,7 @@ public class ShiftDAO {
     }
 
     public boolean update(ShiftDTO shift) throws SQLException {
-        String sql = "UPDATE shifts SET shiftType = ?, shiftDate = ?, isAssignedShiftManager = ?, isOpen = ?, startHour = ?, endHour = ?, updateDate = ? " +
+        String sql = "UPDATE Shifts SET shiftType = ?, shiftDate = ?, isAssignedShiftManager = ?, isOpen = ?, startHour = ?, endHour = ?, updateDate = ? " +
                 "WHERE id = ?";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -133,50 +137,27 @@ public class ShiftDAO {
     }
 
     public boolean updateRolesRequired(long shiftId, Map<String, Integer> rolesRequired) throws SQLException {
-        String sql = "UPDATE roles_required SET requiredCount = ? WHERE shiftId = ? AND roleName = ?";
+        // First delete all existing roles for this shift
+        deleteRolesRequired(shiftId);
 
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            for (Map.Entry<String, Integer> entry : rolesRequired.entrySet()) {
-                pstmt.setInt(1, entry.getValue());
-                pstmt.setLong(2, shiftId);
-                pstmt.setString(3, entry.getKey());
-                pstmt.addBatch();
-            }
-            int[] rowsAffected = pstmt.executeBatch();
-            return rowsAffected.length > 0;
-        }
+        // Then insert the new roles
+        return insertRolesRequired(shiftId, rolesRequired);
     }
 
     public boolean updateAssignedEmployees(long shiftId, Map<String, Set<Long>> assignedEmployees) throws SQLException {
-        String sql = "UPDATE assigned_employees SET employeeId = ? WHERE shiftId = ? AND roleName = ?";
+        // First delete all existing assigned employees for this shift
+        deleteAssignedEmployees(shiftId);
 
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            for (Map.Entry<String, Set<Long>> entry : assignedEmployees.entrySet()) {
-                String roleName = entry.getKey();
-                for (Long employeeId : entry.getValue()) {
-                    pstmt.setLong(1, employeeId);
-                    pstmt.setLong(2, shiftId);
-                    pstmt.setString(3, roleName);
-                    pstmt.addBatch();
-                }
-            }
-            int[] rowsAffected = pstmt.executeBatch();
-            return rowsAffected.length > 0;
-        }
+        // Then insert the new assigned employees
+        return insertAssignedEmployees(shiftId, assignedEmployees);
     }
 
     public boolean updateAvailableEmployees(long shiftId, Set<Long> availableEmployees) throws SQLException {
-        String sql = "UPDATE available_employees SET employeeId = ? WHERE shiftId = ?";
+        // First delete all existing available employees for this shift
+        deleteAvailableEmployees(shiftId);
 
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            for (Long employeeId : availableEmployees) {
-                pstmt.setLong(1, employeeId);
-                pstmt.setLong(2, shiftId);
-                pstmt.addBatch();
-            }
-            int[] rowsAffected = pstmt.executeBatch();
-            return rowsAffected.length > 0;
-        }
+        // Then insert the new available employees
+        return insertAvailableEmployees(shiftId, availableEmployees);
     }
 
     public boolean delete(long shiftId) throws SQLException {
@@ -184,7 +165,7 @@ public class ShiftDAO {
         deleteAssignedEmployees(shiftId);
         deleteAvailableEmployees(shiftId);
 
-        String sql = "DELETE FROM shifts WHERE id = ?";
+        String sql = "DELETE FROM Shifts WHERE id = ?";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setLong(1, shiftId);
@@ -194,7 +175,7 @@ public class ShiftDAO {
     }
 
     public boolean deleteRolesRequired(long shiftId) throws SQLException {
-        String sql = "DELETE FROM roles_required WHERE shiftId = ?";
+        String sql = "DELETE FROM RoleRequired WHERE shiftId = ?";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setLong(1, shiftId);
@@ -204,7 +185,7 @@ public class ShiftDAO {
     }
 
     public boolean deleteAssignedEmployees(long shiftId) throws SQLException {
-        String sql = "DELETE FROM assigned_employees WHERE shiftId = ?";
+        String sql = "DELETE FROM AssignedEmployees WHERE shiftId = ?";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setLong(1, shiftId);
@@ -214,7 +195,7 @@ public class ShiftDAO {
     }
 
     public boolean deleteAvailableEmployees(long shiftId) throws SQLException {
-        String sql = "DELETE FROM available_employees WHERE shiftId = ?";
+        String sql = "DELETE FROM AvailableEmployees WHERE shiftId = ?";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setLong(1, shiftId);
@@ -224,7 +205,7 @@ public class ShiftDAO {
     }
 
     public ShiftDTO getById(long shiftId) throws SQLException {
-        String sql = "SELECT * FROM shifts WHERE id = ?";
+        String sql = "SELECT * FROM Shifts WHERE id = ?";
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
             pstmt.setLong(1, shiftId);
@@ -233,14 +214,14 @@ public class ShiftDAO {
             if (rs.next()) {
                 ShiftDTO shift = new ShiftDTO();
                 shift.setId(rs.getLong("id"));
-                shift.setShiftType(ShiftType.valueOf(rs.getString("shiftType")));
-                shift.setShiftDate(rs.getDate("shiftDate").toLocalDate());
+                shift.setShiftType(ShiftType.valueOf(rs.getString("shiftType").toUpperCase()));
+                shift.setShiftDate(LocalDate.parse(rs.getString("shiftDate"), DATE_FORMATTER));
                 shift.setAssignedShiftManager(rs.getBoolean("isAssignedShiftManager"));
                 shift.setOpen(rs.getBoolean("isOpen"));
                 shift.setStartHour(rs.getTime("startHour").toLocalTime());
                 shift.setEndHour(rs.getTime("endHour").toLocalTime());
-                shift.setCreateDate(rs.getDate("createDate").toLocalDate());
-                shift.setUpdateDate(rs.getDate("updateDate").toLocalDate());
+                shift.setCreateDate(LocalDate.parse(rs.getString("createDate"), DATE_FORMATTER));
+                shift.setUpdateDate(LocalDate.parse(rs.getString("updateDate"), DATE_FORMATTER));
                 shift.setBranchId(rs.getLong("branchId"));
 
                 // Fetch roles required, assigned employees, and available employees
@@ -256,7 +237,7 @@ public class ShiftDAO {
     }
 
     public Map<String, Integer> getRolesRequired(long shiftId) throws SQLException {
-        String sql = "SELECT * FROM roles_required WHERE shiftId = ?";
+        String sql = "SELECT * FROM RoleRequired WHERE shiftId = ?";
         Map<String, Integer> rolesRequired = new HashMap<>();
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -274,7 +255,7 @@ public class ShiftDAO {
     }
 
     public Map<String, Set<Long>> getAssignedEmployees(long shiftId) throws SQLException {
-        String sql = "SELECT * FROM assigned_employees WHERE shiftId = ?";
+        String sql = "SELECT * FROM AssignedEmployees WHERE shiftId = ?";
         Map<String, Set<Long>> assignedEmployees = new HashMap<>();
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -293,7 +274,7 @@ public class ShiftDAO {
     }
 
     public Set<Long> getAvailableEmployees(long shiftId) throws SQLException {
-        String sql = "SELECT * FROM available_employees WHERE shiftId = ?";
+        String sql = "SELECT * FROM AvailableEmployees WHERE shiftId = ?";
         Set<Long> availableEmployees = new HashSet<>();
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -309,7 +290,7 @@ public class ShiftDAO {
     }
 
     public List<ShiftDTO> getAll() throws SQLException {
-        String sql = "SELECT * FROM shifts";
+        String sql = "SELECT * FROM Shifts";
         List<ShiftDTO> shifts = new ArrayList<>();
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql);
@@ -317,14 +298,14 @@ public class ShiftDAO {
             while (rs.next()) {
                 ShiftDTO shift = new ShiftDTO();
                 shift.setId(rs.getLong("id"));
-                shift.setShiftType(ShiftType.valueOf(rs.getString("shiftType")));
-                shift.setShiftDate(rs.getDate("shiftDate").toLocalDate());
+                shift.setShiftType(ShiftType.valueOf(rs.getString("shiftType").toUpperCase()));
+                shift.setShiftDate(LocalDate.parse(rs.getString("shiftDate"), DATE_FORMATTER));
                 shift.setAssignedShiftManager(rs.getBoolean("isAssignedShiftManager"));
                 shift.setOpen(rs.getBoolean("isOpen"));
                 shift.setStartHour(rs.getTime("startHour").toLocalTime());
                 shift.setEndHour(rs.getTime("endHour").toLocalTime());
-                shift.setCreateDate(rs.getDate("createDate").toLocalDate());
-                shift.setUpdateDate(rs.getDate("updateDate").toLocalDate());
+                shift.setCreateDate(LocalDate.parse(rs.getString("createDate"), DATE_FORMATTER));
+                shift.setUpdateDate(LocalDate.parse(rs.getString("updateDate"), DATE_FORMATTER));
                 shift.setBranchId(rs.getLong("branchId"));
 
                 // Fetch roles required, assigned employees, and available employees
@@ -340,7 +321,7 @@ public class ShiftDAO {
     }
 
     public List<ShiftDTO> getAllByBranchId(long branchId) throws SQLException {
-        String sql = "SELECT * FROM shifts WHERE branchId = ?";
+        String sql = "SELECT * FROM Shifts WHERE branchId = ?";
         List<ShiftDTO> shifts = new ArrayList<>();
 
         try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -350,14 +331,14 @@ public class ShiftDAO {
             while (rs.next()) {
                 ShiftDTO shift = new ShiftDTO();
                 shift.setId(rs.getLong("id"));
-                shift.setShiftType(ShiftType.valueOf(rs.getString("shiftType")));
-                shift.setShiftDate(rs.getDate("shiftDate").toLocalDate());
+                shift.setShiftType(ShiftType.valueOf(rs.getString("shiftType").toUpperCase()));
+                shift.setShiftDate(LocalDate.parse(rs.getString("shiftDate"), DATE_FORMATTER));
                 shift.setAssignedShiftManager(rs.getBoolean("isAssignedShiftManager"));
                 shift.setOpen(rs.getBoolean("isOpen"));
                 shift.setStartHour(rs.getTime("startHour").toLocalTime());
                 shift.setEndHour(rs.getTime("endHour").toLocalTime());
-                shift.setCreateDate(rs.getDate("createDate").toLocalDate());
-                shift.setUpdateDate(rs.getDate("updateDate").toLocalDate());
+                shift.setCreateDate(LocalDate.parse(rs.getString("createDate"), DATE_FORMATTER));
+                shift.setUpdateDate(LocalDate.parse(rs.getString("updateDate"), DATE_FORMATTER));
                 shift.setBranchId(rs.getLong("branchId"));
 
                 // Fetch roles required, assigned employees, and available employees
@@ -371,10 +352,4 @@ public class ShiftDAO {
 
         return shifts;
     }
-
-
-
-
-
-
 }

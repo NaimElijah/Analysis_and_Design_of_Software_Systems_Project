@@ -1,9 +1,14 @@
-package DomainLayer.EmployeeSubModule.Repository;
+package DomainLayer.EmployeeSubModule.Repository.interfaces;
 
 import DTOs.ShiftDTO;
+import Util.Week;
 
 import java.util.List;
 
+/**
+ * Interface for the Shift Repository.
+ * Provides methods to manage shifts and access them by various criteria.
+ */
 public interface ShiftReposetory {
     /**
      * Creates a new shift.
@@ -44,6 +49,28 @@ public interface ShiftReposetory {
      */
     List<ShiftDTO> getAll();
 
+    /**
+     * Retrieves all shifts for a specific branch.
+     *
+     * @param branchId The ID of the branch
+     * @return A list of all shift DTOs for the branch
+     */
+    List<ShiftDTO> getAllByBranchId(long branchId);
 
+    /**
+     * Gets all shifts for a specific week.
+     *
+     * @param week The week to get shifts for
+     * @return A list of ShiftDTOs for the week
+     */
+    List<ShiftDTO> getShiftsByWeek(Week week);
 
+    /**
+     * Gets all shifts for a specific week and branch.
+     *
+     * @param week The week to get shifts for
+     * @param branchId The branch ID to filter by
+     * @return A list of ShiftDTOs for the week and branch
+     */
+    List<ShiftDTO> getShiftsByWeekAndBranch(Week week, long branchId);
 }

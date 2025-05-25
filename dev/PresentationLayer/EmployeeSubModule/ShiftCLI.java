@@ -199,7 +199,7 @@ public class ShiftCLI {
     private String formatEmployeeDisplay(long employeeId) {
         try {
             EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(employeeId);
-            String branch = employeeService.getEmployeeBranchName(employee.getBranchId()) != null ? " [" + employeeService.getEmployeeBranchName(employee.getBranchId()) + "]" : "";
+            String branch = employeeService.getEmployeeBranchName(employee.getIsraeliId()) != null ? " [" + employeeService.getEmployeeBranchName(employee.getIsraeliId()) + "]" : "";
             return employee.getFullName() + " (#" + employeeId + ")" + branch;
         } catch (ServiceException e) {
             // If we can't get the employee name, just return the ID
@@ -773,7 +773,7 @@ public class ShiftCLI {
             CliUtil.printEmptyLine();
 
             Map<String, Integer> rolesRequired = new HashMap<>();
-            Set<String> roles = Arrays.stream(shiftService.getRoles(doneBy).split(",")).collect(Collectors.toSet());
+            Set<String> roles = Arrays.stream(shiftService.getRoles(doneBy).split(", ")).collect(Collectors.toSet());
 
             if (roles.isEmpty()) {
                 printError("No roles defined in the system. Please create roles first.");
@@ -881,7 +881,8 @@ public class ShiftCLI {
             CliUtil.printEmptyLine();
 
             Map<String, Integer> rolesRequired = new HashMap<>();
-            Set<String> roles = Arrays.stream(shiftService.getRoles(doneBy).split(",")).collect(Collectors.toSet());
+            Set<String> roles = Arrays.stream(shiftService.getRoles(doneBy).split(", ")).collect(Collectors.toSet());
+
 
             if (roles.isEmpty()) {
                 printError("No roles defined in the system. Please create roles first.");

@@ -5,56 +5,74 @@ INSERT INTO Branches (branchId, branchName, areaCode, branchAddress, managerID) 
 INSERT INTO Branches (branchId, branchName, areaCode, branchAddress, managerID) VALUES (2, 'Beer Shave', 1, 'Ben Gurion Uni', 444444444);
 
 -- Permissions
-INSERT INTO Permissions (permissionName) VALUES ('UPDATE_SHIFT');
-INSERT INTO Permissions (permissionName) VALUES ('DELETE_SITE');
-INSERT INTO Permissions (permissionName) VALUES ('EDIT_SHIFT');
-INSERT INTO Permissions (permissionName) VALUES ('EDIT_ITEM_IN_TRANSPORT');
-INSERT INTO Permissions (permissionName) VALUES ('ADD_ITEM_TO_TRANSPORT');
-INSERT INTO Permissions (permissionName) VALUES ('EDIT_EMPLOYEE');
-INSERT INTO Permissions (permissionName) VALUES ('GET_ROLES');
-INSERT INTO Permissions (permissionName) VALUES ('EDIT_SHIPPING_AREA');
+
+-- Employee Management Permissions
 INSERT INTO Permissions (permissionName) VALUES ('CREATE_EMPLOYEE');
-INSERT INTO Permissions (permissionName) VALUES ('SHOW_TRUCKS');
-INSERT INTO Permissions (permissionName) VALUES ('UPDATE_AVAILABLE');
-INSERT INTO Permissions (permissionName) VALUES ('VIEW_SHIFT');
-INSERT INTO Permissions (permissionName) VALUES ('MANAGE_SHIFT');
-INSERT INTO Permissions (permissionName) VALUES ('SHOW_SITES');
-INSERT INTO Permissions (permissionName) VALUES ('EDIT_TRANSPORT');
-INSERT INTO Permissions (permissionName) VALUES ('CREATE_TRANSPORT');
-INSERT INTO Permissions (permissionName) VALUES ('ADD_PERMISSION_TO_ROLE');
-INSERT INTO Permissions (permissionName) VALUES ('MANAGE_HR');
-INSERT INTO Permissions (permissionName) VALUES ('DELETE_SHIPPING_AREA');
-INSERT INTO Permissions (permissionName) VALUES ('VIEW_RELEVANT_TRANSPORTS');
-INSERT INTO Permissions (permissionName) VALUES ('CREATE_SHIFT');
-INSERT INTO Permissions (permissionName) VALUES ('CREATE_ROLE');
-INSERT INTO Permissions (permissionName) VALUES ('ROLE_REQUIRED');
-INSERT INTO Permissions (permissionName) VALUES ('VIEW_EMPLOYEE');
-INSERT INTO Permissions (permissionName) VALUES ('MANAGE_INVENTORY');
-INSERT INTO Permissions (permissionName) VALUES ('ADD_SHIPPING_AREA');
-INSERT INTO Permissions (permissionName) VALUES ('EDIT_ROLE');
-INSERT INTO Permissions (permissionName) VALUES ('ASSIGN_EMPLOYEE');
-INSERT INTO Permissions (permissionName) VALUES ('DELETE_TRUCK');
-INSERT INTO Permissions (permissionName) VALUES ('EDIT_SITE');
-INSERT INTO Permissions (permissionName) VALUES ('EDIT_TRANSPORT_ITEM_CONDITION');
 INSERT INTO Permissions (permissionName) VALUES ('UPDATE_EMPLOYEE');
-INSERT INTO Permissions (permissionName) VALUES ('CREATE_PERMISSION');
-INSERT INTO Permissions (permissionName) VALUES ('CLEAN_FACILITY');
-INSERT INTO Permissions (permissionName) VALUES ('SHOW_SHIPPING_AREAS');
-INSERT INTO Permissions (permissionName) VALUES ('EDIT_PERMISSION');
-INSERT INTO Permissions (permissionName) VALUES ('STOCK_SHELVES');
-INSERT INTO Permissions (permissionName) VALUES ('ROLE_PERMISSION');
-INSERT INTO Permissions (permissionName) VALUES ('ADD_SITE');
+INSERT INTO Permissions (permissionName) VALUES ('EDIT_EMPLOYEE');
+INSERT INTO Permissions (permissionName) VALUES ('VIEW_EMPLOYEE');
 INSERT INTO Permissions (permissionName) VALUES ('DEACTIVATE_EMPLOYEE');
-INSERT INTO Permissions (permissionName) VALUES ('REMOVE_PERMISSION_FROM_ROLE');
-INSERT INTO Permissions (permissionName) VALUES ('GET_SHIFT');
-INSERT INTO Permissions (permissionName) VALUES ('DELETE_TRANSPORT');
 INSERT INTO Permissions (permissionName) VALUES ('DELETE_EMPLOYEE');
+
+-- Role and Permission Management
+INSERT INTO Permissions (permissionName) VALUES ('CREATE_ROLE');
+INSERT INTO Permissions (permissionName) VALUES ('EDIT_ROLE');
+INSERT INTO Permissions (permissionName) VALUES ('ROLE_PERMISSION');
+INSERT INTO Permissions (permissionName) VALUES ('ADD_PERMISSION_TO_ROLE');
+INSERT INTO Permissions (permissionName) VALUES ('REMOVE_PERMISSION_FROM_ROLE');
+INSERT INTO Permissions (permissionName) VALUES ('CREATE_PERMISSION');
+INSERT INTO Permissions (permissionName) VALUES ('EDIT_PERMISSION');
+INSERT INTO Permissions (permissionName) VALUES ('GET_ROLES');
+INSERT INTO Permissions (permissionName) VALUES ('ROLE_REQUIRED');
+
+-- Shift Management Permissions
+INSERT INTO Permissions (permissionName) VALUES ('CREATE_SHIFT');
+INSERT INTO Permissions (permissionName) VALUES ('UPDATE_SHIFT');
+INSERT INTO Permissions (permissionName) VALUES ('EDIT_SHIFT');
 INSERT INTO Permissions (permissionName) VALUES ('REMOVE_SHIFT');
-INSERT INTO Permissions (permissionName) VALUES ('HANDLE_CASH');
+INSERT INTO Permissions (permissionName) VALUES ('GET_SHIFT');
+INSERT INTO Permissions (permissionName) VALUES ('MANAGE_SHIFT');
+INSERT INTO Permissions (permissionName) VALUES ('VIEW_SHIFT');
+
+-- Assignment Management Permissions
+INSERT INTO Permissions (permissionName) VALUES ('ASSIGN_EMPLOYEE');
+
+-- Availability Management Permissions
+INSERT INTO Permissions (permissionName) VALUES ('UPDATE_AVAILABLE');
+
+-- Transport Management Permissions
+INSERT INTO Permissions (permissionName) VALUES ('CREATE_TRANSPORT');
+INSERT INTO Permissions (permissionName) VALUES ('EDIT_TRANSPORT');
+INSERT INTO Permissions (permissionName) VALUES ('DELETE_TRANSPORT');
 INSERT INTO Permissions (permissionName) VALUES ('VIEW_TRANSPORT');
+INSERT INTO Permissions (permissionName) VALUES ('VIEW_RELEVANT_TRANSPORTS');
+INSERT INTO Permissions (permissionName) VALUES ('ADD_ITEM_TO_TRANSPORT');
+INSERT INTO Permissions (permissionName) VALUES ('EDIT_ITEM_IN_TRANSPORT');
 INSERT INTO Permissions (permissionName) VALUES ('DELETE_ITEM_FROM_TRANSPORT');
+INSERT INTO Permissions (permissionName) VALUES ('EDIT_TRANSPORT_ITEM_CONDITION');
+
+-- Site Management Permissions
+INSERT INTO Permissions (permissionName) VALUES ('ADD_SITE');
+INSERT INTO Permissions (permissionName) VALUES ('EDIT_SITE');
+INSERT INTO Permissions (permissionName) VALUES ('DELETE_SITE');
+INSERT INTO Permissions (permissionName) VALUES ('SHOW_SITES');
+
+-- Shipping Area Permissions
+INSERT INTO Permissions (permissionName) VALUES ('ADD_SHIPPING_AREA');
+INSERT INTO Permissions (permissionName) VALUES ('EDIT_SHIPPING_AREA');
+INSERT INTO Permissions (permissionName) VALUES ('DELETE_SHIPPING_AREA');
+INSERT INTO Permissions (permissionName) VALUES ('SHOW_SHIPPING_AREAS');
+
+-- Truck Management Permissions
 INSERT INTO Permissions (permissionName) VALUES ('ADD_TRUCK');
+INSERT INTO Permissions (permissionName) VALUES ('DELETE_TRUCK');
+INSERT INTO Permissions (permissionName) VALUES ('SHOW_TRUCKS');
+
+-- Operational Permissions
+INSERT INTO Permissions (permissionName) VALUES ('MANAGE_INVENTORY');
+INSERT INTO Permissions (permissionName) VALUES ('HANDLE_CASH');
 INSERT INTO Permissions (permissionName) VALUES ('DRIVE_VEHICLE');
+INSERT INTO Permissions (permissionName) VALUES ('STOCK_SHELVES');
 
 -- Roles
 INSERT INTO Roles (roleName) VALUES ('Admin');
@@ -64,15 +82,17 @@ INSERT INTO Roles (roleName) VALUES ('Shift Manager');
 INSERT INTO Roles (roleName) VALUES ('Cashier');
 INSERT INTO Roles (roleName) VALUES ('Stocker');
 INSERT INTO Roles (roleName) VALUES ('Cleaner');
+-- for transport module
 INSERT INTO Roles (roleName) VALUES ('DriverA');
 INSERT INTO Roles (roleName) VALUES ('DriverB');
 INSERT INTO Roles (roleName) VALUES ('DriverC');
 INSERT INTO Roles (roleName) VALUES ('DriverD');
 INSERT INTO Roles (roleName) VALUES ('DriverE');
+INSERT INTO Roles (roleName) VALUES ('WarehouseMan');
+
 
 -- RolePermissions
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Admin', 'UPDATE_SHIFT');
-INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Admin', 'ASSIGN_EMPLOYEE_TO_SHIFT');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Admin', 'DELETE_SITE');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Admin', 'EDIT_SHIFT');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Admin', 'EDIT_ITEM_IN_TRANSPORT');
@@ -103,7 +123,6 @@ INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Admin', 'DELETE_
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Admin', 'EDIT_SITE');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Admin', 'UPDATE_EMPLOYEE');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Admin', 'CREATE_PERMISSION');
-INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Admin', 'CLEAN_FACILITY');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Admin', 'SHOW_SHIPPING_AREAS');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Admin', 'EDIT_PERMISSION');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Admin', 'STOCK_SHELVES');
@@ -170,7 +189,6 @@ INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Stocker', 'UPDAT
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Cleaner', 'VIEW_SHIFT');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Cleaner', 'UPDATE_AVAILABLE');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Cleaner', 'GET_SHIFT');
-INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Cleaner', 'CLEAN_FACILITY');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverA', 'VIEW_SHIFT');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverA', 'UPDATE_AVAILABLE');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverA', 'GET_SHIFT');
@@ -189,21 +207,21 @@ INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverE', 'GET_S
 
 -- Employees
 INSERT INTO Employees (israeliId, firstName, lastName, salary, startOfEmployment, isActive, creationDate, updateDate, branchId)
-VALUES (123456789, 'Admin', 'User', 20000, '2020-01-01', TRUE, '2023-01-01', '2023-01-01', 1);
+VALUES (123456789, 'Admin', 'User', 20000, '01-01-2020', TRUE, '01-01-2023', '01-01-2023', 1);
 INSERT INTO Employees (israeliId, firstName, lastName, salary, startOfEmployment, isActive, creationDate, updateDate, branchId)
-VALUES (111111111, 'Shira', 'Steinbuch', 18000, '2019-05-10', TRUE, '2023-01-01', '2023-01-01', 1);
+VALUES (111111111, 'Shira', 'Steinbuch', 18000, '02-02-2017', TRUE, '01-01-2023', '01-01-2023', 1);
 INSERT INTO Employees (israeliId, firstName, lastName, salary, startOfEmployment, isActive, creationDate, updateDate, branchId)
-VALUES (222222222, 'Ramzi', 'Abd Rabo', 9500, '2021-08-15', TRUE, '2023-01-01', '2023-01-01', 2);
+VALUES (222222222, 'Ramzi', 'Abd Rabo', 9500, '15-11-2020', TRUE, '01-01-2023', '01-01-2023', 2);
 INSERT INTO Employees (israeliId, firstName, lastName, salary, startOfEmployment, isActive, creationDate, updateDate, branchId)
-VALUES (333333333, 'Kochava', 'Shavit', 8500, '2020-03-22', TRUE, '2023-01-01', '2023-01-01', 2);
+VALUES (333333333, 'Kochava', 'Shavit', 8500, '15-11-2020', TRUE, '01-01-2023', '01-01-2023', 2);
 INSERT INTO Employees (israeliId, firstName, lastName, salary, startOfEmployment, isActive, creationDate, updateDate, branchId)
-VALUES (444444444, 'Moshe', 'Cohen', 12000, '2021-02-15', TRUE, '2023-01-01', '2023-01-01', 2);
+VALUES (444444444, 'Moshe', 'Cohen', 12000, '01-01-2020', TRUE, '01-01-2023', '01-01-2023', 2);
 INSERT INTO Employees (israeliId, firstName, lastName, salary, startOfEmployment, isActive, creationDate, updateDate, branchId)
-VALUES (555555555, 'Yael', 'Levy', 9000, '2022-06-01', TRUE, '2023-01-01', '2023-01-01', 2);
+VALUES (555555555, 'Yael', 'Levy', 9000, '01-01-2020', TRUE, '01-01-2023', '01-01-2023', 2);
 INSERT INTO Employees (israeliId, firstName, lastName, salary, startOfEmployment, isActive, creationDate, updateDate, branchId)
-VALUES (666666666, 'David', 'Mizrahi', 8000, '2022-09-15', TRUE, '2023-01-01', '2023-01-01', 1);
+VALUES (666666666, 'David', 'Mizrahi', 8000, '02-02-2017', TRUE, '01-01-2023', '01-01-2023', 1);
 INSERT INTO Employees (israeliId, firstName, lastName, salary, startOfEmployment, isActive, creationDate, updateDate, branchId)
-VALUES (7777777, 'Emmanuel', 'Macroni', 8000, '2022-09-15', TRUE, '2023-01-01', '2023-01-01', 1);
+VALUES (7777777, 'Emmanuel', 'Macroni', 8000, '15-11-2020', TRUE, '01-01-2023', '01-01-2023', 1);
 
 -- EmployeeRoles
 INSERT INTO EmployeeRoles (israeliId, role) VALUES (123456789, 'Admin');

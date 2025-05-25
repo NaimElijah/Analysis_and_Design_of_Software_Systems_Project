@@ -600,7 +600,7 @@ public class AssignmentCLI {
             // Get available roles
             Set<String> allRoles;
             try {
-                allRoles = Arrays.stream(shiftService.getRoles(doneBy).split(",")).collect(Collectors.toSet());
+                allRoles = Arrays.stream(shiftService.getRoles(doneBy).split(", ")).collect(Collectors.toSet());
             } catch (Exception e) {
                 printError("Error retrieving available roles: " + e.getMessage());
                 waitForEnter();
@@ -1301,7 +1301,7 @@ public class AssignmentCLI {
     private void addRequiredRole(long shiftId, Map<String, Integer> currentRoles) {
         try {
             // Get all available roles
-            String[] allRoles = shiftService.getRoles(doneBy).split(",");
+            String[] allRoles = shiftService.getRoles(doneBy).split(", ");
 
             // Filter out roles that are already required
             List<String> availableRoles = new ArrayList<>();

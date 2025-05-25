@@ -3,6 +3,7 @@ package DomainLayer.EmployeeSubModule.Repository;
 import DataAccessLayer.EmployeeDAL.EmployeeDALFactory;
 import DataAccessLayer.EmployeeDAL.EmployeeDAO;
 import DTOs.EmployeeDTO;
+import DomainLayer.EmployeeSubModule.Repository.interfaces.EmployeeRepository;
 
 import java.sql.SQLException;
 import java.util.List;

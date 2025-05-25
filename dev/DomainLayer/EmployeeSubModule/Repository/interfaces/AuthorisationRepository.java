@@ -1,4 +1,4 @@
-package DomainLayer.EmployeeSubModule.Repository;
+package DomainLayer.EmployeeSubModule.Repository.interfaces;
 
 import java.util.HashSet;
 import java.util.Map;

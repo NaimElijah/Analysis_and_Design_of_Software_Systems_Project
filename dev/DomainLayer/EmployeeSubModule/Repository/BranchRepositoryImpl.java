@@ -3,10 +3,10 @@ package DomainLayer.EmployeeSubModule.Repository;
 import DataAccessLayer.EmployeeDAL.BranchDAO;
 import DataAccessLayer.EmployeeDAL.EmployeeDALFactory;
 import DTOs.BranchDTO;
+import DomainLayer.EmployeeSubModule.Repository.interfaces.BranchRepository;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.ArrayList;
 
 /**
  * Implementation of the BranchRepository interface.

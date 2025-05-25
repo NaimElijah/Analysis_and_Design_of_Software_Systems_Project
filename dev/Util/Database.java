@@ -17,10 +17,10 @@ public final class Database {
         "firstName TEXT NOT NULL, " +
         "lastName TEXT NOT NULL, " +
         "salary BIGINT NOT NULL, " +
-        "startOfEmployment TEXT NOT NULL, " +
+        "startOfEmployment DATE NOT NULL, " +
         "isActive BOOLEAN NOT NULL, " +
-        "creationDate TEXT NOT NULL, " +
-        "updateDate TEXT NOT NULL, " +
+        "creationDate DATE NOT NULL, " +
+        "updateDate DATE NOT NULL, " +
         "branchId BIGINT, " +
         "FOREIGN KEY (branchId) REFERENCES Branches(branchId)" +
         ")";
@@ -72,19 +72,21 @@ public final class Database {
         ")";
 
     private static final String ShiftType =
-            "CREATE TYPE IF NOT EXISTS ShiftTypeEnum as ENUM ('MORNING', 'EVENING')";
+            "CREATE TABLE IF NOT EXISTS ShiftType (" +
+            "type TEXT PRIMARY KEY" +
+            ")";
 
     private static final String ShiftsTable =
             "CREATE TABLE IF NOT EXISTS Shifts (" +
                     "id BIGINT PRIMARY KEY, " +
-                    "shiftType ShiftTypeEnum NOT NULL, " +
-                    "shiftDate TEXT NOT NULL, " +
+                    "shiftType TEXT NOT NULL, " +
+                    "shiftDate DATE NOT NULL, " +
                     "isAssignedShiftManager BOOLEAN NOT NULL, " +
                     "isOpen BOOLEAN NOT NULL, " +
-                    "startHour TEXT NOT NULL, " +
-                    "endHour TEXT NOT NULL, " +
-                    "creationDate TEXT NOT NULL, " +
-                    "updateDate TEXT NOT NULL, " +
+                    "startHour TIME NOT NULL, " +
+                    "endHour TIME NOT NULL, " +
+                    "creationDate DATE NOT NULL, " +
+                    "updateDate DATE NOT NULL, " +
                     "branchId BIGINT NOT NULL, " +
                     "FOREIGN KEY (branchId) REFERENCES Branches(branchId)" +
                     ")";
@@ -95,7 +97,7 @@ public final class Database {
                     "roleName TEXT NOT NULL, " +
                     "requiredCount INTEGER NOT NULL, " +
                     "PRIMARY KEY (shiftId, roleName), " +
-                    "FOREIGN KEY (id) REFERENCES Shifts(id), " +
+                    "FOREIGN KEY (shiftId) REFERENCES Shifts(id), " +
                     "FOREIGN KEY (roleName) REFERENCES Roles(roleName)" +
                     ")";
 
@@ -125,10 +127,10 @@ public final class Database {
                     "firstName TEXT NOT NULL, " +
                     "lastName TEXT NOT NULL, " +
                     "salary BIGINT NOT NULL, " +
-                    "startOfEmployment TEXT NOT NULL, " +
+                    "startOfEmployment DATE NOT NULL, " +
                     "isActive BOOLEAN NOT NULL, " +
-                    "creationDate TEXT NOT NULL, " +
-                    "updateDate TEXT NOT NULL, " +
+                    "creationDate DATE NOT NULL, " +
+                    "updateDate DATE NOT NULL, " +
                     "branchId BIGINT, " +
                     "FOREIGN KEY (branchId) REFERENCES Branches(branchId)" +
                     ")";
@@ -139,10 +141,10 @@ public final class Database {
                     "firstName TEXT NOT NULL, " +
                     "lastName TEXT NOT NULL, " +
                     "salary BIGINT NOT NULL, " +
-                    "startOfEmployment TEXT NOT NULL, " +
+                    "startOfEmployment DATE NOT NULL, " +
                     "isActive BOOLEAN NOT NULL, " +
-                    "creationDate TEXT NOT NULL, " +
-                    "updateDate TEXT NOT NULL, " +
+                    "creationDate DATE NOT NULL, " +
+                    "updateDate DATE NOT NULL, " +
                     "branchId BIGINT, " +
                     "FOREIGN KEY (branchId) REFERENCES Branches(branchId)" +
                     ")";
@@ -153,7 +155,8 @@ public final class Database {
                     "name TEXT NOT NULL, " +
                     "weight TEXT NOT NULL, " +
                     "condition BIGINT NOT NULL, " +
-                    "FOREIGN KEY (branchId) REFERENCES ItemsDocs(branchId)" +
+                    "branchId BIGINT, " +
+                    "FOREIGN KEY (branchId) REFERENCES ItemsDocs(israeliId)" +
                     ")";
 
     private static final String TrucksTable =
@@ -162,24 +165,25 @@ public final class Database {
                     "model TEXT NOT NULL, " +
                     "netWeight BIGINT NOT NULL, " +
                     "max_carry_weight BIGINT NOT NULL, " +
-                    "valid_license TEXT NOT NULL, " +
-                    "inTransportID BOOLEAN NOT NULL, " +
-                    "isDeleted TEXT NOT NULL, " +
+                    "valid_license DATE NOT NULL, " +
+                    "inTransportID BIGINT, " +
+                    "isDeleted BOOLEAN NOT NULL, " +
                     "FOREIGN KEY (inTransportID) REFERENCES Transports(tranDocId)" +
                     ")";
 
     private static final String ShippingAreasTable =
             "CREATE TABLE IF NOT EXISTS ShippingAreas (" +
                     "areaNumber BIGINT PRIMARY KEY, " +
-                    "areaName TEXT NOT NULL, " +
+                    "areaName TEXT NOT NULL" +
                     ")";
 
     private static final String SitesTable =
             "CREATE TABLE IF NOT EXISTS Sites (" +
-                    "areaNum BIGINT PRIMARY KEY, " +
-                    "addressStr TEXT PRIMARY KEY, " +
+                    "areaNum BIGINT, " +
+                    "addressStr TEXT, " +
                     "contName TEXT NOT NULL, " +
                     "contNumber BIGINT NOT NULL, " +
+                    "PRIMARY KEY (areaNum, addressStr), " +
                     "FOREIGN KEY (areaNum) REFERENCES ShippingAreas(areaNumber)" +
                     ")";
 
@@ -188,30 +192,37 @@ public final class Database {
             Class.forName("org.sqlite.JDBC");
             conn = DriverManager.getConnection(config.DB_URL);
 
+            // Enable foreign key constraints
             try (Statement st = conn.createStatement()) {
-                // Create table's
-                // order is IMPORTANT DO NOT CHANGE !!! (foreign key constraints)
+                st.execute("PRAGMA foreign_keys = ON;");
+            }
+
+            try (Statement st = conn.createStatement()) {
+                // Create tables in the correct order to avoid foreign key constraint issues
+
+                // First, create tables with no foreign key dependencies
                 st.executeUpdate(BranchesTable);
                 st.executeUpdate(RolesTable);
                 st.executeUpdate(PermissionsTable);
+                st.executeUpdate(ShiftType);
+                st.executeUpdate(ShippingAreasTable);
+
+                // Then create tables that depend on the above tables
                 st.executeUpdate(EmployeesTable);
+                st.executeUpdate(ShiftsTable);
+                st.executeUpdate(TransportsTable);
+                st.executeUpdate(ItemsDocsTable);
+
+                // Finally, create tables that depend on the second level tables
                 st.executeUpdate(EmployeeRolesTable);
                 st.executeUpdate(EmployeeTermsTable);
                 st.executeUpdate(RolePermissionsTable);
-                st.executeUpdate(ShiftType);
-                st.executeUpdate(ShiftsTable);
                 st.executeUpdate(RoleRequiredTable);
                 st.executeUpdate(AssignedEmployeesTable);
                 st.executeUpdate(AvailableEmployeesTable);
-
-//                st.executeUpdate(TransportsTable);
-//                st.executeUpdate(ItemsDocsTable);
-//                st.executeUpdate(ItemsTable);
-//                st.executeUpdate(TrucksTable);
-//                st.executeUpdate(ShippingAreasTable);
-//                st.executeUpdate(SitesTable);
-                // ***ADD YOUR TABLES HERE***
-
+                st.executeUpdate(ItemsTable);
+                st.executeUpdate(TrucksTable);
+                st.executeUpdate(SitesTable);
             }
         } catch (Exception e) {
             throw new ExceptionInInitializerError(e);
