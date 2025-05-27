@@ -100,7 +100,7 @@ public class AvailabilityController {
         DayOfWeek day = now.getDayOfWeek();
         LocalTime time = now.toLocalTime();
 
-        return (day == DayOfWeek.THURSDAY && time.isAfter(config.BLOCK_AVAILABILITY_START_HOUR)) // TODO: add config for day as well
+        return (day == config.BLOCK_AVAILABILITY_START_DAY && time.isAfter(config.BLOCK_AVAILABILITY_START_HOUR)) // TODO: add config for day as well
                 || day == DayOfWeek.FRIDAY
                 || day == DayOfWeek.SATURDAY;
     }

@@ -2,6 +2,9 @@ package ServiceLayer;
 
 import ServiceLayer.EmployeeSubModule.EmployeeService;
 import ServiceLayer.EmployeeSubModule.ShiftService;
+import ServiceLayer.exception.AuthorizationException;
+import ServiceLayer.exception.ServiceException;
+import ServiceLayer.exception.ShiftServiceException;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -34,7 +37,11 @@ public class EmployeeIntegrationService {
      * @return true if the employee is active; false otherwise.
      */
     public boolean isActive(long employeeId) {
-        return employeeService.isEmployeeActive(employeeId);
+        try {
+            return employeeService.isEmployeeActive(employeeId);
+        } catch (Exception e) {
+            throw new ServiceException("Error checking employee status: " + e.getMessage());
+        }
     }
 
     /**
@@ -45,23 +52,34 @@ public class EmployeeIntegrationService {
      * @return true if the employee has the specified role; false otherwise.
      */
     public boolean hasRole(long employeeId, String role) {
-        return employeeService.isEmployeeHaveRole(employeeId, role);
+        try {
+            return employeeService.isEmployeeHaveRole(employeeId, role);
+        } catch (Exception e) {
+            throw new AuthorizationException("Error checking employee role: " + e.getMessage());
+        }
     }
 
 
+
     public boolean isDriverOnShiftAt(long driverId, LocalDateTime dateTime, String address, int areaCode) {
-        // TODO: Add Driver ID to the method signature, func needs to check if his on shift
-        LocalDate date = dateTime.toLocalDate();
-        LocalTime time = dateTime.toLocalTime();
-        return shiftService.isAssignedRoleByDateTimeBranch(date, time,"Driver", address, areaCode);
+        try {
+            LocalDate date = dateTime.toLocalDate();
+            LocalTime time = dateTime.toLocalTime();
+            return shiftService.isDriverOnShiftAt(driverId, date, time, address, areaCode);
+        } catch (Exception e) {
+            throw new ShiftServiceException("Error checking if driver is on shift at the specified time: " + e.getMessage());
+        }
     }
 
 
     public boolean isWarehousemanOnShiftAt(LocalDateTime dateTime, String address, int areaCode) {
-        LocalDate date = dateTime.toLocalDate();
-        LocalTime time = dateTime.toLocalTime();
-        // TODO: upadte this and the above method to use the new branch object
-        return shiftService.isAssignedRoleByDateTimeBranch(date, time,"Warehouseman", address, areaCode);
+        try {
+            LocalDate date = dateTime.toLocalDate();
+            LocalTime time = dateTime.toLocalTime();
+            return shiftService.isAssignedRoleByDateTimeBranch(date, time,"Warehouseman", address, areaCode);
+        } catch (Exception e) {
+            throw new ShiftServiceException("Error checking if warehouseman is on shift at the specified time: " + e.getMessage());
+        }
     }
 
     /**
@@ -73,7 +91,11 @@ public class EmployeeIntegrationService {
      * @return A string containing details of all drivers.
      */
     public String[] getAllDrivers() { // NOT TESTED and NOT READY FOR USE!
-        return employeeService.getAllDrivers();
+        try {
+            return employeeService.getAllDrivers();
+        } catch (Exception e) {
+            throw new ServiceException("Error retrieving all drivers: " + e.getMessage());
+        }
     }
 
     /**
@@ -84,11 +106,19 @@ public class EmployeeIntegrationService {
      * @return true if the employee is authorized to perform the action, false otherwise.
      */
     public boolean isEmployeeAuthorised(long doneBy, String permission) {
-        return employeeService.isEmployeeAuthorised(doneBy, permission);
+        try {
+            return employeeService.isEmployeeAuthorised(doneBy, permission);
+        } catch (Exception e) {
+            throw new AuthorizationException("Error checking employee authorization: " + e.getMessage());
+        }
     }
 
     public boolean isBranch(String address, int areaCode) {
-        return employeeService.isBranch(address, areaCode);
+        try {
+            return employeeService.isBranch(address, areaCode);
+        } catch (Exception e) {
+            throw new ServiceException("Error checking if address is a branch: " + e.getMessage());
+        }
     }
 
 }
