@@ -70,12 +70,6 @@ public class AssignmentCLI {
         List<String> menuOptions = new ArrayList<>();
         int optionNumber = 1;
 
-//        if (hasPermission("ASSIGN_EMPLOYEE")) {
-//            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Assign Employees to a Shift from Upcoming Week");
-//            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Assign Employees to a Shift by Specific Date");
-//            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Assign Employees from Previous Weeks");
-//            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Back to Main Menu");
-//        }
         if (hasPermission("ASSIGN_EMPLOYEE")) {
             menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Assign Employees to a Shift");
             menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Remove Employee from Shift");
@@ -96,37 +90,6 @@ public class AssignmentCLI {
         CliUtil.printEmptyLine();
         CliUtil.printPrompt("Enter your choice: ");
     }
-
-//    /**
-//     * Processes the user's menu choice
-//     * @return true to continue in the menu, false to return to main menu
-//     */
-//    private boolean processMenuChoice() {
-//        CliUtil.printEmptyLine();
-//        String choice = scanner.nextLine();
-//        try {
-//            int choiceNum = Integer.parseInt(choice);
-//            switch (choiceNum){
-//                case 1 -> assignEmployeeToShift();
-//                case 2 -> removeEmployeeFromShift();
-//                case 3 -> {
-//                    printSuccess("Returning to Main Menu...");
-//                    return false;
-//                }
-//            }
-////                switch (choiceNum) {
-////                    case 1 -> assignFromUpcomingWeek();
-////                    case 2 -> assignBySpecificDate();
-////                    case 3 -> assignFromPreviousWeeks();
-////                    case 4 -> stayInMenu = false;
-////                    default -> printError("Invalid choice. Please enter a number between 1 and 4.");
-////                }
-//        } catch (NumberFormatException e) {
-//            printError("Please enter a valid number.");
-//            return true;
-//        }
-//
-//    }
 
     private boolean processMenuChoice(String choice) {
         CliUtil.printEmptyLine();
@@ -173,7 +136,7 @@ public class AssignmentCLI {
     private String formatEmployeeDisplay(long employeeId) {
         try {
             EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(employeeId);
-            String branch = employeeService.getEmployeeBranchName(employee.getBranchId()) != null ? " [" + employeeService.getEmployeeBranchName(employee.getBranchId()) + "]" : "";
+            String branch = employeeService.getEmployeeBranchName(employeeId);
             return employee.getFullName() + " (#" + employeeId + ")" + branch;
         } catch (ServiceException e) {
             // If we can't get the employee name, just return the ID
@@ -191,8 +154,8 @@ public class AssignmentCLI {
     private String formatUnassignedEmployeeDisplay(long employeeId) {
         try {
             EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(employeeId);
-            String branch = employeeService.getEmployeeBranchName(employee.getBranchId()) != null ? " [" + employeeService.getEmployeeBranchName(employee.getBranchId()) + "]" : "";
-            return employee.getFullName() + " (#" + employeeId + ")" + branch + " {" + employee.getRoles() + "}" + CliUtil.RESET;
+            String branch = employeeService.getEmployeeBranchName(employeeId);
+            return employee.getFullName() + " (#" + employeeId + ")" + branch + employee.getRoles().toString() + CliUtil.RESET;
 
         } catch (ServiceException e) {
             // If we can't get the employee name, just return the ID

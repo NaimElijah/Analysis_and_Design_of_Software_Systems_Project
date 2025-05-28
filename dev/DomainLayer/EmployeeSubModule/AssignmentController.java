@@ -1,5 +1,7 @@
 package DomainLayer.EmployeeSubModule;
 
+import DTOs.ShiftDTO;
+import DomainLayer.EmployeeSubModule.Repository.interfaces.ShiftReposetory;
 import DomainLayer.exception.UnauthorizedPermissionException;
 
 import java.time.LocalDate;
@@ -9,10 +11,12 @@ import java.util.*;
 public class AssignmentController {
     private final EmployeeController employeeController;
     private final ShiftController shiftController;
+    private final ShiftReposetory shiftReposetory;
 
-    public AssignmentController(EmployeeController employeeController, ShiftController shiftController) {
+    public AssignmentController(EmployeeController employeeController, ShiftController shiftController, ShiftReposetory shiftReposetory) {
         this.employeeController = employeeController;
         this.shiftController = shiftController;
+        this.shiftReposetory = shiftReposetory;
     }
     /**
      * Assigns an employee to a specified role within a designated shift.
@@ -53,9 +57,12 @@ public class AssignmentController {
             shift.setAssignedShiftManager(true);
         }
         employeesInRole.add(employeeId);
-        assignedEmployees.put(role, employeesInRole);
+        boolean assigned = assignedEmployees.put(role, employeesInRole) != null;
         shift.setAssignedEmployees(assignedEmployees);
-        return true;
+        if (assigned) {
+            return shiftReposetory.update(convertShiftToDTO(shift));
+        }
+        return false;
     }
 
     /**
@@ -85,9 +92,12 @@ public class AssignmentController {
         Map <String, Set<Long>> assignedEmployees = shift.getAssignedEmployees();
         Set<Long> employeesInRole = assignedEmployees.get(role);
         employeesInRole.remove(employeeId);
-        assignedEmployees.put(role, employeesInRole);
+        boolean removes = assignedEmployees.put(role, employeesInRole) != null;
         shift.setAssignedEmployees(assignedEmployees);
-        return true;
+        if (removes) {
+            return shiftReposetory.update(convertShiftToDTO(shift));
+        }
+        return false;
     }
 
     /**
@@ -197,6 +207,24 @@ public class AssignmentController {
         long branch = shiftController.getBranchIdByAddress(address, areaCode);
         Shift shift = shiftController.getShiftbyDateTimeAndBranch(date, hour, branch);
         return shift.getAssignedEmployees().get(role) != null;
+    }
+
+    private ShiftDTO convertShiftToDTO(Shift shift) {
+        return new ShiftDTO(
+                shift.getId(),
+                shift.getShiftType(),
+                shift.getShiftDate(),
+                shift.getRolesRequired(),
+                shift.getAssignedEmployees(),
+                shift.getAvailableEmployees(),
+                shift.isAssignedShiftManager(),
+                shift.isOpen(),
+                shift.getStartHour(),
+                shift.getEndHour(),
+                shift.getCreateDate(),
+                shift.getUpdateDate(),
+                shift.getBranchId()
+        );
     }
 
 

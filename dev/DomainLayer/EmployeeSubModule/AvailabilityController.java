@@ -1,5 +1,7 @@
 package DomainLayer.EmployeeSubModule;
 
+import DTOs.ShiftDTO;
+import DomainLayer.EmployeeSubModule.Repository.interfaces.ShiftReposetory;
 import DomainLayer.exception.UnauthorizedPermissionException;
 import Util.Week;
 import Util.config;
@@ -15,10 +17,12 @@ import java.util.HashSet;
 public class AvailabilityController {
     private final EmployeeController employeeController;
     private final ShiftController shiftController;
+    private final ShiftReposetory shiftReposetory;
     
-    public AvailabilityController(EmployeeController employeeController, ShiftController shiftController) {
+    public AvailabilityController(EmployeeController employeeController, ShiftController shiftController, ShiftReposetory shiftReposetory) {
         this.employeeController = employeeController;
         this.shiftController = shiftController;
+        this.shiftReposetory = shiftReposetory;
     }
 
     public boolean markAvailable(long shiftId, long doneBy) {
@@ -40,9 +44,12 @@ public class AvailabilityController {
         if (availableEmployees == null) {
             availableEmployees = new HashSet<>();
         }
-        availableEmployees.add(doneBy);
+        boolean added = availableEmployees.add(doneBy);
         shift.setAvailableEmployees(availableEmployees);
-        return true;
+        if (!added) {
+            return shiftReposetory.update(convertShiftToDTO(shift));
+        }
+        return false;
     }
 
     public boolean removeAvailability(long shiftId, long doneBy) {
@@ -61,9 +68,12 @@ public class AvailabilityController {
         if (!availableEmployees.contains(doneBy)) {
             throw new IllegalArgumentException("Employee not found in available employees");
         }
-        availableEmployees.remove(doneBy);
+        boolean removed = availableEmployees.remove(doneBy);
         shift.setAvailableEmployees(availableEmployees);
-        return true;
+        if (removed) {
+            return shiftReposetory.update(convertShiftToDTO(shift));
+        }
+        return false;
     }
 
     public boolean isAvailable(long shiftId, long doneBy) {
@@ -103,6 +113,24 @@ public class AvailabilityController {
         return (day == config.BLOCK_AVAILABILITY_START_DAY && time.isAfter(config.BLOCK_AVAILABILITY_START_HOUR)) // TODO: add config for day as well
                 || day == DayOfWeek.FRIDAY
                 || day == DayOfWeek.SATURDAY;
+    }
+
+    private ShiftDTO convertShiftToDTO(Shift shift) {
+        return new ShiftDTO(
+                shift.getId(),
+                shift.getShiftType(),
+                shift.getShiftDate(),
+                shift.getRolesRequired(),
+                shift.getAssignedEmployees(),
+                shift.getAvailableEmployees(),
+                shift.isAssignedShiftManager(),
+                shift.isOpen(),
+                shift.getStartHour(),
+                shift.getEndHour(),
+                shift.getCreateDate(),
+                shift.getUpdateDate(),
+                shift.getBranchId()
+        );
     }
 
 }
