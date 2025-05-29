@@ -13,6 +13,7 @@ import ServiceLayer.exception.AvailabilityServiceException;
 import ServiceLayer.exception.ShiftServiceException;
 import ServiceLayer.exception.ValidationException;
 import Util.Week;
+import DomainLayer.exception.UnauthorizedPermissionException;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -372,6 +373,21 @@ public class ShiftService {
         }
     }
 
+    /**
+     * Get all shifts for a specific branch
+     * @param doneBy employee who is requesting the shifts
+     * @param branchId branch of the shifts
+     * @return all shifts for the branch
+     */
+    public String getAllShiftsByBranch(long doneBy, long branchId) {
+        try {
+            String shifts = shiftController.getAllShiftsByBranch(doneBy, branchId);
+            return shifts;
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public String getShiftsByEmployee(long doneBy, long employeeID) {
         try {
             return shiftController.getShiftsByEmployee(doneBy, employeeID);
@@ -383,6 +399,25 @@ public class ShiftService {
     public String getShift(long doneBy, LocalDate date, ShiftType shiftType) {
         try {
             String shift = shiftController.getshift(doneBy, date, shiftType);
+            return shift;
+        } catch (ShiftNotFoundException e) {
+            throw new ShiftNotFoundException(e.getMessage());
+        }
+    }
+
+    /**
+     * Gets a shift by date, type, and branch
+     * 
+     * @param doneBy the employee making the query
+     * @param date the date of the shift
+     * @param shiftType the type of the shift
+     * @param branchId the ID of the branch
+     * @return the shift as a serialized string
+     * @throws ShiftNotFoundException if no shift is found
+     */
+    public String getShiftByBranch(long doneBy, LocalDate date, ShiftType shiftType, long branchId) {
+        try {
+            String shift = shiftController.getshiftByBranch(doneBy, date, shiftType, branchId);
             return shift;
         } catch (ShiftNotFoundException e) {
             throw new ShiftNotFoundException(e.getMessage());
@@ -573,6 +608,25 @@ public class ShiftService {
     public List<Set<Long>> getUnassignedManager(long doneBy, long shiftId){
         try {
             return assignmentController.getUnassignedEmployees(doneBy, shiftId);
+        }
+        catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Gets all unassigned employees for a shift, filtered by branch
+     * 
+     * @param doneBy The ID of the user performing the action
+     * @param shiftId The ID of the shift
+     * @param branchId The ID of the branch to filter by
+     * @return A list containing two sets: 
+     *         1. Employees not assigned to the shift and not available (filtered by branch)
+     *         2. Employees not assigned to the shift and available (filtered by branch)
+     */
+    public List<Set<Long>> getUnassignedManagerByBranch(long doneBy, long shiftId, long branchId){
+        try {
+            return assignmentController.getUnassignedEmployeesByBranch(doneBy, shiftId, branchId);
         }
         catch (RuntimeException e) {
             throw new RuntimeException(e);

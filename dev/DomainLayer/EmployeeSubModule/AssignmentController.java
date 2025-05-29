@@ -1,5 +1,6 @@
 package DomainLayer.EmployeeSubModule;
 
+import DTOs.EmployeeDTO;
 import DTOs.ShiftDTO;
 import DomainLayer.EmployeeSubModule.Repository.interfaces.ShiftReposetory;
 import DomainLayer.exception.UnauthorizedPermissionException;
@@ -158,6 +159,51 @@ public class AssignmentController {
         availableEmployeesAndUnassigned.retainAll(employees);
         employees.removeAll(availableEmployees);
 
+
+        unAssignedEmployees.add(employees);
+        unAssignedEmployees.add(availableEmployeesAndUnassigned);
+
+        return unAssignedEmployees;
+    }
+
+    /**
+     * Gets all unassigned employees for a shift, filtered by branch
+     * 
+     * @param doneBy The ID of the user performing the action
+     * @param shiftId The ID of the shift
+     * @param branchId The ID of the branch to filter by
+     * @return A list containing two sets: 
+     *         1. Employees not assigned to the shift and not available (filtered by branch)
+     *         2. Employees not assigned to the shift and available (filtered by branch)
+     */
+    public List<Set<Long>> getUnassignedEmployeesByBranch(long doneBy, long shiftId, long branchId){
+        String PERMISSION = "ASSIGN_EMPLOYEE";
+        if(!employeeController.isEmployeeAuthorised(doneBy,PERMISSION)){
+            throw new UnauthorizedPermissionException("User does not have permission to assign employees");
+        }
+
+        Shift shift = shiftController.getShiftByIdAsShift(doneBy, shiftId);
+        List<Set<Long>> unAssignedEmployees = new ArrayList<>();
+
+        // Get employees for the specified branch
+        List<EmployeeDTO> branchEmployees = employeeController.getEmployeesByBranch(branchId);
+        Set<Long> employees = new HashSet<>();
+        for (EmployeeDTO employee : branchEmployees) {
+            employees.add(employee.getIsraeliId());
+        }
+
+        // Remove employees already assigned to the shift
+        employees.removeIf(employee -> isAssigned(doneBy, shiftId, employee));
+
+        // Get available employees for the shift
+        Set<Long> availableEmployees = shift.getAvailableEmployees();
+
+        // Filter available employees by branch
+        Set<Long> availableEmployeesAndUnassigned = new HashSet<>(availableEmployees);
+        availableEmployeesAndUnassigned.retainAll(employees);
+
+        // Remove available employees from the unavailable set
+        employees.removeAll(availableEmployees);
 
         unAssignedEmployees.add(employees);
         unAssignedEmployees.add(availableEmployeesAndUnassigned);

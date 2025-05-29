@@ -635,4 +635,20 @@ public class EmployeeController {
         // Convert the set of roles to a single string, separated by commas
         return String.join(", ", roles);
     }
+
+    /**
+     * Gets all employees assigned to a specific branch.
+     *
+     * @param branchId The ID of the branch
+     * @return A list of employee DTOs assigned to the branch
+     */
+    public List<EmployeeDTO> getEmployeesByBranch(long branchId) {
+        // Check if the branch exists
+        if (!isBranchExists(branchId)) {
+            throw new InvalidInputException("Branch with ID " + branchId + " not found");
+        }
+
+        // Get all employees assigned to the branch
+        return employeeRepository.getByBranch(branchId);
+    }
 }

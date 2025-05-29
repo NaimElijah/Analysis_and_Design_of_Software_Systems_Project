@@ -18,7 +18,7 @@ public class AvailabilityController {
     private final EmployeeController employeeController;
     private final ShiftController shiftController;
     private final ShiftReposetory shiftReposetory;
-    
+
     public AvailabilityController(EmployeeController employeeController, ShiftController shiftController, ShiftReposetory shiftReposetory) {
         this.employeeController = employeeController;
         this.shiftController = shiftController;
@@ -46,7 +46,7 @@ public class AvailabilityController {
         }
         boolean added = availableEmployees.add(doneBy);
         shift.setAvailableEmployees(availableEmployees);
-        if (!added) {
+        if (added) {
             return shiftReposetory.update(convertShiftToDTO(shift));
         }
         return false;
