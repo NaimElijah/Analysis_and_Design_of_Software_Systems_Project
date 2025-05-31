@@ -6,41 +6,41 @@ import ServiceLayer.TransportServices.TransportService;
 import java.util.Scanner;
 
 public class TranDriverCLI {
-    private MainTranSysCLI main;
     private TransportService tran_s;
     private Scanner scanner;
 
-    public TranDriverCLI(MainTranSysCLI m, TransportService trs, Scanner sc) {
-        this.main = m;
+    public TranDriverCLI(TransportService trs, Scanner sc) {
         this.tran_s = trs;
         this.scanner = sc;
     }
 
 
     void driverMainMenu(long loggedID){
-        System.out.println("\n           --------    Driver Menu    -------");
-        System.out.println("(1)  View All Transports Related to me (all Statuses)");
-        System.out.println("(2)  Edit an Item's Condition in a Transport that I'm a Driver in");
-        System.out.println("(3)  Disconnect");
-        System.out.println();
-        System.out.println("   Select Action:\n");
-
-        String choice = scanner.nextLine();
-        if(choice.equals("1")){
-            System.out.println("All Transports Related to me: ");
-            System.out.println(this.tran_s.showTransportsOfDriver(loggedID));
+        while(true){
+            System.out.println("\n           --------    Driver Menu    -------");
+            System.out.println("(1)  View All Transports Related to me (all Statuses)");
+            System.out.println("(2)  Edit an Item's Condition in a Transport that I'm a Driver in");
+            System.out.println("(3)  Go back to Welcoming Transport System Screen");
             System.out.println();
+            System.out.println("   Select Action:\n");
 
-        }else if(choice.equals("2")){
-            editItemsConditionInMyTransport(loggedID);
+            String choice = scanner.nextLine();
+            if(choice.equals("1")){
+                System.out.println("All Transports Related to me: ");
+                System.out.println(this.tran_s.showTransportsOfDriver(loggedID));
+                System.out.println();
 
-        } else if (choice.equals("3")) {
-            System.out.println("\nGoing Back to Main Program Authentication Screen.\n");
-            this.main.idAuthAccess();
-        } else {
-            System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
+            }else if(choice.equals("2")){
+                editItemsConditionInMyTransport(loggedID);
+
+            } else if (choice.equals("3")) {
+                System.out.println("\nGoing Back to Welcoming Transport System Screen.\n");
+                return;
+            } else {
+                System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
+            }
+            System.out.println();
         }
-        driverMainMenu(loggedID);
     }
 
 

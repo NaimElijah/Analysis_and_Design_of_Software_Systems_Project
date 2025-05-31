@@ -25,7 +25,12 @@ public class StartUpStateService {
     public String loadData() {
         try {
 
-            //TODO:  use the other service's loadDBData functions
+            //  Loading data from DB
+            this.siteSer.loadDBData();
+            this.truckSer.loadDBData();
+            this.tranSer.loadDBData();
+
+
 //            // shipping area:
 //            this.siteSer.addShippingArea(222, 1, "Central District");
 //            this.siteSer.addShippingArea(222, 2, "South District");

@@ -139,7 +139,7 @@ public final class Database {
                     "addressStr TEXT NOT NULL, " +
                     "contName TEXT NOT NULL, " +
                     "contNumber BIGINT NOT NULL, " +
-                    "PRIMARY KEY (areaNum, addressStr) ON UPDATE CASCADE, " +
+                    "PRIMARY KEY (areaNum, addressStr), " +
                     "FOREIGN KEY (areaNum) REFERENCES ShippingAreas(areaNumber) ON UPDATE CASCADE" +
                     ")";
 
@@ -150,7 +150,7 @@ public final class Database {
                     "netWeight DOUBLE NOT NULL, " +
                     "maxCarryWeight DOUBLE NOT NULL, " +
                     "validLicense TEXT NOT NULL, " +
-                    "inTransportID BIGINT NOT NULL, " +
+                    "inTransportID BIGINT NOT NULL" +
                     ")";
 
     private static final String TransportsTable =
@@ -172,10 +172,10 @@ public final class Database {
 
                     ///  maybe the enums should have a VARCHAR column, instead of String column.
 
-    private static final String Counters =
+    private static final String CountersTable =
             "CREATE TABLE IF NOT EXISTS Counters (" +
                     "CounterName TEXT PRIMARY KEY, " +
-                    "CounterValue BIGINT NOT NULL, " +
+                    "CounterValue BIGINT NOT NULL" +
                     ")";
 
 
@@ -183,7 +183,7 @@ public final class Database {
             "CREATE TABLE IF NOT EXISTS DriverIdToInTransportID (" +
                     "transportDriverId BIGINT PRIMARY KEY, " +
                     "transportId BIGINT NOT NULL, " +
-                    "FOREIGN KEY (transportDriverId) REFERENCES Employees(israeliId) ON UPDATE CASCADE, " +
+                    "FOREIGN KEY (transportDriverId) REFERENCES Employees(israeliId) ON UPDATE CASCADE" +
                     ")";
 
 
@@ -216,7 +216,7 @@ public final class Database {
                     "weight DOUBLE NOT NULL, " +
                     "condition BOOLEAN NOT NULL, " +
                     "amount BIGINT NOT NULL, " +
-                    "PRIMARY KEY (itemInItemsDocId, name, weight, condition) ON UPDATE CASCADE, " +
+                    "PRIMARY KEY (itemInItemsDocId, name, weight, condition), " +
                     "FOREIGN KEY (itemInItemsDocId) REFERENCES ItemsDocs(itemsDocNum) ON UPDATE CASCADE" +
                     ")";
 
@@ -259,7 +259,7 @@ public final class Database {
                 st.executeUpdate(ItemsQTable);
                 st.executeUpdate(TransportsProblemsTable);
                 st.executeUpdate(DriverIdToInTransportIDTable);
-                st.executeUpdate(Counters);
+                st.executeUpdate(CountersTable);
 
                 // ***ADD YOUR TABLES HERE***
 

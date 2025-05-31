@@ -1,6 +1,7 @@
 //package DomainLayerTests;
 //
 //import DTOs.*;
+//import DTOs.TransportModuleDTOs.*;
 //import DomainLayer.Driver;
 //import DomainLayer.EmpSubModule.EmployeeFacade;
 //import DomainLayer.TransportDomain.SiteSubModule.Address;
@@ -25,13 +26,14 @@
 //import javax.naming.CommunicationException;
 //import java.io.FileNotFoundException;
 //import java.nio.file.FileAlreadyExistsException;
+//import java.sql.SQLException;
 //import java.util.ArrayList;
 //
 //import static org.junit.jupiter.api.Assertions.*;
 //
 //class TransportControllerTest {
 //    private TransportController transportController;
-//    private EmployeeFacade employeeFacade;
+////    private EmployeeFacade employeeFacade;
 //    private SiteFacade siteFacade;
 //    private TruckFacade truckFacade;
 //
@@ -44,18 +46,18 @@
 //    private Truck truck1;
 //    private Truck truck2;
 //    private Truck truck3;
-//    private Driver driver1;
-//    private Driver driver2;
-//    private Driver driver3;
-//    private Employee admin;
-//    private Employee manager1;
-//    private Employee manager2;
+////    private Driver driver1;
+////    private Driver driver2;
+////    private Driver driver3;
+////    private Employee admin;
+////    private Employee manager1;
+////    private Employee manager2;
 //
 //    private ObjectMapper objectMapper;
 //
 //    @BeforeEach
-//    void setUp() throws JsonProcessingException, ClassNotFoundException, IllegalAccessException {
-//        employeeFacade = new EmployeeFacade();
+//    void setUp() throws JsonProcessingException, ClassNotFoundException, IllegalAccessException, SQLException {
+////        employeeFacade = new EmployeeFacade();
 //        siteFacade = new SiteFacade();
 //        truckFacade = new TruckFacade();
 //        transportController = new TransportController(employeeFacade, siteFacade, truckFacade);
@@ -91,14 +93,14 @@
 //        truck3 = new Truck(3030, "Yamaha Lite", 200, 20, enumDriLicense.A);
 //        truckFacade.addTruck(3030, "Yamaha Lite", 200, 20, "A");
 //
-//        ///  Admin, Managers, Drivers:
-//        employeeFacade.initializeAdmin(111, "Cody", "Weber");
-//        admin = new Employee(111, "Cody", "Weber", enumPermissionRank.Admin);
-//
-//        employeeFacade.addManager(222, "Naim", "Elijah");
-//        manager1 = new Employee(222, "Naim", "Elijah", enumPermissionRank.Manager);
-//        employeeFacade.addManager(333, "Bar", "Miyara");
-//        manager2 = new Employee(333, "Bar", "Miyara", enumPermissionRank.Manager);
+////        ///  Admin, Managers, Drivers:
+////        employeeFacade.initializeAdmin(111, "Cody", "Weber");
+////        admin = new Employee(111, "Cody", "Weber", enumPermissionRank.Admin);
+////
+////        employeeFacade.addManager(222, "Naim", "Elijah");
+////        manager1 = new Employee(222, "Naim", "Elijah", enumPermissionRank.Manager);
+////        employeeFacade.addManager(333, "Bar", "Miyara");
+////        manager2 = new Employee(333, "Bar", "Miyara", enumPermissionRank.Manager);
 //
 //        ArrayList<String> tomsLicenses = new ArrayList<>();
 //        tomsLicenses.add("A");
@@ -108,8 +110,8 @@
 //        tomsLicensesEnum.add(enumDriLicense.A);
 //        tomsLicensesEnum.add(enumDriLicense.C);
 //        tomsLicensesEnum.add(enumDriLicense.E);
-//        driver1 = new Driver(444, "Tom", "Hat", enumPermissionRank.Driver, tomsLicensesEnum);
-//        employeeFacade.addDriver(444, "Tom", "Hat", tomsLicenses);
+////        driver1 = new Driver(444, "Tom", "Hat", enumPermissionRank.Driver, tomsLicensesEnum);
+////        employeeFacade.addDriver(444, "Tom", "Hat", tomsLicenses);
 //
 //        ArrayList<String> xaviersLicenses = new ArrayList<>();
 //        xaviersLicenses.add("B");
@@ -119,8 +121,8 @@
 //        xaviersLicensesEnum.add(enumDriLicense.B);
 //        xaviersLicensesEnum.add(enumDriLicense.D);
 //        xaviersLicensesEnum.add(enumDriLicense.E);
-//        driver2 = new Driver(555, "Xavier", "Hernandez", enumPermissionRank.Driver, xaviersLicensesEnum);
-//        employeeFacade.addDriver(555, "Xavier", "Hernandez", xaviersLicenses);
+////        driver2 = new Driver(555, "Xavier", "Hernandez", enumPermissionRank.Driver, xaviersLicensesEnum);
+////        employeeFacade.addDriver(555, "Xavier", "Hernandez", xaviersLicenses);
 //
 //        ArrayList<String> maxLicenses = new ArrayList<>();
 //        maxLicenses.add("A");
@@ -134,27 +136,27 @@
 //        maxLicensesEnum.add(enumDriLicense.C);
 //        maxLicensesEnum.add(enumDriLicense.D);
 //        maxLicensesEnum.add(enumDriLicense.E);
-//        driver3 = new Driver(666, "Max", "Turner", enumPermissionRank.Driver, maxLicensesEnum);
-//        employeeFacade.addDriver(666, "Max", "Turner", maxLicenses);
+////        driver3 = new Driver(666, "Max", "Turner", enumPermissionRank.Driver, maxLicensesEnum);
+////        employeeFacade.addDriver(666, "Max", "Turner", maxLicenses);
 //
 //        /// Transports
 //        ArrayList<ItemsDocDTO> itemsDocDTOs = new ArrayList<>();
 //
-//        ArrayList<ItemQuantityDTO> itemQuantityDTOs1 = new ArrayList<>();
-//        itemQuantityDTOs1.add(new ItemQuantityDTO(new ItemDTO("Water", 0.5, true), 5));
-//        itemQuantityDTOs1.add(new ItemQuantityDTO(new ItemDTO("Rice", 1, true), 10));
-//        ItemsDocDTO itemsDocDTO1 = new ItemsDocDTO(1, new SiteDTO(1,"Ramla"), new SiteDTO(1, "Rishonim"), itemQuantityDTOs1);
-//
-//        ArrayList<ItemQuantityDTO> itemQuantityDTOs2 = new ArrayList<>();
-//        itemQuantityDTOs2.add(new ItemQuantityDTO(new ItemDTO("Shampoo", 0.75, true), 10));
-//        itemQuantityDTOs2.add(new ItemQuantityDTO(new ItemDTO("Toothpaste", 0.2, true), 15));
-//        ItemsDocDTO itemsDocDTO2 = new ItemsDocDTO(2, new SiteDTO(1,"Ramla"), new SiteDTO(2, "Dimona"), itemQuantityDTOs2);
-//
-//        itemsDocDTOs.add(itemsDocDTO1);
-//        itemsDocDTOs.add(itemsDocDTO2);
-//
-//        TransportDTO transportDTO = new TransportDTO(-99, 1010, 555, new SiteDTO(1,"Ramla"), itemsDocDTOs);
-//        transportController.createTransport(objectMapper.writeValueAsString(transportDTO), -100);
+////        ArrayList<ItemQuantityDTO> itemQuantityDTOs1 = new ArrayList<>();
+////        itemQuantityDTOs1.add(new ItemQuantityDTO(new ItemDTO("Water", 0.5, true), 5));
+////        itemQuantityDTOs1.add(new ItemQuantityDTO(new ItemDTO("Rice", 1, true), 10));
+////        ItemsDocDTO itemsDocDTO1 = new ItemsDocDTO(1, new SiteDTO(1,"Ramla"), new SiteDTO(1, "Rishonim"), itemQuantityDTOs1);
+////
+////        ArrayList<ItemQuantityDTO> itemQuantityDTOs2 = new ArrayList<>();
+////        itemQuantityDTOs2.add(new ItemQuantityDTO(new ItemDTO("Shampoo", 0.75, true), 10));
+////        itemQuantityDTOs2.add(new ItemQuantityDTO(new ItemDTO("Toothpaste", 0.2, true), 15));
+////        ItemsDocDTO itemsDocDTO2 = new ItemsDocDTO(2, new SiteDTO(1,"Ramla"), new SiteDTO(2, "Dimona"), itemQuantityDTOs2);
+////
+////        itemsDocDTOs.add(itemsDocDTO1);
+////        itemsDocDTOs.add(itemsDocDTO2);
+////
+////        TransportDTO transportDTO = new TransportDTO(-99, 1010, 555, new SiteDTO(1,"Ramla"), itemsDocDTOs);
+////        transportController.createTransport(objectMapper.writeValueAsString(transportDTO), -100);
 //
 //    }
 //
@@ -165,12 +167,12 @@
 //
 //    @Test
 //    void testIsTruckActive_ActiveTruck() {
-//        assertTrue(transportController.isTruckActive(truckFacade.getTrucksWareHouse().get(1010)));
+//        assertTrue(transportController.isTruckActive(truckFacade.getTruckRepo().getTrucksWareHouse().get(1010).getTruck_num()));
 //    }
 //
 //    @Test
 //    void testIsTruckActive_InactiveTruck() {
-//        assertFalse(transportController.isTruckActive(truckFacade.getTrucksWareHouse().get(3030)));
+//        assertFalse(transportController.isTruckActive(truckFacade.getTruckRepo().getTrucksWareHouse().get(3030).getTruck_num()));
 //    }
 //
 //    @Test

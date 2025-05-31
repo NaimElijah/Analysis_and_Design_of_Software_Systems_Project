@@ -82,7 +82,6 @@ public class SystemFactory {
      * @return TransportModuleComponents containing all initialized components.
      */
     public TransportModuleComponents createTransportModule(EmployeeModuleComponents employeeComponents) throws SQLException {
-
         // Initialize facades
         TruckFacade truckFacade = new TruckFacade();   // repository initialized inside here
         SiteFacade siteFacade = new SiteFacade();   // repository initialized inside here
@@ -128,33 +127,17 @@ public class SystemFactory {
     }
 
     /**
-     * Creates a TranManCLI for the Transport Module.
-     * @param components The TransportModuleComponents to use.
-     * @param employeeComponents The EmployeeModuleComponents to use.
+     * Creates a MainTranSysCLI for the Transport Module.
+     * @param ts The TruckService to use.
+     * @param trs The TransportService to use.
+     * @param sis The SiteService to use.
+     * @param starUpStService The StartupService to use.
+     * @param es The EmployeeIntegrationService to use.
      * @return A TranManCLI instance.
      */
-    public TranManCLI createTransportCLI(TransportModuleComponents components, EmployeeModuleComponents employeeComponents) {
-        // Create MainTranSysCLI
-        MainTranSysCLI mainTranSysCLI = new MainTranSysCLI(
-            components.getTruckService(),
-            components.getTransportService(),
-            components.getSiteService(),
-            components.getEmployeeIntegrationService(),
-            components.getStartUpService()
-        );
-
-        // Create Scanner
-        Scanner scanner = new Scanner(System.in);
-
-        return new TranManCLI(
-            mainTranSysCLI,
-            components.getTruckService(),
-            components.getTransportService(),
-            components.getSiteService(),
-            employeeComponents.getEmployeeService(),
-            components.getEmployeeIntegrationService(),
-            scanner
-        );
+    public MainTranSysCLI createTransportCLI(TruckService ts, TransportService trs, SiteService sis, StartUpStateService starUpStService, EmployeeIntegrationService es) {
+        // Create & return MainTranSysCLI
+        return new MainTranSysCLI(ts, trs, sis, starUpStService, es);
     }
 
     /**

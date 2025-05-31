@@ -35,8 +35,20 @@ public class TransportService {
 //        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);   //  if needed for LocalDateTime serialization
     }
 
+    public String loadDBData() throws SQLException {
+        try {
+            tran_f.loadDBData();
+        } catch (SQLException e) {
+            return "SQL Error";
+        } catch (Exception e) {
+            return "Error";
+        }
+        return "Success";
+    }
+
     /// NOTE: This function is called only when a Transport has passed the Transport checks and can fully be registered.
     public String createTransport(long loggedID, String transportDTO, int queuedIndexIfWasQueued){
+        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "CREATE_TRANSPORT")){
             return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
@@ -54,6 +66,7 @@ public class TransportService {
     }
 
     public String deleteTransport(long loggedID, int transportID){
+        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "DELETE_TRANSPORT")){
             return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
@@ -78,6 +91,7 @@ public class TransportService {
 
 
     public String setTransportStatus(long loggedID, int TranDocID, String menu_status_option){
+        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
             return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
@@ -126,6 +140,7 @@ public class TransportService {
 
 
     public String setTransportTruck(long loggedID, int TranDocID, int truckNum){
+        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
             return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
@@ -158,10 +173,11 @@ public class TransportService {
 
 
     public String setTransportDriver(long loggedID, int TranDocID, int DriverID){
+        if (TranDocID < 0 || DriverID < 0){ return "Transport Document number, Driver ID values cannot be negative."; }
+        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
             return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
-        if (TranDocID < 0 || DriverID < 0){ return "Transport Document number, Driver ID values cannot be negative."; }
         try {
             if (!this.tran_f.doesTranIDExist(TranDocID)){ throw new FileNotFoundException("The Transport ID you have entered doesn't exist."); }
 
@@ -275,7 +291,7 @@ public class TransportService {
 
 
 
-
+    //TODO:   if any site isn't a branch, it doesn't need a warehouse men, it's not our company, and it's valid    <<<----------------------
     private boolean areWareHouseMenTimeAndPlacesValid(TransportDTO transportDto) {
         if (!this.employeeIntegrationService.isWarehousemanOnShiftAt(transportDto.getDeparture_dt(), transportDto.getSrc_site().getSiteAddressString(), transportDto.getSrc_site().getSiteAreaNum())){
             return false;   //  because there won't be any warehouseman to load the truck at the src site
@@ -390,10 +406,11 @@ public class TransportService {
 
 
     public String addDestSite(long loggedID, int tran_ID, int itemsDoc_num, int destSiteArea, String destSiteAddress, String contName, long contNum) {
+        if (tran_ID < 0 || itemsDoc_num < 0 || destSiteArea < 0 || contNum < 0){ return "The info numbers you have entered cannot be negative"; }
+        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
             return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
-        if (tran_ID < 0 || itemsDoc_num < 0 || destSiteArea < 0 || contNum < 0){ return "The info numbers you have entered cannot be negative"; }
         if (destSiteAddress.isEmpty() || destSiteAddress.isBlank() || contName.isEmpty() || contName.isBlank()){ return "The info strings you've entered cannot be empty"; }
         if (!tran_f.doesTranIDExist(tran_ID)){ return "The Transport ID you've entered doesn't exist."; }
 
@@ -448,10 +465,11 @@ public class TransportService {
 
 
     public String removeDestSite(long loggedID, int tran_ID, int itemsDoc_num){
+        if (tran_ID < 0 || itemsDoc_num < 0){ return "The info you entered cannot be negative"; }
+        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
             return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
-        if (tran_ID < 0 || itemsDoc_num < 0){ return "The info you entered cannot be negative"; }
         if (!tran_f.doesTranIDExist(tran_ID)){ return "The Transport ID you've entered doesn't exist."; }
         try {
             if (!tran_f.doesItemsDocIDExistInTransport(itemsDoc_num, tran_ID)){ throw new ClassNotFoundException("The Site's Items Document Number is not in that Transport"); }
@@ -525,14 +543,15 @@ public class TransportService {
 
 
     public String setSiteArrivalIndexInTransport(long loggedID, int transportID, int siteArea, String siteAddress, String index){
-        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
-            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
-        }
         int intIndex = Integer.parseInt(index);
         if (intIndex < 0){    //  index should be 1, 2, ....
             return "The Site Index in the arrival order cannot be negative";
         }
         if(transportID < 0 || siteArea < 0){ return "The Transport ID and the Site Area cannot be negative"; }
+        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
+        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
+        }
         if (!tran_f.doesTranIDExist(transportID)){ return "The Transport ID you've entered doesn't exist."; }
         try {
             if (!tran_f.doesAddressExistInTransport(transportID, siteArea, siteAddress)){ throw new ClassNotFoundException("The Site's Items Document Number is not in that Transport"); }
@@ -652,12 +671,12 @@ public class TransportService {
 
 
     public String changeAnItemsDocNum(long loggedID, int oldItemsDocNum, int newItemsDocNum) {
+        if (oldItemsDocNum < 0 || newItemsDocNum < 0) { return "You entered an invalid item number. (cannot be a negative number)"; }
+        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
             return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
-        if (oldItemsDocNum == newItemsDocNum) {
-            return "Changing Process finished because before and after values are the same";
-        }
+        if (oldItemsDocNum == newItemsDocNum) {  return "Changing Process finished because before and after values are the same";  }
         try {
             tran_f.changeAnItemsDocNum(oldItemsDocNum, newItemsDocNum);
         } catch (FileNotFoundException e) {
@@ -686,12 +705,13 @@ public class TransportService {
     }
 
 
-
+    /// this is for when a driver is in the system and wants to edit an item's condition in a transport he is associated in.
     public String checkIfDriverDrivesThisItemsDoc(long loggedID, int itemsDocId) {
+        if (loggedID < 0 || itemsDocId < 0){ return "The IDs you enter cannot be negative"; }
+        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
             return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
-        if (loggedID < 0 || itemsDocId < 0){ return "The IDs you enter cannot be negative"; }
         try {
             boolean isNotDriver = !this.employeeIntegrationService.hasRole(loggedID, "DriverA") && !this.employeeIntegrationService.hasRole(loggedID, "DriverB") && !this.employeeIntegrationService.hasRole(loggedID, "DriverC") && !this.employeeIntegrationService.hasRole(loggedID, "DriverD") && !this.employeeIntegrationService.hasRole(loggedID, "DriverE");
             tran_f.checkIfDriverDrivesThisItemsDoc(loggedID, itemsDocId, isNotDriver);
@@ -717,12 +737,13 @@ public class TransportService {
 
 
     public String addTransportProblem(long loggedID, int TransportID, String menu_Problem_option){
-        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
-            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
-        }
         int intMenuProblemOption = Integer.parseInt(menu_Problem_option);
         if (intMenuProblemOption < 1 || intMenuProblemOption > 6){ return "The Problem option number you have entered is out of existing problem's numbers bounds"; }
         if (TransportID < 0){ return "The Transport ID you've entered is invalid (it's negative)"; }
+        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
+        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
+        }
         try {
             this.tran_f.addTransportProblem(TransportID, intMenuProblemOption);
         } catch (FileNotFoundException e) {
@@ -740,12 +761,13 @@ public class TransportService {
 
 
     public String removeTransportProblem(long loggedID, int TransportID, String menu_Problem_option){
-        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
-            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
-        }
         int intMenuProblemOption = Integer.parseInt(menu_Problem_option);
         if (intMenuProblemOption < 1 || intMenuProblemOption > 6){ return "The Problem option number you have entered is out of existing problem's numbers bounds"; }
         if (TransportID < 0){ return "The Transport ID you've entered is invalid (it's negative)"; }
+        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
+        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
+        }
         try {
             this.tran_f.removeTransportProblem(TransportID, intMenuProblemOption);
         } catch (FileNotFoundException e) {
@@ -791,11 +813,12 @@ public class TransportService {
 
 
     public String addItem(long loggedID, int itemsDocNum, String itemName, double itemWeight, int amount, boolean cond){
+        if (itemName.isEmpty() || itemName.isBlank()){ return "Item's name cannot be empty"; }
+        if (itemsDocNum < 0 || itemWeight < 0 || amount < 0){ return "Item's document number/weight/amount cannot be negative"; }
+        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "ADD_ITEM_TO_TRANSPORT")){
             return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
-        if (itemName.isEmpty() || itemName.isBlank()){ return "Item's name cannot be empty"; }
-        if (itemsDocNum < 0 || itemWeight < 0 || amount < 0){ return "Item's document number/weight/amount cannot be negative"; }
         try {
             this.tran_f.addItem(itemsDocNum, itemName, itemWeight, amount, cond);
         } catch (FileNotFoundException e) {
@@ -813,11 +836,12 @@ public class TransportService {
 
 
     public String removeItem(long loggedID, int itemsDocNum, String itemName, double itemWeight, int amount, boolean cond){
+        if (itemName.isEmpty() || itemName.isBlank()){ return "Item's name cannot be empty"; }
+        if (itemsDocNum < 0 || itemWeight < 0 || amount < 0){ return "Item's document number/weight/amount cannot be negative"; }
+        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "DELETE_ITEM_FROM_TRANSPORT")){
             return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
-        if (itemName.isEmpty() || itemName.isBlank()){ return "Item's name cannot be empty"; }
-        if (itemsDocNum < 0 || itemWeight < 0 || amount < 0){ return "Item's document number/weight/amount cannot be negative"; }
         try {
             this.tran_f.removeItem(itemsDocNum, itemName, itemWeight, amount, cond);
         } catch (FileNotFoundException e) {
@@ -835,11 +859,12 @@ public class TransportService {
 
 
     public String setItemCond(long loggedID, int itemsDocNum, String itemName, double itemWeight, int amount, boolean cond){
+        if (itemName.isEmpty() || itemName.isBlank()){ return "Item's name cannot be empty"; }
+        if (itemsDocNum < 0 || itemWeight < 0 || amount < 0){ return "Item's document number/weight/amount cannot be negative"; }
+        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT_ITEM_CONDITION")){
             return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
-        if (itemName.isEmpty() || itemName.isBlank()){ return "Item's name cannot be empty"; }
-        if (itemsDocNum < 0 || itemWeight < 0 || amount < 0){ return "Item's document number/weight/amount cannot be negative"; }
         try {
             this.tran_f.setItemCond(itemsDocNum, itemName, itemWeight, amount, cond);
         } catch (FileNotFoundException e) {
@@ -865,6 +890,7 @@ public class TransportService {
 
 
     public String showTransportsOfDriver(long id) {
+        if (!this.employeeIntegrationService.isActive(id)){ return "You are not an active employee, you can't make this action !"; }
         if (!this.employeeIntegrationService.isEmployeeAuthorised(id, "VIEW_RELEVANT_TRANSPORTS")){
             return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
@@ -883,6 +909,7 @@ public class TransportService {
 
 
     public String showAllQueuedTransports(long loggedID) {
+        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "VIEW_TRANSPORT")){
             return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
@@ -897,6 +924,7 @@ public class TransportService {
 
 
     public String showAllTransports(long loggedID) {
+        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "VIEW_TRANSPORT")){
             return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }

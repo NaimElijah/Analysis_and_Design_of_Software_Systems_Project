@@ -2,10 +2,12 @@ package PresentationLayer;
 
 import DomainLayer.SystemFactory;
 import PresentationLayer.EmployeeSubModule.HR_MainCLI;
+import PresentationLayer.TransportPresentation.MainTranSysCLI;
 import Util.CliUtil;
 import Util.config;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +19,7 @@ public class MainCLI {
 
     public static void start() throws IOException {
         try {
-            CliUtil.printWelcomeBanner("Welcome to SuperLee System Assgiment 2", LocalDate.now().toString(),
+            CliUtil.printWelcomeBanner("Welcome to SuperLee System Assignment 2", LocalDate.now().toString(),
                     "Not Logged In");
 
             while (true) {
@@ -28,7 +30,7 @@ public class MainCLI {
                 }
                 // else: action == LOGOUT, loop continues and presents login again
             }
-        } catch (IOException e) {
+        } catch (IOException | SQLException e) {
             CliUtil.printError("Error: " + e.getMessage());
         }
     }
@@ -39,7 +41,7 @@ public class MainCLI {
         EXIT_PROGRAM
     }
 
-    private static ExitAction loginAndRoute() throws IOException {
+    private static ExitAction loginAndRoute() throws IOException, SQLException {
         CliUtil.printSectionHeader("Login", false, "" );
         CliUtil.printTip("Enter 0 to exit the program.");
         long userId = CliUtil.getLongInput("Please enter your ID: ", scanner);
@@ -52,7 +54,7 @@ public class MainCLI {
 
         // System Factory creates the Modules components
         SystemFactory.EmployeeModuleComponents employeeComponents = factory.createEmployeeModule(minimalMode);
-        // TODO: ADD TRANSPORT MODULE COMPONENTS IF NEEDED
+        SystemFactory.TransportModuleComponents transportComponents = factory.createTransportModule(employeeComponents);
 
 
         if (!employeeComponents.getEmployeeService().isEmployeeActive(userId)) {
@@ -72,11 +74,11 @@ public class MainCLI {
             // After finishing HR_MainCLI, just return LOGOUT (i.e., return to login screen)
             return ExitAction.LOGOUT;
         } else {
-            return mainMenuLoop(factory, employeeComponents, userId);
+            return mainMenuLoop(factory, employeeComponents, transportComponents, userId);
         }
     }
 
-    private static ExitAction mainMenuLoop(SystemFactory factory, SystemFactory.EmployeeModuleComponents employeeComponents, long userId) throws IOException {
+    private static ExitAction mainMenuLoop(SystemFactory factory, SystemFactory.EmployeeModuleComponents employeeComponents, SystemFactory.TransportModuleComponents transportComponents, long userId) throws IOException {
         while (true) {
             CliUtil.printSectionHeader("Main Menu", true, "SuperLee System");
             // List of options for the main menu
@@ -100,7 +102,14 @@ public class MainCLI {
                     break;
                 case 2:
                     CliUtil.printInfo("Starting Transport Module...");
-                    CliUtil.printError("Transport Module is not implemented yet.");
+                    MainTranSysCLI mainTranSysCLI = factory.createTransportCLI(
+                            transportComponents.getTruckService(),
+                            transportComponents.getTransportService(),
+                            transportComponents.getSiteService(),
+                            transportComponents.getStartUpService(),
+                            transportComponents.getEmployeeIntegrationService()
+                    );
+                    mainTranSysCLI.transportModuleStartup(userId);
                     break;
                 case 3:
                     if (logoutOrExitPrompt()) {

@@ -31,7 +31,7 @@ public class TransportsRepoImpl implements TransportsRepo {
         this.truckFacade = tf;
 
         this.transportIDCounter = 0;
-        this.transportDAO.insertCounter("transportIDCounter", this.transportIDCounter);
+///        this.transportDAO.insertCounter("transportIDCounter", this.transportIDCounter);    ///  make sure there is a transportIDCounter in DB, like we need an admin there.
         this.transports = new HashMap<Integer, TransportDoc>();
         this.itemsDocs = new HashMap<Integer, ItemsDoc>();
         this.queuedTransports = new ArrayList<TransportDoc>();
