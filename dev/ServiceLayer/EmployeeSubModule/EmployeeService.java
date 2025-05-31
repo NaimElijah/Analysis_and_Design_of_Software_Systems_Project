@@ -15,6 +15,7 @@ import ServiceLayer.exception.ValidationException;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -950,6 +951,28 @@ public class EmployeeService {
             return employeeController.isBranch(address, areaCode);
         } catch (RuntimeException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Gets all employees assigned to a specific branch.
+     *
+     * @param branchId The ID of the branch
+     * @return A serialized array of employee DTOs assigned to the branch
+     * @throws ServiceException If an error occurs while retrieving employees
+     */
+    public String[] getAllEmployeesByBranch(long branchId) {
+        try {
+            List<EmployeeDTO> employees = employeeController.getEmployeesByBranch(branchId);
+            String[] serializedEmployees = new String[employees.size()];
+
+            for (int i = 0; i < employees.size(); i++) {
+                serializedEmployees[i] = employees.get(i).serialize();
+            }
+
+            return serializedEmployees;
+        } catch (Exception e) {
+            throw new ServiceException("Error retrieving employees by branch: " + e.getMessage(), e);
         }
     }
 }

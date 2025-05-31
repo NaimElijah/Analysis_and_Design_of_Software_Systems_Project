@@ -1111,14 +1111,35 @@ public class EmployeeCLI {
 
     /**
      * Displays all employees in the system with pagination
+     * If the user has VIEW_EMPLOYEE permission, shows all employees
+     * Otherwise, shows only employees for the user's branch
      */
     private void printAllEmployees() {
-        // Get serialized employees and deserialize them
-        String[] serializedEmployees = employeeService.getAllEmployees();
-        EmployeeDTO[] employees = deserializeEmployees(serializedEmployees);
+        List<EmployeeDTO> employeeList;
 
-        // Convert array to list for pagination
-        List<EmployeeDTO> employeeList = Arrays.asList(employees);
+        // Check if user has permission to view all employees
+        if (hasPermission("VIEW_EMPLOYEE")) {
+            // User has management permission, show all employees
+            String[] serializedEmployees = employeeService.getAllEmployees();
+            EmployeeDTO[] employees = deserializeEmployees(serializedEmployees);
+            employeeList = Arrays.asList(employees);
+        } else {
+            // Regular user, show only employees for their branch
+            try {
+                // Get employee's branch ID
+                EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(doneBy);
+                long branchId = employee.getBranchId();
+
+                // Get employees for this branch
+                String[] serializedEmployees = employeeService.getAllEmployeesByBranch(branchId);
+                EmployeeDTO[] employees = deserializeEmployees(serializedEmployees);
+                employeeList = Arrays.asList(employees);
+            } catch (Exception e) {
+                printError("Error retrieving employees: " + e.getMessage());
+                waitForEnter();
+                return;
+            }
+        }
 
         // Define how many employees to show per page
         final int ITEMS_PER_PAGE = 5;

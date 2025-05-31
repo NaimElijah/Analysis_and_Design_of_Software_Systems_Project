@@ -1,5 +1,8 @@
 package DomainLayer.EmployeeSubModule;
 
+import DTOs.EmployeeDTO;
+import DTOs.ShiftDTO;
+import DomainLayer.EmployeeSubModule.Repository.interfaces.ShiftReposetory;
 import DomainLayer.exception.UnauthorizedPermissionException;
 
 import java.time.LocalDate;
@@ -9,10 +12,12 @@ import java.util.*;
 public class AssignmentController {
     private final EmployeeController employeeController;
     private final ShiftController shiftController;
+    private final ShiftReposetory shiftReposetory;
 
-    public AssignmentController(EmployeeController employeeController, ShiftController shiftController) {
+    public AssignmentController(EmployeeController employeeController, ShiftController shiftController, ShiftReposetory shiftReposetory) {
         this.employeeController = employeeController;
         this.shiftController = shiftController;
+        this.shiftReposetory = shiftReposetory;
     }
     /**
      * Assigns an employee to a specified role within a designated shift.
@@ -53,9 +58,12 @@ public class AssignmentController {
             shift.setAssignedShiftManager(true);
         }
         employeesInRole.add(employeeId);
-        assignedEmployees.put(role, employeesInRole);
+        boolean assigned = assignedEmployees.put(role, employeesInRole) != null;
         shift.setAssignedEmployees(assignedEmployees);
-        return true;
+        if (assigned) {
+            return shiftReposetory.update(convertShiftToDTO(shift));
+        }
+        return false;
     }
 
     /**
@@ -85,9 +93,12 @@ public class AssignmentController {
         Map <String, Set<Long>> assignedEmployees = shift.getAssignedEmployees();
         Set<Long> employeesInRole = assignedEmployees.get(role);
         employeesInRole.remove(employeeId);
-        assignedEmployees.put(role, employeesInRole);
+        boolean removes = assignedEmployees.put(role, employeesInRole) != null;
         shift.setAssignedEmployees(assignedEmployees);
-        return true;
+        if (removes) {
+            return shiftReposetory.update(convertShiftToDTO(shift));
+        }
+        return false;
     }
 
     /**
@@ -156,6 +167,51 @@ public class AssignmentController {
     }
 
     /**
+     * Gets all unassigned employees for a shift, filtered by branch
+     * 
+     * @param doneBy The ID of the user performing the action
+     * @param shiftId The ID of the shift
+     * @param branchId The ID of the branch to filter by
+     * @return A list containing two sets: 
+     *         1. Employees not assigned to the shift and not available (filtered by branch)
+     *         2. Employees not assigned to the shift and available (filtered by branch)
+     */
+    public List<Set<Long>> getUnassignedEmployeesByBranch(long doneBy, long shiftId, long branchId){
+        String PERMISSION = "ASSIGN_EMPLOYEE";
+        if(!employeeController.isEmployeeAuthorised(doneBy,PERMISSION)){
+            throw new UnauthorizedPermissionException("User does not have permission to assign employees");
+        }
+
+        Shift shift = shiftController.getShiftByIdAsShift(doneBy, shiftId);
+        List<Set<Long>> unAssignedEmployees = new ArrayList<>();
+
+        // Get employees for the specified branch
+        List<EmployeeDTO> branchEmployees = employeeController.getEmployeesByBranch(branchId);
+        Set<Long> employees = new HashSet<>();
+        for (EmployeeDTO employee : branchEmployees) {
+            employees.add(employee.getIsraeliId());
+        }
+
+        // Remove employees already assigned to the shift
+        employees.removeIf(employee -> isAssigned(doneBy, shiftId, employee));
+
+        // Get available employees for the shift
+        Set<Long> availableEmployees = shift.getAvailableEmployees();
+
+        // Filter available employees by branch
+        Set<Long> availableEmployeesAndUnassigned = new HashSet<>(availableEmployees);
+        availableEmployeesAndUnassigned.retainAll(employees);
+
+        // Remove available employees from the unavailable set
+        employees.removeAll(availableEmployees);
+
+        unAssignedEmployees.add(employees);
+        unAssignedEmployees.add(availableEmployeesAndUnassigned);
+
+        return unAssignedEmployees;
+    }
+
+    /**
      * Checks if a specific employee is assigned to a shift at a given date, time, and branch location.
      * Verifies that the user performing the check has the required permission
      * before retrieving and analyzing the shift data.
@@ -197,6 +253,24 @@ public class AssignmentController {
         long branch = shiftController.getBranchIdByAddress(address, areaCode);
         Shift shift = shiftController.getShiftbyDateTimeAndBranch(date, hour, branch);
         return shift.getAssignedEmployees().get(role) != null;
+    }
+
+    private ShiftDTO convertShiftToDTO(Shift shift) {
+        return new ShiftDTO(
+                shift.getId(),
+                shift.getShiftType(),
+                shift.getShiftDate(),
+                shift.getRolesRequired(),
+                shift.getAssignedEmployees(),
+                shift.getAvailableEmployees(),
+                shift.isAssignedShiftManager(),
+                shift.isOpen(),
+                shift.getStartHour(),
+                shift.getEndHour(),
+                shift.getCreateDate(),
+                shift.getUpdateDate(),
+                shift.getBranchId()
+        );
     }
 
 

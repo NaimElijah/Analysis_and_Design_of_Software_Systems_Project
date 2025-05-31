@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ShiftController {
-    //private final AuthorisationController authorizationController;
     private final EmployeeController empCon;
     private final ShiftReposetory shiftRepository;
     private long shiftIdCounter = 1;
@@ -27,10 +26,9 @@ public class ShiftController {
     // Magic Number
     private final String ShiftManagerStr = config.ROLE_SHIFT_MANAGER; // TODO: check if this is the correct role name
 
-    public ShiftController(AuthorisationController authorizationController, EmployeeController employeeController) {
-        //this.authorizationController = authorizationController;
+    public ShiftController(EmployeeController employeeController, ShiftReposetory shiftRepository) {
         this.empCon = employeeController;
-        this.shiftRepository = new ShiftRepositoryImpl();
+        this.shiftRepository = shiftRepository;
 
         // Initialize the shift ID counter
         initializeShiftIdCounter();
@@ -1058,4 +1056,30 @@ public class ShiftController {
     }
 
 
+    public boolean isDriverOnShiftAt(long driverId, LocalDate date, LocalTime time, String address, int areaCode) {
+        boolean isOnShift = false;
+        // Get the branch ID based on the address and area code
+        long branchId = empCon.getBranchIdByAddress(address, areaCode);
+        if (branchId <= 0) {
+            throw new IllegalArgumentException("Invalid branch ID for the given address and area code");
+        }
+        // Retrieve all shifts for the branch on the specified date
+        List<ShiftDTO> branchShifts = shiftRepository.getAllByBranchId(branchId);
+        if (branchShifts == null || branchShifts.isEmpty()) {
+            throw new ShiftNotFoundException("No shifts found for the branch on the specified date");
+        }
+        // Check if the driver is assigned to any shift on the specified date and time
+        for (ShiftDTO shift : branchShifts) {
+            if (shift.getShiftDate().equals(date) &&
+                shift.getStartHour().isBefore(time) &&
+                shift.getEndHour().isAfter(time)) {
+                // Check if the driver is assigned to this shift
+                if (shift.getAssignedEmployees().getOrDefault("Driver", new HashSet<>()).contains(driverId)) {
+                    isOnShift = true;
+                    break;
+                }
+            }
+        }
+        return isOnShift;
+    }
 }

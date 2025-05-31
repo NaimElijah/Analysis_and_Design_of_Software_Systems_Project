@@ -210,23 +210,51 @@ public class ShiftCLI {
     /**
      * Utility method to select a shift by date and type
      * Shows available shifts on the selected date to help user make a selection
+     * If the user has VIEW_SHIFT permission, shows all shifts
+     * Otherwise, shows only shifts for the user's branch
      *
      * @param openOnly Whether to only show open shifts
      * @return The selected shift, or null if no shift was selected
      */
-    private ShiftDTO selectShiftByDateAndType(String header,boolean openOnly) {
+    private ShiftDTO selectShiftByDateAndType(String header, boolean openOnly) {
         printSectionHeader(header);
         LocalDate date = null;
         ShiftDTO[] shiftsOnDate = new ShiftDTO[0];
-        while (true)
-        {
+
+        // Get user's branch ID if they don't have management permission
+        long userBranchId = -1;
+        boolean isManagement = hasPermission("VIEW_SHIFT");
+
+        if (!isManagement) {
+            try {
+                EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(doneBy);
+                userBranchId = employee.getBranchId();
+            } catch (Exception e) {
+                printError("Error retrieving user branch: " + e.getMessage());
+                waitForEnter();
+                return null;
+            }
+        }
+
+        while (true) {
             // Get date from user
             date = getDateInput("Select a date for the shift:");
 
             // Show available shifts on this date to help user make a selection
             try {
-                String shifts = shiftService.getAllShiftsByDate(doneBy, date);
-                shiftsOnDate = ShiftDTO.deserializeArray(shifts);
+                List<ShiftDTO> shiftsList;
+
+                if (isManagement) {
+                    // Management user can see all shifts
+                    String shifts = shiftService.getAllShiftsByDate(doneBy, date);
+                    shiftsList = ShiftDTO.deserializeList(shifts);
+                } else {
+                    // Regular user can only see shifts for their branch
+                    String shifts = shiftService.getAllShiftsByDateBranch(doneBy, date, userBranchId);
+                    shiftsList = ShiftDTO.deserializeList(shifts);
+                }
+
+                shiftsOnDate = shiftsList.toArray(new ShiftDTO[0]);
 
                 // Filter shifts if openOnly is true
                 if (openOnly) {
@@ -245,6 +273,17 @@ public class ShiftCLI {
 
                     shiftsOnDate = openShifts.toArray(new ShiftDTO[0]);
                 }
+
+                if (shiftsOnDate.length == 0) {
+                    printError("No shifts found for the selected date: " + date.format(dateFormatter));
+                    boolean tryAgain = confirm("Would you like to try another date?");
+                    if (!tryAgain) {
+                        CliUtil.printReturnPrompt("Shift Management Menu", scanner);
+                        return null;
+                    }
+                    continue;
+                }
+
                 CliUtil.printSectionWithIcon("Available shifts on " + date.format(dateFormatter) + ":", "📅");
 
                 List<String> shiftItems = new ArrayList<>();
@@ -262,19 +301,26 @@ public class ShiftCLI {
                     CliUtil.printReturnPrompt("Shift Management Menu", scanner);
                     return null;
                 }
-
-            } catch  (Exception e) {
+            } catch (Exception e) {
                 printError("Unexpected error: " + e.getMessage());
                 CliUtil.printReturnPrompt("Shift Management Menu", scanner);
                 return null;
             }
         }
+
         // Get shift type from user
         ShiftType shiftType = getShiftTypeInput("Select the shift type:");
 
         try {
-            // Get shift by date and type
-            ShiftDTO shift = ShiftDTO.deserialize(shiftService.getShift(doneBy, date, shiftType));
+            ShiftDTO shift;
+
+            if (isManagement) {
+                // Management user can access all shifts
+                shift = ShiftDTO.deserialize(shiftService.getShift(doneBy, date, shiftType));
+            } else {
+                // Regular user can only access shifts for their branch
+                shift = ShiftDTO.deserialize(shiftService.getShiftByBranch(doneBy, date, shiftType, userBranchId));
+            }
 
             // Check if shift is open if openOnly is true
             if (openOnly && !shift.isOpen()) {
@@ -368,6 +414,86 @@ public class ShiftCLI {
         return CliUtil.getShiftTypeInput(prompt, scanner);
     }
 
+    /**
+     * Gets a Sunday date from user input by showing a list of upcoming Sundays
+     *
+     * @param prompt The prompt to display
+     * @return The LocalDate of the selected Sunday
+     */
+    private LocalDate getSundayDateInput(String prompt) {
+        LocalDate today = LocalDate.now();
+
+        // Find the next Sunday
+        LocalDate nextSunday = today;
+        while (nextSunday.getDayOfWeek().getValue() != 7) { // 7 is Sunday in ISO-8601
+            nextSunday = nextSunday.plusDays(1);
+        }
+
+        // Create a list of the next 4 Sundays
+        List<LocalDate> upcomingSundays = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            upcomingSundays.add(nextSunday.plusWeeks(i));
+        }
+
+        while (true) {
+            System.out.println(CliUtil.BOLD + prompt + CliUtil.RESET);
+
+            // Display the upcoming Sundays
+            for (int i = 0; i < upcomingSundays.size(); i++) {
+                System.out.println((i + 1) + ". Sunday (" + upcomingSundays.get(i).format(dateFormatter) + ")");
+            }
+
+            // Option to enter a specific date
+            System.out.println((upcomingSundays.size() + 1) + ". Enter another Sunday date (dd-mm-yyyy):");
+
+            System.out.print(CliUtil.CYAN + "======>" + CliUtil.RESET + " Enter your choice (1-" + (upcomingSundays.size() + 1) + "): ");
+
+            String input = scanner.nextLine();
+
+            // Check if input is a date in the format dd-mm-yyyy
+            if (input.matches("\\d{2}-\\d{2}-\\d{4}")) {
+                try {
+                    LocalDate date = LocalDate.parse(input, dateFormatter);
+                    // Verify it's a Sunday
+                    if (date.getDayOfWeek().getValue() == 7) {
+                        return date;
+                    } else {
+                        printError("The date entered is not a Sunday. Please enter a Sunday date.");
+                    }
+                } catch (Exception e) {
+                    printError("Please enter a valid date in the format dd-mm-yyyy.");
+                }
+                continue;
+            }
+
+            // Otherwise, try to parse as a menu choice
+            try {
+                int choice = Integer.parseInt(input);
+                if (choice >= 1 && choice <= upcomingSundays.size()) {
+                    return upcomingSundays.get(choice - 1);
+                } else if (choice == upcomingSundays.size() + 1) {
+                    System.out.print(CliUtil.BOLD + "Enter Sunday date (dd-mm-yyyy): " + CliUtil.RESET);
+                    input = scanner.nextLine();
+                    try {
+                        LocalDate date = LocalDate.parse(input, dateFormatter);
+                        // Verify it's a Sunday
+                        if (date.getDayOfWeek().getValue() == 7) {
+                            return date;
+                        } else {
+                            printError("The date entered is not a Sunday. Please enter a Sunday date.");
+                        }
+                    } catch (Exception e) {
+                        printError("Please enter a valid date in the format dd-mm-yyyy.");
+                    }
+                } else {
+                    printError("Please enter a valid option (1-" + (upcomingSundays.size() + 1) + ").");
+                }
+            } catch (NumberFormatException e) {
+                printError("Please enter a valid number or date in the format dd-mm-yyyy.");
+            }
+        }
+    }
+
 
 
     //===============================================================================
@@ -376,14 +502,34 @@ public class ShiftCLI {
 
     /**
      * Displays all shifts in the system with pagination
+     * If the user has VIEW_SHIFT permission, shows all shifts
+     * Otherwise, shows only shifts for the user's branch
      */
     private void viewAllShifts() {
+        List<ShiftDTO> shiftList;
 
-        // Convert array to list for pagination
-        List<ShiftDTO> shiftList = ShiftDTO.deserializeList(shiftService.getAllShifts(doneBy));
+        // Check if user has permission to view all shifts
+        if (hasPermission("MANAGEMENT")) {
+            // User has management permission, show all shifts
+            shiftList = ShiftDTO.deserializeList(shiftService.getAllShifts(doneBy));
+        } else {
+            // Regular user, show only shifts for their branch
+            try {
+                // Get employee's branch ID from employee service
+                EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(doneBy);
+                long branchId = employee.getBranchId();
+
+                // Get shifts for this branch
+                shiftList = ShiftDTO.deserializeList(shiftService.getAllShiftsByBranch(doneBy, branchId));
+            } catch (Exception e) {
+                printError("Error retrieving shifts: " + e.getMessage());
+                waitForEnter();
+                return;
+            }
+        }
 
         // Define how many shifts to show per page
-        final int ITEMS_PER_PAGE = 5;
+        final int ITEMS_PER_PAGE = 12;
 
         // Use the pagination utility to display shifts
         CliUtil.displayPaginatedList(
@@ -871,7 +1017,9 @@ public class ShiftCLI {
             CliUtil.printInfo("This will create morning and evening shifts for an entire week");
             CliUtil.printEmptyLine();
 
-            LocalDate startDate = getDateInput("Enter the first day of the week:");
+            LocalDate startDate;
+            startDate = getSundayDateInput("Select a Sunday to start the week:");
+
 
             // Get roles required
             CliUtil.printEmptyLine();

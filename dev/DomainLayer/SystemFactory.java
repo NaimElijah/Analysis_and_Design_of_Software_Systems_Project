@@ -5,6 +5,7 @@ import DomainLayer.EmployeeSubModule.Repository.*;
 import DomainLayer.EmployeeSubModule.Repository.interfaces.AuthorisationRepository;
 import DomainLayer.EmployeeSubModule.Repository.interfaces.BranchRepository;
 import DomainLayer.EmployeeSubModule.Repository.interfaces.EmployeeRepository;
+import DomainLayer.EmployeeSubModule.Repository.interfaces.ShiftReposetory;
 import DomainLayer.TransportDomain.SiteSubModule.SiteFacade;
 import DomainLayer.TransportDomain.TransportSubModule.TransportController;
 import DomainLayer.TransportDomain.TruckSubModule.TruckFacade;
@@ -53,15 +54,13 @@ public class SystemFactory {
             authController
         );
 
+        ShiftReposetory shiftReposetory = new ShiftRepositoryImpl();
         // Initialize ShiftController with the AuthorisationController and EmployeeController
         // The ShiftController will create its own ShiftRepository internally
-        ShiftController shiftController = new ShiftController(
-            authController,
-            employeeController
-        );
+        ShiftController shiftController = new ShiftController(employeeController, shiftReposetory);
 
-        AssignmentController assignmentController = new AssignmentController(employeeController, shiftController);
-        AvailabilityController availabilityController = new AvailabilityController(employeeController, shiftController);
+        AssignmentController assignmentController = new AssignmentController(employeeController, shiftController,shiftReposetory);
+        AvailabilityController availabilityController = new AvailabilityController(employeeController, shiftController, shiftReposetory);
 
         EmployeeService employeeService = new EmployeeService(employeeController, authController);
         ShiftService shiftService = new ShiftService(shiftController, assignmentController, availabilityController);

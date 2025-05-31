@@ -70,12 +70,6 @@ public class AssignmentCLI {
         List<String> menuOptions = new ArrayList<>();
         int optionNumber = 1;
 
-//        if (hasPermission("ASSIGN_EMPLOYEE")) {
-//            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Assign Employees to a Shift from Upcoming Week");
-//            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Assign Employees to a Shift by Specific Date");
-//            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Assign Employees from Previous Weeks");
-//            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Back to Main Menu");
-//        }
         if (hasPermission("ASSIGN_EMPLOYEE")) {
             menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Assign Employees to a Shift");
             menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Remove Employee from Shift");
@@ -96,37 +90,6 @@ public class AssignmentCLI {
         CliUtil.printEmptyLine();
         CliUtil.printPrompt("Enter your choice: ");
     }
-
-//    /**
-//     * Processes the user's menu choice
-//     * @return true to continue in the menu, false to return to main menu
-//     */
-//    private boolean processMenuChoice() {
-//        CliUtil.printEmptyLine();
-//        String choice = scanner.nextLine();
-//        try {
-//            int choiceNum = Integer.parseInt(choice);
-//            switch (choiceNum){
-//                case 1 -> assignEmployeeToShift();
-//                case 2 -> removeEmployeeFromShift();
-//                case 3 -> {
-//                    printSuccess("Returning to Main Menu...");
-//                    return false;
-//                }
-//            }
-////                switch (choiceNum) {
-////                    case 1 -> assignFromUpcomingWeek();
-////                    case 2 -> assignBySpecificDate();
-////                    case 3 -> assignFromPreviousWeeks();
-////                    case 4 -> stayInMenu = false;
-////                    default -> printError("Invalid choice. Please enter a number between 1 and 4.");
-////                }
-//        } catch (NumberFormatException e) {
-//            printError("Please enter a valid number.");
-//            return true;
-//        }
-//
-//    }
 
     private boolean processMenuChoice(String choice) {
         CliUtil.printEmptyLine();
@@ -173,7 +136,7 @@ public class AssignmentCLI {
     private String formatEmployeeDisplay(long employeeId) {
         try {
             EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(employeeId);
-            String branch = employeeService.getEmployeeBranchName(employee.getBranchId()) != null ? " [" + employeeService.getEmployeeBranchName(employee.getBranchId()) + "]" : "";
+            String branch = employeeService.getEmployeeBranchName(employeeId);
             return employee.getFullName() + " (#" + employeeId + ")" + branch;
         } catch (ServiceException e) {
             // If we can't get the employee name, just return the ID
@@ -191,8 +154,8 @@ public class AssignmentCLI {
     private String formatUnassignedEmployeeDisplay(long employeeId) {
         try {
             EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(employeeId);
-            String branch = employeeService.getEmployeeBranchName(employee.getBranchId()) != null ? " [" + employeeService.getEmployeeBranchName(employee.getBranchId()) + "]" : "";
-            return employee.getFullName() + " (#" + employeeId + ")" + branch + " {" + employee.getRoles() + "}" + CliUtil.RESET;
+            String branch = employeeService.getEmployeeBranchName(employeeId);
+            return employee.getFullName() + " (#" + employeeId + ") " + branch + " " + employee.getRoles().toString() + CliUtil.RESET;
 
         } catch (ServiceException e) {
             // If we can't get the employee name, just return the ID
@@ -268,6 +231,8 @@ public class AssignmentCLI {
     /**
      * Utility method to select a shift by date and type
      * Shows available shifts on the selected date to help the user make a selection
+     * If the user has VIEW_SHIFT permission, shows all shifts
+     * Otherwise, shows only shifts for the user's branch
      * 
      * @param headerText The header text to display
      * @param openOnly Whether to only show open shifts
@@ -276,12 +241,39 @@ public class AssignmentCLI {
     private ShiftDTO selectShiftByDateAndType(String headerText, boolean openOnly) {
         printSectionHeader(headerText);
 
+        // Get user's branch ID if they don't have management permission
+        long userBranchId = -1;
+        boolean isManagement = hasPermission("VIEW_SHIFT");
+
+        if (!isManagement) {
+            try {
+                EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(doneBy);
+                userBranchId = employee.getBranchId();
+            } catch (Exception e) {
+                printError("Error retrieving user branch: " + e.getMessage());
+                waitForEnter();
+                return null;
+            }
+        }
+
         // Get date from user
         LocalDate date = getDateInput("Select a date for the shift:");
 
         // Show available shifts on this date to help user make a selection
         try {
-            ShiftDTO[] shiftsOnDate = ShiftDTO.deserializeList(shiftService.getAllShiftsByDate(doneBy, date)).toArray(new ShiftDTO[0]);
+            List<ShiftDTO> shiftsList;
+
+            if (isManagement) {
+                // Management user can see all shifts
+                String shifts = shiftService.getAllShiftsByDate(doneBy, date);
+                shiftsList = ShiftDTO.deserializeList(shifts);
+            } else {
+                // Regular user can only see shifts for their branch
+                String shifts = shiftService.getAllShiftsByDateBranch(doneBy, date, userBranchId);
+                shiftsList = ShiftDTO.deserializeList(shifts);
+            }
+
+            ShiftDTO[] shiftsOnDate = shiftsList.toArray(new ShiftDTO[0]);
 
             // Filter shifts if openOnly is true
             if (openOnly) {
@@ -326,8 +318,15 @@ public class AssignmentCLI {
 
         try {
             // Get shift by date and type
-            String str = shiftService.getShift(doneBy, date, shiftType);
-            ShiftDTO shift = ShiftDTO.deserialize(str);
+            ShiftDTO shift;
+
+            if (isManagement) {
+                // Management user can access all shifts
+                shift = ShiftDTO.deserialize(shiftService.getShift(doneBy, date, shiftType));
+            } else {
+                // Regular user can only access shifts for their branch
+                shift = ShiftDTO.deserialize(shiftService.getShiftByBranch(doneBy, date, shiftType, userBranchId));
+            }
 
             // Check if shift is open if openOnly is true
             if (openOnly && !shift.isOpen()) {
@@ -710,10 +709,31 @@ public class AssignmentCLI {
 
     /**
      * Displays all shifts in the system with pagination
+     * If the user has VIEW_SHIFT permission, shows all shifts
+     * Otherwise, shows only shifts for the user's branch
      */
     private void viewAllShifts() {
-        // Convert array to list for pagination
-        List<ShiftDTO> shiftList = Arrays.asList(ShiftDTO.deserialize(shiftService.getAllShifts(doneBy)));
+        List<ShiftDTO> shiftList;
+
+        // Check if user has permission to view all shifts
+        if (hasPermission("VIEW_SHIFT")) {
+            // Management user can see all shifts
+            shiftList = Arrays.asList(ShiftDTO.deserialize(shiftService.getAllShifts(doneBy)));
+        } else {
+            // Regular user can only see shifts for their branch
+            try {
+                // Get employee's branch ID
+                EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(doneBy);
+                long branchId = employee.getBranchId();
+
+                // Get shifts for this branch
+                shiftList = ShiftDTO.deserializeList(shiftService.getAllShiftsByBranch(doneBy, branchId));
+            } catch (Exception e) {
+                printError("Error retrieving shifts: " + e.getMessage());
+                waitForEnter();
+                return;
+            }
+        }
 
         // Define how many shifts to show per page
         final int ITEMS_PER_PAGE = 5;
@@ -768,7 +788,31 @@ public class AssignmentCLI {
 
         // Show available shifts on this date to help user make a selection
         try {
-            ShiftDTO[] shiftsOnDate = ShiftDTO.deserializeList(shiftService.getAllShiftsByDate(doneBy, date)).toArray(new ShiftDTO[0]);
+            List<ShiftDTO> shiftsList;
+
+            // Check if user has permission to view all shifts
+            if (hasPermission("VIEW_SHIFT")) {
+                // Management user can see all shifts
+                String shifts = shiftService.getAllShiftsByDate(doneBy, date);
+                shiftsList = ShiftDTO.deserializeList(shifts);
+            } else {
+                // Regular user can only see shifts for their branch
+                try {
+                    // Get employee's branch ID
+                    EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(doneBy);
+                    long branchId = employee.getBranchId();
+
+                    // Get shifts for this branch
+                    String shifts = shiftService.getAllShiftsByDateBranch(doneBy, date, branchId);
+                    shiftsList = ShiftDTO.deserializeList(shifts);
+                } catch (Exception e) {
+                    printError("Error retrieving shifts: " + e.getMessage());
+                    waitForEnter();
+                    return;
+                }
+            }
+
+            ShiftDTO[] shiftsOnDate = shiftsList.toArray(new ShiftDTO[0]);
 
             if (shiftsOnDate.length == 0) {
                 printError("No shifts found for the selected date: " + date.format(dateFormatter));
@@ -794,7 +838,27 @@ public class AssignmentCLI {
 
         try {
             // Get shift by date and type
-            ShiftDTO shift = ShiftDTO.deserialize(shiftService.getShift(doneBy, date, shiftType));
+            ShiftDTO shift;
+
+            // Check if user has permission to view all shifts
+            if (hasPermission("VIEW_SHIFT")) {
+                // Management user can access all shifts
+                shift = ShiftDTO.deserialize(shiftService.getShift(doneBy, date, shiftType));
+            } else {
+                // Regular user can only access shifts for their branch
+                try {
+                    // Get employee's branch ID
+                    EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(doneBy);
+                    long branchId = employee.getBranchId();
+
+                    // Get shift for this branch
+                    shift = ShiftDTO.deserialize(shiftService.getShiftByBranch(doneBy, date, shiftType, branchId));
+                } catch (Exception e) {
+                    printError("Error retrieving shift: " + e.getMessage());
+                    waitForEnter();
+                    return;
+                }
+            }
 
             CliUtil.printSuccessWithCheckmark("Found shift: " + date.format(dateFormatter) + " " + shiftType + " (ID: " + shift.getId() + ")");
             CliUtil.printEmptyLine();
@@ -1000,7 +1064,28 @@ public class AssignmentCLI {
                 }
 
                 // Display available employees for this shift
-                List<Set<Long>> unAssignedEmployees = shiftService.getUnassignedManager(doneBy,shiftId);
+                List<Set<Long>> unAssignedEmployees;
+
+                // Check if user has permission to view all employees
+                if (hasPermission("MANAGEMENT")) {
+                    // Management user can see all employees
+                    unAssignedEmployees = shiftService.getUnassignedManager(doneBy, shiftId);
+                } else {
+                    // Regular user can only see employees for their branch
+                    try {
+                        // Get employee's branch ID
+                        EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(doneBy);
+                        long branchId = employee.getBranchId();
+
+                        // Get employees for this branch
+                        unAssignedEmployees = shiftService.getUnassignedManagerByBranch(doneBy, shiftId, branchId);
+                    } catch (Exception e) {
+                        printError("Error retrieving employees: " + e.getMessage());
+                        waitForEnter();
+                        return;
+                    }
+                }
+
                 Set<Long> availableEmployees = unAssignedEmployees.get(1);
                 Set<Long> unavailableEmployees = unAssignedEmployees.get(0);
                 CliUtil.printEmptyLine();
