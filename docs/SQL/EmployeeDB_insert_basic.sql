@@ -69,6 +69,7 @@ INSERT INTO Permissions (permissionName) VALUES ('DELETE_TRUCK');
 INSERT INTO Permissions (permissionName) VALUES ('SHOW_TRUCKS');
 
 -- Operational Permissions
+INSERT INTO Permissions (permissionName) VALUES ('MANAGE_HR');
 INSERT INTO Permissions (permissionName) VALUES ('MANAGE_INVENTORY');
 INSERT INTO Permissions (permissionName) VALUES ('HANDLE_CASH');
 INSERT INTO Permissions (permissionName) VALUES ('DRIVE_VEHICLE');
