@@ -3,19 +3,17 @@ package DomainLayer.TransportDomain.TruckSubModule;
 import DomainLayer.enums.enumDriLicense;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
-import java.util.HashMap;
+import java.sql.SQLException;
 
 public class TruckFacade {
-    private HashMap<Integer, Truck> trucksWareHouse;
+    private TruckRepo truckRepo;
 
-    public TruckFacade() { trucksWareHouse = new HashMap<>(); }
+    public TruckFacade() throws SQLException {  truckRepo = new TruckRepoImpl();  }
 
-    public HashMap<Integer, Truck> getTrucksWareHouse() {return trucksWareHouse;}
-    public void setTrucksWareHouse(HashMap<Integer, Truck> trucksWareHouse) {this.trucksWareHouse = trucksWareHouse;}
+    public void loadDBData() throws SQLException {  truckRepo.loadDBData();  }
 
-
-    public void addTruck(int num, String model, double net_wei, double max_carry, String license) throws KeyAlreadyExistsException {
-        if (this.trucksWareHouse.containsKey(num)){ throw new KeyAlreadyExistsException("Truck Number already exists in the Warehouse"); }
+    public void addTruck(int num, String model, double net_wei, double max_carry, String license) throws KeyAlreadyExistsException, SQLException {
+        if (this.truckRepo.getTrucksWareHouse().containsKey(num)){ throw new KeyAlreadyExistsException("Truck Number already exists in the Warehouse"); }
         enumDriLicense val_license = null;
         if (license.equals("A")){
             val_license = enumDriLicense.A;
@@ -28,27 +26,29 @@ public class TruckFacade {
         } else if (license.equals("E")){
             val_license = enumDriLicense.E;
         }
-        this.trucksWareHouse.put(num, new Truck(num, model, net_wei, max_carry, val_license));
+        truckRepo.insertTruck(new Truck(num, model, net_wei, max_carry, val_license));
     }
 
 
-    public void removeTruck(int num) throws ClassNotFoundException, ArrayStoreException {
-        if (!this.trucksWareHouse.containsKey(num)){ 
+    public void removeTruck(int num) throws ClassNotFoundException, ArrayStoreException, SQLException {
+        if (!this.truckRepo.getTrucksWareHouse().containsKey(num)){
             throw new ClassNotFoundException("Truck Number doesn't exist in the Warehouse");
-        } else if (this.trucksWareHouse.get(num).getInTransportID() != -1) {   //  if Truck is busy in an active Transport
+        } else if (this.truckRepo.getTrucksWareHouse().get(num).getInTransportID() != -1) {   //  if Truck is busy in an active Transport
             throw new ArrayStoreException("Truck cannot be deleted because it is written in an Active Transport, if you want you can remove it from its transports or remove the Transports");
         }
-        this.trucksWareHouse.get(num).setIsDeleted(true);
-        this.trucksWareHouse.remove(num);
+        this.truckRepo.getTrucksWareHouse().get(num).setIsDeleted(true);
+        truckRepo.deleteTruck(num);
     }
 
 
     public String showAllTrucks(){
         String res = "Trucks Warehouse:\n";
-        for (Truck truck : trucksWareHouse.values()) {
+        for (Truck truck : truckRepo.getTrucksWareHouse().values()) {
             res += truck.toString() + "\n";
         }
         return res;
     }
+
+    public TruckRepo getTruckRepo() {return truckRepo;}
 
 }

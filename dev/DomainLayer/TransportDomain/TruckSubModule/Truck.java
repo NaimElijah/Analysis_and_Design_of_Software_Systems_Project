@@ -21,6 +21,16 @@ public class Truck {
         this.isDeleted = false;
     }
 
+    public Truck(int truck_num, String model, double net_weight, double max_carry_weight, enumDriLicense valid_license, int inTransportID) {
+        this.truck_num = truck_num;
+        this.model = model;
+        this.net_weight = net_weight;
+        this.max_carry_weight = max_carry_weight;
+        this.valid_license = valid_license;
+        this.inTransportID = inTransportID;   //  for loading from the DB
+        this.isDeleted = false;    //  if loaded from DB so not deleted, this field is for objects lying around in docs after truck deletion
+    }
+
     public void setTruck_num(int truck_num) {this.truck_num = truck_num;}
     public void setModel(String model) {this.model = model;}
     public void setNet_weight(double net_weight) {this.net_weight = net_weight;}

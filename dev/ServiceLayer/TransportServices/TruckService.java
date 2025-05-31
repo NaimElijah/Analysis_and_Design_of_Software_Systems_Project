@@ -4,6 +4,7 @@ import DomainLayer.TransportDomain.TruckSubModule.TruckFacade;
 import ServiceLayer.EmployeeIntegrationService;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
+import java.sql.SQLException;
 
 public class TruckService {
     private EmployeeIntegrationService employeeIntegrationService;
@@ -28,6 +29,8 @@ public class TruckService {
             this.tru_f.addTruck(num, model, net_wei, max_carry, license);
         } catch (KeyAlreadyExistsException e) {
             return "Truck Number already exists in the Warehouse";
+        } catch (SQLException e) {
+            return "SQL Error";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -48,7 +51,9 @@ public class TruckService {
             return "Truck Number doesn't exist in the Warehouse";
         } catch (ArrayStoreException e) {
             return "Truck cannot be deleted because it is written in an Active Transport, if you want you can remove it from its transports or remove the Transports";
-        }catch (Exception e) {
+        } catch (SQLException e) {
+            return "SQL Error";
+        } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
         }
@@ -65,7 +70,7 @@ public class TruckService {
         String res = "";
         try {
             res = tru_f.showAllTrucks();
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return res;

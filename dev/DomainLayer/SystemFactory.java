@@ -17,6 +17,7 @@ import PresentationLayer.TransportPresentation.MainTranSysCLI;
 import PresentationLayer.TransportPresentation.TranManCLI;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Scanner;
 
 /**
@@ -81,16 +82,14 @@ public class SystemFactory {
      * @param employeeComponents The EmployeeModuleComponents to use for integration.
      * @return TransportModuleComponents containing all initialized components.
      */
-    public TransportModuleComponents createTransportModule(EmployeeModuleComponents employeeComponents) {
-        // Initialize repositories
-        //TODO           <<<-------------------------     <<---------------------------------
+    public TransportModuleComponents createTransportModule(EmployeeModuleComponents employeeComponents) throws SQLException {
 
         // Initialize facades
-        TruckFacade truckFacade = new TruckFacade();
-        SiteFacade siteFacade = new SiteFacade();
+        TruckFacade truckFacade = new TruckFacade();   // repository initialized inside here
+        SiteFacade siteFacade = new SiteFacade();   // repository initialized inside here
 
         // Initialize controllers
-        TransportController transportController = new TransportController(siteFacade, truckFacade);
+        TransportController transportController = new TransportController(siteFacade, truckFacade);   // repositories initialized inside here
 
         // Create EmployeeIntegrationService
         EmployeeIntegrationService employeeIntegrationService = new EmployeeIntegrationService(
@@ -261,9 +260,7 @@ public class SystemFactory {
             return transportController;
         }
 
-        public TruckService getTruckService() {
-            return truckService;
-        }
+        public TruckService getTruckService() {return truckService;}
 
         public TransportService getTransportService() {
             return transportService;

@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 
 public class ItemsDoc {
-    private int ItemsDocInTransportID;    //   TODO:   for database               <<<---------------------------    <<-----------------------
+    private int ItemsDocInTransportID;
     private int itemsDoc_num;
     private Site src_site;
     private Site dest_site;

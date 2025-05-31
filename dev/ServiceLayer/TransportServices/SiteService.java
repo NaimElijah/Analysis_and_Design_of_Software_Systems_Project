@@ -6,6 +6,7 @@ import ServiceLayer.EmployeeIntegrationService;
 import javax.management.AttributeNotFoundException;
 import javax.management.openmbean.KeyAlreadyExistsException;
 import javax.naming.ContextNotEmptyException;
+import java.sql.SQLException;
 
 public class SiteService {
     private EmployeeIntegrationService employeeIntegrationService;
@@ -32,6 +33,8 @@ public class SiteService {
             sf.addShippingArea(areaNum, areaName);
         }catch (KeyAlreadyExistsException e){
             return "Shipping Area Number already exists";
+        } catch (SQLException e) {
+            return "SQL Error";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -49,6 +52,8 @@ public class SiteService {
             return "Can't delete a Shipping Area that Doesn't exist.";
         } catch (ContextNotEmptyException e){
             return "Can't Delete a shipping area that has Sites in it.";
+        } catch (SQLException e) {
+            return "SQL Error";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -71,6 +76,8 @@ public class SiteService {
             return "New Shipping Area Number already exists";
         } catch (ClassNotFoundException e){
             return "Old Shipping Area Number does not exist";
+        } catch (SQLException e) {
+            return "SQL Error";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -90,6 +97,8 @@ public class SiteService {
             sf.setShippingAreaName(areaNum, NewareaName);
         } catch (ClassNotFoundException e){
             return "Can't set name of a non existent Area number";
+        } catch (SQLException e) {
+            return "SQL Error";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -125,6 +134,8 @@ public class SiteService {
             return "Can't add a a site to a non existent Area number";
         } catch (KeyAlreadyExistsException e){
             return "Site Address already exists in that area number";
+        } catch (SQLException e) {
+            return "SQL Error";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -143,6 +154,8 @@ public class SiteService {
             sf.deleteSiteFromArea(areaNum, address);
         } catch (ClassNotFoundException e){
             return "Can't Delete a site with a non existent Area number or a non existent address string";
+        } catch (SQLException e) {
+            return "SQL Error";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -171,6 +184,8 @@ public class SiteService {
             return "Can't Edit a site with a non existent Area number or a non existent address string";
         } catch (KeyAlreadyExistsException e){
             return "Site Address String already exists in that area number";
+        } catch (SQLException e) {
+            return "SQL Error";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -193,6 +208,8 @@ public class SiteService {
             return "Can't Edit a site with a non existent Area number(as the old one or the new one) or a non existent address string";
         } catch (KeyAlreadyExistsException e){
             return "The Address String of the Site you are trying to move already exists in the destination area number";
+        } catch (SQLException e) {
+            return "SQL Error";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -211,6 +228,8 @@ public class SiteService {
             sf.setSiteContName(areaNum, address, contName);
         } catch (ClassNotFoundException e){
             return "Can't Edit a site with a non existent Area number or a non existent address string";
+        } catch (SQLException e) {
+            return "SQL Error";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -229,6 +248,8 @@ public class SiteService {
             sf.setSiteContNum(areaNum, address, contNum);
         } catch (ClassNotFoundException e){
             return "Can't Edit a site with a non existent Area number or a non existent address string";
+        } catch (SQLException e) {
+            return "SQL Error";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";

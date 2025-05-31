@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class ItemsDocDTO {
-    private int ItemsDocInTransportID;    //   TODO:   for database               <<<---------------------------    <<-----------------------
+    private int ItemsDocInTransportID;
     private int itemsDoc_num;
     private SiteDTO src_siteDTO;
     private SiteDTO dest_siteDTO;

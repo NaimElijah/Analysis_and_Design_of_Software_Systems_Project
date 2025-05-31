@@ -125,8 +125,7 @@ public final class Database {
 
 
 
-    /// Transport related tables creation
-
+    /// Transport related tables creation             <<--------------
 
     private static final String ShippingAreasTable =
             "CREATE TABLE IF NOT EXISTS ShippingAreas (" +
@@ -136,17 +135,12 @@ public final class Database {
 
     private static final String SitesTable =
             "CREATE TABLE IF NOT EXISTS Sites (" +
-                    "areaNum BIGINT, " +
-                    "addressStr TEXT, " +
+                    "areaNum BIGINT NOT NULL, " +
+                    "addressStr TEXT NOT NULL, " +
                     "contName TEXT NOT NULL, " +
                     "contNumber BIGINT NOT NULL, " +
-                    "PRIMARY KEY (areaNum, addressStr), " +
-                    "FOREIGN KEY (areaNum) REFERENCES ShippingAreas(areaNumber)" +
-                    ")";
-
-    private static final String DrivingLicensesTable =
-            "CREATE TABLE IF NOT EXISTS DrivingLicenses (" +
-                    "license TEXT PRIMARY KEY, " +
+                    "PRIMARY KEY (areaNum, addressStr) ON UPDATE CASCADE, " +
+                    "FOREIGN KEY (areaNum) REFERENCES ShippingAreas(areaNumber) ON UPDATE CASCADE" +
                     ")";
 
     private static final String TrucksTable =
@@ -157,8 +151,6 @@ public final class Database {
                     "maxCarryWeight DOUBLE NOT NULL, " +
                     "validLicense TEXT NOT NULL, " +
                     "inTransportID BIGINT NOT NULL, " +
-                    "isDeleted BOOLEAN NOT NULL, " +
-                    "FOREIGN KEY (validLicense) REFERENCES DrivingLicenses(license)" +
                     ")";
 
     private static final String TransportsTable =
@@ -171,23 +163,36 @@ public final class Database {
                     "truck_Depart_Weight DOUBLE NOT NULL, " +
                     "srcSiteArea BIGINT NOT NULL, " +
                     "srcSiteString TEXT NOT NULL, " +
-                    "FOREIGN KEY (transportTruckNumber) REFERENCES Trucks(truckNum)" +
-                    "FOREIGN KEY (transportDriverId) REFERENCES Employees(israeliId)" +
-                    "FOREIGN KEY (srcSiteArea) REFERENCES Sites(areaNum)" +
-                    "FOREIGN KEY (srcSiteString) REFERENCES Sites(addressStr)" +
+                    "isQueued BOOLEAN NOT NULL, " +
+                    "FOREIGN KEY (transportTruckNumber) REFERENCES Trucks(truckNum) ON UPDATE CASCADE, " +
+                    "FOREIGN KEY (transportDriverId) REFERENCES Employees(israeliId) ON UPDATE CASCADE, " +
+                    "FOREIGN KEY (srcSiteArea, srcSiteString) REFERENCES Sites(areaNum, addressStr) ON UPDATE CASCADE" +
                     ")";
 
-    private static final String ProblemsTable =
-            "CREATE TABLE IF NOT EXISTS Problems (" +
-                    "problem TEXT PRIMARY KEY, " +
+
+                    ///  maybe the enums should have a VARCHAR column, instead of String column.
+
+    private static final String Counters =
+            "CREATE TABLE IF NOT EXISTS Counters (" +
+                    "CounterName TEXT PRIMARY KEY, " +
+                    "CounterValue BIGINT NOT NULL, " +
                     ")";
+
+
+    private static final String DriverIdToInTransportIDTable =
+            "CREATE TABLE IF NOT EXISTS DriverIdToInTransportID (" +
+                    "transportDriverId BIGINT PRIMARY KEY, " +
+                    "transportId BIGINT NOT NULL, " +
+                    "FOREIGN KEY (transportDriverId) REFERENCES Employees(israeliId) ON UPDATE CASCADE, " +
+                    ")";
+
 
     private static final String TransportsProblemsTable =
             "CREATE TABLE IF NOT EXISTS TransportsProblems (" +
-                    "problemOfTranDocId BIGINT PRIMARY KEY, " +
-                    "problem TEXT PRIMARY KEY, " +
-                    "FOREIGN KEY (problemOfTranDocId) REFERENCES Transports(tranDocId)" +
-                    "FOREIGN KEY (problem) REFERENCES Problems(problem)" +
+                    "problemOfTranDocId BIGINT NOT NULL, " +
+                    "problem TEXT NOT NULL, " +
+                    "PRIMARY KEY (problemOfTranDocId, problem), " +
+                    "FOREIGN KEY (problemOfTranDocId) REFERENCES Transports(tranDocId) ON UPDATE CASCADE" +
                     ")";
 
     private static final String ItemsDocsTable =
@@ -199,21 +204,20 @@ public final class Database {
                     "destSiteArea BIGINT NOT NULL, " +
                     "destSiteString TEXT NOT NULL, " +
                     "estimatedArrivalTime TIMESTAMP NOT NULL, " +
-                    "FOREIGN KEY (ItemsDocInTransportID) REFERENCES Transports(tranDocId)" +
-                    "FOREIGN KEY (srcSiteArea) REFERENCES Sites(areaNum)" +
-                    "FOREIGN KEY (srcSiteString) REFERENCES Sites(addressStr)" +
-                    "FOREIGN KEY (destSiteArea) REFERENCES Sites(areaNum)" +
-                    "FOREIGN KEY (destSiteString) REFERENCES Sites(addressStr)" +
-                    ")";
+                    "FOREIGN KEY (ItemsDocInTransportID) REFERENCES Transports(tranDocId) ON UPDATE CASCADE, " +
+                    "FOREIGN KEY (srcSiteArea, srcSiteString) REFERENCES Sites(areaNum, addressStr) ON UPDATE CASCADE, " +
+                    "FOREIGN KEY (destSiteArea, destSiteString) REFERENCES Sites(areaNum, addressStr) ON UPDATE CASCADE" +
+                    ")";   //  if needed, maybe make a new field named arrivalIndex that we can update and when we get all the ItemsDocs, we ORDER BY arrivalIndex.
 
     private static final String ItemsQTable =
             "CREATE TABLE IF NOT EXISTS ItemsQ (" +
-                    "itemInItemsDocId BIGINT PRIMARY KEY, " +
-                    "name TEXT PRIMARY KEY, " +
-                    "weight DOUBLE PRIMARY KEY, " +
-                    "condition BOOLEAN PRIMARY KEY, " +
+                    "itemInItemsDocId BIGINT NOT NULL, " +
+                    "name TEXT NOT NULL, " +
+                    "weight DOUBLE NOT NULL, " +
+                    "condition BOOLEAN NOT NULL, " +
                     "amount BIGINT NOT NULL, " +
-                    "FOREIGN KEY (itemInItemsDocId) REFERENCES ItemsDocs(itemsDocNum)" +
+                    "PRIMARY KEY (itemInItemsDocId, name, weight, condition) ON UPDATE CASCADE, " +
+                    "FOREIGN KEY (itemInItemsDocId) REFERENCES ItemsDocs(itemsDocNum) ON UPDATE CASCADE" +
                     ")";
 
 
@@ -235,8 +239,6 @@ public final class Database {
                 st.executeUpdate(RolesTable);
                 st.executeUpdate(PermissionsTable);
                 st.executeUpdate(ShiftType);
-                st.executeUpdate(ProblemsTable);
-                st.executeUpdate(DrivingLicensesTable);
                 st.executeUpdate(ShippingAreasTable);
 
                 // Then create tables that depend on the above tables
@@ -256,6 +258,8 @@ public final class Database {
                 st.executeUpdate(TrucksTable);
                 st.executeUpdate(ItemsQTable);
                 st.executeUpdate(TransportsProblemsTable);
+                st.executeUpdate(DriverIdToInTransportIDTable);
+                st.executeUpdate(Counters);
 
                 // ***ADD YOUR TABLES HERE***
 

@@ -7,20 +7,22 @@ import javax.management.AttributeNotFoundException;
 import javax.management.openmbean.KeyAlreadyExistsException;
 import javax.naming.ContextNotEmptyException;
 
+import java.sql.SQLException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class SiteFacadeTest {
     private SiteFacade siteFacade;
 
     @BeforeEach
-    public void setup() {
+    public void setup() throws SQLException {
         siteFacade = new SiteFacade();
     }
 
     @Test
-    public void testAddShippingArea() throws KeyAlreadyExistsException {
+    public void testAddShippingArea() throws KeyAlreadyExistsException, SQLException {
         siteFacade.addShippingArea(1, "Area 1");
-        assertTrue(siteFacade.getShippingAreas().containsKey(1));
+        assertTrue(siteFacade.getSiteRepo().getShippingAreas().containsKey(1));
     }
 
     @Test
@@ -32,10 +34,10 @@ class SiteFacadeTest {
     }
 
     @Test
-    public void testDeleteShippingArea() throws KeyAlreadyExistsException, AttributeNotFoundException, ContextNotEmptyException {
+    public void testDeleteShippingArea() throws KeyAlreadyExistsException, AttributeNotFoundException, ContextNotEmptyException, SQLException {
         siteFacade.addShippingArea(1, "Area 1");
         siteFacade.deleteShippingArea(1);
-        assertFalse(siteFacade.getShippingAreas().containsKey(1));
+        assertFalse(siteFacade.getSiteRepo().getShippingAreas().containsKey(1));
     }
 
     @Test
@@ -46,7 +48,7 @@ class SiteFacadeTest {
     }
 
     @Test
-    public void testDeleteShippingAreaWithSites() throws KeyAlreadyExistsException, ClassNotFoundException {
+    public void testDeleteShippingAreaWithSites() throws KeyAlreadyExistsException, ClassNotFoundException, SQLException {
         siteFacade.addShippingArea(1, "Area 1");
         siteFacade.addSiteTOArea(1, "123 Street", "John", 1234567890L);
         assertThrows(ContextNotEmptyException.class, () -> {
@@ -55,10 +57,10 @@ class SiteFacadeTest {
     }
 
     @Test
-    public void testSetShippingAreaName() throws KeyAlreadyExistsException, ClassNotFoundException {
+    public void testSetShippingAreaName() throws KeyAlreadyExistsException, ClassNotFoundException, SQLException {
         siteFacade.addShippingArea(1, "Area 1");
         siteFacade.setShippingAreaName(1, "Updated Area");
-        assertEquals("Updated Area", siteFacade.getShippingAreas().get(1).getArea_name());
+        assertEquals("Updated Area", siteFacade.getSiteRepo().getShippingAreas().get(1).getArea_name());
     }
 
     @Test
@@ -69,7 +71,7 @@ class SiteFacadeTest {
     }
 
     @Test
-    public void testAddSiteToArea() throws ClassNotFoundException, KeyAlreadyExistsException {
+    public void testAddSiteToArea() throws ClassNotFoundException, KeyAlreadyExistsException, SQLException {
         siteFacade.addShippingArea(1, "Area 1");
         siteFacade.addSiteTOArea(1, "123 Street", "John", 1234567890L);
         assertTrue(siteFacade.doesSiteExist(1, "123 Street"));
@@ -83,7 +85,7 @@ class SiteFacadeTest {
     }
 
     @Test
-    public void testAddSiteToAreaDuplicate() throws ClassNotFoundException, KeyAlreadyExistsException {
+    public void testAddSiteToAreaDuplicate() throws ClassNotFoundException, KeyAlreadyExistsException, SQLException {
         siteFacade.addShippingArea(1, "Area 1");
         siteFacade.addSiteTOArea(1, "123 Street", "John", 1234567890L);
         assertThrows(KeyAlreadyExistsException.class, () -> {
@@ -92,7 +94,7 @@ class SiteFacadeTest {
     }
 
     @Test
-    public void testDeleteSiteFromArea() throws ClassNotFoundException {
+    public void testDeleteSiteFromArea() throws ClassNotFoundException, SQLException {
         siteFacade.addShippingArea(1, "Area 1");
         siteFacade.addSiteTOArea(1, "123 Street", "John", 1234567890L);
         siteFacade.deleteSiteFromArea(1, "123 Street");
@@ -107,7 +109,7 @@ class SiteFacadeTest {
     }
 
     @Test
-    public void testSetSiteAddress() throws ClassNotFoundException, KeyAlreadyExistsException {
+    public void testSetSiteAddress() throws ClassNotFoundException, KeyAlreadyExistsException, SQLException {
         siteFacade.addShippingArea(1, "Area 1");
         siteFacade.addSiteTOArea(1, "123 Street", "John", 1234567890L);
         siteFacade.setSiteAddress(1, "123 Street", "456 Avenue");
@@ -115,7 +117,7 @@ class SiteFacadeTest {
     }
 
     @Test
-    public void testSetSiteAddressDuplicate() throws ClassNotFoundException, KeyAlreadyExistsException {
+    public void testSetSiteAddressDuplicate() throws ClassNotFoundException, KeyAlreadyExistsException, SQLException {
         siteFacade.addShippingArea(1, "Area 1");
         siteFacade.addSiteTOArea(1, "123 Street", "John", 1234567890L);
         siteFacade.addSiteTOArea(1, "456 Avenue", "Jane", 9876543210L);
@@ -125,7 +127,7 @@ class SiteFacadeTest {
     }
 
     @Test
-    public void testSetSiteAreaNum() throws ClassNotFoundException, KeyAlreadyExistsException {
+    public void testSetSiteAreaNum() throws ClassNotFoundException, KeyAlreadyExistsException, SQLException {
         siteFacade.addShippingArea(1, "Area 1");
         siteFacade.addShippingArea(2, "Area 2");
         siteFacade.addSiteTOArea(1, "123 Street", "John", 1234567890L);
@@ -142,23 +144,23 @@ class SiteFacadeTest {
     }
 
     @Test
-    public void testSetSiteContName() throws ClassNotFoundException {
+    public void testSetSiteContName() throws ClassNotFoundException, SQLException {
         siteFacade.addShippingArea(1, "Area 1");
         siteFacade.addSiteTOArea(1, "123 Street", "John", 1234567890L);
         siteFacade.setSiteContName(1, "123 Street", "Jane");
-        assertEquals("Jane", siteFacade.getShippingAreas().get(1).getSites().get("123 Street").getcName());
+        assertEquals("Jane", siteFacade.getSiteRepo().getShippingAreas().get(1).getSites().get("123 Street").getcName());
     }
 
     @Test
-    public void testSetSiteContNum() throws ClassNotFoundException {
+    public void testSetSiteContNum() throws ClassNotFoundException, SQLException {
         siteFacade.addShippingArea(1, "Area 1");
         siteFacade.addSiteTOArea(1, "123 Street", "John", 1234567890L);
         siteFacade.setSiteContNum(1, "123 Street", 9876543210L);
-        assertEquals(9876543210L, siteFacade.getShippingAreas().get(1).getSites().get("123 Street").getcNumber());
+        assertEquals(9876543210L, siteFacade.getSiteRepo().getShippingAreas().get(1).getSites().get("123 Street").getcNumber());
     }
 
     @Test
-    public void testShowAllSites() throws ClassNotFoundException {
+    public void testShowAllSites() throws ClassNotFoundException, SQLException {
         siteFacade.addShippingArea(1, "Area 1");
         siteFacade.addSiteTOArea(1, "123 Street", "John", 1234567890L);
         String result = siteFacade.showAllSites();
@@ -166,7 +168,7 @@ class SiteFacadeTest {
     }
 
     @Test
-    public void testShowAllShippingAreas() {
+    public void testShowAllShippingAreas() throws SQLException {
         siteFacade.addShippingArea(1, "Area 1");
         String result = siteFacade.showAllShippingAreas();
         assertTrue(result.contains("Area 1"));

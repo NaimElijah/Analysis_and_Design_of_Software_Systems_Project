@@ -1,12 +1,12 @@
 package DTOs.TransportModuleDTOs;
 
 public class ItemQuantityDTO {
-    private int itemInItemsDocId;    //   TODO:   for database               <<<---------------------------    <<-----------------------
+    private int itemInItemsDocId;
     private ItemDTO item;
     private int quantity;
 
     public ItemQuantityDTO(){}
-    public ItemQuantityDTO(ItemDTO item, int quantity, int itemInItemsDocId) {
+    public ItemQuantityDTO(int itemInItemsDocId, ItemDTO item, int quantity) {
         this.itemInItemsDocId = itemInItemsDocId;
         this.item = item;
         this.quantity = quantity;

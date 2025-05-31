@@ -6,6 +6,7 @@ import DomainLayer.enums.enumDriLicense;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import javax.management.openmbean.KeyAlreadyExistsException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -14,15 +15,15 @@ class TruckFacadeTest {
     private TruckFacade truckFacade;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws SQLException {
         truckFacade = new TruckFacade();
     }
 
     @Test
-    void testAddTruckSuccessfully() throws KeyAlreadyExistsException {
+    void testAddTruckSuccessfully() throws KeyAlreadyExistsException, SQLException {
         truckFacade.addTruck(1, "Volvo", 4000, 10000, "C");
-        assertEquals(1, truckFacade.getTrucksWareHouse().size());
-        Truck truck = truckFacade.getTrucksWareHouse().get(1);
+        assertEquals(1, truckFacade.getTruckRepo().getTrucksWareHouse().size());
+        Truck truck = truckFacade.getTruckRepo().getTrucksWareHouse().get(1);
         assertNotNull(truck);
         assertEquals(1, truck.getTruck_num());
         assertEquals("Volvo", truck.getModel());
@@ -32,7 +33,7 @@ class TruckFacadeTest {
     }
 
     @Test
-    void testAddTruckAlreadyExists() throws KeyAlreadyExistsException {
+    void testAddTruckAlreadyExists() throws KeyAlreadyExistsException, SQLException {
         truckFacade.addTruck(1, "Volvo", 4000, 10000, "C");
         assertThrows(KeyAlreadyExistsException.class, () -> {
             truckFacade.addTruck(1, "Mercedes", 3500, 9000, "B");
@@ -42,9 +43,9 @@ class TruckFacadeTest {
     @Test
     void testRemoveTruckSuccessfully() throws Exception {
         truckFacade.addTruck(1, "Volvo", 4000, 10000, "C");
-        assertEquals(1, truckFacade.getTrucksWareHouse().size());
+        assertEquals(1, truckFacade.getTruckRepo().getTrucksWareHouse().size());
         truckFacade.removeTruck(1);
-        assertEquals(0, truckFacade.getTrucksWareHouse().size());
+        assertEquals(0, truckFacade.getTruckRepo().getTrucksWareHouse().size());
     }
 
     @Test
@@ -57,7 +58,7 @@ class TruckFacadeTest {
     @Test
     void testRemoveTruckBusyInTransport() throws Exception {
         truckFacade.addTruck(1, "Volvo", 4000, 10000, "C");
-        truckFacade.getTrucksWareHouse().get(1).setInTransportID(5); // simulate busy truck
+        truckFacade.getTruckRepo().getTrucksWareHouse().get(1).setInTransportID(5); // simulate busy truck
         assertThrows(ArrayStoreException.class, () -> {
             truckFacade.removeTruck(1);
         });
@@ -70,7 +71,7 @@ class TruckFacadeTest {
     }
 
     @Test
-    void testShowAllTrucksNonEmpty() throws KeyAlreadyExistsException {
+    void testShowAllTrucksNonEmpty() throws KeyAlreadyExistsException, SQLException {
         truckFacade.addTruck(1, "Volvo", 4000, 10000, "C");
         truckFacade.addTruck(2, "Mercedes", 3500, 9000, "B");
         String output = truckFacade.showAllTrucks();
@@ -78,16 +79,6 @@ class TruckFacadeTest {
         assertTrue(output.contains("Truck Num: 2"));
         assertTrue(output.contains("Model: Volvo"));
         assertTrue(output.contains("Model: Mercedes"));
-    }
-
-    @Test
-    void testSetAndGetTrucksWareHouse() {
-        HashMap<Integer, Truck> newWarehouse = new HashMap<>();
-        Truck truck = new Truck(1, "TestTruck", 2000, 5000, enumDriLicense.A);
-        newWarehouse.put(1, truck);
-        truckFacade.setTrucksWareHouse(newWarehouse);
-        assertEquals(1, truckFacade.getTrucksWareHouse().size());
-        assertEquals("TestTruck", truckFacade.getTrucksWareHouse().get(1).getModel());
     }
 
 }

@@ -33,6 +33,19 @@ public class TransportDoc {
         this.problems = new ArrayList<enumTranProblem>();
     }
 
+    public TransportDoc(enumTranStatus status, int tran_Doc_ID, Truck transportTruck, long tranDriverId, Site src_site, LocalDateTime departure_dt_p, double truckDepartWeight, ArrayList<enumTranProblem> probs) {
+        this.status = status;
+        this.tran_Doc_ID = tran_Doc_ID;
+        this.departure_dt = departure_dt_p;
+        this.transportTruck = transportTruck;
+        this.transportTruckNumber = this.transportTruck.getTruck_num();
+        this.transportDriverId = tranDriverId;
+        this.truck_Depart_Weight = truckDepartWeight;
+        this.src_site = src_site;
+        this.dests_Docs = new ArrayList<ItemsDoc>();
+        this.problems = probs;
+    }
+
     public int getTransportTruckNumber() {return transportTruckNumber;}
     public void setTransportTruckNumber(int transportTruckNumber) {this.transportTruckNumber = transportTruckNumber;}
     public enumTranStatus getStatus() {return status;}
@@ -68,6 +81,7 @@ public class TransportDoc {
             this.transportTruck.setInTransportID(-1);  // unassign old one
         }
         this.transportTruck = transportTruck;
+        this.transportTruckNumber = this.transportTruck.getTruck_num();
         if (this.status == enumTranStatus.InTransit || this.status == enumTranStatus.BeingAssembled || this.status == enumTranStatus.BeingDelayed) {
             this.transportTruck.setInTransportID(this.tran_Doc_ID);   ///  only if the current Transport is active
         }

@@ -1,6 +1,7 @@
 package PresentationLayer.TransportPresentation;
 
 import DTOs.TransportModuleDTOs.*;
+import DomainLayer.enums.enumTranStatus;
 import ServiceLayer.*;
 
 import java.time.LocalDateTime;
@@ -18,8 +19,8 @@ public class TranManCLI {
     private TruckService tru_ser;
     private TransportService tra_ser;
     private SiteService site_ser;
-    private EmployeeService emp_ser;    ///  THE NEW EmployeeService      //  Not really needed here, but still     <<------------------   delete later, we don't need it here
-    private EmployeeIntegrationService employeeIntegrationService;    ///  THE NEW EmployeeIntegrationService     <<------------------   delete later, we don't need it here
+    private EmployeeService emp_ser;    ///  THE NEW EmployeeService    <<------------------   delete later, we don't need it here
+    private EmployeeIntegrationService employeeIntegrationService;  ///    <<------------------   delete later, we don't need it here
     private Scanner scanner;
     private ObjectMapper objectMapper;
 
@@ -181,7 +182,6 @@ public class TranManCLI {
 
 
 
-        //TODO:  also add transport departure set option and flow down to the other layers and create and check    <<<----------------  <<----
         boolean validTime = false, validPick = false;
         LocalDateTime selectedDepartureDT = null;
         while (!validPick){
@@ -284,6 +284,8 @@ public class TranManCLI {
                 }
             }
 
+            //TODO:  also maybe check with the isBranch function, if the site is a branch, because according to them we can only deliver to SuperLee's Sites, maybe, first connect CLI.
+
 
             SiteDTO destSitedto = new SiteDTO(currSiteAreaNum, currDestinationAddress);
 
@@ -326,7 +328,7 @@ public class TranManCLI {
                     }
                 }
                 if (!itemExistsInCurrDestSite){
-                    itemsListToCurrDestSite.add(new ItemQuantityDTO(itemAddition, itemAmount, currItemsDocNum));
+                    itemsListToCurrDestSite.add(new ItemQuantityDTO(currItemsDocNum, itemAddition, itemAmount));
                 }
 
                 System.out.println("Item Added to listed items associated with current Site, do you want to add another Item ? ( Enter 'Y' / 'N'(or any other key) )");
@@ -336,7 +338,7 @@ public class TranManCLI {
 
 
 
-            ItemsDocDTO itemsDocAddition = new ItemsDocDTO(currItemsDocNum, srcSitedto, destSitedto, itemsListToCurrDestSite, timeCounter, -99);  //TODO: just for creation, just check that isn't problematic.
+            ItemsDocDTO itemsDocAddition = new ItemsDocDTO(currItemsDocNum, srcSitedto, destSitedto, itemsListToCurrDestSite, timeCounter, -99);  //TODO: -99 just for creation, just check that isn't problematic.
             System.out.println("Ok, Finished adding the current destination Site's items");
             dests_Docs_for_Transport.add(itemsDocAddition);   //  adding new ItemsDoc to the destSitesDocs
 
@@ -351,7 +353,7 @@ public class TranManCLI {
         System.out.println("Ok, Finished adding the Sites & Items to the Transport");
 
         // And create the DTO object (The Package to send downwards):
-        TransportDTO transportDTO = new TransportDTO(-99, truckNum, driverID, srcSitedto, dests_Docs_for_Transport, selectedDepartureDT);
+        TransportDTO transportDTO = new TransportDTO(-99, truckNum, driverID, srcSitedto, dests_Docs_for_Transport, selectedDepartureDT, enumTranStatus.BeingAssembled, 0, new ArrayList<>());  //TODO: 0 just for creation, check that not problematic.
 
         ////////////////////////////////////////////////    NOW WE HAVE THE WHOLE TRANSPORT's DTO     <<<-----------------------------------------
 
@@ -542,7 +544,7 @@ public class TranManCLI {
                 System.out.println("This Transport doesn't have a proper Truck-Driver matching available at all right now.");
                 System.out.println("If this is a new Transport, this Transport will now go automatically into the Queued Transports.");
                 System.out.println("If it's an already Queued Transport that is being checked again, it will remain where it is in the Queued Transports.");
-                System.out.println("We save the Queued Transports in order of creation, so when you want to, you can go to (Transports Options Menu)->((3)  Check if a Queued Transport Can Be Sent) "); //TODO: add path
+                System.out.println("We save the Queued Transports in order of creation, so when you want to, you can go to (Transports Options Menu)->((3)  Check if a Queued Transport Can Be Sent) ");
                 System.out.println("And try to send out a Queued Transport, you can of course also delete that transport using the Menu.\n");
                 break;
 
@@ -1385,11 +1387,6 @@ public class TranManCLI {
 
         System.out.println();
     }
-
-
-
-
-
 
 
 

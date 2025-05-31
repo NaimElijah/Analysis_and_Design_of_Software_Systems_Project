@@ -17,6 +17,7 @@ import javax.management.openmbean.KeyAlreadyExistsException;
 import javax.naming.CommunicationException;
 import java.io.FileNotFoundException;
 import java.nio.file.FileAlreadyExistsException;
+import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
@@ -29,9 +30,9 @@ public class TransportService {
         this.employeeIntegrationService = es;
         this.tran_f = tf;
         this.objectMapper = new ObjectMapper();
-//        this.objectMapper = new ObjectMapper();   //  if needed
-//        mapper.registerModule(new JavaTimeModule());   //  if needed
-//        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);   //  if needed
+//        this.objectMapper = new ObjectMapper();   //  if needed for LocalDateTime serialization
+//        mapper.registerModule(new JavaTimeModule());   //  if needed for LocalDateTime serialization
+//        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);   //  if needed for LocalDateTime serialization
     }
 
     /// NOTE: This function is called only when a Transport has passed the Transport checks and can fully be registered.
@@ -43,6 +44,8 @@ public class TransportService {
             this.tran_f.createTransport(transportDTO, queuedIndexIfWasQueued);
         } catch (JsonProcessingException e) {
             return "JSON's Error Exception";
+        } catch (SQLException e) {
+            return "SQL Error";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -59,6 +62,8 @@ public class TransportService {
             this.tran_f.deleteTransport(transportID);
         } catch (FileNotFoundException e) {
             return "No transport found with the Transport ID you've entered, so can't delete that Transport";
+        } catch (SQLException e) {
+            return "SQL Error";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -93,7 +98,7 @@ public class TransportService {
             }
 
             ///    and then the other checks
-            this.tran_f.setTransportStatus(TranDocID, intMenuStatusOption, this.employeeIntegrationService.isActive(this.tran_f.getTransports().get(TranDocID).getTransportDriverId()));
+            this.tran_f.setTransportStatus(TranDocID, intMenuStatusOption, this.employeeIntegrationService.isActive(this.tran_f.getTransportsRepos().getTransports().get(TranDocID).getTransportDriverId()));
         } catch (FileNotFoundException e) {
             return "The Transport ID you have entered doesn't exist.";
         } catch (StringIndexOutOfBoundsException e){
@@ -106,7 +111,9 @@ public class TransportService {
             return "cannot change Transport Status because it wants to change to an active one, but the Truck is already active in another Transport.";
         } catch (IndexOutOfBoundsException e) {
             return "the Truck or/and Driver of this Transport have been Deleted, you can view available Trucks or/and Drivers using the menu and set appropriately";
-        }catch (Exception e) {
+        } catch (SQLException e) {
+            return "SQL Error";
+        } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
         }
@@ -124,7 +131,7 @@ public class TransportService {
         }
         if (TranDocID < 0 || truckNum < 0){ return "Transport Document number, Truck number values cannot be negative."; }
         try {
-            this.tran_f.setTransportTruck(TranDocID, truckNum, this.employeeIntegrationService.hasRole(this.tran_f.getTransports().get(TranDocID).getTransportDriverId(), this.tran_f.getTruckLicenseAsStringRole(truckNum)));
+            this.tran_f.setTransportTruck(TranDocID, truckNum, this.employeeIntegrationService.hasRole(this.tran_f.getTransportsRepos().getTransports().get(TranDocID).getTransportDriverId(), this.tran_f.getTruckLicenseAsStringRole(truckNum)));
         } catch (FileNotFoundException e) {
             return "The Transport ID you have entered doesn't exist.";
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -139,7 +146,9 @@ public class TransportService {
             return "The Truck you are trying to set to this Transport can't carry this Transport's Weight.";
         } catch (ClassNotFoundException e) {
             return "the Truck of this Transport have been Deleted, you can view available Trucks using the menu and set appropriately";
-        }catch (Exception e) {
+        } catch (SQLException e) {
+            return "SQL Error";
+        } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
         }
@@ -162,7 +171,7 @@ public class TransportService {
             if(!isTranDriverTimeAndPlaceValid(testingTransport)){ return "Cannot change this transport's Driver to that because, this transport will have a Driver Unavailability issue.\n(The new Driver probably isn't from the sites associated with this Transport)"; }
             ///    and then the other checks
             boolean isNotDriver = !this.employeeIntegrationService.hasRole(DriverID, "DriverA") && !this.employeeIntegrationService.hasRole(DriverID, "DriverB") && !this.employeeIntegrationService.hasRole(DriverID, "DriverC") && !this.employeeIntegrationService.hasRole(DriverID, "DriverD") && !this.employeeIntegrationService.hasRole(DriverID, "DriverE");
-            String lice = this.tran_f.getTruckLicenseAsStringRole(this.tran_f.getTransports().get(TranDocID).getTransportTruck().getTruck_num());
+            String lice = this.tran_f.getTruckLicenseAsStringRole(this.tran_f.getTransportsRepos().getTransports().get(TranDocID).getTransportTruck().getTruck_num());
             this.tran_f.setTransportDriver(TranDocID, DriverID, isNotDriver, this.employeeIntegrationService.isActive(DriverID), this.employeeIntegrationService.hasRole(DriverID, lice));
 
         } catch (FileNotFoundException e) {
@@ -177,6 +186,8 @@ public class TransportService {
             return "The New Driver you are trying to set doesn't have the fitting license for the Truck that is in the Transport.";
         } catch (ClassNotFoundException e) {
             return "the Driver of this Transport have been Deleted, you can view available Drivers using the menu and set appropriately";
+        } catch (SQLException e) {
+            return "SQL Error";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -201,7 +212,7 @@ public class TransportService {
             boolean isThereAvailableDriverMatchingThisTruck = false;
 
             for(EmployeeDTO driver : employeesDTOs){
-                if (this.employeeIntegrationService.hasRole(driver.getIsraeliId(), lice) && !this.tran_f.getDriverIdToInTransportID().containsKey(driver.getIsraeliId())){  // if driver compatible and free
+                if (this.employeeIntegrationService.hasRole(driver.getIsraeliId(), lice) && !this.tran_f.getTransportsRepos().getDriverIdToInTransportID().containsKey(driver.getIsraeliId())){  // if driver compatible and free
                     isThereAvailableDriverMatchingThisTruck = true;
                 }
             }
@@ -223,7 +234,7 @@ public class TransportService {
             return "There isn't a Driver that is available right now and compatible, license wise, with the Truck you chose";
         } catch (CommunicationException e) {
             return "The Driver you chose doesn't have the fitting license for the Truck you chose";
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
         }
@@ -299,7 +310,7 @@ public class TransportService {
             ///  checking if there is a match at all, --> from those who are free right now, generally in all sites
             boolean isThereMatchAtAllBetweenLicenses = false;
             for (EmployeeDTO employee : employeesDTOs){
-                for (int trucNum : this.tran_f.getTruckFacade().getTrucksWareHouse().keySet()){
+                for (int trucNum : this.tran_f.getTruckFacade().getTruckRepo().getTrucksWareHouse().keySet()){
                     if (this.employeeIntegrationService.hasRole(employee.getIsraeliId(), this.tran_f.getTruckLicenseAsStringRole(trucNum))){  //  if compatible
                         if ((!this.tran_f.isDriverActive(employee.getIsraeliId())) && (!this.tran_f.isTruckActive(trucNum))){   // searching only the free ones, like in the Requirements
                             isThereMatchAtAllBetweenLicenses = true;  // if found
@@ -328,6 +339,8 @@ public class TransportService {
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return "JsonProcessingException";
+        } catch (SQLException e) {
+            return "SQL Error";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -423,7 +436,9 @@ public class TransportService {
             return "Cannot add a Site with a non existent area number.";
         } catch (ClassNotFoundException e) {
             return "Cannot add a site with a not found address String in its area.";
-        }catch (Exception e) {
+        } catch (SQLException e) {
+            return "SQL Error";
+        } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
         }
@@ -496,6 +511,8 @@ public class TransportService {
             return "The Site's Items Document Number you are trying to remove doesn't exist in the system.";
         } catch (ClassNotFoundException e) {
             return "The Site's Items Document Number is not in that Transport";
+        } catch (SQLException e) {
+            return "SQL Error";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -622,6 +639,8 @@ public class TransportService {
             return "Site not found inside of that transport";
         } catch (AbstractMethodError e) {
             return "The Index entered is bigger than the amount of sites in the Transport, so can't put that site in that bigger index";
+        } catch (SQLException e) {
+            return "SQL Error";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -645,6 +664,8 @@ public class TransportService {
             return "Old Items Document ID Non Existent";
         } catch (KeyAlreadyExistsException e) {
             return "New Items Document ID Already Exists !";
+        } catch (SQLException e) {
+            return "SQL Error";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -708,12 +729,15 @@ public class TransportService {
             return "Transport ID doesn't exist.";
         } catch (FileAlreadyExistsException e) {
             return "The problem you entered already exists in this Transport";
+        } catch (SQLException e) {
+            return "SQL Error";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
         }
         return "Success";  //  if All Good
     }
+
 
     public String removeTransportProblem(long loggedID, int TransportID, String menu_Problem_option){
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
@@ -728,6 +752,8 @@ public class TransportService {
             return "Transport ID doesn't exist.";
         } catch (FileAlreadyExistsException e) {
             return "The problem you entered already doesn't exists in this Transport";
+        } catch (SQLException e) {
+            return "SQL Error";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -776,7 +802,9 @@ public class TransportService {
             return "Item's Document ID not found";
         } catch (IndexOutOfBoundsException e) {
             return "Cannot add Item to transport because the new weight exceeds the maximum carry weight";
-        }catch (Exception e) {
+        } catch (SQLException e) {
+            return "SQL Error";
+        } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
         }
@@ -796,6 +824,8 @@ public class TransportService {
             return "Item's Document ID not found";
         } catch (ClassNotFoundException e) {
             return "Item to remove not found in that Items Document";
+        } catch (SQLException e) {
+            return "SQL Error";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -816,6 +846,8 @@ public class TransportService {
             return "Item's Document ID not found";
         } catch (ClassNotFoundException e) {
             return "Item to change condition to was not found in that Items Document";
+        } catch (SQLException e) {
+            return "SQL Error";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -843,7 +875,7 @@ public class TransportService {
             res = tran_f.showTransportsOfDriver(id, isNotDriver);
         } catch (ArrayStoreException e) {
             return "The Driver(ID) to show Transports for was not found";
-        }catch (Exception e){
+        } catch (Exception e){
             e.printStackTrace();
         }
         return res;
