@@ -226,10 +226,11 @@ public class TranManCLI {
 
         System.out.println("We'll now add the Sites(and the items for each site).");
         System.out.println("\nThe Transport's Site Arrival Order will be based on the order of Sites you add (first added -> first arrived to)");
-        System.out.println("Note: Destination sites can only be Branches of Super Lee.");             ///   Added according to requirements.   <<----------
+        System.out.println("\nNote: Destination sites can only be Branches of Super Lee.");             ///   Added according to requirements.   <<----------
         System.out.println("\n- Now Enter Each Site and for Each Site enter the Items for that site.");
 
         boolean continueAnotherSite = true, continueAnotherItem = true, continueAskingDifferentAreaNum = true, siteExists = false;
+        boolean destIsBranch = false;
         Integer currSiteAreaNum = -99;
         String currDestinationAddress = "";
         ArrayList<Integer> areasNumsUptoNow = new ArrayList<Integer>();  //  for the area numbers in this Transport
@@ -239,9 +240,8 @@ public class TranManCLI {
 
         while (continueAnotherSite){   ///   Sites WHILE(TRUE) LOOP
             siteExists = false;
-            //TODO:     also make sure with the isBranch function that the destination sites are Branches, and if not give another chance to choose.    <<<----------------------
-            //TODO:     also make sure with the isBranch function that the destination sites are Branches, and if not give another chance to choose.    <<<----------------------
-            while (!siteExists){
+            destIsBranch = false;
+            while (!siteExists || !destIsBranch){
                 continueAskingDifferentAreaNum = true;
                 while (continueAskingDifferentAreaNum){
                     System.out.println("Enter Destination Site Area Number: ");
@@ -271,15 +271,17 @@ public class TranManCLI {
                 currDestinationAddress = scanner.nextLine();
 
                 siteExists = this.site_ser.doesSiteExist(loggedID, currSiteAreaNum, currDestinationAddress);
+                destIsBranch = this.tra_ser.isBranch(currDestinationAddress, currSiteAreaNum);
                 if (!siteExists){
                     areasNumsUptoNow.remove(currSiteAreaNum);
                     System.out.println("Site Doesn't Exist, please choose a site that actually exists.\n");
-                } else {  // siteExists
+                } else if (!destIsBranch) {
+                    areasNumsUptoNow.remove(currSiteAreaNum);
+                    System.out.println("The Destination Site you chose is not a Branch, please choose a destination site that is a Branch.\n");
+                } else {  // siteExists & destIsBranch
                     break;
                 }
             }
-
-            //TODO:  also maybe check with the isBranch function, if the site is a branch, because according to them we can only deliver to SuperLee's Sites, maybe, first connect CLI.
 
 
             SiteDTO destSitedto = new SiteDTO(currSiteAreaNum, currDestinationAddress);

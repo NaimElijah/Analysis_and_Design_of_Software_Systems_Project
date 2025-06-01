@@ -276,13 +276,13 @@ public class TransportService {
 
         /// check if the driver is valid time and place wise.
         if (this.employeeIntegrationService.isDriverOnShiftAt(transportDriverID, transportDepar_t, transportSrcAddressString, transportSrcAreaNum)){
-            // driver belongs to src site and is there at the right time
-            return true;
+            // driver belongs to src site(which is apparently a branch because true) and is there at the right time
+            return true;      //TODO:   make sure isDriverOnShiftAt returns false if the site I gave him isn't a branch.     <<<----------    the src site can be a supplier.
         } else {
-            // so we need to check if that driver is from any destination site
+            // so we need to check if that driver is from any destination site       //   Note:   destination sites can only be branches         <<----------------------   <<-----------
             for (ItemsDocDTO itemsDocDTO : transport_DTO.getDests_Docs()){
                 if (this.employeeIntegrationService.isDriverOnShiftAt(transportDriverID, transportDepar_t, itemsDocDTO.getDest_siteDTO().getSiteAddressString(), itemsDocDTO.getDest_siteDTO().getSiteAreaNum())){
-                    return true;      ///   make sure isDriverOnShiftAt return false if the site I gave him isn't a branch.
+                    return true;    ///   make sure isDriverOnShiftAt return false if the site I gave him isn't a branch, just because. (even though dest sites are branches).
                 }
             }
         }
@@ -290,7 +290,7 @@ public class TransportService {
     }
 
 
-    //TODO:  in the CLI, when picking another dest site, check that that dest site is a branch, because dest sites can only be branches     <<-------------------
+
     private boolean areWareHouseMenTimeAndPlacesValid(TransportDTO transportDto) {
         if (this.employeeIntegrationService.isBranch(transportDto.getSrc_site().getSiteAddressString(), transportDto.getSrc_site().getSiteAreaNum())){  // check warehouseMen only if branch
             if (!this.employeeIntegrationService.isWarehousemanOnShiftAt(transportDto.getDeparture_dt(), transportDto.getSrc_site().getSiteAddressString(), transportDto.getSrc_site().getSiteAreaNum())){
@@ -412,12 +412,13 @@ public class TransportService {
 
     public String addDestSite(long loggedID, int tran_ID, int itemsDoc_num, int destSiteArea, String destSiteAddress, String contName, long contNum) {
         if (tran_ID < 0 || itemsDoc_num < 0 || destSiteArea < 0 || contNum < 0){ return "The info numbers you have entered cannot be negative"; }
+        if (destSiteAddress.isEmpty() || destSiteAddress.isBlank() || contName.isEmpty() || contName.isBlank()){ return "The info strings you've entered cannot be empty"; }
         if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
         if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
             return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
         }
-        if (destSiteAddress.isEmpty() || destSiteAddress.isBlank() || contName.isEmpty() || contName.isBlank()){ return "The info strings you've entered cannot be empty"; }
         if (!tran_f.doesTranIDExist(tran_ID)){ return "The Transport ID you've entered doesn't exist."; }
+        if (!employeeIntegrationService.isBranch(destSiteAddress, destSiteArea)){ return "Destination sites must be branches of Super Lee !"; }
 
         try {
             /// checking if the change will affect a warehouse men availability
