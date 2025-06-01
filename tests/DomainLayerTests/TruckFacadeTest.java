@@ -17,10 +17,11 @@ class TruckFacadeTest {
     @BeforeEach
     void setUp() throws SQLException {
         truckFacade = new TruckFacade();
+        truckFacade.loadDBData();
     }
 
     @Test
-    void testAddTruckSuccessfully() throws KeyAlreadyExistsException, SQLException {
+    void testAddTruckSuccessfully() throws KeyAlreadyExistsException, SQLException, ClassNotFoundException {
         truckFacade.addTruck(1, "Volvo", 4000, 10000, "C");
         assertEquals(1, truckFacade.getTruckRepo().getTrucksWareHouse().size());
         Truck truck = truckFacade.getTruckRepo().getTrucksWareHouse().get(1);
@@ -30,22 +31,24 @@ class TruckFacadeTest {
         assertEquals(4000, truck.getNet_weight());
         assertEquals(10000, truck.getMax_carry_weight());
         assertEquals(enumDriLicense.C, truck.getValid_license());
+        truckFacade.removeTruck(1);
     }
 
     @Test
-    void testAddTruckAlreadyExists() throws KeyAlreadyExistsException, SQLException {
+    void testAddTruckAlreadyExists() throws KeyAlreadyExistsException, SQLException, ClassNotFoundException {
         truckFacade.addTruck(1, "Volvo", 4000, 10000, "C");
         assertThrows(KeyAlreadyExistsException.class, () -> {
             truckFacade.addTruck(1, "Mercedes", 3500, 9000, "B");
         });
+        truckFacade.removeTruck(1);
     }
 
     @Test
     void testRemoveTruckSuccessfully() throws Exception {
         truckFacade.addTruck(1, "Volvo", 4000, 10000, "C");
-        assertEquals(1, truckFacade.getTruckRepo().getTrucksWareHouse().size());
+        assertEquals(4, truckFacade.getTruckRepo().getTrucksWareHouse().size());
         truckFacade.removeTruck(1);
-        assertEquals(0, truckFacade.getTruckRepo().getTrucksWareHouse().size());
+        assertEquals(3, truckFacade.getTruckRepo().getTrucksWareHouse().size());
     }
 
     @Test
@@ -62,6 +65,8 @@ class TruckFacadeTest {
         assertThrows(ArrayStoreException.class, () -> {
             truckFacade.removeTruck(1);
         });
+        truckFacade.getTruckRepo().getTrucksWareHouse().get(1).setInTransportID(-1); // simulate busy truck
+        truckFacade.removeTruck(1);
     }
 
     @Test
@@ -71,7 +76,7 @@ class TruckFacadeTest {
     }
 
     @Test
-    void testShowAllTrucksNonEmpty() throws KeyAlreadyExistsException, SQLException {
+    void testShowAllTrucksNonEmpty() throws KeyAlreadyExistsException, SQLException, ClassNotFoundException {
         truckFacade.addTruck(1, "Volvo", 4000, 10000, "C");
         truckFacade.addTruck(2, "Mercedes", 3500, 9000, "B");
         String output = truckFacade.showAllTrucks();
@@ -79,6 +84,8 @@ class TruckFacadeTest {
         assertTrue(output.contains("Truck Num: 2"));
         assertTrue(output.contains("Model: Volvo"));
         assertTrue(output.contains("Model: Mercedes"));
+        truckFacade.removeTruck(1);
+        truckFacade.removeTruck(2);
     }
 
 }

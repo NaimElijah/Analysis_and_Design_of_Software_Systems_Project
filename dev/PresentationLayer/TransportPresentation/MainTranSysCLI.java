@@ -8,6 +8,9 @@ import ServiceLayer.TransportServices.TransportService;
 import ServiceLayer.TransportServices.TruckService;
 import Util.config;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.util.Scanner;
 
@@ -17,11 +20,13 @@ public class MainTranSysCLI {
     private StartUpController startUpCont;
     private EmployeeIntegrationService eis;
     private Scanner scanner;
+    private ObjectMapper objectMapper;
 
-    public MainTranSysCLI(TruckService ts, TransportService trs, SiteService sis, StartUpStateService starUpStService, EmployeeIntegrationService es) {
+    public MainTranSysCLI(TruckService ts, TransportService trs, SiteService sis, StartUpStateService starUpStService, EmployeeIntegrationService es, ObjectMapper oM) {
         this.scanner = new Scanner(System.in);
+        this.objectMapper = oM;
         this.drCont = new TranDriverCLI(trs, this.scanner);
-        this.tranManCont = new TranManCLI(ts, trs, sis, this.scanner);
+        this.tranManCont = new TranManCLI(ts, trs, sis, this.scanner, objectMapper);
         this.eis = es;
         this.startUpCont = new StartUpController(starUpStService);
     }

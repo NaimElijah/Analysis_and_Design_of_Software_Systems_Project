@@ -28,16 +28,10 @@ public class TransportService {
     private TransportController tran_f;
     private ObjectMapper objectMapper;
 
-    public TransportService(TransportController tf, EmployeeIntegrationService es) {
+    public TransportService(TransportController tf, EmployeeIntegrationService es, ObjectMapper oM) {
         this.employeeIntegrationService = es;
         this.tran_f = tf;
-        this.objectMapper = new ObjectMapper();
-        // Set up the ObjectMapper with JavaTimeModule to handle LocalDate and other Java 8 date types.
-        objectMapper.registerModule(new JavaTimeModule());
-        // Optional: Configure SerializationFeature to avoid exceptions when serializing dates to JSON
-        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-
-//        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);   //  if needed for LocalDateTime serialization
+        this.objectMapper = oM;
     }
 
     public String loadDBData() throws SQLException {

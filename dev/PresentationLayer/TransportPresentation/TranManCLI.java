@@ -20,12 +20,12 @@ public class TranManCLI {
     private Scanner scanner;
     private ObjectMapper objectMapper;
 
-    public TranManCLI(TruckService ts, TransportService trs, SiteService sis, Scanner sc) {
+    public TranManCLI(TruckService ts, TransportService trs, SiteService sis, Scanner sc, ObjectMapper oM) {
         this.tru_ser = ts;
         this.tra_ser = trs;
         this.site_ser = sis;
         this.scanner = sc;
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = oM;
     }
 
 
@@ -359,7 +359,7 @@ public class TranManCLI {
 
         /// ////////////////////////////////////////////    NOW WE'LL DO THE CHECKS          <<<-----------------------------------------
 
-        String resValid = checkIfTransportDTOIsValid(loggedID, transportDTO);
+        String resValid = checkIfTransportDTOIsValid(loggedID, transportDTO);  //TODO: there is a problem here, there is an empty string somewhere that splits by "-".
 
         if (resValid.equals("Valid")){
             System.out.println("Okay, Transport is Valid :)");

@@ -107,7 +107,8 @@ public class MainCLI {
                             transportComponents.getTransportService(),
                             transportComponents.getSiteService(),
                             transportComponents.getStartUpService(),
-                            transportComponents.getEmployeeIntegrationService()
+                            transportComponents.getEmployeeIntegrationService(),
+                            transportComponents.getoM()
                     );
                     mainTranSysCLI.transportModuleStartup(userId);
                     break;

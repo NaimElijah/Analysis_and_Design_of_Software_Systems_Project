@@ -248,6 +248,9 @@ public class AssignmentController {
     public boolean isAssignedRoleByDateTimeBranch( LocalDate date, LocalTime time, String role, String address, int areaCode) {
         long branchId = shiftController.getBranchIdByAddress(address, areaCode);
         Shift shift = shiftController.getShiftbyDateTimeAndBranch(date, time, branchId);
+
+        if (shift == null) {  return false;  }   //   null if no such shift exists, so false.
+
         return shift.getAssignedEmployees().entrySet().stream()
                 .anyMatch(entry -> entry.getKey().contains(role));
     }
@@ -275,6 +278,9 @@ public class AssignmentController {
     public boolean isAssignedDriverByDateTimeAddress(long driverId, LocalDate date, LocalTime time, int areaCode, String address) {
         long branchId = shiftController.getBranchIdByAddress(address, areaCode);
         Shift shift = shiftController.getShiftbyDateTimeAndBranch(date, time, branchId);
+
+        if (shift == null) {  return false;  }   //   null if no such shift exists, so false.
+
         return shift.getAssignedEmployees().entrySet().stream()
                 .anyMatch(entry -> entry.getKey().startsWith("Driver")
                         && entry.getValue().contains(driverId));

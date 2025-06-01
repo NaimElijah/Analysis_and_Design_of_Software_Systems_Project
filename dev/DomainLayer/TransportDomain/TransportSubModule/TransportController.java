@@ -28,11 +28,11 @@ public class TransportController {
 
     private ObjectMapper objectMapper;
 
-    public TransportController(SiteFacade sF, TruckFacade tF) throws SQLException {
+    public TransportController(SiteFacade sF, TruckFacade tF, ObjectMapper oM) throws SQLException {
         this.transportsRepos = new TransportsRepoImpl(sF, tF);
         this.siteFacade = sF;
         this.truckFacade = tF;
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = oM;
     }
 
     public TransportsRepo getTransportsRepos() {return transportsRepos;}
@@ -302,15 +302,6 @@ public class TransportController {
     }
 
 
-    //TODO:        Do on all of the service layer, catches for the SQLException               <<----------------------     <<------------------
-    //TODO:        Do on all of the service layer, catches for the SQLException               <<----------------------     <<------------------
-    //TODO:        Do on all of the service layer, catches for the SQLException               <<----------------------     <<------------------
-    //TODO:        Do on all of the service layer, catches for the SQLException               <<----------------------     <<------------------
-    //TODO:        Do on all of the service layer, catches for the SQLException               <<----------------------     <<------------------
-    //TODO:        Do on all of the service layer, catches for the SQLException               <<----------------------     <<------------------
-    //TODO:        Do on all of the service layer, catches for the SQLException               <<----------------------     <<------------------
-    //TODO:        Do on all of the service layer, catches for the SQLException               <<----------------------     <<------------------
-    //TODO:    make all of these catches do the same for simplicity (return the same)
 
 
     public void setTransportDriver(int TranDocID, long DriverID, boolean isNotDriver, boolean isActive, boolean hasRole) throws FileNotFoundException, ArrayIndexOutOfBoundsException, FileAlreadyExistsException, CloneNotSupportedException, CommunicationException, ClassNotFoundException, SQLException {
@@ -642,7 +633,7 @@ public class TransportController {
         }
 
         TransportDoc temp = null;
-        int queuedIndex = 0;
+        int queuedIndex = 1;
         for (TransportDoc queuedTransport : this.transportsRepos.getQueuedTransports()){   //  first checking in the queuedTransports
             if (tran_ID == queuedTransport.getTran_Doc_ID()){
                 ItemsDoc addition = queuedTransport.addDestSite(itemsDoc_num, new Site(new Address(destSiteArea, destSiteAddress), contName, contNum));
@@ -682,7 +673,7 @@ public class TransportController {
         }
 
         TransportDoc temp = null;
-        int queuedIndex = 0;
+        int queuedIndex = 1;
         for (TransportDoc queuedTransport : this.transportsRepos.getQueuedTransports()){
             if (tran_ID == queuedTransport.getTran_Doc_ID()){
                 if (queuedTransport.removeDestSite(itemsDoc_num) == -1){  throw new ClassNotFoundException("The Site's Items Document Number is not in that Transport");  }
@@ -914,7 +905,7 @@ public class TransportController {
 
         TransportDoc temp = null;   ///  so the removal and insertion of the Transport will be outside of a loop over the elements to prevent problems
         // setting the new weight of the Transport if in the queuedTransports
-        int queuedIndex = 0;
+        int queuedIndex = 1;
         for (TransportDoc queuedTransportDoc : this.transportsRepos.getQueuedTransports()) {
             for (ItemsDoc itemsDoc : queuedTransportDoc.getDests_Docs()) {
                 if (itemsDoc.getItemDoc_num() == itemsDoc_num) {
@@ -951,11 +942,7 @@ public class TransportController {
     }
 
 
-    //TODO:   in the service layer add an exception catching of the SQLException and do the same for all functions there.          <<<<---------------------------
-    //TODO:   in the service layer add an exception catching of the SQLException and do the same for all functions there.          <<<<---------------------------
-    //TODO:   in the service layer add an exception catching of the SQLException and do the same for all functions there.          <<<<---------------------------
-    //TODO:   in the service layer add an exception catching of the SQLException and do the same for all functions there.          <<<<---------------------------
-    //TODO:   in the service layer add an exception catching of the SQLException and do the same for all functions there.          <<<<---------------------------
+
 
     public void removeItem(int itemsDoc_num, String itemName, double itemWeight, int amount, boolean cond) throws FileNotFoundException, ClassNotFoundException, SQLException {
         if (!this.transportsRepos.getItemsDocs().containsKey(itemsDoc_num)) { throw new FileNotFoundException("Item's Document ID not found within sent Transports"); }
@@ -965,7 +952,7 @@ public class TransportController {
 
         TransportDoc temp = null;   ///  so the removal and insertion of the Transport will be outside of a loop over the elements to prevent problems
         // checking first in the queued transports, and decreasing weight
-        int queuedIndex = 0;
+        int queuedIndex = 1;
         for (TransportDoc queuedTransportDoc : this.transportsRepos.getQueuedTransports()) {
             for (ItemsDoc itemsDoc : queuedTransportDoc.getDests_Docs()) {
                 if (itemsDoc.getItemDoc_num() == itemsDoc_num) {
@@ -1010,7 +997,7 @@ public class TransportController {
 
         TransportDoc temp = null;   ///  so the removal and insertion of the Transport will be outside of a loop over the elements to prevent problems
         // checking first in the queued transports, and decreasing weight
-        int queuedIndex = 0;
+        int queuedIndex = 1;
         for (TransportDoc queuedTransportDoc : this.transportsRepos.getQueuedTransports()) {
             for (ItemsDoc itemsDoc : queuedTransportDoc.getDests_Docs()) {
                 if (itemsDoc.getItemDoc_num() == itemsDoc_num) {

@@ -16,6 +16,9 @@ import ServiceLayer.TransportServices.*;
 import PresentationLayer.EmployeeSubModule.HR_MainCLI;
 import PresentationLayer.TransportPresentation.MainTranSysCLI;
 import PresentationLayer.TransportPresentation.TranManCLI;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -86,8 +89,15 @@ public class SystemFactory {
         TruckFacade truckFacade = new TruckFacade();   // repository initialized inside here
         SiteFacade siteFacade = new SiteFacade();   // repository initialized inside here
 
+        ObjectMapper objMapper = new ObjectMapper();
+        // Set up the ObjectMapper with JavaTimeModule to handle LocalDate and other Java 8 date types.
+        objMapper.registerModule(new JavaTimeModule());
+        // Optional: Configure SerializationFeature to avoid exceptions when serializing dates to JSON
+        objMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+//        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);   //  if needed for LocalDateTime serialization
+
         // Initialize controllers
-        TransportController transportController = new TransportController(siteFacade, truckFacade);   // repositories initialized inside here
+        TransportController transportController = new TransportController(siteFacade, truckFacade, objMapper);   // repositories initialized inside here
 
         // Create EmployeeIntegrationService
         EmployeeIntegrationService employeeIntegrationService = new EmployeeIntegrationService(
@@ -95,9 +105,10 @@ public class SystemFactory {
             employeeComponents.getShiftService()
         );
 
+
         // Initialize services
         TruckService truckService = new TruckService(truckFacade, employeeIntegrationService);
-        TransportService transportService = new TransportService(transportController, employeeIntegrationService);
+        TransportService transportService = new TransportService(transportController, employeeIntegrationService, objMapper);
         SiteService siteService = new SiteService(siteFacade, employeeIntegrationService);
 
         // Initialize startup service
@@ -111,7 +122,8 @@ public class SystemFactory {
             transportService,
             siteService,
             startUpService,
-            employeeIntegrationService
+            employeeIntegrationService,
+            objMapper
         );
     }
 
@@ -135,9 +147,9 @@ public class SystemFactory {
      * @param es The EmployeeIntegrationService to use.
      * @return A TranManCLI instance.
      */
-    public MainTranSysCLI createTransportCLI(TruckService ts, TransportService trs, SiteService sis, StartUpStateService starUpStService, EmployeeIntegrationService es) {
+    public MainTranSysCLI createTransportCLI(TruckService ts, TransportService trs, SiteService sis, StartUpStateService starUpStService, EmployeeIntegrationService es, ObjectMapper oM) {
         // Create & return MainTranSysCLI
-        return new MainTranSysCLI(ts, trs, sis, starUpStService, es);
+        return new MainTranSysCLI(ts, trs, sis, starUpStService, es, oM);
     }
 
     /**
@@ -210,6 +222,7 @@ public class SystemFactory {
         private final SiteService siteService;
         private final StartUpStateService startUpService;
         private final EmployeeIntegrationService employeeIntegrationService;
+        private final ObjectMapper oM;
 
         public TransportModuleComponents(
                 TruckFacade truckFacade,
@@ -219,7 +232,8 @@ public class SystemFactory {
                 TransportService transportService,
                 SiteService siteService,
                 StartUpStateService startUpService,
-                EmployeeIntegrationService employeeIntegrationService) {
+                EmployeeIntegrationService employeeIntegrationService,
+                ObjectMapper om) {
             this.truckFacade = truckFacade;
             this.siteFacade = siteFacade;
             this.transportController = transportController;
@@ -228,6 +242,7 @@ public class SystemFactory {
             this.siteService = siteService;
             this.startUpService = startUpService;
             this.employeeIntegrationService = employeeIntegrationService;
+            this.oM = om;
         }
 
         public TruckFacade getTruckFacade() {
@@ -257,5 +272,7 @@ public class SystemFactory {
         public EmployeeIntegrationService getEmployeeIntegrationService() {
             return employeeIntegrationService;
         }
+
+        public ObjectMapper getoM() {return oM;}
     }
 }

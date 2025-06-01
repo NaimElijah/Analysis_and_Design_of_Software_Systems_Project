@@ -17,27 +17,30 @@ class SiteFacadeTest {
     @BeforeEach
     public void setup() throws SQLException {
         siteFacade = new SiteFacade();
+        siteFacade.loadDBData();
     }
 
     @Test
-    public void testAddShippingArea() throws KeyAlreadyExistsException, SQLException {
-        siteFacade.addShippingArea(1, "Area 1");
+    public void testAddShippingArea() throws KeyAlreadyExistsException, SQLException, AttributeNotFoundException, ContextNotEmptyException {
+        siteFacade.addShippingArea(4, "Area 1");
         assertTrue(siteFacade.getSiteRepo().getShippingAreas().containsKey(1));
+        siteFacade.deleteShippingArea(4);
     }
 
     @Test
-    public void testAddShippingAreaDuplicate() {
+    public void testAddShippingAreaDuplicate() throws AttributeNotFoundException, SQLException, ContextNotEmptyException {
         assertThrows(KeyAlreadyExistsException.class, () -> {
-            siteFacade.addShippingArea(1, "Area 1");
-            siteFacade.addShippingArea(1, "Area 1 Duplicate");
+            siteFacade.addShippingArea(4, "Area 1");
+            siteFacade.addShippingArea(4, "Area 1 Duplicate");
         });
+        siteFacade.deleteShippingArea(4);
     }
 
     @Test
     public void testDeleteShippingArea() throws KeyAlreadyExistsException, AttributeNotFoundException, ContextNotEmptyException, SQLException {
-        siteFacade.addShippingArea(1, "Area 1");
-        siteFacade.deleteShippingArea(1);
-        assertFalse(siteFacade.getSiteRepo().getShippingAreas().containsKey(1));
+        siteFacade.addShippingArea(4, "Area 1");
+        siteFacade.deleteShippingArea(4);
+        assertFalse(siteFacade.getSiteRepo().getShippingAreas().containsKey(4));
     }
 
     @Test
@@ -48,13 +51,17 @@ class SiteFacadeTest {
     }
 
     @Test
-    public void testDeleteShippingAreaWithSites() throws KeyAlreadyExistsException, ClassNotFoundException, SQLException {
-        siteFacade.addShippingArea(1, "Area 1");
-        siteFacade.addSiteTOArea(1, "123 Street", "John", 1234567890L);
+    public void testDeleteShippingAreaWithSites() throws KeyAlreadyExistsException, ClassNotFoundException, SQLException, AttributeNotFoundException, ContextNotEmptyException {
+        siteFacade.addShippingArea(4, "Area 1");
+        siteFacade.addSiteTOArea(4, "123 Street", "John", 1234567890L);
         assertThrows(ContextNotEmptyException.class, () -> {
-            siteFacade.deleteShippingArea(1);
+            siteFacade.deleteShippingArea(4);
         });
+        siteFacade.deleteSiteFromArea(4, "123 Street");
+        siteFacade.deleteShippingArea(4);
     }
+
+    //TODO:    from here refactor
 
     @Test
     public void testSetShippingAreaName() throws KeyAlreadyExistsException, ClassNotFoundException, SQLException {
