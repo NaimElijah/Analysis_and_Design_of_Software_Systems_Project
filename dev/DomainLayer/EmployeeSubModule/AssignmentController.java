@@ -239,21 +239,19 @@ public class AssignmentController {
      * and branch determined by its address and area code.
      *
      * @param date The date of the shift to be checked.
-     * @param hour The time of the shift to be checked.
+     * @param time The time of the shift to be checked.
      * @param role The role to verify within the shift.
      * @param address The address of the branch where the shift is scheduled.
      * @param areaCode The area code of the branch where the shift is scheduled.
      * @return true if the specified role is assigned in the given shift; false otherwise.
      */
-    public boolean isAssignedRoleByDateTimeBranch( LocalDate date, LocalTime hour, String role, String address, int areaCode) {
-        String PERMISSION = " "; // TODO: Define the permission needed for this action
-//        if (!employeeController.isEmployeeAuthorised(doneBy, PERMISSION)) {
-//            throw new UnauthorizedPermissionException("User does not have permission to view assign employees");
-//        }
-        long branch = shiftController.getBranchIdByAddress(address, areaCode);
-        Shift shift = shiftController.getShiftbyDateTimeAndBranch(date, hour, branch);
-        return shift.getAssignedEmployees().get(role) != null;
+    public boolean isAssignedRoleByDateTimeBranch( LocalDate date, LocalTime time, String role, String address, int areaCode) {
+        long branchId = shiftController.getBranchIdByAddress(address, areaCode);
+        Shift shift = shiftController.getShiftbyDateTimeAndBranch(date, time, branchId);
+        return shift.getAssignedEmployees().entrySet().stream()
+                .anyMatch(entry -> entry.getKey().contains(role));
     }
+
 
     private ShiftDTO convertShiftToDTO(Shift shift) {
         return new ShiftDTO(
@@ -273,5 +271,13 @@ public class AssignmentController {
         );
     }
 
+
+    public boolean isAssignedDriverByDateTimeAddress(long driverId, LocalDate date, LocalTime time, int areaCode, String address) {
+        long branchId = shiftController.getBranchIdByAddress(address, areaCode);
+        Shift shift = shiftController.getShiftbyDateTimeAndBranch(date, time, branchId);
+        return shift.getAssignedEmployees().entrySet().stream()
+                .anyMatch(entry -> entry.getKey().startsWith("Driver")
+                        && entry.getValue().contains(driverId));
+        }
 
 }

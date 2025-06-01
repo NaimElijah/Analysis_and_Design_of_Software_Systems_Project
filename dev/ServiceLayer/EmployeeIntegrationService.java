@@ -5,6 +5,7 @@ import ServiceLayer.EmployeeSubModule.ShiftService;
 import ServiceLayer.exception.AuthorizationException;
 import ServiceLayer.exception.ServiceException;
 import ServiceLayer.exception.ShiftServiceException;
+import Util.config;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -76,7 +77,7 @@ public class EmployeeIntegrationService {
         try {
             LocalDate date = dateTime.toLocalDate();
             LocalTime time = dateTime.toLocalTime();
-            return shiftService.isAssignedRoleByDateTimeBranch(date, time,"Warehouseman", address, areaCode);
+            return shiftService.isAssignedRoleByDateTimeBranch(date, time, config.ROLE_WAREHOUSEMAN, address, areaCode);
         } catch (Exception e) {
             throw new ShiftServiceException("Error checking if warehouseman is on shift at the specified time: " + e.getMessage());
         }
