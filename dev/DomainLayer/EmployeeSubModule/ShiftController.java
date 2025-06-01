@@ -202,12 +202,16 @@ public class ShiftController {
         if (shiftType == null || date == null || rolesRequired == null || assignedEmployees == null) {
             throw new IllegalArgumentException("Shift type, date, roles required, and assigned employees cannot be null");
         }
+        if (startHour == null || endHour == null || startHour.isAfter(endHour)) {
+            throw new IllegalArgumentException("Start hour and end hour cannot be null");
+        }
         // Checks if a shift manager is assigned as a required role
         // TODO: test that in case of no shift manager there is no exception thrown
         if (!rolesRequired.containsKey(ShiftManagerStr) || rolesRequired.get(ShiftManagerStr) <= 0) {
             throw new InvalidInputException("At least one shift manager is required for every shift");
         }
         long branch = empCon.getEmployeeByIsraeliId(doneBy).getBranchId(); // Get the branch of the employee that is creating the shift
+        initializeShiftIdCounter();
 
         // Create a new ShiftDTO
         ShiftDTO shiftDTO = new ShiftDTO(
@@ -1081,5 +1085,27 @@ public class ShiftController {
             }
         }
         return isOnShift;
+    }
+
+    public String getCurrentShift(long doneBy) {
+        String PERMISSION_REQUIRED = "VIEW_SHIFT"; // TODO: check if this is the correct permission for low-level access
+        if (!empCon.isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
+            throw new UnauthorizedPermissionException("User does not have permission to get current shift");
+        }
+        long branchId = empCon.getEmployeeByIsraeliId(doneBy).getBranchId(); // Get the branch of the employee that is requesting the shifts
+        LocalDate today = LocalDate.now();
+        LocalTime now = LocalTime.now();
+
+        // Get all shifts for the branch from the repository
+        List<ShiftDTO> branchShifts = shiftRepository.getAllByBranchId(branchId);
+
+        // Find the current shift based on today's date and current time
+        return branchShifts.stream()
+                .filter(dto -> dto.getShiftDate().equals(today) &&
+                               dto.getStartHour().isBefore(now) &&
+                               dto.getEndHour().isAfter(now))
+                .findFirst()
+                .map(ShiftDTO::serialize)
+                .orElseThrow(() -> new ShiftNotFoundException("No current shift found for today in branch: " + branchId));
     }
 }

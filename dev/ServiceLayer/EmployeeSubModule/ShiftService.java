@@ -1,10 +1,7 @@
 package ServiceLayer.EmployeeSubModule;
 
 import DTOs.ShiftDTO;
-import DomainLayer.EmployeeSubModule.AssignmentController;
-import DomainLayer.EmployeeSubModule.AvailabilityController;
-import DomainLayer.EmployeeSubModule.Shift;
-import DomainLayer.EmployeeSubModule.ShiftController;
+import DomainLayer.EmployeeSubModule.*;
 import DomainLayer.enums.ShiftType;
 import DomainLayer.exception.ShiftNotFoundException;
 import ServiceLayer.exception.AssignmentServiceException;
@@ -707,10 +704,24 @@ public class ShiftService {
     public boolean isDriverOnShiftAt(long driverId, LocalDate date, LocalTime time, String address, int areaCode) {
         try {
             // Check if the driver is assigned to a shift at the specified date, time, and branch location
-            return assignmentController.isAssignedEmployeeByDateTimeBranch(driverId, date, time, driverId, areaCode);
+            return assignmentController.isAssignedDriverByDateTimeAddress(driverId, date, time, areaCode, address);
         } catch (RuntimeException e) {
             // Log the error or handle it appropriately
             throw new ShiftServiceException("Error checking if driver is on shift: " + e.getMessage(), e);
+        }
+    }
+
+    public ShiftDTO getCurrentShift(long doneBy) {
+        try {
+            String shiftStr = shiftController.getCurrentShift(doneBy);
+            if (shiftStr == null || shiftStr.isEmpty()) {
+                throw new ShiftNotFoundException("No current shift found for employee ID: " + doneBy);
+            }
+            return deserializeShiftDTO(shiftStr);
+        } catch (ShiftNotFoundException e) {
+            throw new ShiftNotFoundException(e.getMessage());
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Error retrieving current shift: " + e.getMessage(), e);
         }
     }
 }

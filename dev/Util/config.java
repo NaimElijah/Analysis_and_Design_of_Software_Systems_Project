@@ -4,7 +4,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.DayOfWeek;
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Properties;
@@ -29,6 +28,7 @@ public class config {
     public static final String ROLE_HR_MANAGER = initStringValue("ROLE_HR_MANAGER", "HR Manager");
     public static final String ROLE_SHIFT_MANAGER = initStringValue("ROLE_SHIFT_MANAGER", "Shift Manager");
     public static final String ROLE_TRANSPORT_MANAGER = initStringValue("ROLE_TRANSPORT_MANAGER", "Transport Manager");
+    public static final String ROLE_WAREHOUSEMAN = initStringValue("ROLE_WAREHOUSEMAN", "WarehouseMan");
     public static final String ROLE_CASHIER = initStringValue("ROLE_CASHIER", "Cashier");
     public static final String ROLE_CLEANER = initStringValue("ROLE_CLEANER", "Cleaner");
     public static final String ROLE_STOCKER = initStringValue("ROLE_STOCKER", "Stocker");

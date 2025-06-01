@@ -61,6 +61,7 @@ public class ShiftCLI {
 
         if (hasPermission("VIEW_SHIFT")) {
             menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". View All Shifts");
+            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". View Current Shift");
             menuOptions.add(YELLOW + optionNumber++ + RESET + ". View Shift Details");
             menuOptions.add(YELLOW + optionNumber++ + RESET + ". View My Shifts");
         }
@@ -109,6 +110,11 @@ public class ShiftCLI {
             if (hasPermission("VIEW_SHIFT")) {
                 if (choiceNum == currentOption++) {
                     viewAllShifts();
+                    return true;
+                }
+
+                if (choiceNum == currentOption++) {
+                    viewCurrentShift();
                     return true;
                 }
 
@@ -165,6 +171,58 @@ public class ShiftCLI {
             printError("Please enter a valid number.");
             return true;
         }
+    }
+
+    private void viewCurrentShift() {
+        printSectionHeader("Current Shift");
+
+        // Display breadcrumb navigation
+        CliUtil.printBreadcrumb("Shift Management > View Current Shift");
+
+        try {
+            // Get current shift by date and type
+            ShiftDTO shift = shiftService.getCurrentShift(doneBy);
+            if (shift == null) {
+                return; // User cancelled or no shift found
+            }
+
+            CliUtil.printSuccessWithCheckmark("Found current shift: " + shift.getShiftDate().format(dateFormatter) + " " + shift.getShiftType() + " (ID: " + shift.getId() + ")");
+            CliUtil.printEmptyLine();
+
+            // Display shift details
+            List<String[]> table = new ArrayList<>();
+            table.add(new String[]{"ID", String.valueOf(shift.getId())});
+            table.add(new String[]{"Date", shift.getShiftDate().toString()});
+            table.add(new String[]{"Type", shift.getShiftType().toString()});
+            table.add(new String[]{"Hours", shift.getHours()});
+
+            String openStatus = shift.isOpen()
+                ? CliUtil.greenString("Open")
+                : CliUtil.redString("Closed");
+            table.add(new String[]{"Status", openStatus});
+
+            String managerStatus = shift.isAssignedShiftManager()
+                ? CliUtil.greenString("Assigned")
+                : CliUtil.redString("Not Assigned");
+            table.add(new String[]{"Shift Manager", managerStatus});
+            table.add(new String[]{"Time", LocalTime.now().toString()});
+
+            Map<String, List<String[]>> content = new HashMap<>();
+            content.put("Shift Data", table);
+            content.put("Assigned Employees", shift.getAssignedEmployees().values().stream()
+                .map(employees -> employees.stream()
+                    .map(employeeId -> new String[]{formatEmployeeDisplay(employeeId)})
+                    .collect(Collectors.toList()))
+                .flatMap(List::stream)
+                .collect(Collectors.toList()));
+
+            CliUtil.printFormattedTable("Current Shift Details", List.of("Shift Data", "Assigned Employees"), content, Map.of());
+
+        } catch (Exception e) {
+            printError("Unexpected error: " + e.getMessage());
+        }
+
+        waitForEnter();
     }
 
     private void printWelcomeBanner() {
