@@ -618,8 +618,7 @@ public class EmployeeController {
 
         // Check if the employee has the one of the Driver roles or the Transport Manager role
         Set<String> roles = employeeDTO.getRoles();
-        return roles.contains(config.ROLE_DRIVER_A) || roles.contains(config.ROLE_DRIVER_B) || roles.contains(config.ROLE_DRIVER_C) ||
-               roles.contains(config.ROLE_DRIVER_D) || roles.contains(config.ROLE_DRIVER_E) || roles.contains(config.ROLE_TRANSPORT_MANAGER);
+        return roles.stream().anyMatch(role -> role.startsWith("ROLE_DRIVER_") || role.equals(config.ROLE_TRANSPORT_MANAGER));
     }
 
     public boolean isBranch(String address, int areaCode) {

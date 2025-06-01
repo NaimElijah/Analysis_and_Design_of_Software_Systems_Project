@@ -6,6 +6,7 @@ import ServiceLayer.TransportServices.SiteService;
 import ServiceLayer.TransportServices.StartUpStateService;
 import ServiceLayer.TransportServices.TransportService;
 import ServiceLayer.TransportServices.TruckService;
+import Util.config;
 
 import java.util.Scanner;
 
@@ -25,7 +26,7 @@ public class MainTranSysCLI {
     }
 
     public void transportModuleStartup(long loggedId){
-        startUpCont.startUpData();  //TODO:  see if needed or startup is done before, I think this needs to be sooner, we need to pass which DB are we using.
+        this.startUpCont.startUpData();
         entranceToTransportModuleCLI(loggedId);
     }
 
@@ -38,7 +39,7 @@ public class MainTranSysCLI {
             System.out.println("Enter your choice: ");
             int choice = this.scanner.nextInt();
             if(choice == 1){
-                if (this.eis.hasRole(loggedId, "Transport manager")) {
+                if (this.eis.hasRole(loggedId, config.ROLE_TRANSPORT_MANAGER)) {
                     System.out.println("\n   --------    Welcome, Transport Manager    -------\n");  // welcome message upon login
                     tranManCont.transportManagerMainMenu(loggedId);
                 } else if (isDriver) {

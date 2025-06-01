@@ -279,7 +279,7 @@ public class TransportService {
             // driver belongs to src site(which is apparently a branch because true) and is there at the right time
             return true;      //TODO:   make sure isDriverOnShiftAt returns false if the site I gave him isn't a branch.     <<<----------    the src site can be a supplier.
         } else {
-            // so we need to check if that driver is from any destination site       //   Note:   destination sites can only be branches         <<----------------------   <<-----------
+            // so we need to check if that driver is from any destination site       //TODO:   Note:   destination sites can be branches or suppliers        <<----------------------   <<-----------
             for (ItemsDocDTO itemsDocDTO : transport_DTO.getDests_Docs()){
                 if (this.employeeIntegrationService.isDriverOnShiftAt(transportDriverID, transportDepar_t, itemsDocDTO.getDest_siteDTO().getSiteAddressString(), itemsDocDTO.getDest_siteDTO().getSiteAreaNum())){
                     return true;    ///   make sure isDriverOnShiftAt return false if the site I gave him isn't a branch, just because. (even though dest sites are branches).
@@ -297,7 +297,7 @@ public class TransportService {
                 return false;   //  because there won't be any warehouseman to load the truck at the src site
             }
         }
-        for (ItemsDocDTO itemsDocDTO : transportDto.getDests_Docs()){     ///    all dest sites are branches so need to check for wareHouseMan in them when transport arrives
+        for (ItemsDocDTO itemsDocDTO : transportDto.getDests_Docs()){     //TODO:    all dest sites are branches
             if (!this.employeeIntegrationService.isWarehousemanOnShiftAt(itemsDocDTO.getEstimatedArrivalTime(), itemsDocDTO.getDest_siteDTO().getSiteAddressString(), itemsDocDTO.getDest_siteDTO().getSiteAreaNum())){
                 return false;   //  because there won't be any warehouseman to offload the truck at the dest site
             }

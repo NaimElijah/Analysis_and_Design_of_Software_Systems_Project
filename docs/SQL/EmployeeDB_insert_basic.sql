@@ -140,6 +140,7 @@ INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Admin', 'VIEW_TR
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Admin', 'DELETE_ITEM_FROM_TRANSPORT');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Admin', 'ADD_TRUCK');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Admin', 'DRIVE_VEHICLE');
+
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('HR manager', 'VIEW_SHIFT');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('HR manager', 'UPDATE_SHIFT');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('HR manager', 'CREATE_SHIFT');
@@ -156,6 +157,7 @@ INSERT INTO RolePermissions (roleName, permissionName) VALUES ('HR manager', 'GE
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('HR manager', 'CREATE_EMPLOYEE');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('HR manager', 'UPDATE_AVAILABLE');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('HR manager', 'MANAGE_HR');
+
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Transport Manager', 'SHOW_SITES');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Transport Manager', 'ADD_SHIPPING_AREA');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Transport Manager', 'VIEW_TRANSPORT');
@@ -174,37 +176,60 @@ INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Transport Manage
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Transport Manager', 'CREATE_TRANSPORT');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Transport Manager', 'ADD_SITE');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Transport Manager', 'DELETE_SHIPPING_AREA');
+INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Transport Manager', 'VIEW_SHIFT');
+INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Transport Manager', 'UPDATE_AVAILABLE');
+INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Transport Manager', 'GET_SHIFT');
+
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Shift Manager', 'VIEW_SHIFT');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Shift Manager', 'UPDATE_AVAILABLE');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Shift Manager', 'GET_SHIFT');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Shift Manager', 'MANAGE_SHIFT');
+
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Cashier', 'HANDLE_CASH');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Cashier', 'VIEW_SHIFT');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Cashier', 'UPDATE_AVAILABLE');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Cashier', 'GET_SHIFT');
+
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Stocker', 'VIEW_SHIFT');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Stocker', 'MANAGE_INVENTORY');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Stocker', 'STOCK_SHELVES');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Stocker', 'GET_SHIFT');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Stocker', 'UPDATE_AVAILABLE');
+
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Cleaner', 'VIEW_SHIFT');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Cleaner', 'UPDATE_AVAILABLE');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Cleaner', 'GET_SHIFT');
+
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverA', 'VIEW_SHIFT');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverA', 'UPDATE_AVAILABLE');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverA', 'GET_SHIFT');
+INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverA', 'VIEW_RELEVANT_TRANSPORTS');
+INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverA', 'EDIT_TRANSPORT_ITEM_CONDITION');
+
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverB', 'VIEW_SHIFT');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverB', 'UPDATE_AVAILABLE');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverB', 'GET_SHIFT');
+INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverB', 'VIEW_RELEVANT_TRANSPORTS');
+INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverB', 'EDIT_TRANSPORT_ITEM_CONDITION');
+
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverC', 'VIEW_SHIFT');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverC', 'UPDATE_AVAILABLE');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverC', 'GET_SHIFT');
+INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverC', 'VIEW_RELEVANT_TRANSPORTS');
+INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverC', 'EDIT_TRANSPORT_ITEM_CONDITION');
+
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverD', 'VIEW_SHIFT');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverD', 'UPDATE_AVAILABLE');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverD', 'GET_SHIFT');
+INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverD', 'VIEW_RELEVANT_TRANSPORTS');
+INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverD', 'EDIT_TRANSPORT_ITEM_CONDITION');
+
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverE', 'VIEW_SHIFT');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverE', 'UPDATE_AVAILABLE');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverE', 'GET_SHIFT');
+INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverE', 'VIEW_RELEVANT_TRANSPORTS');
+INSERT INTO RolePermissions (roleName, permissionName) VALUES ('DriverE', 'EDIT_TRANSPORT_ITEM_CONDITION');
+
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('WarehouseMan', 'VIEW_SHIFT');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('WarehouseMan', 'MANAGE_INVENTORY');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('WarehouseMan', 'STOCK_SHELVES');
@@ -226,7 +251,7 @@ VALUES (555555555, 'Yael', 'Levy', 9000, '01-01-2020', TRUE, '01-01-2023', '01-0
 INSERT INTO Employees (israeliId, firstName, lastName, salary, startOfEmployment, isActive, creationDate, updateDate, branchId)
 VALUES (666666666, 'David', 'Mizrahi', 8000, '02-02-2017', TRUE, '01-01-2023', '01-01-2023', 2);
 INSERT INTO Employees (israeliId, firstName, lastName, salary, startOfEmployment, isActive, creationDate, updateDate, branchId)
-VALUES (7777777, 'Emmanuel', 'Macroni', 8000, '15-11-2020', TRUE, '01-01-2023', '01-01-2023', 2);
+VALUES (777777777, 'Emmanuel', 'Macroni', 8000, '15-11-2020', TRUE, '01-01-2023', '01-01-2023', 2);
 INSERT INTO Employees (israeliId, firstName, lastName, salary, startOfEmployment, isActive, creationDate, updateDate, branchId)
 VALUES (888888888, 'Doron', 'Yakov', 8000, '15-11-2019', TRUE, '01-01-2023', '01-01-2023', 2);
 

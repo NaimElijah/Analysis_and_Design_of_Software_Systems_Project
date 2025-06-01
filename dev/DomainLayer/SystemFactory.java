@@ -252,9 +252,7 @@ public class SystemFactory {
             return siteService;
         }
 
-        public StartUpStateService getStartUpService() {
-            return startUpService;
-        }
+        public StartUpStateService getStartUpService() {return startUpService;}
 
         public EmployeeIntegrationService getEmployeeIntegrationService() {
             return employeeIntegrationService;

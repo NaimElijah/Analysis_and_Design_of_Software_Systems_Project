@@ -61,7 +61,7 @@ public class MainCLI {
             CliUtil.printError("User ID cannot access the system.");
             return ExitAction.LOGOUT;
         }
-        if (!employeeComponents.getEmployeeService().canAccessTransportModule(userId))
+        if (employeeComponents.getEmployeeService().canAccessTransportModule(userId))
             canAccessTransportModule = true;
 
         if (!canAccessTransportModule) {
