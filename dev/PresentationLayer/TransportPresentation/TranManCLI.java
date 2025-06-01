@@ -226,6 +226,7 @@ public class TranManCLI {
 
         System.out.println("We'll now add the Sites(and the items for each site).");
         System.out.println("\nThe Transport's Site Arrival Order will be based on the order of Sites you add (first added -> first arrived to)");
+        System.out.println("Note: Destination sites can only be Branches of Super Lee.");             ///   Added according to requirements.   <<----------
         System.out.println("\n- Now Enter Each Site and for Each Site enter the Items for that site.");
 
         boolean continueAnotherSite = true, continueAnotherItem = true, continueAskingDifferentAreaNum = true, siteExists = false;
@@ -238,6 +239,8 @@ public class TranManCLI {
 
         while (continueAnotherSite){   ///   Sites WHILE(TRUE) LOOP
             siteExists = false;
+            //TODO:     also make sure with the isBranch function that the destination sites are Branches, and if not give another chance to choose.    <<<----------------------
+            //TODO:     also make sure with the isBranch function that the destination sites are Branches, and if not give another chance to choose.    <<<----------------------
             while (!siteExists){
                 continueAskingDifferentAreaNum = true;
                 while (continueAskingDifferentAreaNum){

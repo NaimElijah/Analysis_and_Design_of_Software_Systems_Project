@@ -282,7 +282,7 @@ public class TransportService {
             // so we need to check if that driver is from any destination site
             for (ItemsDocDTO itemsDocDTO : transport_DTO.getDests_Docs()){
                 if (this.employeeIntegrationService.isDriverOnShiftAt(transportDriverID, transportDepar_t, itemsDocDTO.getDest_siteDTO().getSiteAddressString(), itemsDocDTO.getDest_siteDTO().getSiteAreaNum())){
-                    return true;
+                    return true;      ///   make sure isDriverOnShiftAt return false if the site I gave him isn't a branch.
                 }
             }
         }
@@ -290,19 +290,24 @@ public class TransportService {
     }
 
 
-
-    //TODO:   if any site isn't a branch, it doesn't need a warehouse men, it's not our company, and it's valid    <<<----------------------
+    //TODO:  in the CLI, when picking another dest site, check that that dest site is a branch, because dest sites can only be branches     <<-------------------
     private boolean areWareHouseMenTimeAndPlacesValid(TransportDTO transportDto) {
-        if (!this.employeeIntegrationService.isWarehousemanOnShiftAt(transportDto.getDeparture_dt(), transportDto.getSrc_site().getSiteAddressString(), transportDto.getSrc_site().getSiteAreaNum())){
-            return false;   //  because there won't be any warehouseman to load the truck at the src site
+        if (this.employeeIntegrationService.isBranch(transportDto.getSrc_site().getSiteAddressString(), transportDto.getSrc_site().getSiteAreaNum())){  // check warehouseMen only if branch
+            if (!this.employeeIntegrationService.isWarehousemanOnShiftAt(transportDto.getDeparture_dt(), transportDto.getSrc_site().getSiteAddressString(), transportDto.getSrc_site().getSiteAreaNum())){
+                return false;   //  because there won't be any warehouseman to load the truck at the src site
+            }
         }
-        for (ItemsDocDTO itemsDocDTO : transportDto.getDests_Docs()){
+        for (ItemsDocDTO itemsDocDTO : transportDto.getDests_Docs()){     ///    all dest sites are branches so need to check for wareHouseMan in them when transport arrives
             if (!this.employeeIntegrationService.isWarehousemanOnShiftAt(itemsDocDTO.getEstimatedArrivalTime(), itemsDocDTO.getDest_siteDTO().getSiteAddressString(), itemsDocDTO.getDest_siteDTO().getSiteAreaNum())){
                 return false;   //  because there won't be any warehouseman to offload the truck at the dest site
             }
         }
         return true;
     }
+
+
+
+    public boolean isBranch(String siteAddressString, int siteAreaNum){  return this.employeeIntegrationService.isBranch(siteAddressString, siteAreaNum);  }
 
 
 
