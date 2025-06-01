@@ -528,7 +528,8 @@ public class EmployeeController {
 
     public String[] getAllDrivers() {
         // Get all employees with the "Driver" role
-        List<EmployeeDTO> driverDTOs = employeeRepository.getByRole("Driver");
+//        List<EmployeeDTO> driverDTOs = employeeRepository.getByRole("Driver");   // didn't work
+        List<EmployeeDTO> driverDTOs = employeeRepository.getDrivers();
 
         // Serialize the EmployeeDTO objects to strings
         String[] serializedDrivers = new String[driverDTOs.size()];

@@ -7,6 +7,7 @@ import DTOs.TransportModuleDTOs.TransportDTO;
 import DomainLayer.TransportDomain.SiteSubModule.Address;
 import DomainLayer.TransportDomain.TransportSubModule.TransportController;
 import ServiceLayer.EmployeeIntegrationService;
+import Util.config;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -20,6 +21,7 @@ import java.nio.file.FileAlreadyExistsException;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 
 public class TransportService {
     private EmployeeIntegrationService employeeIntegrationService;
@@ -30,8 +32,11 @@ public class TransportService {
         this.employeeIntegrationService = es;
         this.tran_f = tf;
         this.objectMapper = new ObjectMapper();
-//        this.objectMapper = new ObjectMapper();   //  if needed for LocalDateTime serialization
-//        mapper.registerModule(new JavaTimeModule());   //  if needed for LocalDateTime serialization
+        // Set up the ObjectMapper with JavaTimeModule to handle LocalDate and other Java 8 date types.
+        objectMapper.registerModule(new JavaTimeModule());
+        // Optional: Configure SerializationFeature to avoid exceptions when serializing dates to JSON
+        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+
 //        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);   //  if needed for LocalDateTime serialization
     }
 
@@ -215,13 +220,13 @@ public class TransportService {
 
 
 
-
     ///   Note:  this is licenses wise and free wise.  NOT time and place wise.
     public String isTruckDriverPairingGood(long loggedID, int truckNum, int driverID) {
         if (truckNum < 0 || driverID < 0){ return "Truck number/Driver ID values cannot be negative."; }
         try {
             ArrayList<EmployeeDTO> employeesDTOs = new ArrayList<>();
-            for (String emp : this.employeeIntegrationService.getAllDrivers()){
+            String[] receivedEmps = this.employeeIntegrationService.getAllDrivers();
+            for (String emp : receivedEmps){
                 employeesDTOs.add(this.objectMapper.readValue(emp, EmployeeDTO.class));
             }
             String lice = this.tran_f.getTruckLicenseAsStringRole(truckNum);
@@ -273,19 +278,24 @@ public class TransportService {
         LocalDateTime transportDepar_t = transport_DTO.getDeparture_dt();
         String transportSrcAddressString = transport_DTO.getSrc_site().getSiteAddressString();
         int transportSrcAreaNum = transport_DTO.getSrc_site().getSiteAreaNum();
-
         /// check if the driver is valid time and place wise.
-        if (this.employeeIntegrationService.isDriverOnShiftAt(transportDriverID, transportDepar_t, transportSrcAddressString, transportSrcAreaNum)){
-            // driver belongs to src site(which is apparently a branch because true) and is there at the right time
-            return true;      //TODO:   make sure isDriverOnShiftAt returns false if the site I gave him isn't a branch.     <<<----------    the src site can be a supplier.
-        } else {
-            // so we need to check if that driver is from any destination site       //TODO:   Note:   destination sites can be branches or suppliers        <<----------------------   <<-----------
-            for (ItemsDocDTO itemsDocDTO : transport_DTO.getDests_Docs()){
-                if (this.employeeIntegrationService.isDriverOnShiftAt(transportDriverID, transportDepar_t, itemsDocDTO.getDest_siteDTO().getSiteAddressString(), itemsDocDTO.getDest_siteDTO().getSiteAreaNum())){
-                    return true;    ///   make sure isDriverOnShiftAt return false if the site I gave him isn't a branch, just because. (even though dest sites are branches).
-                }
+
+        // src check
+        if (this.employeeIntegrationService.isBranch(transport_DTO.getSrc_site().getSiteAddressString(), transport_DTO.getSrc_site().getSiteAreaNum())){
+            // check driver in src only if branch
+            if (this.employeeIntegrationService.isDriverOnShiftAt(transportDriverID, transportDepar_t, transportSrcAddressString, transportSrcAreaNum)){
+                // if driver belongs to src site(which is apparently a branch because true) and is there at the right time
+                return true;
             }
         }
+
+        // so we need to check if that driver is from any destination site    //Note: destination sites can only be branches        <<----------------------
+        for (ItemsDocDTO itemsDocDTO : transport_DTO.getDests_Docs()){
+            if (this.employeeIntegrationService.isDriverOnShiftAt(transportDriverID, transportDepar_t, itemsDocDTO.getDest_siteDTO().getSiteAddressString(), itemsDocDTO.getDest_siteDTO().getSiteAreaNum())){
+                return true;  //TODO:   make sure isDriverOnShiftAt return false if the site I gave him isn't a branch, just because. (even though dest sites are branches).
+            }
+        }
+
         return false;
     }
 
@@ -297,7 +307,8 @@ public class TransportService {
                 return false;   //  because there won't be any warehouseman to load the truck at the src site
             }
         }
-        for (ItemsDocDTO itemsDocDTO : transportDto.getDests_Docs()){     //TODO:    all dest sites are branches
+
+        for (ItemsDocDTO itemsDocDTO : transportDto.getDests_Docs()){     //NOTE:    all dest sites are branches
             if (!this.employeeIntegrationService.isWarehousemanOnShiftAt(itemsDocDTO.getEstimatedArrivalTime(), itemsDocDTO.getDest_siteDTO().getSiteAddressString(), itemsDocDTO.getDest_siteDTO().getSiteAreaNum())){
                 return false;   //  because there won't be any warehouseman to offload the truck at the dest site
             }
@@ -942,6 +953,48 @@ public class TransportService {
         }
         return resOfAllTransports;
     }
+
+
+    private ArrayList<String> getDriverLicenseStringFromEmpDTO(EmployeeDTO emp) {
+        ArrayList<String> driverLicenseStrings = new ArrayList<>();
+        if (this.employeeIntegrationService.hasRole(emp.getIsraeliId(), config.ROLE_DRIVER_A)){  driverLicenseStrings.add("A");  }
+        if (this.employeeIntegrationService.hasRole(emp.getIsraeliId(), config.ROLE_DRIVER_B)){  driverLicenseStrings.add("B");  }
+        if (this.employeeIntegrationService.hasRole(emp.getIsraeliId(), config.ROLE_DRIVER_C)){  driverLicenseStrings.add("C");  }
+        if (this.employeeIntegrationService.hasRole(emp.getIsraeliId(), config.ROLE_DRIVER_D)){  driverLicenseStrings.add("D");  }
+        if (this.employeeIntegrationService.hasRole(emp.getIsraeliId(), config.ROLE_DRIVER_E)){  driverLicenseStrings.add("E");  }
+        return driverLicenseStrings;
+    }
+
+
+    public String showAllDrivers(long loggedID) throws JsonProcessingException {
+        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
+        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "VIEW_TRANSPORT")){  // a Transport manager who can view transports
+            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
+        }
+
+        String res = "Showing All Drivers:\n\n";
+        List<EmployeeDTO> employeesDTOs = new ArrayList<>();
+
+        try {
+            for (String emp : this.employeeIntegrationService.getAllDrivers()){  employeesDTOs.add(this.objectMapper.readValue(emp, EmployeeDTO.class));  }
+
+            for (EmployeeDTO emp : employeesDTOs){
+                res += emp.toString() + "\nDriving Licenses: ";
+                for (String licenseStr : getDriverLicenseStringFromEmpDTO(emp)){
+                    res +=  licenseStr + ", ";
+                }
+                res = res.substring(0, res.length() - 2) + ".\n\n";
+            }
+
+        } catch (JsonProcessingException e) {
+            return "JSON Error: Error parsing Employees' JSON to EmployeeDTO";
+        }catch (Exception e) {
+            return "Error viewing All Drivers";
+        }
+        return res;
+    }
+
+
 
 
 }

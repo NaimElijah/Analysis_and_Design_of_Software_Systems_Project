@@ -4,8 +4,10 @@ import DataAccessLayer.EmployeeDAL.EmployeeDALFactory;
 import DataAccessLayer.EmployeeDAL.EmployeeDAO;
 import DTOs.EmployeeDTO;
 import DomainLayer.EmployeeSubModule.Repository.interfaces.EmployeeRepository;
+import Util.config;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -119,4 +121,21 @@ public class EmployeeRepositoryImpl implements EmployeeRepository {
             throw new RuntimeException("Failed to get employees by role: " + role, e);
         }
     }
+
+    @Override
+    public List<EmployeeDTO> getDrivers(){
+        try {
+            List<EmployeeDTO> employees = employeeDAO.getAll();
+            List<EmployeeDTO> drivers = new ArrayList<>();
+            for (EmployeeDTO employeeDTO : employees) {
+                if (this.hasRole(employeeDTO.getIsraeliId(), config.ROLE_DRIVER_A) || this.hasRole(employeeDTO.getIsraeliId(), config.ROLE_DRIVER_B) || this.hasRole(employeeDTO.getIsraeliId(), config.ROLE_DRIVER_C) || this.hasRole(employeeDTO.getIsraeliId(), config.ROLE_DRIVER_D) || this.hasRole(employeeDTO.getIsraeliId(), config.ROLE_DRIVER_E)){
+                    drivers.add(employeeDTO);
+                }
+            }
+            return drivers;
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to get drivers", e);
+        }
+    }
+
 }

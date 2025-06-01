@@ -10,6 +10,7 @@ import java.util.Scanner;
 import ServiceLayer.TransportServices.SiteService;
 import ServiceLayer.TransportServices.TransportService;
 import ServiceLayer.TransportServices.TruckService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class TranManCLI {
@@ -28,16 +29,15 @@ public class TranManCLI {
     }
 
 
-
-
-    void transportManagerMainMenu(long loggedID){   ////////////////////////////////   Main Menu   <<<--------------------------------------------
+    void transportManagerMainMenu(long loggedID) throws JsonProcessingException {   ////////////////////////////////   Main Menu   <<<--------------------------------------------
         while(true){
             System.out.println("\n       --------    Transport Manager Menu    -------");
             System.out.println("(1)  Transports Options Menu");
             System.out.println("(2)  Shipping Areas Options Menu");
             System.out.println("(3)  Sites Options Menu");
             System.out.println("(4)  Trucks Options Menu");
-            System.out.println("(5)  Go back to Welcoming Transport System Screen");
+            System.out.println("(5)  View All Drivers");
+            System.out.println("(6)  Go back to Welcoming Transport System Screen");
             System.out.println();
             System.out.println(" Select Options Menu: ");
             String choice = scanner.nextLine();
@@ -55,6 +55,9 @@ public class TranManCLI {
                     trucksOptionsMenu(loggedID);
                     break;
                 case "5":
+                    showAllDrivers(loggedID);
+                    break;
+                case "6":
                     System.out.println("\nGoing Back to Welcoming Transport System Screen.\n");
                     return;
                 default:
@@ -63,7 +66,6 @@ public class TranManCLI {
             }
         }
     }
-
 
 
 
@@ -1513,6 +1515,22 @@ public class TranManCLI {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+    private void showAllDrivers(long loggedID) throws JsonProcessingException {
+        System.out.println();
+        System.out.println(this.tra_ser.showAllDrivers(loggedID));
+        System.out.println();
+    }
 
 
 

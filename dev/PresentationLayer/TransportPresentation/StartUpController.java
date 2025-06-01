@@ -11,9 +11,7 @@ public class StartUpController {
     }
 
     public void startUpData(){
-        System.out.println("     --------     StartUp     -------");
-        System.out.println("\nLoading starting Data Into The System...\n");
-        String res = startUpStateService.loadData();
+        String res = startUpStateService.loadData(); //TODO:  later just delete this whole file and just use this function in the MainTranSysCLI.   <<---------
         if(res.equals("SUCCESS")){
             System.out.println("\nSuccessfully Finished Loading Starting Data.\n");
         }else{

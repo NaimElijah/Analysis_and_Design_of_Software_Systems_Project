@@ -7,6 +7,7 @@ import ServiceLayer.TransportServices.StartUpStateService;
 import ServiceLayer.TransportServices.TransportService;
 import ServiceLayer.TransportServices.TruckService;
 import Util.config;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.util.Scanner;
 
@@ -25,12 +26,12 @@ public class MainTranSysCLI {
         this.startUpCont = new StartUpController(starUpStService);
     }
 
-    public void transportModuleStartup(long loggedId){
+    public void transportModuleStartup(long loggedId) throws JsonProcessingException {
         this.startUpCont.startUpData();
         entranceToTransportModuleCLI(loggedId);
     }
 
-    private void entranceToTransportModuleCLI(long loggedId){
+    private void entranceToTransportModuleCLI(long loggedId) throws JsonProcessingException {
         while (true){
             boolean isDriver = this.eis.hasRole(loggedId, "DriverA") || this.eis.hasRole(loggedId, "DriverB") || this.eis.hasRole(loggedId, "DriverC") || this.eis.hasRole(loggedId, "DriverD") || this.eis.hasRole(loggedId, "DriverE");
             System.out.println("\n    --------    Welcome to the Transport System !    -------    \n");

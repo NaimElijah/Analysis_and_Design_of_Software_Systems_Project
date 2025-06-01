@@ -90,4 +90,6 @@ public interface EmployeeRepository {
      * @return A list of employee DTOs with the specified role
      */
     List<EmployeeDTO> getByRole(String role);
+
+    List<EmployeeDTO> getDrivers();
 }
