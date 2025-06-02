@@ -2,6 +2,7 @@ package ServiceLayer.TransportServices;
 
 import DomainLayer.TransportDomain.SiteSubModule.SiteFacade;
 import ServiceLayer.EmployeeIntegrationService;
+import ServiceLayer.exception.AuthorizationException;
 
 import javax.management.AttributeNotFoundException;
 import javax.management.openmbean.KeyAlreadyExistsException;
@@ -30,14 +31,14 @@ public class SiteService {
 
 
     public String addShippingArea(long loggedID, int areaNum, String areaName){
-        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "ADD_SHIPPING_AREA")){
-            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
-        }
-        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't add Shipping Areas"; }
-        if (!this.employeeIntegrationService.hasRole(loggedID, "Admin") && !this.employeeIntegrationService.hasRole(loggedID, "Transport manager")){
-            return "You don't have the required role to add Shipping Areas, you can only add Shipping Areas if you are an Admin or a Transport Manager";
-        }
         try {
+            if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "ADD_SHIPPING_AREA")){
+                return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
+            }
+            if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't add Shipping Areas"; }
+            if (!this.employeeIntegrationService.hasRole(loggedID, "Admin") && !this.employeeIntegrationService.hasRole(loggedID, "Transport manager")){
+                return "You don't have the required role to add Shipping Areas, you can only add Shipping Areas if you are an Admin or a Transport Manager";
+            }
             if(areaName.isEmpty() || areaName.isBlank()){
                 return "It seems some values you've entered are Empty or Blank, Please Insert proper values";
             }
@@ -46,6 +47,8 @@ public class SiteService {
             return "Shipping Area Number already exists";
         } catch (SQLException e) {
             return "SQL Error";
+        } catch (AuthorizationException e) {
+            return "You are not authorized to make this action !";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -54,11 +57,11 @@ public class SiteService {
     }
 
     public String deleteShippingArea(long loggedID, int areaNum){
-        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
-        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "DELETE_SHIPPING_AREA")){
-            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
-        }
         try {
+            if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
+            if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "DELETE_SHIPPING_AREA")){
+                return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
+            }
             sf.deleteShippingArea(areaNum);
         } catch (AttributeNotFoundException e){
             return "Can't delete a Shipping Area that Doesn't exist.";
@@ -66,6 +69,8 @@ public class SiteService {
             return "Can't Delete a shipping area that has Sites in it.";
         } catch (SQLException e) {
             return "SQL Error";
+        } catch (AuthorizationException e) {
+            return "You are not authorized to make this action !";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -76,11 +81,11 @@ public class SiteService {
 
 
     public String setShippingAreaNum(long loggedID, int OldareaNum, int NewAreaNum){
-        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
-        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_SHIPPING_AREA")){
-            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
-        }
         try {
+            if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
+            if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_SHIPPING_AREA")){
+                return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
+            }
             if(OldareaNum == NewAreaNum){
                 return "The Edition process Finished because you set the same Area Number value as the value that is already there";
             }
@@ -91,6 +96,8 @@ public class SiteService {
             return "Old Shipping Area Number does not exist";
         } catch (SQLException e) {
             return "SQL Error";
+        } catch (AuthorizationException e) {
+            return "You are not authorized to make this action !";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -100,11 +107,11 @@ public class SiteService {
 
 
     public String setShippingAreaName(long loggedID, int areaNum, String NewareaName){
-        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
-        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_SHIPPING_AREA")){
-            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
-        }
         try {
+            if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
+            if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_SHIPPING_AREA")){
+                return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
+            }
             if(NewareaName.isEmpty() || NewareaName.isBlank()){
                 return "It seems some values you've entered are Empty or Blank, Please Insert proper values";
             }
@@ -113,6 +120,8 @@ public class SiteService {
             return "Can't set name of a non existent Area number";
         } catch (SQLException e) {
             return "SQL Error";
+        } catch (AuthorizationException e) {
+            return "You are not authorized to make this action !";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -136,11 +145,11 @@ public class SiteService {
 
 
     public String addSite(long loggedID, int areaNum, String address, String cont_name, long Cont_Num){
-        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
-        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "ADD_SITE")){
-            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
-        }
         try {
+            if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
+            if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "ADD_SITE")){
+                return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
+            }
             if (address.isEmpty() || cont_name.isEmpty() || address.isBlank() || cont_name.isBlank() || Cont_Num == 0) {
                 return "It seems some values you've entered are Empty or Blank, Please Insert proper values";
             }
@@ -151,6 +160,8 @@ public class SiteService {
             return "Site Address already exists in that area number";
         } catch (SQLException e) {
             return "SQL Error";
+        } catch (AuthorizationException e) {
+            return "You are not authorized to make this action !";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -159,11 +170,11 @@ public class SiteService {
     }
 
     public String deleteSite(long loggedID, int areaNum, String address){
-        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
-        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "DELETE_SITE")){
-            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
-        }
         try {
+            if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
+            if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "DELETE_SITE")){
+                return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
+            }
             if (address.isEmpty() || address.isBlank()) {
                 return "It seems some values you've entered are Empty or Blank, Please Insert proper values";
             }
@@ -172,6 +183,8 @@ public class SiteService {
             return "Can't Delete a site with a non existent Area number or a non existent address string";
         } catch (SQLException e) {
             return "SQL Error";
+        } catch (AuthorizationException e) {
+            return "You are not authorized to make this action !";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -186,11 +199,11 @@ public class SiteService {
 
 
     public String setSiteAddress(long loggedID, int areaNum, String Oldaddress, String NewAddress){
-        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
-        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_SITE")){
-            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
-        }
         try {
+            if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
+            if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_SITE")){
+                return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
+            }
             if (NewAddress.isEmpty() || Oldaddress.isEmpty() || NewAddress.isBlank() || Oldaddress.isBlank()) {
                 return "It seems some values you've entered are Empty or Blank, Please Insert proper values";
             } else if (Oldaddress.equals(NewAddress)){
@@ -203,6 +216,8 @@ public class SiteService {
             return "Site Address String already exists in that area number";
         } catch (SQLException e) {
             return "SQL Error";
+        } catch (AuthorizationException e) {
+            return "You are not authorized to make this action !";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -211,11 +226,11 @@ public class SiteService {
     }
 
     public String setSiteAreaNum(long loggedID, int OldareaNum, int NewAreaNum, String address){
-        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
-        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_SITE")){
-            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
-        }
         try {
+            if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
+            if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_SITE")){
+                return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
+            }
             if (address.isEmpty() || address.isBlank()) {
                 return "It seems some values you've entered are Empty or Blank, Please Insert proper values";
             }else if (OldareaNum == NewAreaNum) {
@@ -228,6 +243,8 @@ public class SiteService {
             return "The Address String of the Site you are trying to move already exists in the destination area number";
         } catch (SQLException e) {
             return "SQL Error";
+        } catch (AuthorizationException e) {
+            return "You are not authorized to make this action !";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -236,11 +253,11 @@ public class SiteService {
     }
 
     public String setSiteContName(long loggedID, int areaNum, String address, String contName){
-        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
-        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_SITE")){
-            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
-        }
         try {
+            if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
+            if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_SITE")){
+                return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
+            }
             if (address.isEmpty() || contName.isEmpty() || address.isBlank() || contName.isBlank()) {
                 return "It seems some values you've entered are Empty or Blank, Please Insert proper values";
             }
@@ -249,6 +266,8 @@ public class SiteService {
             return "Can't Edit a site with a non existent Area number or a non existent address string";
         } catch (SQLException e) {
             return "SQL Error";
+        } catch (AuthorizationException e) {
+            return "You are not authorized to make this action !";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -257,11 +276,11 @@ public class SiteService {
     }
 
     public String setSiteContNum(long loggedID, int areaNum, String address, long contNum){
-        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
-        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_SITE")){
-            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
-        }
         try {
+            if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
+            if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_SITE")){
+                return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
+            }
             if (address.isEmpty() || address.isBlank()) {
                 return "It seems some values you've entered are Empty or Blank, Please Insert proper values";
             }
@@ -270,6 +289,8 @@ public class SiteService {
             return "Can't Edit a site with a non existent Area number or a non existent address string";
         } catch (SQLException e) {
             return "SQL Error";
+        } catch (AuthorizationException e) {
+            return "You are not authorized to make this action !";
         } catch (Exception e) {
             e.printStackTrace();
             return "Exception";
@@ -292,13 +313,15 @@ public class SiteService {
 
 
     public String showAllSites(long loggedID){
-        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
-        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "SHOW_SITES")){
-            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
-        }
         String res = "";
         try {
+            if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
+            if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "SHOW_SITES")){
+                return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
+            }
             res = sf.showAllSites();
+        } catch (AuthorizationException e) {
+            return "You are not authorized to make this action !";
         } catch (Exception e) {
             e.printStackTrace();  // or do nothing in this line
         }
@@ -306,13 +329,15 @@ public class SiteService {
     }
 
     public String showAllShippingAreas(long loggedID){
-        if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
-        if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "SHOW_SHIPPING_AREAS")){
-            return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
-        }
         String res = "";
         try {
+            if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
+            if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "SHOW_SHIPPING_AREAS")){
+                return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
+            }
             res = sf.showAllShippingAreas();
+        } catch (AuthorizationException e) {
+            return "You are not authorized to make this action !";
         } catch (Exception e) {
             e.printStackTrace();  // or do nothing in this line
         }

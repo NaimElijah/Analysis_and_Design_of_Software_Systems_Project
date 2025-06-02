@@ -45,7 +45,7 @@ public class MainTranSysCLI {
             System.out.println("Enter your choice: ");
             int choice = this.scanner.nextInt();
             if(choice == 1){
-                if (this.eis.hasRole(loggedId, config.ROLE_TRANSPORT_MANAGER)) {
+                if (this.eis.hasRole(loggedId, config.ROLE_TRANSPORT_MANAGER) || this.eis.hasRole(loggedId, config.ROLE_ADMIN)) {
                     System.out.println("\n   --------    Welcome, Transport Manager    -------\n");  // welcome message upon login
                     tranManCont.transportManagerMainMenu(loggedId);
                 } else if (isDriver) {

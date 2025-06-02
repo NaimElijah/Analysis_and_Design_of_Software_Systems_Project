@@ -81,11 +81,13 @@ public class TransportController {
         this.truckFacade.getTruckRepo().updateTruckPersistence(newTransportBeingCreated.getTransportTruck());  // persisting truck
         this.transportsRepos.insertDriverIdToInTransportID(driverId, newTransportBeingCreated.getTran_Doc_ID());
         newTransportBeingCreated.setTruck_Depart_Weight(newTransportBeingCreated.calculateTransportItemsWeight());
+
+        newTransportBeingCreated.setDeparture_dt(LocalDateTime.now());   // just setting the really updated time to be more precise.
         newTransportBeingCreated.calculateItemsDocsArrivalTimesInTransport();    // updating the arrival times inside of the itemsDocs before saving it
 
         for (ItemsDoc itemsDoc : newTransportBeingCreated.getDests_Docs()){
             this.transportsRepos.insertItemsDoc(itemsDoc, false);  // if this is a queued transport, the ItemsDocs will override themselves so ok.
-        }     //   If this doesn't work well with a queued transport being sent then just do this "for" if it's a new transport.
+        }
         this.transportsRepos.insertTransport(newTransportBeingCreated, false);  // NEW, THIS ALSO ADDS ALL THE ITEMSDOCS AND ITEMQs TO THE DB.
     }
 
@@ -95,7 +97,7 @@ public class TransportController {
 
     public void deleteTransport(int transportID) throws FileNotFoundException, SQLException {
         boolean containedInQueued = false;
-        int indexOfTransport = 0;
+        int indexOfTransport = 1;
         // checking if the transport is in the queue
         for (TransportDoc transportDoc : this.transportsRepos.getQueuedTransports()) {
             if (transportDoc.getTran_Doc_ID() == transportID) {
@@ -109,7 +111,7 @@ public class TransportController {
         if (this.transportsRepos.getTransports().containsKey(transportID)){
             toRemoveDoc = this.transportsRepos.getTransports().get(transportID);
         } else if (containedInQueued) {
-            toRemoveDoc = this.transportsRepos.getQueuedTransports().get(indexOfTransport);
+            toRemoveDoc = this.transportsRepos.getQueuedTransports().get(indexOfTransport-1);
         }else {
             throw new FileNotFoundException("No transport found with the Transport ID you've entered, so can't delete that Transport");
         }
@@ -393,10 +395,18 @@ public class TransportController {
             this.transportsRepos.incrementTransportIDCounter();
             tempTransport.setTran_Doc_ID(this.transportsRepos.getTransportIDCounter());
             tempTransport.setStatus(enumTranStatus.Queued);
+            tempTransport.setTruck_Depart_Weight(tempTransport.calculateTransportItemsWeight());
+
+            tempTransport.setDeparture_dt(LocalDateTime.now());   // just setting the really updated time to be more precise.
+            tempTransport.calculateItemsDocsArrivalTimesInTransport();
+
             for (ItemsDoc itemsDoc : tempTransport.getDests_Docs()){
                 this.transportsRepos.insertItemsDoc(itemsDoc, false);  // inserting whole transport here later
             }
             this.transportsRepos.insertTransport(tempTransport, true);
+
+
+
         }
     }
 
@@ -715,7 +725,7 @@ public class TransportController {
         }
 
         TransportDoc temp = null;
-        int indexInQueueIteration = 0;
+        int indexInQueueIteration = 1;
         for (TransportDoc queuedTransport : this.transportsRepos.getQueuedTransports()){  //  checking the queuedTransports first here
             if (transportID == queuedTransport.getTran_Doc_ID()){
 

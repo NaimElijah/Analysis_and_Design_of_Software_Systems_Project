@@ -176,52 +176,52 @@ public class TranManCLI {
 
 
 
-        boolean validTime = false, validPick = false;
-        LocalDateTime selectedDepartureDT = null;
-        while (!validPick){
-            System.out.println("Ok, when do you want to your new Transport to depart the source site ?\n");
-            System.out.println(".1. Now.");
-            System.out.println(".2. Let me pick a future time.");
-            System.out.println("enter your selection:");
-            int pick = scanner.nextInt();
-            scanner.nextLine(); // consume the leftover newline
+//        boolean validTime = false, validPick = false;
+//        LocalDateTime selectedDepartureDT = null;
+//        while (!validPick){
+//            System.out.println("Ok, when do you want to your new Transport to depart the source site ?\n");
+//            System.out.println(".1. Now.");
+//            System.out.println(".2. Let me pick a future time.");
+//            System.out.println("enter your selection:");
+//            int pick = scanner.nextInt();
+//            scanner.nextLine(); // consume the leftover newline
+//
+//            if (pick == 1){
+//                selectedDepartureDT = LocalDateTime.now();
+//                validPick = true;
+//            } else if (pick == 2){
+//                System.out.println("Ok, let's pick a future time for your Transport to depart the source site:");
+//                while (!validTime){
+//                    System.out.println("Year:");
+//                    int Syear = scanner.nextInt();
+//                    scanner.nextLine(); // consume the leftover newline
+//                    System.out.println("Month:");
+//                    int Smonth = scanner.nextInt();
+//                    scanner.nextLine(); // consume the leftover newline
+//                    System.out.println("Day:");
+//                    int Sday = scanner.nextInt();
+//                    scanner.nextLine(); // consume the leftover newline
+//                    System.out.println("Hour:");
+//                    int Shour = scanner.nextInt();
+//                    scanner.nextLine(); // consume the leftover newline
+//                    System.out.println("Minute:");
+//                    int Sminute = scanner.nextInt();
+//                    scanner.nextLine(); // consume the leftover newline
+//                    selectedDepartureDT = LocalDateTime.of(Syear, Smonth, Sday, Shour, Sminute);
+//
+//                    if (selectedDepartureDT.isBefore(LocalDateTime.now())){
+//                        System.out.println("You cannot choose a departure time in the past :(  try again:\n");
+//                    } else {
+//                        validTime = true;
+//                    }
+//                }
+//                validPick = true;
+//            } else {
+//                System.out.println("--->  Please enter a number between the menu's margins  <---  try again:\n");
+//            }
+//        }
 
-            if (pick == 1){
-                selectedDepartureDT = LocalDateTime.now();
-                validPick = true;
-            } else if (pick == 2){
-                System.out.println("Ok, let's pick a future time for your Transport to depart the source site:");
-                while (!validTime){
-                    System.out.println("Year:");
-                    int Syear = scanner.nextInt();
-                    scanner.nextLine(); // consume the leftover newline
-                    System.out.println("Month:");
-                    int Smonth = scanner.nextInt();
-                    scanner.nextLine(); // consume the leftover newline
-                    System.out.println("Day:");
-                    int Sday = scanner.nextInt();
-                    scanner.nextLine(); // consume the leftover newline
-                    System.out.println("Hour:");
-                    int Shour = scanner.nextInt();
-                    scanner.nextLine(); // consume the leftover newline
-                    System.out.println("Minute:");
-                    int Sminute = scanner.nextInt();
-                    scanner.nextLine(); // consume the leftover newline
-                    selectedDepartureDT = LocalDateTime.of(Syear, Smonth, Sday, Shour, Sminute);
-
-                    if (selectedDepartureDT.isBefore(LocalDateTime.now())){
-                        System.out.println("You cannot choose a departure time in the past :(  try again:\n");
-                    } else {
-                        validTime = true;
-                    }
-                }
-                validPick = true;
-            } else {
-                System.out.println("--->  Please enter a number between the menu's margins  <---  try again:\n");
-            }
-        }
-
-
+        LocalDateTime selectedDepartureDT = LocalDateTime.now();
 
         ///  Starting with the Sites and Items for the Transport
         ArrayList<ItemsDocDTO> dests_Docs_for_Transport = new ArrayList<ItemsDocDTO>();  //  for the Transport's field

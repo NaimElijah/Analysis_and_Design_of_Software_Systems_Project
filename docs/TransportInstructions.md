@@ -1,143 +1,142 @@
 # User Instructions for Transport Module
 
 ### Quick Start
-The module entry point is from the "Transport Module Main Menu" screen where the user can navigate to the desired feature or operation. 
-The system manages transport tasks, including transports scheduling, assigning drivers and trucks to transports, delivery management, and inventory-related transportation.
+The module's entry point is from the "Transport Module Main Menu" screen where users can navigate to desired features or operations. The system manages transportation tasks, including scheduling, route planning, delivery management, inventory-related logistics, and driver/truck assignments.
 
 ---
 
 ## Overview
-The Transport Module handles all transportation logistics within the system and supports features such as:
+The Transport Module handles all transportation logistics within the system and supports the following features:
 
-- Transports and fleet management
-- Trucks and drivers assignment
-- Schedule management for transport tasks
-- Driver assignment and tracking
-- Transports Routes and logistics tracking
+- **Transport Management**
+- **Truck and Driver Assignment**
+- **Schedule Management**
+- **Shipping Area and Site Management**
+- **Delivery Creation and Monitoring**
+- **Route Planning**
 
-Below are detailed instructions for navigating and using the Transport Module.
-
----
-
-## Features Overview
-
-### 1. Vehicle Management
-Efficiently manage and maintain the company's fleet.
-- **View Vehicle List:** View all vehicles registered within the system.
-- **Add Vehicle:** Add a new vehicle to the fleet.
-- **Edit Vehicle Details:** Update attributes of a vehicle (e.g., operational status, capacity).
-- **Remove Vehicle:** Remove a vehicle from the system if it is no longer operational.
+The features listed below can vary depending on permissions and roles:
 
 ---
 
-### 2. Driver Management
-Manage the drivers responsible for handling transportation.
-- **View Drivers:** See a list of registered drivers and their statuses.
-- **Add Driver:** Add a new driver to the system.
-- **Edit Driver Details:** Update driver information (e.g., license details, availability).
-- **Remove Driver:** Remove a driver profile from the system.
+## Getting Started
+
+1. From the **Transport System Main Menu**, you will see options based on your role permissions:
+    - **Enter my relevant menu** - Access appropriate options based on your role (e.g., Transport Manager, Admin, or Driver menus).
+    - **Exit the Transport System** - Return to the main program menu.
+
+2. If you are an Admin or Transport Manager, the following options will appear:
+    - **(1)** **Transports Options Menu** - Manage all aspects of transports, including creation, editing, and monitoring.
+    - **(2)** **Shipping Areas Options Menu** - Manage shipping areas.
+    - **(3)** **Sites Options Menu** - Handle all site-related configurations.
+    - **(4)** **Trucks Options Menu** - Manage trucks in the system.
+    - **(5)** **View All Drivers** - Display details of all drivers.
+    - **(6)** **Go back to Welcoming Transport System Screen** - Return to the module's welcome screen.
+
+3. If you are a Driver, you will see options tailored to delivery and route assignments.
+
+4. Use the corresponding menu numbers to access a specific feature and follow prompts to complete your intended action.
 
 ---
 
-### 3. Route Planning
-Optimize and plan transport routes to ensure efficient delivery.
-- **View Routes:** List all available routes used for transportation.
-- **Plan New Route:** Create a new route based on pickup and delivery points.
-- **Edit Route Details:** Modify existing route information.
-- **Delete Route:** Remove routes if they are no longer necessary.
+## Transport Management Features
+
+### **1. Transports Options Menu**
+Manage all transport-related operations:
+- **Create Transport:** Initiate a new delivery request with routes, assigned drivers, and vehicles.
+- **View All Transports:** Display all pending and completed transports.
+- **Edit Transport:** Edit delivery details, such as status, routes, or items.
+- **Delete Transport:** Delete a transport if no longer needed.
+- **Monitor Transport Issues:** Manage pairing or weight-related problems for queued transports.
 
 ---
 
-### 4. Delivery Management
-Oversee the complete delivery lifecycle.
-- **Create New Delivery Order:** Initiate a new delivery order with assigned routes, drivers, and vehicles.
-- **Check Delivery Status:** Track the status of ongoing delivery orders.
-- **Edit Delivery Orders:** Update existing delivery order details.
-- **Cancel Delivery Orders:** Cancel a delivery order if it is no longer valid.
-- **Delivery History:** View past delivery records and reports.
+### **2. Shipping Areas Options Menu**
+Configure and manage shipping areas:
+- **Add Shipping Area:** Define a new shipping area.
+- **View All Shipping Areas:** Review details of existing shipping areas.
+- **Edit Shipping Area:** Update details of a shipping area.
+- **Delete Shipping Area:** Remove a shipping area from the system.
 
 ---
 
-### 5. Schedule Management
-Streamline scheduling for drivers and vehicles.
-- **View Transport Schedule:** View the current day's or week's transport schedules.
-- **Add Schedule:** Create a new schedule for a vehicle or driver.
-- **Edit Schedule:** Modify existing transport schedules as required.
-- **Delete Schedule:** Remove a schedule that is no longer valid.
+### **3. Sites Options Menu**
+Oversee site-related configurations:
+- **Add Site:** Create a new location in the database.
+- **View All Sites:** Review details of existing sites.
+- **Edit Site Details:** Modify attributes of a specific site.
+- **Delete Site:** Remove a site from the system.
 
 ---
 
-### 6. Reports and Logs
-Track transport and driver performance through reports.
-- **View Vehicle Logs:** Access maintenance and operational logs for vehicles.
-- **Driver Performance Reports:** Evaluate driver performance metrics.
-- **Delivery Success Reports:** View statistics on completed and delayed deliveries.
+### **4. Trucks Options Menu**
+Manage fleet vehicles:
+- **View All Trucks:** Display details for all trucks.
+- **Add Truck:** Register a new truck for operations.
+- **Delete Truck:** Remove an existing truck from the system if no longer operational.
+
+---
+
+### **5. Driver Management**
+- **View All Drivers:** Display all drivers currently registered in the system. Includes details such as IDs, availability, and assigned tasks.
 
 ---
 
 ## General Usage Instructions
 
-### Starting the Transport Module
-1. Launch the system and select the Transport Module from the main menu.
-2. Review your permissions to ensure access to required features.
-
-### Navigation
-- Use the numbered options on each menu to navigate to specific features.
-- Submenus will guide you to finer-grain options for managing vehicles, routes, schedules, or drivers.
-
 ### Permissions
-Access to specific features depends on your role and permissions. For example:
-- **VIEW_VEHICLE**: For accessing vehicle information.
-- **CREATE_DELIVERY_ORDER**: For creating delivery tasks.
-- **EDIT_SCHEDULE**: For modifying schedules.
+Access to features depends on user roles:
+- Transport Managers and Admins have full permissions and access to the entire system.
+- Drivers will see restricted options related to routes, schedules, and assigned deliveries.
 
-Ensure you have the appropriate role or notify your system administrator.
+### Menu Navigation
+- Use numerical keys to navigate within menus.
+- Enter the corresponding number associated with any given feature or submenu to proceed.
+- Use `0` to return to the previous menu or `9` if prompted to exit entirely.
 
----
-
-## Common Commands and Actions
-
-- **Navigating Menus:** Use numeric keys to enter a menu. Enter "0" to go back to the previous menu.
-- **Input Validation:** Provide correct details for inputs like vehicle registration numbers, driver IDs, or route names.
-- **Error Messages:** Pay attention to error messages that may indicate invalid commands or permissions.
-- **Exit Options:** Use the "Exit" option in any menu to return to the Main Menu or end the session.
+### Input Validation
+- The system requires accurate inputs, such as driver IDs, truck fleet numbers, site names, or transport weights.
+- If invalid information is entered, the system will prompt for corrections.
 
 ---
 
 ## Error and Warning Messages
 
-- **Missing Permissions:** "Permission Denied - You lack the required permission for this operation."
-- **Invalid Inputs:** "Error - Input does not match the required format, please try again."
-- **Schedule Conflict:** "Warning - Schedule conflict detected. Please review and adjust timing."
+The system provides meaningful messages for troubleshooting:
+- **Permission Errors:** "You lack the permissions for this operation."
+- **Invalid Input:** "The entered details are incorrect; please verify and try again."
+- **Transport Overload:** "Warning: Specified load exceeds truck capacity; re-assign weight or change vehicle."
 
 ---
 
-## Permissions Specific to Transport Management
+## Permissions in Transport Management
 
-| **Permission**          | **Description**                                        |
-|--------------------------|--------------------------------------------------------|
-| `VIEW_DRIVER`            | View a list of all active drivers.                     |
-| `ADD_DRIVER`             | Add new drivers to the system.                         |
-| `EDIT_DRIVER`            | Update driver details or availability.                |
-| `REMOVE_DRIVER`          | Remove drivers from the system.                        |
-| `VIEW_VEHICLE`           | View a list of all vehicles in the fleet.              |
-| `ADD_VEHICLE`            | Add new vehicles to the fleet.                         |
-| `EDIT_VEHICLE`           | Edit vehicle information, such as capacity or status.  |
-| `REMOVE_VEHICLE`         | Remove vehicles from the system.                       |
-| `VIEW_TRANSPORT_SCHEDULE`| View transport schedules for drivers and vehicles.     |
-| `EDIT_SCHEDULE`          | Modify schedules assigned to drivers or vehicles.      |
-| `CREATE_DELIVERY_ORDER`  | Create delivery orders and assign tasks to drivers.    |
-| `VIEW_DELIVERY_ORDER`    | See details and track progress of delivery orders.     |
-| `EDIT_DELIVERY_ORDER`    | Update delivery order details.                         |
-| `DELETE_DELIVERY_ORDER`  | Cancel existing delivery orders.                       |
-| `PLAN_ROUTE`             | Plan delivery and transport routes.                   |
-| `EDIT_ROUTE`             | Modify planned routes.                                 |
-| `DELETE_ROUTE`           | Remove routes no longer needed.                        |
+| **Permission**                  | **Description**                                              |
+|---------------------------------|--------------------------------------------------------------|
+| `CREATE_TRANSPORT`              | Allows to Create delivery transport.                         |
+| `DELETE_TRANSPORT`              | Allows to Delete transport.                                  |
+| `EDIT_TRANSPORT`                | Allows to Edit transport details.                            |
+| `VIEW_TRANSPORT`                | Allows to View transport\s.                                  |
+| `VIEW_RELEVANT_TRANSPORTS`      | Allows to View relevant transports.(Specifically for Driver) |
+| `ADD_SHIPPING_AREA`             | Allows to Add a shipping area.                               |
+| `DELETE_SHIPPING_AREA`          | Allows to Delete a shipping area.                            |
+| `EDIT_SHIPPING_AREA`            | Allows to Edit a shipping area's details.                    |
+| `SHOW_SHIPPING_AREAS`           | Allows to Show shipping area's details.                      |
+| `ADD_SITE`                      | Allows to Add a site.                                        |
+| `DELETE_SITE`                   | Allows to Delete a site.                                     |
+| `EDIT_SITE`                     | Allows to Edit a site's details.                             |
+| `SHOW_SITES`                    | Allows to View site's details.                               |
+| `ADD_ITEM_TO_TRANSPORT`         | Allows to add an item to a transport.                        |
+| `DELETE_ITEM_FROM_TRANSPORT`    | Allows to delete an item from a transport.                   |
+| `EDIT_ITEM_IN_TRANSPORT`        | Allows to edit an item that is in a transport.               |
+| `EDIT_TRANSPORT_ITEM_CONDITION` | Allows to edit the condition of an item in a transport.      |
+| `ADD_TRUCK`                     | Allows to add a truck to the truck fleet.                    |
+| `DELETE_TRUCK`                  | Allows to delete a truck from the truck fleet.               |
+| `SHOW_TRUCKS`                   | Allows to view truck's details.                              |
 
 ---
 
 ## Final Notes
 
-- The system relies on accurate and up-to-date driver, vehicle, and delivery data. Ensure the information you enter is correct.
-- Contact an administrator if permission issues block you from accessing required features.
-- Always log out of the module after completing work to secure access.
+- Contact your administrator to resolve any access or technical issues.
+- Log out after using the module to secure system access.
