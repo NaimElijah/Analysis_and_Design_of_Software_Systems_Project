@@ -20,10 +20,12 @@ import java.util.Set;
 public class JdbcTransportDAO implements TransportDAO {
     private Connection connection;
     private SiteDAO siteDAO;
-    public JdbcTransportDAO() throws SQLException {
-        this.connection = Database.getConnection();
+    public JdbcTransportDAO(Connection connection) throws SQLException {
+        this.connection = connection;
         this.siteDAO = new JdbcSiteDAO(connection);
     }
+
+
 
 
     ///    ItemQs     <<<----------------------------      <<------------------

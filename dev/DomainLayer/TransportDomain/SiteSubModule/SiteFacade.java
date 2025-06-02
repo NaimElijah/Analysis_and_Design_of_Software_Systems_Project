@@ -3,12 +3,15 @@ package DomainLayer.TransportDomain.SiteSubModule;
 import javax.management.AttributeNotFoundException;
 import javax.management.openmbean.KeyAlreadyExistsException;
 import javax.naming.ContextNotEmptyException;
+import java.sql.Connection;
 import java.sql.SQLException;
 
 public class SiteFacade {
     private SiteRepo siteRepo;
 
     public SiteFacade() throws SQLException {  this.siteRepo = new SiteRepoImpl();  }
+
+    public SiteFacade(Connection connection) throws SQLException {  this.siteRepo = new SiteRepoImpl(connection);  }
 
     public SiteRepo getSiteRepo() {return siteRepo;}
 

@@ -3,12 +3,15 @@ package DomainLayer.TransportDomain.TruckSubModule;
 import DomainLayer.enums.enumDriLicense;
 
 import javax.management.openmbean.KeyAlreadyExistsException;
+import java.sql.Connection;
 import java.sql.SQLException;
 
 public class TruckFacade {
     private TruckRepo truckRepo;
 
     public TruckFacade() throws SQLException {  truckRepo = new TruckRepoImpl();  }
+
+    public TruckFacade(Connection connection) throws SQLException {  truckRepo = new TruckRepoImpl(connection);  }
 
     public void loadDBData() throws SQLException {  truckRepo.loadDBData();  }
 

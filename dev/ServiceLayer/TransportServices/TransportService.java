@@ -474,14 +474,12 @@ public class TransportService {
 
 
 
-    //TODO:      TEST MORE OF THE ADDDESTSITE, REMOVEDESTSITE...              <<<-------------------------
-    //TODO:      TEST MORE OF THE ADDDESTSITE, REMOVEDESTSITE...              <<<-------------------------
-    //TODO:      TEST MORE OF THE ADDDESTSITE, REMOVEDESTSITE...              <<<-------------------------
 
-    public String addDestSite(long loggedID, int tran_ID, int itemsDoc_num, int destSiteArea, String destSiteAddress, String contName, long contNum) {
+
+    public String addDestSite(long loggedID, int tran_ID, int itemsDoc_num, int destSiteArea, String destSiteAddress) {
         try {
-            if (tran_ID < 0 || itemsDoc_num < 0 || destSiteArea < 0 || contNum < 0){ return "The info numbers you have entered cannot be negative"; }
-            if (destSiteAddress.isEmpty() || destSiteAddress.isBlank() || contName.isEmpty() || contName.isBlank()){ return "The info strings you've entered cannot be empty"; }
+            if (tran_ID < 0 || itemsDoc_num < 0 || destSiteArea < 0){ return "The info numbers you have entered cannot be negative"; }
+            if (destSiteAddress.isEmpty() || destSiteAddress.isBlank()){ return "The info strings you've entered cannot be empty"; }
             if (!this.employeeIntegrationService.isActive(loggedID)){ return "You are not an active employee, you can't make this action !"; }
             if (!this.employeeIntegrationService.isEmployeeAuthorised(loggedID, "EDIT_TRANSPORT")){
                 return "You are not authorized to make this action !\nPlease contact the System Admin regarding your permissions.\n";
@@ -515,7 +513,7 @@ public class TransportService {
             if (!areWareHouseMenTimeAndPlacesValid(testingTransport)) { return "Cannot add Site to this transport, adding this site will cause a WareHouseMan Unavailability issue"; }
 
             ///    all the other checks
-            this.tran_f.addDestSiteToTransport(tran_ID, itemsDoc_num, destSiteArea, destSiteAddress, contName, contNum);
+            this.tran_f.addDestSiteToTransport(tran_ID, itemsDoc_num, destSiteArea, destSiteAddress);
 
         } catch (FileNotFoundException e) {
             return "The Transport ID you've entered doesn't exist.";

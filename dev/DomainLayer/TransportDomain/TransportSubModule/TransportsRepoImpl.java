@@ -8,7 +8,9 @@ import DomainLayer.TransportDomain.SiteSubModule.SiteFacade;
 import DomainLayer.TransportDomain.TruckSubModule.Truck;
 import DomainLayer.TransportDomain.TruckSubModule.TruckFacade;
 import DomainLayer.enums.enumTranProblem;
+import Util.Database;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,7 +28,19 @@ public class TransportsRepoImpl implements TransportsRepo {
     private HashMap<Long, Integer> driverIdToInTransportID;  //  employee is added to here if he is an active driver in an active Transport.
 
     public TransportsRepoImpl(SiteFacade sf, TruckFacade tf) throws SQLException {
-        this.transportDAO = new JdbcTransportDAO();
+        this.transportDAO = new JdbcTransportDAO(Database.getConnection());
+        this.siteFacade = sf;
+        this.truckFacade = tf;
+
+        this.transportIDCounter = 0;
+        this.transports = new HashMap<Integer, TransportDoc>();
+        this.itemsDocs = new HashMap<Integer, ItemsDoc>();
+        this.queuedTransports = new ArrayList<TransportDoc>();
+        this.driverIdToInTransportID = new HashMap<>();
+    }
+
+    public TransportsRepoImpl(SiteFacade sf, TruckFacade tf, Connection connection) throws SQLException {
+        this.transportDAO = new JdbcTransportDAO(connection);
         this.siteFacade = sf;
         this.truckFacade = tf;
 

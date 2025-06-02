@@ -16,7 +16,7 @@ import java.util.List;
 
 public class JdbcSiteDAO implements SiteDAO {
     private Connection connection;
-    public JdbcSiteDAO(Connection connection) throws SQLException { this.connection = Database.getConnection(); }
+    public JdbcSiteDAO(Connection connection) throws SQLException { this.connection = connection; }
 
 
     /// Sites              <<<-----------------------------------
@@ -192,7 +192,7 @@ public class JdbcSiteDAO implements SiteDAO {
             pstmt.setInt(1, updatedShippingArea.getArea_number());
             pstmt.setString(2, updatedShippingArea.getArea_name());
 
-            pstmt.setInt(8, oldShippingAreaNum);
+            pstmt.setInt(3, oldShippingAreaNum);
 
             int affectedRows = pstmt.executeUpdate();
             if (affectedRows > 0) {

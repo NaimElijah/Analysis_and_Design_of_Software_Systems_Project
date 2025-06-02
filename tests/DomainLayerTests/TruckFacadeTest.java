@@ -1,5 +1,6 @@
 package DomainLayerTests;
 
+import DBUtil.TestDatabase;
 import DomainLayer.TransportDomain.TruckSubModule.Truck;
 import DomainLayer.TransportDomain.TruckSubModule.TruckFacade;
 import DomainLayer.enums.enumDriLicense;
@@ -7,7 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import javax.management.openmbean.KeyAlreadyExistsException;
 import java.sql.SQLException;
-import java.util.HashMap;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class TruckFacadeTest {
@@ -16,14 +17,15 @@ class TruckFacadeTest {
 
     @BeforeEach
     void setUp() throws SQLException {
-        truckFacade = new TruckFacade();
+        truckFacade = new TruckFacade(TestDatabase.getConnection());
         truckFacade.loadDBData();
     }
 
     @Test
     void testAddTruckSuccessfully() throws KeyAlreadyExistsException, SQLException, ClassNotFoundException {
+        int curr_sz = truckFacade.getTruckRepo().getTrucksWareHouse().size();
         truckFacade.addTruck(1, "Volvo", 4000, 10000, "C");
-        assertEquals(1, truckFacade.getTruckRepo().getTrucksWareHouse().size());
+        assertEquals(curr_sz + 1 , truckFacade.getTruckRepo().getTrucksWareHouse().size());
         Truck truck = truckFacade.getTruckRepo().getTrucksWareHouse().get(1);
         assertNotNull(truck);
         assertEquals(1, truck.getTruck_num());
@@ -45,10 +47,11 @@ class TruckFacadeTest {
 
     @Test
     void testRemoveTruckSuccessfully() throws Exception {
+        int curr_sz = truckFacade.getTruckRepo().getTrucksWareHouse().size();
         truckFacade.addTruck(1, "Volvo", 4000, 10000, "C");
-        assertEquals(4, truckFacade.getTruckRepo().getTrucksWareHouse().size());
+        assertEquals(curr_sz+1, truckFacade.getTruckRepo().getTrucksWareHouse().size());
         truckFacade.removeTruck(1);
-        assertEquals(3, truckFacade.getTruckRepo().getTrucksWareHouse().size());
+        assertEquals(curr_sz, truckFacade.getTruckRepo().getTrucksWareHouse().size());
     }
 
     @Test
@@ -65,14 +68,8 @@ class TruckFacadeTest {
         assertThrows(ArrayStoreException.class, () -> {
             truckFacade.removeTruck(1);
         });
-        truckFacade.getTruckRepo().getTrucksWareHouse().get(1).setInTransportID(-1); // simulate busy truck
+        truckFacade.getTruckRepo().getTrucksWareHouse().get(1).setInTransportID(-1);
         truckFacade.removeTruck(1);
-    }
-
-    @Test
-    void testShowAllTrucksEmpty() {
-        String output = truckFacade.showAllTrucks();
-        assertEquals("Trucks Warehouse:\n", output);
     }
 
     @Test

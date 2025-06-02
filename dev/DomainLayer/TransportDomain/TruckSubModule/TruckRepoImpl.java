@@ -5,6 +5,7 @@ import DataAccessLayer.TransportDAL.Interfaces.TruckDAO;
 import DataAccessLayer.TransportDAL.JdbcTruckDAO;
 import Util.Database;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +16,11 @@ public class TruckRepoImpl implements TruckRepo {
 
     public TruckRepoImpl() throws SQLException {
         this.truckDAO = new JdbcTruckDAO(Database.getConnection());
+        trucksWareHouse = new HashMap<>();
+    }
+
+    public TruckRepoImpl(Connection connection) throws SQLException {
+        this.truckDAO = new JdbcTruckDAO(connection);
         trucksWareHouse = new HashMap<>();
     }
 

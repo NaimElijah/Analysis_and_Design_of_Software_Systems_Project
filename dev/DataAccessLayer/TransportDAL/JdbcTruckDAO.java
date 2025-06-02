@@ -17,7 +17,7 @@ import java.util.List;
 
 public class JdbcTruckDAO implements TruckDAO {
     private Connection connection;
-    public JdbcTruckDAO(Connection connection) throws SQLException { this.connection = Database.getConnection(); }
+    public JdbcTruckDAO(Connection connection) throws SQLException { this.connection = connection; }
 
     @Override
     public boolean insertTruck(TruckDTO truckForInsertion) throws SQLException {

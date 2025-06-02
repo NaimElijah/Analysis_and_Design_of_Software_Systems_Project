@@ -17,6 +17,7 @@ import javax.management.openmbean.KeyAlreadyExistsException;
 import javax.naming.CommunicationException;
 import java.io.FileNotFoundException;
 import java.nio.file.FileAlreadyExistsException;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 
@@ -30,6 +31,13 @@ public class TransportController {
 
     public TransportController(SiteFacade sF, TruckFacade tF, ObjectMapper oM) throws SQLException {
         this.transportsRepos = new TransportsRepoImpl(sF, tF);
+        this.siteFacade = sF;
+        this.truckFacade = tF;
+        this.objectMapper = oM;
+    }
+
+    public TransportController(SiteFacade sF, TruckFacade tF, ObjectMapper oM, Connection connection) throws SQLException {
+        this.transportsRepos = new TransportsRepoImpl(sF, tF, connection);
         this.siteFacade = sF;
         this.truckFacade = tF;
         this.objectMapper = oM;
@@ -633,7 +641,7 @@ public class TransportController {
 
 
 
-    public void addDestSiteToTransport(int tran_ID, int itemsDoc_num, int destSiteArea, String destSiteAddress, String contName, long contNum) throws FileNotFoundException, FileAlreadyExistsException, CommunicationException, IndexOutOfBoundsException, ClassNotFoundException, SQLException {
+    public void addDestSiteToTransport(int tran_ID, int itemsDoc_num, int destSiteArea, String destSiteAddress) throws FileNotFoundException, FileAlreadyExistsException, CommunicationException, IndexOutOfBoundsException, ClassNotFoundException, SQLException {
         if (this.transportsRepos.getItemsDocs().containsKey(itemsDoc_num)) {
             throw new FileAlreadyExistsException("The Site's Items Document Number you are trying to add already exists.");
         } else if (!this.siteFacade.getSiteRepo().getShippingAreas().containsKey(destSiteArea)) {
@@ -641,6 +649,9 @@ public class TransportController {
         } else if (!this.siteFacade.getSiteRepo().getShippingAreas().get(destSiteArea).getSites().containsKey(destSiteAddress)) {
             throw new ClassNotFoundException("Cannot add a site with a not found address String in its area.");
         }
+        Site forContacctInfo = this.siteFacade.getSiteRepo().getShippingAreas().get(destSiteArea).getSites().get(destSiteAddress);
+        String contName = forContacctInfo.getcName();
+        long contNum = forContacctInfo.getcNumber();
 
         TransportDoc temp = null;
         int queuedIndex = 1;

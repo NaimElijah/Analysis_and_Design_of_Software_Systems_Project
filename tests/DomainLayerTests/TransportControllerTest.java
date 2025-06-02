@@ -1,8 +1,209 @@
+package DomainLayerTests;
+
+import DBUtil.TestDatabase;
+import DTOs.TransportModuleDTOs.ItemsDocDTO;
+import DomainLayer.TransportDomain.SiteSubModule.Address;
+import DomainLayer.TransportDomain.SiteSubModule.ShippingArea;
+import DomainLayer.TransportDomain.SiteSubModule.Site;
+import DomainLayer.TransportDomain.TransportSubModule.Item;
+import DomainLayer.TransportDomain.TransportSubModule.TransportDoc;
+import DomainLayer.TransportDomain.TruckSubModule.Truck;
+import DomainLayer.enums.enumDriLicense;
+import DomainLayer.enums.enumTranProblem;
+import DomainLayer.enums.enumTranStatus;
+import DomainLayer.TransportDomain.TransportSubModule.TransportController;
+import DomainLayer.TransportDomain.SiteSubModule.SiteFacade;
+import DomainLayer.TransportDomain.TruckSubModule.TruckFacade;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import javax.management.openmbean.KeyAlreadyExistsException;
+import javax.naming.CommunicationException;
+import java.io.FileNotFoundException;
+import java.nio.file.FileAlreadyExistsException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class TransportControllerTest {
+    private TransportController transportController;
+    private SiteFacade siteFacade;
+    private TruckFacade truckFacade;
+    private ObjectMapper objMapper;
+
+    @BeforeEach
+    void setUp() throws SQLException {
+
+        objMapper = new ObjectMapper();
+        // Set up the ObjectMapper with JavaTimeModule to handle LocalDate and other Java 8 date types.
+        objMapper.registerModule(new JavaTimeModule());
+        // Optional: Configure SerializationFeature to avoid exceptions when serializing dates to JSON
+        objMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+//        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);   //  if needed for LocalDateTime serialization
+
+        siteFacade = new SiteFacade(TestDatabase.getConnection());
+        truckFacade = new TruckFacade(TestDatabase.getConnection());
+        transportController = new TransportController(siteFacade, truckFacade, objMapper);  // Simplified initialization
+
+        truckFacade.loadDBData();
+        siteFacade.loadDBData();
+        transportController.loadDBData();
+
+
+
+    }
+
+    // --------------- Truck Tests ----------------
+
+    @Nested
+    class TruckTests {
+        @Test
+        void testIsTruckActive_ShouldReturnTrueIfTruckIsActive() {
+            int activeTruckId = 1010;
+            assertTrue(transportController.isTruckActive(activeTruckId));
+        }
+
+        @Test
+        void testIsTruckActive_ShouldReturnFalseIfTruckIsInactive() {
+            int inactiveTruckId = 3030;
+            assertFalse(transportController.isTruckActive(inactiveTruckId));
+        }
+    }
+
+    // --------------- Transport Problem Tests ----------------
+
+    @Nested
+    class TransportProblemsTests {
+        @Test
+        void testAddTransportProblem_Success() throws Exception {
+            transportController.addTransportProblem(1, 1); // Add a Puncture problem
+            assertTrue(transportController.getTransportsRepos().getTransports().get(1).getProblems().contains(enumTranProblem.Puncture));
+        }
+
+        @Test
+        void testAddTransportProblem_ShouldThrowException_IfAlreadyExists() {
+            assertThrows(Exception.class, () -> {
+                transportController.addTransportProblem(1, 1);
+                transportController.addTransportProblem(1, 1); // Adding the same problem again
+            });
+        }
+
+        @Test
+        void testRemoveTransportProblem_Success() throws Exception {
+            transportController.addTransportProblem(1, 1); // Add a Puncture problem
+            transportController.removeTransportProblem(1, 1); // Remove the problem
+            assertFalse(transportController.getTransportsRepos().getTransports().get(1).getProblems().contains(enumTranProblem.Puncture));
+        }
+
+        @Test
+        void testRemoveTransportProblem_ShouldThrowException_IfNotExist() {
+            assertThrows(Exception.class, () -> transportController.removeTransportProblem(1, 1)); // No problem exists
+        }
+    }
+
+    // --------------- Site Management Tests ----------------
+
+    @Nested
+    class SiteTests {
+        @Test
+        void testAddDestSiteToTransport_Success() throws Exception {
+            transportController.addDestSiteToTransport(1, 3, 2, "Ashkelon");
+            assertEquals(3, transportController.getTransportsRepos().getTransports().get(1).getDests_Docs().size());
+        }
+
+        @Test
+        void testAddDestSiteToTransport_ShouldThrowException_IfAlreadyExists() {
+            assertThrows(Exception.class, () -> transportController.addDestSiteToTransport(1, 4, 2, "Dimona"));
+        }
+
+        @Test
+        void testRemoveDestSiteFromTransport_Success() throws Exception {
+            transportController.removeDestSiteFromTransport(1, 2);
+            assertEquals(1, transportController.getTransportsRepos().getTransports().get(1).getDests_Docs().size());
+        }
+
+        @Test
+        void testRemoveDestSiteFromTransport_ShouldThrowException_IfNotExist() {
+            assertThrows(Exception.class, () -> transportController.removeDestSiteFromTransport(1, 99));
+        }
+    }
+
+    // --------------- Item Management Tests ----------------
+
+    @Nested
+    class ItemTests {
+
+        @Test
+        void testAddItem_Success() throws Exception {
+            transportController.addItem(1, "Item-1", 5.0, 10, true);
+            assertTrue(transportController.getTransportsRepos().getItemsDocs().get(1).getGoodItems().containsKey(new Item("Item-1", 5.0, true, 1)));
+        }
+
+        @Test
+        void testRemoveItem_Success() throws Exception {
+            transportController.addItem(1, "Item-1", 5.0, 10, true);
+            transportController.removeItem(1, "Item-1", 5.0, 5, true);
+            assertEquals(5, transportController.getTransportsRepos().getItemsDocs().get(1).getGoodItems().get(new Item("Item-1", 5.0, true, 1)));
+        }
+
+        @Test
+        void testRemoveItem_ShouldThrowException_IfItemNotFound() {
+            assertThrows(ClassNotFoundException.class, () -> transportController.removeItem(1, "Item-NotFound", 5.0, 10, true));
+        }
+
+        @Test
+        void testSetItemCond_Success() throws Exception {
+            transportController.addItem(1, "Item-1", 5.0, 10, true); // Add item
+            transportController.setItemCond(1, "Item-1", 5.0, 10, false); // Change condition
+
+            assertNull(transportController.getTransportsRepos().getItemsDocs().get(1).getGoodItems().get(new Item("Item-1", 5.0, true, 1)));
+            assertEquals(10, transportController.getTransportsRepos().getItemsDocs().get(1).getBadItems().get(new Item("Item-1", 5.0, false, 1)));
+        }
+
+        @Test
+        void testSetItemCond_ShouldThrowException_IfItemNotFound() {
+            assertThrows(ClassNotFoundException.class, () -> transportController.setItemCond(1, "Item-NotFound", 5.0, 10, false));
+        }
+    }
+
+    // --------------- Transport Summary Tests ----------------
+
+    @Nested
+    class SummaryTests {
+//        @Test
+//        void testShowTransportsOfDriver() throws Exception {
+//            String result = transportController.showTransportsOfDriver(555);
+//            assertNotNull(result);
+//        }
+
+        @Test
+        void testShowAllQueuedTransports() throws Exception {
+            String result = transportController.showAllQueuedTransports();
+            assertNotNull(result);
+        }
+
+        @Test
+        void testShowAllTransports() throws Exception {
+            String result = transportController.showAllTransports();
+            assertNotNull(result);
+        }
+    }
+}
+
+
+
+
 //package DomainLayerTests;
 //
 //import DTOs.*;
-//import DTOs.TransportModuleDTOs.*;
-//import DomainLayer.Driver;
+//        import DTOs.TransportModuleDTOs.*;
+//        import DomainLayer.Driver;
 //import DomainLayer.EmpSubModule.EmployeeFacade;
 //import DomainLayer.TransportDomain.SiteSubModule.Address;
 //import DomainLayer.TransportDomain.SiteSubModule.ShippingArea;
@@ -33,7 +234,7 @@
 //
 //class TransportControllerTest {
 //    private TransportController transportController;
-////    private EmployeeFacade employeeFacade;
+//    //    private EmployeeFacade employeeFacade;
 //    private SiteFacade siteFacade;
 //    private TruckFacade truckFacade;
 //
@@ -92,15 +293,6 @@
 //
 //        truck3 = new Truck(3030, "Yamaha Lite", 200, 20, enumDriLicense.A);
 //        truckFacade.addTruck(3030, "Yamaha Lite", 200, 20, "A");
-//
-////        ///  Admin, Managers, Drivers:
-////        employeeFacade.initializeAdmin(111, "Cody", "Weber");
-////        admin = new Employee(111, "Cody", "Weber", enumPermissionRank.Admin);
-////
-////        employeeFacade.addManager(222, "Naim", "Elijah");
-////        manager1 = new Employee(222, "Naim", "Elijah", enumPermissionRank.Manager);
-////        employeeFacade.addManager(333, "Bar", "Miyara");
-////        manager2 = new Employee(333, "Bar", "Miyara", enumPermissionRank.Manager);
 //
 //        ArrayList<String> tomsLicenses = new ArrayList<>();
 //        tomsLicenses.add("A");
@@ -354,4 +546,4 @@
 //    }
 //
 //}
-//
+

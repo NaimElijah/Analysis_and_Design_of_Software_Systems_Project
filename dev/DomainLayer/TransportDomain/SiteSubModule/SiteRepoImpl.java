@@ -6,6 +6,7 @@ import DataAccessLayer.TransportDAL.Interfaces.SiteDAO;
 import DataAccessLayer.TransportDAL.JdbcSiteDAO;
 import Util.Database;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 
@@ -15,6 +16,11 @@ public class SiteRepoImpl implements SiteRepo {
 
     public SiteRepoImpl() throws SQLException {
         this.siteDAO = new JdbcSiteDAO(Database.getConnection());
+        shippingAreas = new HashMap<Integer, ShippingArea>();
+    }
+
+    public SiteRepoImpl(Connection connection) throws SQLException {
+        this.siteDAO = new JdbcSiteDAO(connection);
         shippingAreas = new HashMap<Integer, ShippingArea>();
     }
 

@@ -874,13 +874,8 @@ public class TranManCLI {
                 int destAreaNumber1 = Integer.parseInt(scanner.nextLine());
                 System.out.println("Enter Destination Site Address String for that site:");
                 String destSiteAddress1 = scanner.nextLine();
-                System.out.println("Enter that Site's Contact Name:");
-                String contactName1 = scanner.nextLine();
-                System.out.println("Enter that contact's number:");
-                long contactNumber1 = Long.parseLong(scanner.nextLine());
 
-
-                String res1 = this.tra_ser.addDestSite(loggedID, transportId1, newItemsDocId1, destAreaNumber1, destSiteAddress1, contactName1, contactNumber1);
+                String res1 = this.tra_ser.addDestSite(loggedID, transportId1, newItemsDocId1, destAreaNumber1, destSiteAddress1);
                 if(res1.equals("Success")){
                     System.out.println("Successfully Created and Added a New Site's Items Document to a Transport.\n");
                 } else if(res1.equals("Exception")){
