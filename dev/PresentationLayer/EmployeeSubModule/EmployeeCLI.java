@@ -108,7 +108,7 @@ public class EmployeeCLI {
         }
 
         if (hasPermission("DEACTIVATE_EMPLOYEE")) {
-            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Deactivate Employee");
+            menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". Deactivate/Reactivate Employee");
         }
 
         menuOptions.add(CliUtil.YELLOW + optionNumber++ + CliUtil.RESET + ". View All Roles");
@@ -380,48 +380,107 @@ public class EmployeeCLI {
     //==========================================================================================
 
     /**
-     * Deactivates an employee
+     * Deactivates or reactivates an employee
      */
     private void deactivateEmployee() {
-        printSectionHeader("Deactivate Employee");
+        printSectionHeader("Deactivate/Reactivate Employee");
 
-        // Show all employee
+        // Show all employees with numeric selection
         CliUtil.printInfo("Current employees:");
         EmployeeDTO[] employees = employeeService.getAllEmployeesAsDTO();
+
+        // Separate active and inactive employees
+        List<EmployeeDTO> activeEmployees = new ArrayList<>();
+        List<EmployeeDTO> inactiveEmployees = new ArrayList<>();
         for (EmployeeDTO employee : employees) {
-            String status = employee.isActive() ? CliUtil.greenString("Active") : CliUtil.redString("Inactive");
-            System.out.printf("  • ID: %-9d | Name: %-20s | Status: %s%n",
-                employee.getIsraeliId(),
-                employee.getFullName(),
-                status);
+            if (employee.isActive()) {
+                activeEmployees.add(employee);
+            } else {
+                inactiveEmployees.add(employee);
+            }
         }
 
+        // Ask user whether to deactivate or reactivate
         CliUtil.printEmptyLine();
-        long israeliId = getLongInput("Employee Israeli ID: ");
+        CliUtil.printBold("Do you want to: ");
+        CliUtil.print("  1. Deactivate an employee");
+        CliUtil.print("  2. Reactivate an employee");
+        CliUtil.printEmptyLine();
+        CliUtil.printBold("Enter your choice (1-2): ");
 
+        int choice;
         try {
-            EmployeeDTO employee = employeeService.getEmployeeByIdAsDTO(israeliId);
-
-            if (!employee.isActive()) {
-                printError("Employee is already inactive.");
+            choice = Integer.parseInt(scanner.nextLine());
+            if (choice < 1 || choice > 2) {
+                printError("Invalid choice. Operation cancelled.");
                 CliUtil.waitForEnter(scanner);
                 return;
             }
+        } catch (NumberFormatException e) {
+            printError("Please enter a valid number. Operation cancelled.");
+            CliUtil.waitForEnter(scanner);
+            return;
+        }
 
-            // Confirm
-            if (confirm("Confirm deactivating employee '" + employee.getFullName() + "' (ID: " + israeliId + ")?")) {
-                String result = employeeService.deactivateEmployee(doneBy, israeliId);
+        boolean isDeactivating = (choice == 1);
+        List<EmployeeDTO> relevantEmployees = isDeactivating ? activeEmployees : inactiveEmployees;
 
-                if (result.contains("successfully")) {
-                    printSuccess(result);
-                } else {
-                    printError(result);
-                }
-            } else {
-                CliUtil.printOperationCancelled();
+        if (relevantEmployees.isEmpty()) {
+            printError("No " + (isDeactivating ? "active" : "inactive") + " employees found to " + 
+                      (isDeactivating ? "deactivate" : "reactivate") + ".");
+            CliUtil.waitForEnter(scanner);
+            return;
+        }
+
+        // Display relevant employees with numbers
+        for (int i = 0; i < relevantEmployees.size(); i++) {
+            EmployeeDTO employee = relevantEmployees.get(i);
+            System.out.printf("  %d. ID: %-9d | Name: %-20s | Status: %s%n",
+                i + 1,
+                employee.getIsraeliId(),
+                employee.getFullName(),
+                employee.isActive() ? CliUtil.greenString("Active") : CliUtil.redString("Inactive"));
+        }
+
+        // Get employee selection by number
+        CliUtil.printEmptyLine();
+        CliUtil.printBold("Select employee to " + (isDeactivating ? "deactivate" : "reactivate") + " (enter number): ");
+        int employeeIndex = -1;
+        try {
+            employeeIndex = Integer.parseInt(scanner.nextLine()) - 1;
+            if (employeeIndex < 0 || employeeIndex >= relevantEmployees.size()) {
+                printError("Invalid selection. Operation cancelled.");
+                CliUtil.waitForEnter(scanner);
+                return;
             }
-        } catch (Exception e) {
-            printError("Error retrieving employee details: " + e.getMessage());
+        } catch (NumberFormatException e) {
+            printError("Please enter a valid number. Operation cancelled.");
+            CliUtil.waitForEnter(scanner);
+            return;
+        }
+
+        EmployeeDTO selectedEmployee = relevantEmployees.get(employeeIndex);
+        long israeliId = selectedEmployee.getIsraeliId();
+
+        // Confirm
+        if (confirm("Confirm " + (isDeactivating ? "deactivating" : "reactivating") + " employee '" + 
+                   selectedEmployee.getFullName() + "' (ID: " + israeliId + ")?")) {
+
+            String result;
+            if (isDeactivating) {
+                // Use the existing deactivateEmployee method
+                result = employeeService.deactivateEmployee(doneBy, israeliId);
+            } else {
+                result = employeeService.reactivateEmployee(doneBy, israeliId);
+            }
+
+            if (result.contains("successfully")) {
+                printSuccess(result);
+            } else {
+                printError(result);
+            }
+        } else {
+            CliUtil.printOperationCancelled();
         }
 
         CliUtil.waitForEnter(scanner);
@@ -1017,26 +1076,62 @@ public class EmployeeCLI {
     private void addPermissionToRole() {
         printSectionHeader("Add Permission to Role");
 
-        // Show roles
+        // Show roles with numeric selection
         CliUtil.printInfo("Available roles:");
-        String[] allRoles = employeeService.getAllRoles();
-        List<String> rolesList = Arrays.asList(allRoles);
-        CliUtil.printHierarchicalList(rolesList, "•", 2);
+        RoleDTO[] allRoles = employeeService.getAllRolesAsDTO();
 
+        // Display roles with numbers
+        for (int i = 0; i < allRoles.length; i++) {
+            CliUtil.printInfo("  " + (i + 1) + ". " + allRoles[i].getName());
+        }
+
+        // Get role selection by number
         CliUtil.printEmptyLine();
-        CliUtil.printBold("Role Name: ");
-        String roleName = scanner.nextLine();
+        CliUtil.printBold("Select role (enter number): ");
+        int roleIndex = -1;
+        try {
+            roleIndex = Integer.parseInt(scanner.nextLine()) - 1;
+            if (roleIndex < 0 || roleIndex >= allRoles.length) {
+                printError("Invalid selection. Operation cancelled.");
+                CliUtil.waitForEnter(scanner);
+                return;
+            }
+        } catch (NumberFormatException e) {
+            printError("Please enter a valid number. Operation cancelled.");
+            CliUtil.waitForEnter(scanner);
+            return;
+        }
 
-        // Show permissions
+        String roleName = allRoles[roleIndex].getName();
+
+        // Show permissions with numeric selection
         CliUtil.printEmptyLine();
         CliUtil.printInfo("Available permissions:");
         String[] allPermissions = employeeService.getAllPermissions();
-        List<String> permissionsList = Arrays.asList(allPermissions);
-        CliUtil.printHierarchicalList(permissionsList, "•", 2);
 
+        // Display permissions with numbers
+        for (int i = 0; i < allPermissions.length; i++) {
+            CliUtil.printInfo("  " + (i + 1) + ". " + allPermissions[i]);
+        }
+
+        // Get permission selection by number
         CliUtil.printEmptyLine();
-        CliUtil.printBold("Permission Name: ");
-        String permissionName = scanner.nextLine();
+        CliUtil.printBold("Select permission (enter number): ");
+        int permissionIndex = -1;
+        try {
+            permissionIndex = Integer.parseInt(scanner.nextLine()) - 1;
+            if (permissionIndex < 0 || permissionIndex >= allPermissions.length) {
+                printError("Invalid selection. Operation cancelled.");
+                CliUtil.waitForEnter(scanner);
+                return;
+            }
+        } catch (NumberFormatException e) {
+            printError("Please enter a valid number. Operation cancelled.");
+            CliUtil.waitForEnter(scanner);
+            return;
+        }
+
+        String permissionName = allPermissions[permissionIndex];
 
         // Confirm
         if (confirm("Confirm adding permission '" + permissionName + "' to role '" + roleName + "'?")) {
@@ -1057,53 +1152,82 @@ public class EmployeeCLI {
     private void removePermissionFromRole() {
         printSectionHeader("Remove Permission from Role");
 
+        // Show roles with numeric selection
         CliUtil.printInfo("Available roles:");
-        String[] allRoles = employeeService.getAllRoles();
-        List<String> rolesList = Arrays.asList(allRoles);
-        CliUtil.printHierarchicalList(rolesList, "•", 2);
+        RoleDTO[] allRoles = employeeService.getAllRolesAsDTO();
+
+        // Display roles with numbers
+        for (int i = 0; i < allRoles.length; i++) {
+            CliUtil.printInfo("  " + (i + 1) + ". " + allRoles[i].getName());
+        }
+
+        // Get role selection by number
+        CliUtil.printEmptyLine();
+        CliUtil.printBold("Select role (enter number): ");
+        int roleIndex = -1;
+        try {
+            roleIndex = Integer.parseInt(scanner.nextLine()) - 1;
+            if (roleIndex < 0 || roleIndex >= allRoles.length) {
+                printError("Invalid selection. Operation cancelled.");
+                CliUtil.waitForEnter(scanner);
+                return;
+            }
+        } catch (NumberFormatException e) {
+            printError("Please enter a valid number. Operation cancelled.");
+            CliUtil.waitForEnter(scanner);
+            return;
+        }
+
+        RoleDTO roleDTO = allRoles[roleIndex];
+        String roleName = roleDTO.getName();
+        Set<String> permissions = roleDTO.getPermissions();
 
         CliUtil.printEmptyLine();
-        CliUtil.printBold("Role Name: ");
-        String roleName = scanner.nextLine();
+        CliUtil.printInfo("Current permissions for role '" + roleName + "':");
 
-        try {
-            RoleDTO roleDTO = employeeService.getRoleDetailsAsDTO(roleName);
-            if (roleDTO != null) {
-                Set<String> permissions = roleDTO.getPermissions();
+        if (permissions == null || permissions.isEmpty()) {
+            CliUtil.printInfo("  No permissions assigned to this role");
+            CliUtil.waitForEnter(scanner);
+            return;
+        } else {
+            List<String> permissionsList = new ArrayList<>(permissions);
 
-                CliUtil.printEmptyLine();
-                CliUtil.printInfo("Current permissions for role '" + roleName + "':");
+            // Display permissions with numbers
+            for (int i = 0; i < permissionsList.size(); i++) {
+                CliUtil.printInfo("  " + (i + 1) + ". " + permissionsList.get(i));
+            }
 
-                if (permissions == null || permissions.isEmpty()) {
-                    CliUtil.printInfo("  No permissions assigned to this role");
+            // Get permission selection by number
+            CliUtil.printEmptyLine();
+            CliUtil.printBold("Select permission to remove (enter number): ");
+            int permissionIndex = -1;
+            try {
+                permissionIndex = Integer.parseInt(scanner.nextLine()) - 1;
+                if (permissionIndex < 0 || permissionIndex >= permissionsList.size()) {
+                    printError("Invalid selection. Operation cancelled.");
                     CliUtil.waitForEnter(scanner);
                     return;
-                } else {
-                    List<String> permissionsList = new ArrayList<>(permissions);
-                    CliUtil.printHierarchicalList(permissionsList, "•", 2);
                 }
+            } catch (NumberFormatException e) {
+                printError("Please enter a valid number. Operation cancelled.");
+                CliUtil.waitForEnter(scanner);
+                return;
+            }
 
-                CliUtil.printEmptyLine();
-                CliUtil.printBold("Permission Name to Remove: ");
-                String permissionName = scanner.nextLine();
+            String permissionName = permissionsList.get(permissionIndex);
 
-                // Confirm
-                if (confirm("Confirm removing permission '" + permissionName + "' from role '" + roleName + "'?")) {
-                    String result = employeeService.removePermissionFromRole(doneBy, roleName, permissionName);
+            // Confirm
+            if (confirm("Confirm removing permission '" + permissionName + "' from role '" + roleName + "'?")) {
+                String result = employeeService.removePermissionFromRole(doneBy, roleName, permissionName);
 
-                    if (result.contains("successfully")) {
-                        printSuccess(result);
-                    } else {
-                        printError(result);
-                    }
+                if (result.contains("successfully")) {
+                    printSuccess(result);
                 } else {
-                    CliUtil.printOperationCancelled();
+                    printError(result);
                 }
             } else {
-                printError("Role '" + roleName + "' not found.");
+                CliUtil.printOperationCancelled();
             }
-        } catch (Exception e) {
-            printError("Error retrieving role details: " + e.getMessage());
         }
 
         CliUtil.waitForEnter(scanner);

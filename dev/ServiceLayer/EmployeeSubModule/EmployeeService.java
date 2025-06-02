@@ -482,16 +482,9 @@ public class EmployeeService {
      */
     public String updateEmployee(long doneBy, long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, boolean active) {
         try {
-            // Check if employee exists
-            Employee employee = employeeController.getEmployeeByIsraeliId(israeliId);
-            if (employee == null) {
-                throw new EmployeeNotFoundException(israeliId);
-            }
+            boolean result = employeeController.updateEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, active);
+            return result ? "Employee updated successfully" : "Failed to update employee";
 
-            // Keep the existing branch
-            long branch = employee.getBranchId();
-
-            return updateEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, active);
         } catch (ValidationException | EmployeeNotFoundException | AuthorizationException e) {
             throw e; // Rethrow specific exceptions
         } catch (Exception e) {
@@ -512,18 +505,36 @@ public class EmployeeService {
      */
     public String deactivateEmployee(long doneBy, long israeliId) {
         try {
-            // Validate input parameters
-            if (String.valueOf(israeliId).length() != 9) {
-                throw new ValidationException("israeliId", "Israeli ID must be 9 digits");
-            }
-
-            // Check if employee exists
-            Employee employee = employeeController.getEmployeeByIsraeliId(israeliId);
-            if (employee == null) {
-                throw new EmployeeNotFoundException(israeliId);
-            }
-
             boolean result = employeeController.deactivateEmployee(doneBy, israeliId);
+            if (result) {
+                return "Employee deactivated successfully";
+            } else {
+                return "Failed to deactivate employee";
+            }
+        } catch (UnauthorizedPermissionException e) {
+            throw new AuthorizationException(doneBy, "DEACTIVATE_EMPLOYEE");
+        } catch (InvalidInputException e) {
+            throw new ValidationException(e.getMessage(), e);
+        } catch (ValidationException | EmployeeNotFoundException | AuthorizationException e) {
+            throw e; // Rethrow specific exceptions
+        } catch (Exception e) {
+            throw new ServiceException("Error deactivating employee: " + e.getMessage(), e);
+        }
+    }
+    /**
+     * Reactivates an employee in the system identified by their Israeli ID.
+     *
+     * @param doneBy The ID of the user performing the reactivation action.
+     * @param israeliId The unique Israeli ID of the employee to be reactivated.
+     * @return A message indicating either successful reactivation or failure.
+     * @throws AuthorizationException If the user does not have the required permissions to perform the reactivation.
+     * @throws ValidationException If the input data is invalid or if there are validation errors.
+     * @throws EmployeeNotFoundException If the employee with the given Israeli ID is not found.
+     * @throws ServiceException If an unexpected error occurs during the process.
+     */
+    public String reactivateEmployee(long doneBy, long israeliId) {
+        try {
+            boolean result = employeeController.reactivateEmployee(doneBy, israeliId);
             if (result) {
                 return "Employee deactivated successfully";
             } else {
@@ -823,17 +834,6 @@ public class EmployeeService {
     }
     public String updateEmployeeBranch(long israeliId, long branchId) {
         try {
-            // Validate input parameters
-            if (String.valueOf(israeliId).length() != 9) {
-                throw new ValidationException("israeliId", "Israeli ID must be 9 digits");
-            }
-
-            // Check if employee exists
-            Employee employee = employeeController.getEmployeeByIsraeliId(israeliId);
-            if (employee == null) {
-                throw new EmployeeNotFoundException(israeliId);
-            }
-
             boolean result = employeeController.updateEmployeeBranch(israeliId, branchId);
             if (result) {
                 return "Success Employee branch updated successfully";
@@ -853,7 +853,6 @@ public class EmployeeService {
             throw new ServiceException("Error retrieving employee branch name: " + e.getMessage(), e);
         }
     }
-
 
     // ===========================
     // Functions for integration with Transport module
