@@ -459,6 +459,48 @@ public class EmployeeController {
         // Update employee in repository
         return employeeRepository.update(employeeDTO);
     }
+    /**
+     * Reactivates an employee by their Israeli ID if the user performing
+     * the operation has the required permissions and the employee exists
+     * and is currently inactive.
+     *
+     * @param doneBy The ID of the user performing the reactivation.
+     * @param israeliId The Israeli ID of the employee to be reactivated.
+     * @return true if the employee was successfully reactivated, false otherwise.
+     * @throws UnauthorizedPermissionException if the user does not have the required permission to reactivate an employee.
+     * @throws InvalidInputException if the user or employee IDs are invalid, or the employee is already active.
+     */
+    public boolean reactivateEmployee(long doneBy, long israeliId) {
+        // Permission handling
+        String PERMISSION_REQUIRED = "EDIT_EMPLOYEE";
+        if (!isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
+            throw new UnauthorizedPermissionException("User does not have permission to deactivate employee");
+        }
+
+        Employee doneByEmployee = getEmployeeByIsraeliId(doneBy);
+        if (doneByEmployee == null) {
+            throw new InvalidInputException("Employee with ID " + doneBy + " not found");
+        }
+
+        // Check if employee exists
+        EmployeeDTO employeeDTO = employeeRepository.getById(israeliId);
+        if (employeeDTO == null) {
+            throw new InvalidInputException("Employee with ID " + israeliId + " not found");
+        }
+
+        // Check if employee is already inactive
+        if (!employeeDTO.isActive()) {
+            throw new InvalidInputException("Employee with ID " + israeliId + " is already inactive");
+        }
+
+        // Deactivate employee
+        employeeDTO.setActive(true);
+        employeeDTO.setUpdateDate(LocalDate.now());
+
+        // Update employee in repository
+        return employeeRepository.update(employeeDTO);
+    }
+
 
     /**
      * Gets all employees in the system.
