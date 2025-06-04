@@ -219,6 +219,15 @@ public final class Database {
                     "PRIMARY KEY (itemInItemsDocId, name, weight, condition), " +
                     "FOREIGN KEY (itemInItemsDocId) REFERENCES ItemsDocs(itemsDocNum) ON UPDATE CASCADE" +
                     ")";
+    private static final String BankAccountsTable =
+            "CREATE TABLE IF NOT EXISTS BankAccounts (" +
+                    "employeeId INTEGER PRIMARY KEY, " +
+                    "bankNumber INTEGER NOT NULL, " +
+                    "bankBranchNumber INTEGER NOT NULL, " +
+                    "bankAccountNumber INTEGER NOT NULL, " +
+                    "FOREIGN KEY (employeeId) REFERENCES Employees(israeliId)" +
+                    ")";
+
 
 
     static {
@@ -247,6 +256,8 @@ public final class Database {
                 st.executeUpdate(SitesTable);
                 st.executeUpdate(TransportsTable);
                 st.executeUpdate(ItemsDocsTable);
+                st.executeUpdate(BankAccountsTable);
+
 
                 // Finally, create tables that depend on the second level tables
                 st.executeUpdate(EmployeeRolesTable);

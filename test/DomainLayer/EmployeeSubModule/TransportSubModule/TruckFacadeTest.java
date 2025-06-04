@@ -1,6 +1,6 @@
-package DomainLayerTests;
+package DomainLayer.EmployeeSubModule.TransportSubModule;
 
-import DBUtil.TestDatabase;
+import Util.TestDatabase;
 import DomainLayer.TransportDomain.TruckSubModule.Truck;
 import DomainLayer.TransportDomain.TruckSubModule.TruckFacade;
 import DomainLayer.enums.enumDriLicense;

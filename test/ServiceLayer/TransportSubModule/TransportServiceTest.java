@@ -1,6 +1,6 @@
-package ServiceLayerTests;
+package ServiceLayer.TransportSubModule;
 
-import DBUtil.TestDatabase;
+import Util.TestDatabase;
 import DTOs.BranchDTO;
 import DTOs.EmployeeDTO;
 import DTOs.ShiftDTO;
@@ -722,11 +722,6 @@ public class TransportServiceTest {
 
         transportService.createTransport(444444444, objectMapper.writeValueAsString(transportDTO), -1);
     }
-
-
-
-
-
 
 
 

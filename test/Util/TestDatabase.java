@@ -1,4 +1,4 @@
-package DBUtil;
+package Util;
 
 
 import Util.config;
