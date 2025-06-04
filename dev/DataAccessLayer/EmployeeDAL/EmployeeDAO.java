@@ -1,5 +1,6 @@
 package DataAccessLayer.EmployeeDAL;
 
+import DTOs.BankAccountDTO;
 import DTOs.EmployeeDTO;
 import Util.CliUtil;
 
@@ -23,9 +24,11 @@ import java.util.Set;
  */
 public class EmployeeDAO {
     private Connection connection;
+    private BankAccountDAO bankAccountDAO;
 
     public EmployeeDAO(Connection connection) {
         this.connection = connection;
+        this.bankAccountDAO = new BankAccountDAO(connection);
     }
 
     /**
@@ -64,6 +67,13 @@ public class EmployeeDAO {
 
                 // Insert terms of employment as JSON
                 insertTermsOfEmployment(employeeDTO.getIsraeliId(), employeeDTO.getTermsOfEmployment());
+
+                // Insert bank account if available
+                if (employeeDTO.getBankAccount() != null) {
+                    BankAccountDTO bankAccountDTO = employeeDTO.getBankAccount();
+                    bankAccountDTO.setEmployeeId(employeeDTO.getIsraeliId());
+                    bankAccountDAO.insert(bankAccountDTO);
+                }
 
                 return true;
             }
@@ -110,6 +120,24 @@ public class EmployeeDAO {
                 // Update terms of employment
                 updateTermsOfEmployment(employeeDTO.getIsraeliId(), employeeDTO.getTermsOfEmployment());
 
+                // Update bank account
+                BankAccountDTO existingBankAccount = bankAccountDAO.getByEmployeeId(employeeDTO.getIsraeliId());
+                if (employeeDTO.getBankAccount() != null) {
+                    BankAccountDTO bankAccountDTO = employeeDTO.getBankAccount();
+                    bankAccountDTO.setEmployeeId(employeeDTO.getIsraeliId());
+
+                    if (existingBankAccount != null) {
+                        // Update existing bank account
+                        bankAccountDAO.update(bankAccountDTO);
+                    } else {
+                        // Insert new bank account
+                        bankAccountDAO.insert(bankAccountDTO);
+                    }
+                } else if (existingBankAccount != null) {
+                    // Delete existing bank account if the new one is null
+                    bankAccountDAO.delete(employeeDTO.getIsraeliId());
+                }
+
                 return true;
             }
             return false;
@@ -127,6 +155,9 @@ public class EmployeeDAO {
         // First delete related data
         deleteEmployeeRoles(israeliId);
         deleteTermsOfEmployment(israeliId);
+
+        // Delete bank account if exists
+        bankAccountDAO.delete(israeliId);
 
         // Then delete the employee
         String sql = "DELETE FROM Employees WHERE israeliId = ?";
@@ -236,6 +267,9 @@ public class EmployeeDAO {
         // Get terms of employment for this employee
         Map<String, Object> termsOfEmployment = getTermsOfEmployment(israeliId);
 
+        // Get bank account for this employee
+        BankAccountDTO bankAccountDTO = bankAccountDAO.getByEmployeeId(israeliId);
+
         return new EmployeeDTO(
             israeliId, 
             firstName, 
@@ -247,7 +281,8 @@ public class EmployeeDAO {
             isActive, 
             creationDate, 
             updateDate, 
-            branchId
+            branchId,
+            bankAccountDTO
         );
     }
 

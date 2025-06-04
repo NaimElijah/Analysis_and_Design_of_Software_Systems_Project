@@ -23,7 +23,7 @@ public class MainCLI {
     public static void start() throws IOException {
         try {
             minimalMode = CliUtil.confirm("Do you want to start with minimal data?", scanner);
-            Database.DB_URL = minimalMode ? "jdbc:sqlite:superLee_Minimal.db" : "jdbc:sqlite:superLee.db";
+            Database.init(minimalMode);
 
             CliUtil.printWelcomeBanner("Welcome to SuperLee System Assignment 2", LocalDate.now().toString(),
                     "Not Logged In");

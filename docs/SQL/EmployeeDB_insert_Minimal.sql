@@ -1,8 +1,7 @@
 -- Script for inserts basic data into the EmployeeDB database.
 
 -- Branches
-INSERT INTO Branches (branchId, branchName, areaCode, branchAddress, managerID) VALUES (1, 'Headquarters', 0, 'Tel Aviv', 111111111);
-INSERT INTO Branches (branchId, branchName, areaCode, branchAddress, managerID) VALUES (2, 'Beer Shave', 1, 'Ben Gurion Uni', 444444444);
+INSERT INTO Branches (branchId, branchName, areaCode, branchAddress, managerID) VALUES (1, 'Ben Gurion Uni', 1, 'Beer Sheva', 111111111);
 
 -- Permissions
 
@@ -237,37 +236,13 @@ INSERT INTO RolePermissions (roleName, permissionName) VALUES ('WarehouseMan', '
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('WarehouseMan', 'STOCK_SHELVES');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('WarehouseMan', 'GET_SHIFT');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('WarehouseMan', 'UPDATE_AVAILABLE');
+
 -- Employees
 INSERT INTO Employees (israeliId, firstName, lastName, salary, startOfEmployment, isActive, creationDate, updateDate, branchId)
 VALUES (123456789, 'Admin', 'User', 20000, '01-01-2020', TRUE, '01-01-2023', '01-01-2023', 1);
-INSERT INTO Employees (israeliId, firstName, lastName, salary, startOfEmployment, isActive, creationDate, updateDate, branchId)
-VALUES (111111111, 'Shira', 'Steinbuch', 18000, '02-02-2017', TRUE, '01-01-2023', '01-01-2023', 2);
-INSERT INTO Employees (israeliId, firstName, lastName, salary, startOfEmployment, isActive, creationDate, updateDate, branchId)
-VALUES (222222222, 'Ramzi', 'Abd Rabo', 9500, '15-11-2020', TRUE, '01-01-2023', '01-01-2023', 2);
-INSERT INTO Employees (israeliId, firstName, lastName, salary, startOfEmployment, isActive, creationDate, updateDate, branchId)
-VALUES (333333333, 'Kochava', 'Shavit', 8500, '15-11-2020', TRUE, '01-01-2023', '01-01-2023', 2);
-INSERT INTO Employees (israeliId, firstName, lastName, salary, startOfEmployment, isActive, creationDate, updateDate, branchId)
-VALUES (444444444, 'Moshe', 'Cohen', 12000, '01-01-2020', TRUE, '01-01-2023', '01-01-2023', 2);
-INSERT INTO Employees (israeliId, firstName, lastName, salary, startOfEmployment, isActive, creationDate, updateDate, branchId)
-VALUES (555555555, 'Yael', 'Levy', 9000, '01-01-2020', TRUE, '01-01-2023', '01-01-2023', 2);
-INSERT INTO Employees (israeliId, firstName, lastName, salary, startOfEmployment, isActive, creationDate, updateDate, branchId)
-VALUES (666666666, 'David', 'Mizrahi', 8000, '02-02-2017', TRUE, '01-01-2023', '01-01-2023', 2);
-INSERT INTO Employees (israeliId, firstName, lastName, salary, startOfEmployment, isActive, creationDate, updateDate, branchId)
-VALUES (777777777, 'Emmanuel', 'Macroni', 8000, '15-11-2020', TRUE, '01-01-2023', '01-01-2023', 2);
-INSERT INTO Employees (israeliId, firstName, lastName, salary, startOfEmployment, isActive, creationDate, updateDate, branchId)
-VALUES (888888888, 'Doron', 'Yakov', 8000, '15-11-2019', TRUE, '01-01-2023', '01-01-2023', 2);
 
 -- EmployeeRoles
 INSERT INTO EmployeeRoles (israeliId, role) VALUES (123456789, 'Admin');
-INSERT INTO EmployeeRoles (israeliId, role) VALUES (111111111, 'HR manager');
-INSERT INTO EmployeeRoles (israeliId, role) VALUES (222222222, 'Stocker');
-INSERT INTO EmployeeRoles (israeliId, role) VALUES (333333333, 'Cashier');
-INSERT INTO EmployeeRoles (israeliId, role) VALUES (444444444, 'Transport Manager');
-INSERT INTO EmployeeRoles (israeliId, role) VALUES (555555555, 'DriverE');
-INSERT INTO EmployeeRoles (israeliId, role) VALUES (666666666, 'Cleaner');
-INSERT INTO EmployeeRoles (israeliId, role) VALUES (777777777, 'DriverC');
-INSERT INTO EmployeeRoles (israeliId, role) VALUES (888888888, 'WarehouseMan');
-
 
 -- EmployeeTerms
 INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (123456789, 'WorkingHours', '9:00-17:00');
@@ -279,84 +254,22 @@ INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (123456789, 'Pe
 INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (123456789, 'HealthInsurance', 'Maccabi');
 INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (123456789, 'Position', 'System Administrator');
 INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (123456789, 'Department', 'IT');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (111111111, 'WorkingHours', '8:00-16:00');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (111111111, 'WorkingDays', 'Sunday-Thursday');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (111111111, 'VacationDays', '18');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (111111111, 'SickDays', '14');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (111111111, 'PensionFund', 'Harel');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (111111111, 'PensionRate', '6%');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (111111111, 'HealthInsurance', 'Clalit');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (111111111, 'Position', 'HR Manager');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (111111111, 'Department', 'Management');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (111111111, 'Store', 'Shefa Issachar');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (222222222, 'WorkingHours', '7:00-15:00');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (222222222, 'WorkingDays', 'Sunday-Thursday');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (222222222, 'VacationDays', '12');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (222222222, 'SickDays', '10');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (222222222, 'PensionFund', 'Migdal');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (222222222, 'PensionRate', '5.5%');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (222222222, 'HealthInsurance', 'Meuhedet');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (222222222, 'Position', 'Stocker');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (222222222, 'Department', 'Floor Operations');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (222222222, 'Store', 'Shefa Issachar');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (333333333, 'WorkingHours', '15:00-23:00');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (333333333, 'WorkingDays', 'Sunday-Thursday');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (333333333, 'VacationDays', '10');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (333333333, 'SickDays', '10');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (333333333, 'PensionFund', 'Phoenix');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (333333333, 'PensionRate', '5%');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (333333333, 'HealthInsurance', 'Leumit');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (333333333, 'Position', 'Cashier');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (333333333, 'Department', 'Front Checkout');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (333333333, 'Store', 'Shefa Issachar');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (444444444, 'WorkingHours', '8:00-16:00');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (444444444, 'WorkingDays', 'Sunday-Thursday');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (444444444, 'VacationDays', '15');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (444444444, 'SickDays', '12');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (444444444, 'PensionFund', 'Clal');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (444444444, 'PensionRate', '6%');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (444444444, 'HealthInsurance', 'Maccabi');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (444444444, 'Position', 'HR Manager');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (444444444, 'Department', 'Human Resources');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (444444444, 'Store', 'Shefa Issachar');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (555555555, 'WorkingHours', '7:00-15:00');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (555555555, 'WorkingDays', 'Sunday-Thursday');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (555555555, 'VacationDays', '12');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (555555555, 'SickDays', '10');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (555555555, 'PensionFund', 'Harel');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (555555555, 'PensionRate', '5.5%');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (555555555, 'HealthInsurance', 'Clalit');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (555555555, 'Position', 'Driver');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (555555555, 'Department', 'Logistics');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (555555555, 'Store', 'Shefa Issachar');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (666666666, 'WorkingHours', '6:00-14:00');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (666666666, 'WorkingDays', 'Sunday-Thursday');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (666666666, 'VacationDays', '10');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (666666666, 'SickDays', '10');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (666666666, 'PensionFund', 'Migdal');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (666666666, 'PensionRate', '5%');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (666666666, 'HealthInsurance', 'Meuhedet');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (666666666, 'Position', 'Cleaner');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (666666666, 'Department', 'Maintenance');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (666666666, 'Store', 'Shefa Issachar');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (888888888, 'WorkingHours', '6:00-14:00');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (888888888, 'WorkingDays', 'Sunday-Thursday');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (888888888, 'VacationDays', '10');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (888888888, 'SickDays', '10');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (888888888, 'PensionFund', 'Migdal');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (888888888, 'PensionRate', '5%');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (888888888, 'HealthInsurance', 'Meuhedet');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (888888888, 'Position', 'Cleaner');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (888888888, 'Department', 'Maintenance');
-INSERT INTO EmployeeTerms (israeliId, termKey, termValue) VALUES (888888888, 'Store', 'Shefa Issachar');
 
 -- BankAccounts
-INSERT INTO BankAccounts (employeeId, bankNumber, bankBranchNumber, bankAccountNumber) VALUES (123456789, 10, 123, 1234567890);
-INSERT INTO BankAccounts (employeeId, bankNumber, bankBranchNumber, bankAccountNumber) VALUES (111111111, 12, 456, 9876543210);
-INSERT INTO BankAccounts (employeeId, bankNumber, bankBranchNumber, bankAccountNumber) VALUES (222222222, 20, 789, 2468135790);
-INSERT INTO BankAccounts (employeeId, bankNumber, bankBranchNumber, bankAccountNumber) VALUES (333333333, 31, 321, 1357924680);
-INSERT INTO BankAccounts (employeeId, bankNumber, bankBranchNumber, bankAccountNumber) VALUES (444444444, 11, 654, 5678901234);
-INSERT INTO BankAccounts (employeeId, bankNumber, bankBranchNumber, bankAccountNumber) VALUES (555555555, 14, 987, 4321098765);
-INSERT INTO BankAccounts (employeeId, bankNumber, bankBranchNumber, bankAccountNumber) VALUES (666666666, 25, 159, 9870123456);
-INSERT INTO BankAccounts (employeeId, bankNumber, bankBranchNumber, bankAccountNumber) VALUES (777777777, 18, 753, 3456789012);
-INSERT INTO BankAccounts (employeeId, bankNumber, bankBranchNumber, bankAccountNumber) VALUES (888888888, 22, 852, 6789012345);
+INSERT INTO BankAccounts (employeeId, bankNumber, bankBranchNumber, bankAccountNumber) VALUES (123456789, 1, 123, 1234567890);
+
+-- Insert data into the ShippingAreas table
+INSERT INTO ShippingAreas (areaNumber, areaName) VALUES
+                                                     (0, 'Central District'),
+                                                     (1, 'South District'),
+                                                     (2, 'East District');
+
+-- Insert data into the Sites table
+INSERT INTO Sites (areaNum, addressStr, contName, contNumber) VALUES
+                                                                  (0, 'Tel Aviv', 'Yossi Oren', 0542315421),
+                                                                  (1, 'Ben Gurion Uni', 'Meni Adler', 0526451234),
+                                                                  (2, 'Afula', 'Dani Hendler', 0535471594);
+
+-- Insert data into the Counters table
+INSERT INTO Counters (CounterName, CounterValue) VALUES
+    (  'transportIDCounter', 0);

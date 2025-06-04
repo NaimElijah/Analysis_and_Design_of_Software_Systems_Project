@@ -124,7 +124,14 @@ public final class Database {
                     "FOREIGN KEY (employeeId) REFERENCES Employees(israeliId)" +
                     ")";
 
-
+    private static final String BankAccountsTable =
+            "CREATE TABLE IF NOT EXISTS BankAccounts (" +
+                    "employeeId INTEGER PRIMARY KEY, " +
+                    "bankNumber INTEGER NOT NULL, " +
+                    "bankBranchNumber INTEGER NOT NULL, " +
+                    "bankAccountNumber INTEGER NOT NULL, " +
+                    "FOREIGN KEY (employeeId) REFERENCES Employees(israeliId)" +
+                    ")";
 
 
     /// Transport related tables creation             <<--------------
@@ -223,8 +230,14 @@ public final class Database {
                     ")";
 
 
-    static {
+    public static void init(boolean minimalMode) {
         try {
+            if (conn != null)
+                throw new IllegalStateException("Database already initialized");
+
+            if (minimalMode) {
+                Database.DB_URL = "jdbc:sqlite:SuperLee_Minimal.db";
+            }
             Class.forName("org.sqlite.JDBC");
             conn = DriverManager.getConnection(DB_URL);
 
@@ -249,6 +262,7 @@ public final class Database {
                 st.executeUpdate(SitesTable);
                 st.executeUpdate(TransportsTable);
                 st.executeUpdate(ItemsDocsTable);
+                st.executeUpdate(BankAccountsTable);
 
                 // Finally, create tables that depend on the second level tables
                 st.executeUpdate(EmployeeRolesTable);
@@ -271,6 +285,8 @@ public final class Database {
             throw new ExceptionInInitializerError(e);
         }
     }
+
+
 
     private Database() {}
 

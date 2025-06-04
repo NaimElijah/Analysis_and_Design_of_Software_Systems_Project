@@ -55,5 +55,3 @@ The project uses the following dependencies:
 - **SQLite JDBC** (version 3.45.1.0) - For database connectivity
 - **JUnit Jupiter 5** (version 5.8.1) - For testing
 - **Maven Exec Plugin** (version 3.0.0) - For running the application
-
-zz

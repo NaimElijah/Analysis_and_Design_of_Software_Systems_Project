@@ -35,6 +35,7 @@ public class EmployeeDTO {
     private LocalDate creationDate;
     private LocalDate updateDate;
     private long branchId; // Branch that the employee is assigned to
+    private BankAccountDTO bankAccount; // Bank account information for the employee
 
     /**
      * Default constructor for serialization
@@ -52,6 +53,18 @@ public class EmployeeDTO {
                       Map<String, Object> termsOfEmployment, Set<String> roles,
                       LocalDate startOfEmployment, boolean isActive,
                       LocalDate creationDate, LocalDate updateDate, Long branchId) {
+        this(israeliId, firstName, lastName, salary, termsOfEmployment, roles, 
+             startOfEmployment, isActive, creationDate, updateDate, branchId, null);
+    }
+
+    /**
+     * Full constructor for creating an EmployeeDTO with all fields including branch and bank account
+     */
+    public EmployeeDTO(long israeliId, String firstName, String lastName, long salary,
+                      Map<String, Object> termsOfEmployment, Set<String> roles,
+                      LocalDate startOfEmployment, boolean isActive,
+                      LocalDate creationDate, LocalDate updateDate, Long branchId,
+                      BankAccountDTO bankAccount) {
         this.israeliId = israeliId;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -63,6 +76,7 @@ public class EmployeeDTO {
         this.creationDate = creationDate;
         this.updateDate = updateDate;
         this.branchId = branchId;
+        this.bankAccount = bankAccount;
     }
 
     // Getters and setters
@@ -198,6 +212,24 @@ public class EmployeeDTO {
         }
     }
 
+    /**
+     * Gets the bank account information for the employee.
+     * 
+     * @return The bank account information
+     */
+    public BankAccountDTO getBankAccount() {
+        return bankAccount;
+    }
+
+    /**
+     * Sets the bank account information for the employee.
+     * 
+     * @param bankAccount The bank account information
+     */
+    public void setBankAccount(BankAccountDTO bankAccount) {
+        this.bankAccount = bankAccount;
+    }
+
     @Override
     public String toString() {
         return "EmployeeDTO{" +
@@ -207,6 +239,7 @@ public class EmployeeDTO {
                 ", salary=" + salary +
                 ", isActive=" + isActive +
                 ", branch='" + branchId + '\'' +
+                ", bankAccount=" + (bankAccount != null ? bankAccount.toString() : "null") +
                 '}';
     }
 }

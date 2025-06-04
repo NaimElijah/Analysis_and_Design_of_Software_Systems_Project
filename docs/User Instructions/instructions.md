@@ -435,6 +435,68 @@ Ensure you have the appropriate role or notify your system administrator.
 
 ---
 
+# 🧩 System Database Initialization Overview
+
+This document outlines the data initialized by the system in two configurations:
+- **Full Database**: Full dataset for operational use.
+- **Minimal Database**: Lightweight setup for development or testing.
+
+---
+
+## 🔹 Full Database
+
+The Full Database includes comprehensive data for all modules, ensuring the system is fully functional with all features available.
+
+### 🔧 Employee & HR Module
+
+- **Branches**: Includes `Headquarters` and `Beer Shave` branches.
+- **Permissions**: Comprehensive permission set across employees, roles, shifts, transports, and operational tasks.
+- **Roles**: Includes roles like `Admin`, `HR manager`, `Transport Manager`, `Shift Manager`, `Stocker`, `Cashier`, `DriverA`, `DriverB`, `DriverC`, `DriverD`, `DriverE`, `Cleaner`, and `Warehouse Manager`.
+- **Employees**: A diverse team of employees is initialized, each with unique roles, salaries, and terms:
+    - `Admin User` (ID: 123456789): System administrator with full access.
+    - `Shira Steinbuch` (ID: 111111111): HR manager.
+    - `Ramzi Abd Rabo` (ID: 222222222): Stocker.
+    - `Kochava Shavit` (ID: 333333333): Cashier.
+    - `Moshe Cohen` (ID: 444444444): Transport Manager.
+    - `Yael Levy` (ID: 555555555): Driver with license E.
+    - `David Mizrahi` (ID: 666666666): Cleaner.
+    - `Emmanuel Macroni` (ID: 777777777): Driver with license C.
+    - `Doron Yakov` (ID: 888888888): Warehouse manager.
+- **EmployeeTerms**: Full employment terms, pension, insurance, schedules, and departments.
+
+### 🚛 Transport Module
+
+- **Shipping Areas**: Central(0), South(1), and East(2) Districts.
+- **Sites**: Locations in Tel Aviv(in Area), Ben Gurion Uni, and Afula.
+- **Trucks**: Three trucks are initialized in the system:
+    - `Truck 401` (Model: Truck Model A): Light-duty truck with a net weight of 1,000 kg and max carry weight of 20 tons. Requires license type A.
+    - `Truck 402` (Model: Truck Model B): Heavy-duty truck with a net weight of 15,000 kg and max carry weight of 120 tons. Requires license type E.
+    - `Truck 403` (Model: Truck Model C): Medium truck with a net weight of 12,000 kg and max carry weight of 100 tons. Requires license type C.
+  All trucks are not assigned to any transport task at system startup.
+
+---
+
+## 🔸 Minimal Database
+
+The minimal database includes essential setup for the system to run with core capabilities.
+
+### 🔧 Employee & HR Module
+
+- **Branches**: One branch - Ben Gurion Uni (Beer Sheva).
+- **Permissions**: Full permissions setup as in the basic version.
+- **Roles**: Same role definitions as the full setup.
+- **Employees**: One Admin employee (`123456789`) with full credentials.
+- **EmployeeRoles**: Admin linked to full-access `Admin` role.
+- **EmployeeTerms**: Full set of employment terms for the Admin.
+- **BankAccounts**: Includes a sample bank account for the Admin.
+
+### 🚛 Transport Module
+
+- **Shipping Areas**: Central, South, and East Districts.
+- **Sites**: Includes Tel Aviv, Ben Gurion Uni, and Afula.
+
+---
+
 ## Final Notes
 
 - Contact an administrator if permission issues block you from accessing required features.

@@ -114,6 +114,13 @@ public class EmployeeIntegrationService {
         }
     }
 
+    /**
+     * Checks whether a given address and area code represent a branch.
+     *
+     * @param address The address of the site to be checked.
+     * @param areaCode The area code of the site to be checked.
+     * @return true if the given address and area code correspond to a branch; false otherwise.
+     */
     public boolean isBranch(String address, int areaCode) {
         try {
             return employeeService.isBranch(address, areaCode);

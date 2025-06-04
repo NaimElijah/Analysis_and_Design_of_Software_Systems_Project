@@ -67,6 +67,18 @@ public class EmployeeController {
             return null;
         }
 
+        // Convert BankAccountDTO to BankAccount if it exists
+        BankAccount bankAccount = null;
+        if (dto.getBankAccount() != null) {
+            DTOs.BankAccountDTO bankAccountDTO = dto.getBankAccount();
+            bankAccount = new BankAccount(
+                dto.getIsraeliId(),
+                bankAccountDTO.getBankNumber(),
+                bankAccountDTO.getBankBranchNumber(),
+                bankAccountDTO.getBankAccountNumber()
+            );
+        }
+
         return new Employee(
             dto.getIsraeliId(),
             dto.getFirstName(),
@@ -78,7 +90,8 @@ public class EmployeeController {
             dto.isActive(),
             dto.getCreationDate(),
             dto.getUpdateDate(),
-            dto.getBranchId()
+            dto.getBranchId(),
+            bankAccount
         );
     }
 
@@ -93,6 +106,18 @@ public class EmployeeController {
             return null;
         }
 
+        // Convert BankAccount to BankAccountDTO if it exists
+        DTOs.BankAccountDTO bankAccountDTO = null;
+        if (employee.getBankAccount() != null) {
+            BankAccount bankAccount = employee.getBankAccount();
+            bankAccountDTO = new DTOs.BankAccountDTO(
+                employee.getIsraeliId(),
+                bankAccount.getBankNumber(),
+                bankAccount.getBankBranchNumber(),
+                bankAccount.getBankAccountNumber()
+            );
+        }
+
         return new EmployeeDTO(
             employee.getIsraeliId(),
             employee.getFirstName(),
@@ -104,7 +129,8 @@ public class EmployeeController {
             employee.isActive(),
             employee.getCreationDate(),
             employee.getUpdateDate(),
-            employee.getBranchId()
+            employee.getBranchId(),
+            bankAccountDTO
         );
     }
 
@@ -125,6 +151,27 @@ public class EmployeeController {
      * @throws InvalidInputException if any input is invalid
      */
     public boolean createEmployee(long doneBy, long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, Set<String> roles, LocalDate startOfEmployment, long branchId) {
+        return createEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, roles, startOfEmployment, branchId, null);
+    }
+
+    /**
+     * Creates a new employee with bank account information.
+     *
+     * @param doneBy - The user who created the employee - for auditing purposes and permissions
+     * @param israeliId - The Israeli ID of the new employee
+     * @param firstName - The first name of the new employee
+     * @param lastName - The last name of the new employee
+     * @param salary - The salary of the new employee
+     * @param termsOfEmployment - The terms of employment of the new employee
+     * @param roles - The roles of the new employee
+     * @param startOfEmployment - The start of employment date of the new employee
+     * @param branchId - The branch id that the employee is assigned to
+     * @param bankAccount - The bank account information of the new employee
+     * @return True if the employee was created successfully
+     * @throws UnauthorizedPermissionException if the user does not have permission
+     * @throws InvalidInputException if any input is invalid
+     */
+    public boolean createEmployee(long doneBy, long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, Set<String> roles, LocalDate startOfEmployment, long branchId, BankAccount bankAccount) {
         // Permission handling
         String PERMISSION_REQUIRED = "CREATE_EMPLOYEE";
         if (!isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
@@ -167,6 +214,17 @@ public class EmployeeController {
             throw new InvalidInputException("Branch info is invalid");
         }
 
+        // Convert BankAccount to BankAccountDTO if it exists
+        DTOs.BankAccountDTO bankAccountDTO = null;
+        if (bankAccount != null) {
+            bankAccountDTO = new DTOs.BankAccountDTO(
+                israeliId,
+                bankAccount.getBankNumber(),
+                bankAccount.getBankBranchNumber(),
+                bankAccount.getBankAccountNumber()
+            );
+        }
+
         // Create new employee DTO
         EmployeeDTO employeeDTO = new EmployeeDTO(
             israeliId, 
@@ -179,7 +237,8 @@ public class EmployeeController {
             true, 
             LocalDate.now(), 
             LocalDate.now(), 
-            branchId
+            branchId,
+            bankAccountDTO
         );
 
         // Create employee in repository
@@ -205,6 +264,25 @@ public class EmployeeController {
      * @throws InvalidInputException if any input is invalid or if the employee does not exist
      */
     public boolean updateEmployee(long doneBy, long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, boolean active) {
+        return updateEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, active, null);
+    }
+
+    /**
+     * Updates an existing employee with bank account information.
+     *
+     * @param doneBy - The user who updated the employee - for auditing purposes and permissions
+     * @param israeliId - The Israeli ID of the employee to update
+     * @param firstName - The new first name
+     * @param lastName - The new last name
+     * @param salary - The new salary
+     * @param termsOfEmployment - The new terms of employment
+     * @param active - The new active status
+     * @param bankAccount - The new bank account information
+     * @return True if the employee was updated successfully
+     * @throws UnauthorizedPermissionException if the user does not have permission
+     * @throws InvalidInputException if any input is invalid or if the employee does not exist
+     */
+    public boolean updateEmployee(long doneBy, long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, boolean active, BankAccount bankAccount) {
         // Permission handling
         String PERMISSION_REQUIRED = "UPDATE_EMPLOYEE";
         if (!isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
@@ -244,6 +322,17 @@ public class EmployeeController {
             throw new InvalidInputException("Israeli ID must be 9 digits");
         }
 
+        // Convert BankAccount to BankAccountDTO if it exists
+        DTOs.BankAccountDTO bankAccountDTO = null;
+        if (bankAccount != null) {
+            bankAccountDTO = new DTOs.BankAccountDTO(
+                israeliId,
+                bankAccount.getBankNumber(),
+                bankAccount.getBankBranchNumber(),
+                bankAccount.getBankAccountNumber()
+            );
+        }
+
         // Update employee details
         employeeDTO.setFirstName(firstName);
         employeeDTO.setLastName(lastName);
@@ -251,6 +340,7 @@ public class EmployeeController {
         employeeDTO.setTermsOfEmployment(termsOfEmployment);
         employeeDTO.setActive(active);
         employeeDTO.setUpdateDate(LocalDate.now());
+        employeeDTO.setBankAccount(bankAccountDTO);
 
         // Update employee in repository
         return employeeRepository.update(employeeDTO);
@@ -488,8 +578,8 @@ public class EmployeeController {
             throw new InvalidInputException("Employee with ID " + israeliId + " not found");
         }
 
-        // Check if employee is already inactive
-        if (!employeeDTO.isActive()) {
+        // Check if employee is already active
+        if (employeeDTO.isActive()) {
             throw new InvalidInputException("Employee with ID " + israeliId + " is already inactive");
         }
 
@@ -692,5 +782,104 @@ public class EmployeeController {
 
         // Get all employees assigned to the branch
         return employeeRepository.getByBranch(branchId);
+    }
+
+    /**
+     * Updates only the bank account information for an employee.
+     *
+     * @param doneBy - The user who updated the employee - for auditing purposes and permissions
+     * @param israeliId - The Israeli ID of the employee to update
+     * @param bankAccount - The new bank account information
+     * @return True if the bank account was updated successfully
+     * @throws UnauthorizedPermissionException if the user does not have permission
+     * @throws InvalidInputException if any input is invalid or if the employee does not exist
+     */
+    public boolean updateEmployeeBankAccount(long doneBy, long israeliId, BankAccount bankAccount) {
+        // Permission handling
+        String PERMISSION_REQUIRED = "UPDATE_EMPLOYEE";
+        if (!isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
+            throw new UnauthorizedPermissionException("User does not have permission to update employee bank account");
+        }
+
+        Employee doneByEmployee = getEmployeeByIsraeliId(doneBy);
+        if (doneByEmployee == null) {
+            throw new InvalidInputException("Employee with ID " + doneBy + " not found");
+        }
+
+        // Check if employee exists
+        EmployeeDTO employeeDTO = employeeRepository.getById(israeliId);
+        if (employeeDTO == null) {
+            throw new InvalidInputException("Employee with ID " + israeliId + " not found");
+        }
+
+        // Check if employee is active
+        if (!employeeDTO.isActive()) {
+            throw new InvalidInputException("Employee with ID " + israeliId + " is not active - cannot update information");
+        }
+
+        // Validate bank account input
+        if (bankAccount == null) {
+            throw new InvalidInputException("Bank account information cannot be null");
+        }
+
+        // Convert BankAccount to BankAccountDTO
+        DTOs.BankAccountDTO bankAccountDTO = new DTOs.BankAccountDTO(
+            israeliId,
+            bankAccount.getBankNumber(),
+            bankAccount.getBankBranchNumber(),
+            bankAccount.getBankAccountNumber()
+        );
+
+        // Update only the bank account information
+        employeeDTO.setBankAccount(bankAccountDTO);
+        employeeDTO.setUpdateDate(LocalDate.now());
+
+        // Update employee in repository
+        return employeeRepository.update(employeeDTO);
+    }
+
+    /**
+     * Removes the bank account information for an employee.
+     *
+     * @param doneBy - The user who updated the employee - for auditing purposes and permissions
+     * @param israeliId - The Israeli ID of the employee to update
+     * @return True if the bank account was removed successfully
+     * @throws UnauthorizedPermissionException if the user does not have permission
+     * @throws InvalidInputException if any input is invalid or if the employee does not exist
+     */
+    public boolean removeEmployeeBankAccount(long doneBy, long israeliId) {
+        // Permission handling
+        String PERMISSION_REQUIRED = "UPDATE_EMPLOYEE";
+        if (!isEmployeeAuthorised(doneBy, PERMISSION_REQUIRED)) {
+            throw new UnauthorizedPermissionException("User does not have permission to update employee bank account");
+        }
+
+        Employee doneByEmployee = getEmployeeByIsraeliId(doneBy);
+        if (doneByEmployee == null) {
+            throw new InvalidInputException("Employee with ID " + doneBy + " not found");
+        }
+
+        // Check if employee exists
+        EmployeeDTO employeeDTO = employeeRepository.getById(israeliId);
+        if (employeeDTO == null) {
+            throw new InvalidInputException("Employee with ID " + israeliId + " not found");
+        }
+
+        // Check if employee is active
+        if (!employeeDTO.isActive()) {
+            throw new InvalidInputException("Employee with ID " + israeliId + " is not active - cannot update information");
+        }
+
+        // Check if employee has bank account information
+        if (employeeDTO.getBankAccount() == null) {
+            throw new InvalidInputException("Employee with ID " + israeliId + " does not have bank account information");
+        }
+
+        // Remove bank account information
+        employeeDTO.setBankAccount(null);
+        employeeDTO.setUpdateDate(LocalDate.now());
+
+        // Update employee in repository
+        return employeeRepository.update(employeeDTO);
     }
 }

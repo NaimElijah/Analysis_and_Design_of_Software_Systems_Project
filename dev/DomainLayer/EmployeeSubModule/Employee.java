@@ -19,9 +19,10 @@ public class Employee {
     private LocalDate creationDate; // Creation date of the employee record
     private LocalDate updateDate; // Last update date of the employee record
     private Long branchId; // Branch that the employee is assigned to
+    private BankAccount bankAccount; // Bank account information for the employee
 
 
-    public Employee(long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, Set<String> roles, LocalDate startOfEmployment, boolean isActive, LocalDate creationDate, LocalDate updateDate, Long branchId) {
+    public Employee(long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, Set<String> roles, LocalDate startOfEmployment, boolean isActive, LocalDate creationDate, LocalDate updateDate, Long branchId, BankAccount bankAccount) {
         this.israeliId = israeliId;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -33,6 +34,12 @@ public class Employee {
         this.creationDate = creationDate;
         this.updateDate = updateDate;
         this.branchId = branchId;
+        this.bankAccount = bankAccount;
+    }
+
+    // Constructor without bank account for backward compatibility
+    public Employee(long israeliId, String firstName, String lastName, long salary, Map<String, Object> termsOfEmployment, Set<String> roles, LocalDate startOfEmployment, boolean isActive, LocalDate creationDate, LocalDate updateDate, Long branchId) {
+        this(israeliId, firstName, lastName, salary, termsOfEmployment, roles, startOfEmployment, isActive, creationDate, updateDate, branchId, null);
     }
 
     public long getIsraeliId() {
@@ -172,5 +179,23 @@ public class Employee {
      */
     public void setBranch(long branchId) {
         this.branchId = branchId;
+    }
+
+    /**
+     * Gets the bank account information for the employee.
+     * 
+     * @return The bank account information
+     */
+    public BankAccount getBankAccount() {
+        return bankAccount;
+    }
+
+    /**
+     * Sets the bank account information for the employee.
+     * 
+     * @param bankAccount The bank account information
+     */
+    public void setBankAccount(BankAccount bankAccount) {
+        this.bankAccount = bankAccount;
     }
 }

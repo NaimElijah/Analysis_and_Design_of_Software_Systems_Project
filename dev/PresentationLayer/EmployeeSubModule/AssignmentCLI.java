@@ -1204,6 +1204,9 @@ public class AssignmentCLI {
                     CliUtil.printOperationCancelled();
                 }
             }
+            if (shiftService.isAssignedManager(doneBy, shiftId).contains("Error")) {
+                CliUtil.printWarning("ATTN: No shift manager assigned for this shift.");
+            }
 
         } catch (Exception e) {
             printError("Error assigning employee: " + e.getMessage());

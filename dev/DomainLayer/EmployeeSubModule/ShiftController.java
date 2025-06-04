@@ -1108,4 +1108,5 @@ public class ShiftController {
                 .map(ShiftDTO::serialize)
                 .orElseThrow(() -> new ShiftNotFoundException("No current shift found for today in branch: " + branchId));
     }
+
 }

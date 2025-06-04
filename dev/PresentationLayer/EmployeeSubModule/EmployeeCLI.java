@@ -462,25 +462,29 @@ public class EmployeeCLI {
         EmployeeDTO selectedEmployee = relevantEmployees.get(employeeIndex);
         long israeliId = selectedEmployee.getIsraeliId();
 
-        // Confirm
-        if (confirm("Confirm " + (isDeactivating ? "deactivating" : "reactivating") + " employee '" + 
-                   selectedEmployee.getFullName() + "' (ID: " + israeliId + ")?")) {
+        try {
+            // Confirm
+            if (confirm("Confirm " + (isDeactivating ? "deactivating" : "reactivating") + " employee '" +
+                       selectedEmployee.getFullName() + "' (ID: " + israeliId + ")?")) {
 
-            String result;
-            if (isDeactivating) {
-                // Use the existing deactivateEmployee method
-                result = employeeService.deactivateEmployee(doneBy, israeliId);
-            } else {
-                result = employeeService.reactivateEmployee(doneBy, israeliId);
-            }
+                String result;
+                if (isDeactivating) {
+                    // Use the existing deactivateEmployee method
+                    result = employeeService.deactivateEmployee(doneBy, israeliId);
+                } else {
+                    result = employeeService.reactivateEmployee(doneBy, israeliId);
+                }
 
-            if (result.contains("successfully")) {
-                printSuccess(result);
+                if (result.contains("successfully")) {
+                    printSuccess(result);
+                } else {
+                    printError(result);
+                }
             } else {
-                printError(result);
+                CliUtil.printOperationCancelled();
             }
-        } else {
-            CliUtil.printOperationCancelled();
+        } catch (Exception e) {
+            CliUtil.printError("An error occurred: " + e.getMessage());
         }
 
         CliUtil.waitForEnter(scanner);
@@ -541,6 +545,28 @@ public class EmployeeCLI {
                 CliUtil.printBold("Branch ID: ");
                 long branch = Long.parseLong(scanner.nextLine());
 
+                // Bank account information
+                CliUtil.printEmptyLine();
+                CliUtil.printSectionWithIcon("BANK ACCOUNT INFORMATION", "🏦");
+                CliUtil.printInfo("Would you like to add bank account information? (y/n)");
+                String addBankAccount = scanner.nextLine();
+
+                long bankNumber = 0;
+                long bankBranchNumber = 0;
+                long bankAccountNumber = 0;
+                boolean hasBankAccount = false;
+
+                if (addBankAccount.equalsIgnoreCase("y") || addBankAccount.equalsIgnoreCase("yes")) {
+                    hasBankAccount = true;
+                    CliUtil.printBold("Bank Number: ");
+                    bankNumber = Long.parseLong(scanner.nextLine());
+
+                    CliUtil.printBold("Bank Branch Number: ");
+                    bankBranchNumber = Long.parseLong(scanner.nextLine());
+
+                    CliUtil.printBold("Bank Account Number: ");
+                    bankAccountNumber = Long.parseLong(scanner.nextLine());
+                }
 
                 Map<String, Object> termsOfEmployment = new HashMap<>();
                 CliUtil.printEmptyLine();
@@ -558,7 +584,13 @@ public class EmployeeCLI {
                     termsOfEmployment.put(key, value);
                     CliUtil.printSuccessWithCheckmark("Added: " + key + " = " + value);
                 }
-                String result = employeeService.createEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, startDate, branch);
+
+                String result;
+                if (hasBankAccount) {
+                    result = employeeService.createEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, startDate, branch, bankNumber, bankBranchNumber, bankAccountNumber);
+                } else {
+                    result = employeeService.createEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, startDate, branch);
+                }
 
                 if (result.contains("successfully")) {
                     printSuccess(result);
@@ -650,10 +682,10 @@ public class EmployeeCLI {
                 CliUtil.printBold("Current Active Status: " + existing.isActive());
 
                 // Display numbered options for employee status
-                System.out.println("Select employee status:");
-                System.out.println(CliUtil.YELLOW + "1" + CliUtil.RESET + ". Active");
-                System.out.println(CliUtil.YELLOW + "2" + CliUtil.RESET + ". Inactive");
-                System.out.println(CliUtil.YELLOW + "0" + CliUtil.RESET + ". Cancel (keep current)");
+                CliUtil.print("Select employee status:");
+                CliUtil.print(CliUtil.YELLOW + "1" + CliUtil.RESET + ". Active");
+                CliUtil.print(CliUtil.YELLOW + "2" + CliUtil.RESET + ". Inactive");
+                CliUtil.print(CliUtil.YELLOW + "0" + CliUtil.RESET + ". Cancel (keep current)");
 
                 CliUtil.printPrompt("Enter your choice: ");
                 String activeInput = scanner.nextLine();
@@ -689,6 +721,17 @@ public class EmployeeCLI {
                         CliUtil.print("  " + CliUtil.BOLD + k + CliUtil.RESET + ": " + v));
                 }
 
+                // Display current bank account information
+                CliUtil.printEmptyLine();
+                CliUtil.printSectionWithIcon("CURRENT BANK ACCOUNT INFORMATION", "🏦");
+                if (existing.getBankAccount() == null) {
+                    CliUtil.printInfo("  No bank account information defined");
+                } else {
+                    CliUtil.print("  " + CliUtil.BOLD + "Bank Number: " + CliUtil.RESET + existing.getBankAccount().getBankNumber());
+                    CliUtil.print("  " + CliUtil.BOLD + "Bank Branch Number: " + CliUtil.RESET + existing.getBankAccount().getBankBranchNumber());
+                    CliUtil.print("  " + CliUtil.BOLD + "Bank Account Number: " + CliUtil.RESET + existing.getBankAccount().getBankAccountNumber());
+                }
+
                 CliUtil.printEmptyLine();
                 CliUtil.printSectionWithIcon("UPDATE TERMS OF EMPLOYMENT", "📝");
                 CliUtil.printInfo("Enter key-value pairs. Type 'done' when finished.");
@@ -713,21 +756,80 @@ public class EmployeeCLI {
                     }
                 }
 
+                // First update the employee information
                 String result = employeeService.updateEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, active);
 
-                if (result.contains("successfully")) {
-                    printSuccess(result);
-                    retry = false; // Success, exit the retry loop
-                } else {
+                if (!result.contains("successfully")) {
                     int choice = CliUtil.handleError(result, scanner);
                     if (choice == 0) { // Cancel operation
                         CliUtil.printOperationCancelled();
                         retry = false;
+                        continue;
                     } else if (choice == 2) { // Return to previous menu
                         retry = false;
+                        continue;
                     }
-                    // If choice == 1, retry is still true, so we'll loop again
+                } else {
+                    printSuccess(result);
                 }
+
+                // Bank account information - separate update
+                CliUtil.printEmptyLine();
+                CliUtil.printSectionWithIcon("UPDATE BANK ACCOUNT INFORMATION", "🏦");
+                CliUtil.printInfo("What would you like to do with bank account information?");
+                CliUtil.print(CliUtil.YELLOW + "1" + CliUtil.RESET + ". Update bank account information");
+                CliUtil.print(CliUtil.YELLOW + "2" + CliUtil.RESET + ". Remove bank account information");
+                CliUtil.print(CliUtil.YELLOW + "0" + CliUtil.RESET + ". Skip (no changes to bank account)");
+
+                CliUtil.printPrompt("Enter your choice: ");
+                String bankAccountChoice = scanner.nextLine();
+
+                if (bankAccountChoice.equals("1")) {
+                    // Update bank account information
+                    CliUtil.printBold("Bank Number: ");
+                    String bankNumberInput = scanner.nextLine();
+                    long bankNumber = bankNumberInput.isBlank() && existing.getBankAccount() != null ? 
+                        existing.getBankAccount().getBankNumber() : 
+                        Long.parseLong(bankNumberInput);
+
+                    CliUtil.printBold("Bank Branch Number: ");
+                    String bankBranchNumberInput = scanner.nextLine();
+                    long bankBranchNumber = bankBranchNumberInput.isBlank() && existing.getBankAccount() != null ? 
+                        existing.getBankAccount().getBankBranchNumber() : 
+                        Long.parseLong(bankBranchNumberInput);
+
+                    CliUtil.printBold("Bank Account Number: ");
+                    String bankAccountNumberInput = scanner.nextLine();
+                    long bankAccountNumber = bankAccountNumberInput.isBlank() && existing.getBankAccount() != null ? 
+                        existing.getBankAccount().getBankAccountNumber() : 
+                        Long.parseLong(bankAccountNumberInput);
+
+                    String bankResult = employeeService.updateEmployeeBankAccount(doneBy, israeliId, 
+                                                                                bankNumber, bankBranchNumber, bankAccountNumber);
+
+                    if (bankResult.contains("successfully")) {
+                        printSuccess(bankResult);
+                    } else {
+                        CliUtil.handleError(bankResult, scanner);
+                    }
+                } else if (bankAccountChoice.equals("2")) {
+                    // Remove bank account information
+                    if (existing.getBankAccount() == null) {
+                        CliUtil.printInfo("No bank account information to remove.");
+                    } else {
+                        String bankResult = employeeService.removeEmployeeBankAccount(doneBy, israeliId);
+
+                        if (bankResult.contains("successfully")) {
+                            printSuccess(bankResult);
+                        } else {
+                            CliUtil.handleError(bankResult, scanner);
+                        }
+                    }
+                } else if (!bankAccountChoice.equals("0")) {
+                    CliUtil.printInfo("Invalid choice. Skipping bank account update.");
+                }
+
+                retry = false; // Exit the retry loop after handling bank account
             } catch (NumberFormatException e) {
                 int choice = CliUtil.handleError("Please enter valid numeric input.", scanner);
                 if (choice == 0) { // Cancel operation
@@ -999,10 +1101,10 @@ public class EmployeeCLI {
         CliUtil.printEmptyLine();
 
         // Display numbered options for adding permissions
-        System.out.println("Do you want to add permissions now?");
-        System.out.println(CliUtil.YELLOW + "1" + CliUtil.RESET + ". Yes");
-        System.out.println(CliUtil.YELLOW + "2" + CliUtil.RESET + ". No");
-        System.out.println(CliUtil.YELLOW + "0" + CliUtil.RESET + ". Cancel");
+        CliUtil.print("Do you want to add permissions now?");
+        CliUtil.print(CliUtil.YELLOW + "1" + CliUtil.RESET + ". Yes");
+        CliUtil.print(CliUtil.YELLOW + "2" + CliUtil.RESET + ". No");
+        CliUtil.print(CliUtil.YELLOW + "0" + CliUtil.RESET + ". Cancel");
 
         CliUtil.printPrompt("Enter your choice: ");
         String addPermissions = scanner.nextLine();
@@ -1302,7 +1404,8 @@ public class EmployeeCLI {
             List<String> headers = Arrays.asList(
                 "EMPLOYEE INFORMATION",
                 "ROLES & PERMISSIONS",
-                "TERMS OF EMPLOYMENT"
+                "TERMS OF EMPLOYMENT",
+                "BANK ACCOUNT INFORMATION"
             );
 
             // Create content for each section
@@ -1359,10 +1462,20 @@ public class EmployeeCLI {
             }
             content.put("TERMS OF EMPLOYMENT", termsInfo);
 
+            // Bank Account Information section
+            List<String[]> bankAccountInfo = new ArrayList<>();
+            if (employee.getBankAccount() != null) {
+                bankAccountInfo.add(new String[]{"Bank Number:", String.valueOf(employee.getBankAccount().getBankNumber())});
+                bankAccountInfo.add(new String[]{"Branch Number:", String.valueOf(employee.getBankAccount().getBankBranchNumber())});
+                bankAccountInfo.add(new String[]{"Account Number:", String.valueOf(employee.getBankAccount().getBankAccountNumber())});
+            }
+            content.put("BANK ACCOUNT INFORMATION", bankAccountInfo);
+
             // Create empty messages for each section
             Map<String, String> emptyMessages = new HashMap<>();
             emptyMessages.put("ROLES & PERMISSIONS", "No roles assigned");
             emptyMessages.put("TERMS OF EMPLOYMENT", "No terms of employment defined");
+            emptyMessages.put("BANK ACCOUNT INFORMATION", "No bank account information defined");
 
             // Print the formatted table
             CliUtil.printFormattedTable("Employee Details", headers, content, emptyMessages);

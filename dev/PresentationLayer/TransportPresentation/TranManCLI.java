@@ -337,7 +337,7 @@ public class TranManCLI {
 
 
 
-            ItemsDocDTO itemsDocAddition = new ItemsDocDTO(currItemsDocNum, srcSitedto, destSitedto, itemsListToCurrDestSite, timeCounter, -99);  //TODO: -99 just for creation, just check that isn't problematic.
+            ItemsDocDTO itemsDocAddition = new ItemsDocDTO(currItemsDocNum, srcSitedto, destSitedto, itemsListToCurrDestSite, timeCounter, -99);
             System.out.println("Ok, Finished adding the current destination Site's items");
             dests_Docs_for_Transport.add(itemsDocAddition);   //  adding new ItemsDoc to the destSitesDocs
 
@@ -352,14 +352,14 @@ public class TranManCLI {
         System.out.println("Ok, Finished adding the Sites & Items to the Transport");
 
         // And create the DTO object (The Package to send downwards):
-        TransportDTO transportDTO = new TransportDTO(-99, truckNum, driverID, srcSitedto, dests_Docs_for_Transport, selectedDepartureDT, enumTranStatus.BeingAssembled, 0, new ArrayList<>());  //TODO: 0 just for creation, check that not problematic.
+        TransportDTO transportDTO = new TransportDTO(-99, truckNum, driverID, srcSitedto, dests_Docs_for_Transport, selectedDepartureDT, enumTranStatus.BeingAssembled, 0, new ArrayList<>());
 
         ////////////////////////////////////////////////    NOW WE HAVE THE WHOLE TRANSPORT's DTO     <<<-----------------------------------------
 
 
         /// ////////////////////////////////////////////    NOW WE'LL DO THE CHECKS          <<<-----------------------------------------
 
-        String resValid = checkIfTransportDTOIsValid(loggedID, transportDTO);  //TODO: there is a problem here, there is an empty string somewhere that splits by "-".
+        String resValid = checkIfTransportDTOIsValid(loggedID, transportDTO);
 
         if (resValid.equals("Valid")){
             System.out.println("Okay, Transport is Valid :)");

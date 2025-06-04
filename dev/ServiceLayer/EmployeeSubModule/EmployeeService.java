@@ -41,6 +41,18 @@ public class EmployeeService {
             return null;
         }
 
+        // Convert BankAccount to BankAccountDTO if it exists
+        DTOs.BankAccountDTO bankAccountDTO = null;
+        if (employee.getBankAccount() != null) {
+            DomainLayer.EmployeeSubModule.BankAccount bankAccount = employee.getBankAccount();
+            bankAccountDTO = new DTOs.BankAccountDTO(
+                employee.getIsraeliId(),
+                bankAccount.getBankNumber(),
+                bankAccount.getBankBranchNumber(),
+                bankAccount.getBankAccountNumber()
+            );
+        }
+
         return new EmployeeDTO(
             employee.getIsraeliId(),
             employee.getFirstName(),
@@ -52,7 +64,8 @@ public class EmployeeService {
             employee.isActive(),
             employee.getCreationDate(),
             employee.getUpdateDate(),
-            employee.getBranchId()
+            employee.getBranchId(),
+            bankAccountDTO
         );
     }
 
@@ -422,6 +435,53 @@ public class EmployeeService {
     }
 
     /**
+     * Creates a new employee with bank account information.
+     * NOTE: CreateEmployee with NO roles or permissions need to be added to the employee in another action!
+     *
+     * @param doneBy         The ID of the user who is creating the employee.
+     * @param israeliId      The Israeli ID of the employee.
+     * @param firstName      The first name of the employee.
+     * @param lastName       The last name of the employee.
+     * @param salary         The salary of the employee.
+     * @param termsOfEmployment The terms of employment for the employee.
+     * @param startOfEmployment The start date of employment for the employee.
+     * @param branchId         The branch that the employee is assigned to.
+     * @param bankNumber       The bank number for the employee's bank account.
+     * @param bankBranchNumber The bank branch number for the employee's bank account.
+     * @param bankAccountNumber The bank account number for the employee's bank account.
+     * @return A message indicating whether the employee was created successfully or not.
+     * @throws ValidationException if any input parameters are invalid
+     * @throws AuthorizationException if the user doesn't have permission to create employees
+     * @throws ServiceException if an unexpected error occurs
+     */
+    public String createEmployee(long doneBy, long israeliId, String firstName, String lastName, long salary, 
+                                Map<String, Object> termsOfEmployment, LocalDate startOfEmployment, Long branchId,
+                                long bankNumber, long bankBranchNumber, long bankAccountNumber) {
+        try {
+            // Create bank account object
+            DomainLayer.EmployeeSubModule.BankAccount bankAccount = 
+                new DomainLayer.EmployeeSubModule.BankAccount(israeliId, bankNumber, bankBranchNumber, bankAccountNumber);
+
+            boolean result = employeeController.createEmployee(doneBy, israeliId, firstName, lastName, salary, 
+                                                              termsOfEmployment, null, startOfEmployment, branchId, bankAccount);
+
+            if (result) {
+                return "Employee created successfully with bank account information"; // Employee created successfully
+            } else {
+                return "Failed to create employee"; // Failed to create employee
+            }
+        } catch (UnauthorizedPermissionException e) {
+            throw new AuthorizationException(doneBy, "CREATE_EMPLOYEE");
+        } catch (InvalidInputException e) {
+            throw new ValidationException(e.getMessage(), e);
+        } catch (ValidationException | AuthorizationException e) {
+            throw e; // Rethrow specific exceptions
+        } catch (Exception e) {
+            throw new ServiceException("Error creating employee: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * Updates an existing employee.
      *
      * @param doneBy         The ID of the user who is updating the employee.
@@ -484,6 +544,45 @@ public class EmployeeService {
         try {
             boolean result = employeeController.updateEmployee(doneBy, israeliId, firstName, lastName, salary, termsOfEmployment, active);
             return result ? "Employee updated successfully" : "Failed to update employee";
+
+        } catch (ValidationException | EmployeeNotFoundException | AuthorizationException e) {
+            throw e; // Rethrow specific exceptions
+        } catch (Exception e) {
+            throw new ServiceException("Error updating employee: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Updates an existing employee with bank account information.
+     *
+     * @param doneBy         The ID of the user who is updating the employee.
+     * @param israeliId      The Israeli ID of the employee.
+     * @param firstName      The new first name of the employee.
+     * @param lastName       The new last name of the employee.
+     * @param salary         The new salary of the employee.
+     * @param termsOfEmployment The new terms of employment for the employee.
+     * @param active         Whether the employee is active or not.
+     * @param bankNumber     The bank number for the employee's bank account.
+     * @param bankBranchNumber The bank branch number for the employee's bank account.
+     * @param bankAccountNumber The bank account number for the employee's bank account.
+     * @return A message indicating whether the employee was updated successfully or not.
+     * @throws ValidationException if any input parameters are invalid
+     * @throws EmployeeNotFoundException if the employee with the given ID doesn't exist
+     * @throws AuthorizationException if the user doesn't have permission to update employees
+     * @throws ServiceException if an unexpected error occurs
+     */
+    public String updateEmployee(long doneBy, long israeliId, String firstName, String lastName, long salary, 
+                                Map<String, Object> termsOfEmployment, boolean active,
+                                long bankNumber, long bankBranchNumber, long bankAccountNumber) {
+        try {
+            // Create bank account object
+            DomainLayer.EmployeeSubModule.BankAccount bankAccount = 
+                new DomainLayer.EmployeeSubModule.BankAccount(israeliId, bankNumber, bankBranchNumber, bankAccountNumber);
+
+            boolean result = employeeController.updateEmployee(doneBy, israeliId, firstName, lastName, salary, 
+                                                              termsOfEmployment, active, bankAccount);
+
+            return result ? "Employee updated successfully with bank account information" : "Failed to update employee";
 
         } catch (ValidationException | EmployeeNotFoundException | AuthorizationException e) {
             throw e; // Rethrow specific exceptions
@@ -972,6 +1071,70 @@ public class EmployeeService {
             return serializedEmployees;
         } catch (Exception e) {
             throw new ServiceException("Error retrieving employees by branch: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Updates only the bank account information for an employee.
+     *
+     * @param doneBy         The ID of the user who is updating the employee.
+     * @param israeliId      The Israeli ID of the employee.
+     * @param bankNumber     The bank number for the employee's bank account.
+     * @param bankBranchNumber The bank branch number for the employee's bank account.
+     * @param bankAccountNumber The bank account number for the employee's bank account.
+     * @return A message indicating whether the bank account was updated successfully or not.
+     * @throws ValidationException if any input parameters are invalid
+     * @throws EmployeeNotFoundException if the employee with the given ID doesn't exist
+     * @throws AuthorizationException if the user doesn't have permission to update employees
+     * @throws ServiceException if an unexpected error occurs
+     */
+    public String updateEmployeeBankAccount(long doneBy, long israeliId, 
+                                          long bankNumber, long bankBranchNumber, long bankAccountNumber) {
+        try {
+            // Create bank account object
+            DomainLayer.EmployeeSubModule.BankAccount bankAccount = 
+                new DomainLayer.EmployeeSubModule.BankAccount(israeliId, bankNumber, bankBranchNumber, bankAccountNumber);
+
+            boolean result = employeeController.updateEmployeeBankAccount(doneBy, israeliId, bankAccount);
+
+            return result ? "Bank account information updated successfully" : "Failed to update bank account information";
+
+        } catch (UnauthorizedPermissionException e) {
+            throw new AuthorizationException(doneBy, "UPDATE_EMPLOYEE");
+        } catch (InvalidInputException e) {
+            throw new ValidationException(e.getMessage(), e);
+        } catch (ValidationException | EmployeeNotFoundException | AuthorizationException e) {
+            throw e; // Rethrow specific exceptions
+        } catch (Exception e) {
+            throw new ServiceException("Error updating bank account information: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Removes the bank account information for an employee.
+     *
+     * @param doneBy         The ID of the user who is updating the employee.
+     * @param israeliId      The Israeli ID of the employee.
+     * @return A message indicating whether the bank account was removed successfully or not.
+     * @throws ValidationException if any input parameters are invalid
+     * @throws EmployeeNotFoundException if the employee with the given ID doesn't exist
+     * @throws AuthorizationException if the user doesn't have permission to update employees
+     * @throws ServiceException if an unexpected error occurs
+     */
+    public String removeEmployeeBankAccount(long doneBy, long israeliId) {
+        try {
+            boolean result = employeeController.removeEmployeeBankAccount(doneBy, israeliId);
+
+            return result ? "Bank account information removed successfully" : "Failed to remove bank account information";
+
+        } catch (UnauthorizedPermissionException e) {
+            throw new AuthorizationException(doneBy, "UPDATE_EMPLOYEE");
+        } catch (InvalidInputException e) {
+            throw new ValidationException(e.getMessage(), e);
+        } catch (ValidationException | EmployeeNotFoundException | AuthorizationException e) {
+            throw e; // Rethrow specific exceptions
+        } catch (Exception e) {
+            throw new ServiceException("Error removing bank account information: " + e.getMessage(), e);
         }
     }
 }
