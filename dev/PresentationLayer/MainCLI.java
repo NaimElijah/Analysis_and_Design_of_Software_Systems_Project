@@ -54,7 +54,7 @@ public class MainCLI {
 
         // System Factory creates the Modules components
         SystemFactory.EmployeeModuleComponents employeeComponents = factory.createEmployeeModule(minimalMode);
-        SystemFactory.TransportModuleComponents transportComponents = factory.createTransportModule(employeeComponents);
+        SystemFactory.TransportModuleComponents transportComponents = factory.createTransportModule(employeeComponents, minimalMode);//TODO: get from user
 
 
         if (!employeeComponents.getEmployeeService().isEmployeeActive(userId)) {

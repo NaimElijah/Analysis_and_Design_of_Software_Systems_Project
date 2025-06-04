@@ -84,7 +84,7 @@ public class SystemFactory {
      * @param employeeComponents The EmployeeModuleComponents to use for integration.
      * @return TransportModuleComponents containing all initialized components.
      */
-    public TransportModuleComponents createTransportModule(EmployeeModuleComponents employeeComponents) throws SQLException {
+    public TransportModuleComponents createTransportModule(EmployeeModuleComponents employeeComponents, boolean minimalMode) throws SQLException {
         // Initialize facades
         TruckFacade truckFacade = new TruckFacade();   // repository initialized inside here
         SiteFacade siteFacade = new SiteFacade();   // repository initialized inside here
@@ -108,8 +108,8 @@ public class SystemFactory {
 
         // Initialize services
         TruckService truckService = new TruckService(truckFacade, employeeIntegrationService);
-        TransportService transportService = new TransportService(transportController, employeeIntegrationService, objMapper);
         SiteService siteService = new SiteService(siteFacade, employeeIntegrationService);
+        TransportService transportService = new TransportService(transportController, employeeIntegrationService, objMapper);
 
         // Initialize startup service
         StartUpStateService startUpService = new StartUpStateService(transportService, truckService, siteService);  // if this specific one needed

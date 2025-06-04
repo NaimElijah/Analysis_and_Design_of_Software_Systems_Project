@@ -56,7 +56,6 @@ class TransportControllerTest {
         transportController.loadDBData();
 
 
-
     }
 
     // --------------- Truck Tests ----------------

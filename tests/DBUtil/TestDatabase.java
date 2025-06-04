@@ -226,7 +226,7 @@ public final class TestDatabase {
     static {
         try {
             Class.forName("org.sqlite.JDBC");
-            conn = DriverManager.getConnection("jdbc:sqlite:TestsuperLee.db");
+            conn = DriverManager.getConnection(DB_URL);
 
             // Enable foreign key constraints
             try (Statement st = conn.createStatement()) {

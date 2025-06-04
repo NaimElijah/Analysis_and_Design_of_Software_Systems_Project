@@ -140,6 +140,7 @@ INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Admin', 'VIEW_TR
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Admin', 'DELETE_ITEM_FROM_TRANSPORT');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Admin', 'ADD_TRUCK');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Admin', 'DRIVE_VEHICLE');
+INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Admin', 'EDIT_TRANSPORT_ITEM_CONDITION');
 
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('HR manager', 'VIEW_SHIFT');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('HR manager', 'UPDATE_SHIFT');
@@ -179,6 +180,7 @@ INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Transport Manage
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Transport Manager', 'VIEW_SHIFT');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Transport Manager', 'UPDATE_AVAILABLE');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Transport Manager', 'GET_SHIFT');
+INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Transport Manager', 'EDIT_TRANSPORT_ITEM_CONDITION');
 
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Shift Manager', 'VIEW_SHIFT');
 INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Shift Manager', 'UPDATE_AVAILABLE');
