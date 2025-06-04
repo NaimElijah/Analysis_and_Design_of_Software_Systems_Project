@@ -8,7 +8,9 @@ import java.sql.Statement;
 
 public final class Database {
     // SQLite database properties
-    private static final String DB_URL = "jdbc:sqlite:superLee.db";
+    public static String DB_URL = "jdbc:sqlite:superLee.db";
+//    private static String FULL_DB_URL = "jdbc:sqlite:superLee.db";
+//    private static String MINIMAL_DB_URL = "jdbc:sqlite:superLee_minimal.db";
     private static Connection conn;
 
     // Tables creation
@@ -224,7 +226,7 @@ public final class Database {
     static {
         try {
             Class.forName("org.sqlite.JDBC");
-            conn = DriverManager.getConnection(config.DB_URL);
+            conn = DriverManager.getConnection(DB_URL);
 
             // Enable foreign key constraints
             try (Statement st = conn.createStatement()) {

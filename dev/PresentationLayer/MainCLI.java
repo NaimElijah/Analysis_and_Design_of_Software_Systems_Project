@@ -4,6 +4,7 @@ import DomainLayer.SystemFactory;
 import PresentationLayer.EmployeeSubModule.HR_MainCLI;
 import PresentationLayer.TransportPresentation.MainTranSysCLI;
 import Util.CliUtil;
+import Util.Database;
 import Util.config;
 
 import java.io.IOException;
@@ -17,8 +18,13 @@ public class MainCLI {
 
     private static final Scanner scanner = new Scanner(System.in);
 
+    private static boolean minimalMode = false;
+
     public static void start() throws IOException {
         try {
+            minimalMode = CliUtil.confirm("Do you want to start with minimal data?", scanner);
+            Database.DB_URL = minimalMode ? "jdbc:sqlite:superLee_Minimal.db" : "jdbc:sqlite:superLee.db";
+
             CliUtil.printWelcomeBanner("Welcome to SuperLee System Assignment 2", LocalDate.now().toString(),
                     "Not Logged In");
 
@@ -49,12 +55,12 @@ public class MainCLI {
             return ExitAction.EXIT_PROGRAM; // User chose to exit
         }
         SystemFactory factory = new SystemFactory();
-        boolean minimalMode = config.LOAD_DATA_FROM_DB;
+//        boolean minimalMode = config.LOAD_DATA_FROM_DB;
         boolean canAccessTransportModule = false;
 
         // System Factory creates the Modules components
         SystemFactory.EmployeeModuleComponents employeeComponents = factory.createEmployeeModule(minimalMode);
-        SystemFactory.TransportModuleComponents transportComponents = factory.createTransportModule(employeeComponents, minimalMode);//TODO: get from user
+        SystemFactory.TransportModuleComponents transportComponents = factory.createTransportModule(employeeComponents, minimalMode);
 
 
         if (!employeeComponents.getEmployeeService().isEmployeeActive(userId)) {

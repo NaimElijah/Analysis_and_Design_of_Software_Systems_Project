@@ -39,8 +39,8 @@ public class config {
     public static final String ROLE_DRIVER_E = initStringValue("ROLE_DRIVER_E", "DriverE");
 
     // Database configuration
-    public static final String DB_URL = initStringValue("DB_URL", "jdbc:sqlite:superLee.db");
-    public static final boolean LOAD_DATA_FROM_DB = Boolean.parseBoolean(initStringValue("LOAD_DATA_FROM_DB", "true"));
+//    public static final String DB_URL = initStringValue("DB_URL", "jdbc:sqlite:superLee.db");
+//    public static final boolean LOAD_DATA_FROM_DB = Boolean.parseBoolean(initStringValue("LOAD_DATA_FROM_DB", "true"));
 
     static {
         // Load properties from file
