@@ -845,6 +845,11 @@ public class TransportController {
 
         ItemsDoc temp = this.transportsRepos.getItemsDocs().get(oldItemsDocNum);
         temp.setItemDoc_num(newItemsDocNum);
+
+        this.transportsRepos.getItemsDocs().put(newItemsDocNum, temp);
+
+        this.transportsRepos.getItemsDocs().remove(oldItemsDocNum);
+
         this.transportsRepos.updateItemsDocPersistency(oldItemsDocNum, temp);
     }
 

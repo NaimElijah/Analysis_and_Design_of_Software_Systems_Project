@@ -43,7 +43,17 @@ public class MainTranSysCLI {
             System.out.println(".1.  Enter my relevant menu.");
             System.out.println(".2.  Exit the Transport System.");
             System.out.println("Enter your choice: ");
-            int choice = this.scanner.nextInt();
+
+            int choice = 2;
+            try {
+                choice = this.scanner.nextInt();
+                scanner.nextLine(); // consume the leftover newline
+            } catch (Exception e) {
+                System.out.println("You've entered the wrong input type, going back a menu");
+                return;
+            }
+
+
             if(choice == 1){
                 if (this.eis.hasRole(loggedId, config.ROLE_TRANSPORT_MANAGER) || this.eis.hasRole(loggedId, config.ROLE_ADMIN)) {
                     System.out.println("\n   --------    Welcome, Transport Manager    -------\n");  // welcome message upon login
@@ -61,6 +71,8 @@ public class MainTranSysCLI {
                 System.out.println("\n  --->  Please enter a number between the menu's margins  <---\n");
             }
             System.out.println();
+
+
         }
     }
 
