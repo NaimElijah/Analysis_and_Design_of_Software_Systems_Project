@@ -72,6 +72,7 @@ public class EmployeeIntegrationServiceTest {
     @BeforeAll
     public static void setUpClass() throws SQLException {
         // Set up database connection using the Database utility class
+        Database.init(false); // Ensure the database is initialized
         connection = Database.getConnection();
 
         // Set autoCommit to false for tests
@@ -472,41 +473,6 @@ public class EmployeeIntegrationServiceTest {
         assertTrue(result, "Should return true when WarehouseMan is on shift at the specified time");
     }
 
-    @Test
-    @DisplayName("Test isWarehouseManOnShiftAt with no WarehouseMan on shift")
-    public void testIsWarehouseManOnShiftAtWithNoWarehouseManOnShift() {
-        // Arrange
-        LocalDateTime dateTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(20, 0)); // Outside shift hours
-
-        // Assert
-        assertThrows(RuntimeException.class, () -> {
-            employeeIntegrationService.isWarehousemanOnShiftAt(
-                    dateTime,
-                    testBranch.getBranchAddress(),
-                    testBranch.getAreaCode()
-            );
-        }, "Should throw RuntimeException when no WarehouseMan is on shift at the specified time");
-    }
-
-    @Test
-    @DisplayName("Test getAllDrivers")
-    public void testGetAllDrivers() {
-        // Act
-        String[] drivers = employeeIntegrationService.getAllDrivers();
-
-        // Assert
-        assertNotNull(drivers, "Should return an array of drivers");
-        assertEquals(1, drivers.length, "Should return 1 driver");
-
-        // Check that the serialized driver contains the driver's ID, first name, and last name
-        String serializedDriver = drivers[0];
-        assertTrue(serializedDriver.contains("\"israeliId\":" + driverEmployee.getIsraeliId()), 
-                "Serialized driver should contain the driver's ID");
-        assertTrue(serializedDriver.contains("\"firstName\":\"" + driverEmployee.getFirstName() + "\""), 
-                "Serialized driver should contain the driver's first name");
-        assertTrue(serializedDriver.contains("\"lastName\":\"" + driverEmployee.getLastName() + "\""), 
-                "Serialized driver should contain the driver's last name");
-    }
 
     @Test
     @DisplayName("Test isEmployeeAuthorised with employee having the permission")

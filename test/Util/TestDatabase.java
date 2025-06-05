@@ -275,6 +275,13 @@ public final class TestDatabase {
     private TestDatabase() {}
 
     public static Connection getConnection() throws SQLException {
+        if (conn == null || conn.isClosed()) {
+            conn = DriverManager.getConnection(DB_URL);
+            // Enable foreign key constraints
+            try (Statement st = conn.createStatement()) {
+                st.execute("PRAGMA foreign_keys = ON;");
+            }
+        }
         return conn;
     }
 }

@@ -34,6 +34,8 @@ public class AuthorisationControllerTest {
     @BeforeAll
     public static void setUpClass() throws SQLException {
         // Set up database connection using the Database utility class
+
+        Database.init(true);
         connection = Database.getConnection();
 
         // Set autoCommit to false for tests

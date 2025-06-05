@@ -8,74 +8,76 @@ import java.sql.Statement;
 
 public final class Database {
     // SQLite database properties
-    private static final String DB_URL = "jdbc:sqlite:superLee_test.db";
+    public static String DB_URL = "jdbc:sqlite:superLee_test.db";
+    //    private static String FULL_DB_URL = "jdbc:sqlite:superLee.db";
+//    private static String MINIMAL_DB_URL = "jdbc:sqlite:superLee_minimal.db";
     private static Connection conn;
 
     // Tables creation
-    private static final String EmployeesTable = 
-        "CREATE TABLE IF NOT EXISTS Employees (" +
-        "israeliId BIGINT PRIMARY KEY, " +
-        "firstName TEXT NOT NULL, " +
-        "lastName TEXT NOT NULL, " +
-        "salary BIGINT NOT NULL, " +
-        "startOfEmployment DATE NOT NULL, " +
-        "isActive BOOLEAN NOT NULL, " +
-        "creationDate DATE NOT NULL, " +
-        "updateDate DATE NOT NULL, " +
-        "branchId BIGINT, " +
-        "FOREIGN KEY (branchId) REFERENCES Branches(branchId)" +
-        ")";
+    private static final String EmployeesTable =
+            "CREATE TABLE IF NOT EXISTS Employees (" +
+                    "israeliId BIGINT PRIMARY KEY, " +
+                    "firstName TEXT NOT NULL, " +
+                    "lastName TEXT NOT NULL, " +
+                    "salary BIGINT NOT NULL, " +
+                    "startOfEmployment DATE NOT NULL, " +
+                    "isActive BOOLEAN NOT NULL, " +
+                    "creationDate DATE NOT NULL, " +
+                    "updateDate DATE NOT NULL, " +
+                    "branchId BIGINT, " +
+                    "FOREIGN KEY (branchId) REFERENCES Branches(branchId)" +
+                    ")";
 
-    private static final String EmployeeRolesTable = 
-        "CREATE TABLE IF NOT EXISTS EmployeeRoles (" +
-        "israeliId BIGINT NOT NULL, " +
-        "role TEXT NOT NULL, " +
-        "PRIMARY KEY (israeliId, role), " +
-        "FOREIGN KEY (israeliId) REFERENCES Employees(israeliId), " +
-        "FOREIGN KEY (role) REFERENCES Roles(roleName)" +
-        ")";
+    private static final String EmployeeRolesTable =
+            "CREATE TABLE IF NOT EXISTS EmployeeRoles (" +
+                    "israeliId BIGINT NOT NULL, " +
+                    "role TEXT NOT NULL, " +
+                    "PRIMARY KEY (israeliId, role), " +
+                    "FOREIGN KEY (israeliId) REFERENCES Employees(israeliId), " +
+                    "FOREIGN KEY (role) REFERENCES Roles(roleName)" +
+                    ")";
 
-    private static final String EmployeeTermsTable = 
-        "CREATE TABLE IF NOT EXISTS EmployeeTerms (" +
-        "israeliId BIGINT NOT NULL, " +
-        "termKey TEXT NOT NULL, " +
-        "termValue TEXT NOT NULL, " +
-        "PRIMARY KEY (israeliId, termKey), " +
-        "FOREIGN KEY (israeliId) REFERENCES Employees(israeliId)" +
-        ")";
+    private static final String EmployeeTermsTable =
+            "CREATE TABLE IF NOT EXISTS EmployeeTerms (" +
+                    "israeliId BIGINT NOT NULL, " +
+                    "termKey TEXT NOT NULL, " +
+                    "termValue TEXT NOT NULL, " +
+                    "PRIMARY KEY (israeliId, termKey), " +
+                    "FOREIGN KEY (israeliId) REFERENCES Employees(israeliId)" +
+                    ")";
 
-    private static final String BranchesTable = 
-        "CREATE TABLE IF NOT EXISTS Branches (" +
-        "branchId BIGINT PRIMARY KEY, " +
-        "branchName TEXT NOT NULL, " +
-        "areaCode INTEGER NOT NULL, " +
-        "branchAddress TEXT NOT NULL, " +
-        "managerID TEXT" +
-        ")";
+    private static final String BranchesTable =
+            "CREATE TABLE IF NOT EXISTS Branches (" +
+                    "branchId BIGINT PRIMARY KEY, " +
+                    "branchName TEXT NOT NULL, " +
+                    "areaCode INTEGER NOT NULL, " +
+                    "branchAddress TEXT NOT NULL, " +
+                    "managerID TEXT" +
+                    ")";
 
-    private static final String RolesTable = 
-        "CREATE TABLE IF NOT EXISTS Roles (" +
-        "roleName TEXT PRIMARY KEY" +
-        ")";
+    private static final String RolesTable =
+            "CREATE TABLE IF NOT EXISTS Roles (" +
+                    "roleName TEXT PRIMARY KEY" +
+                    ")";
 
-    private static final String PermissionsTable = 
-        "CREATE TABLE IF NOT EXISTS Permissions (" +
-        "permissionName TEXT PRIMARY KEY" +
-        ")";
+    private static final String PermissionsTable =
+            "CREATE TABLE IF NOT EXISTS Permissions (" +
+                    "permissionName TEXT PRIMARY KEY" +
+                    ")";
 
-    private static final String RolePermissionsTable = 
-        "CREATE TABLE IF NOT EXISTS RolePermissions (" +
-        "roleName TEXT NOT NULL, " +
-        "permissionName TEXT NOT NULL, " +
-        "PRIMARY KEY (roleName, permissionName), " +
-        "FOREIGN KEY (roleName) REFERENCES Roles(roleName), " +
-        "FOREIGN KEY (permissionName) REFERENCES Permissions(permissionName)" +
-        ")";
+    private static final String RolePermissionsTable =
+            "CREATE TABLE IF NOT EXISTS RolePermissions (" +
+                    "roleName TEXT NOT NULL, " +
+                    "permissionName TEXT NOT NULL, " +
+                    "PRIMARY KEY (roleName, permissionName), " +
+                    "FOREIGN KEY (roleName) REFERENCES Roles(roleName), " +
+                    "FOREIGN KEY (permissionName) REFERENCES Permissions(permissionName)" +
+                    ")";
 
     private static final String ShiftType =
             "CREATE TABLE IF NOT EXISTS ShiftType (" +
-            "type TEXT PRIMARY KEY" +
-            ")";
+                    "type TEXT PRIMARY KEY" +
+                    ")";
 
     private static final String ShiftsTable =
             "CREATE TABLE IF NOT EXISTS Shifts (" +
@@ -122,7 +124,14 @@ public final class Database {
                     "FOREIGN KEY (employeeId) REFERENCES Employees(israeliId)" +
                     ")";
 
-
+    private static final String BankAccountsTable =
+            "CREATE TABLE IF NOT EXISTS BankAccounts (" +
+                    "employeeId INTEGER PRIMARY KEY, " +
+                    "bankNumber INTEGER NOT NULL, " +
+                    "bankBranchNumber INTEGER NOT NULL, " +
+                    "bankAccountNumber INTEGER NOT NULL, " +
+                    "FOREIGN KEY (employeeId) REFERENCES Employees(israeliId)" +
+                    ")";
 
 
     /// Transport related tables creation             <<--------------
@@ -170,7 +179,7 @@ public final class Database {
                     ")";
 
 
-                    ///  maybe the enums should have a VARCHAR column, instead of String column.
+    ///  maybe the enums should have a VARCHAR column, instead of String column.
 
     private static final String CountersTable =
             "CREATE TABLE IF NOT EXISTS Counters (" +
@@ -219,18 +228,9 @@ public final class Database {
                     "PRIMARY KEY (itemInItemsDocId, name, weight, condition), " +
                     "FOREIGN KEY (itemInItemsDocId) REFERENCES ItemsDocs(itemsDocNum) ON UPDATE CASCADE" +
                     ")";
-    private static final String BankAccountsTable =
-            "CREATE TABLE IF NOT EXISTS BankAccounts (" +
-                    "employeeId INTEGER PRIMARY KEY, " +
-                    "bankNumber INTEGER NOT NULL, " +
-                    "bankBranchNumber INTEGER NOT NULL, " +
-                    "bankAccountNumber INTEGER NOT NULL, " +
-                    "FOREIGN KEY (employeeId) REFERENCES Employees(israeliId)" +
-                    ")";
 
 
-
-    static {
+    public static void init(boolean minimalMode) {
         try {
             Class.forName("org.sqlite.JDBC");
             conn = DriverManager.getConnection(DB_URL);
@@ -258,7 +258,6 @@ public final class Database {
                 st.executeUpdate(ItemsDocsTable);
                 st.executeUpdate(BankAccountsTable);
 
-
                 // Finally, create tables that depend on the second level tables
                 st.executeUpdate(EmployeeRolesTable);
                 st.executeUpdate(EmployeeTermsTable);
@@ -280,6 +279,8 @@ public final class Database {
             throw new ExceptionInInitializerError(e);
         }
     }
+
+
 
     private Database() {}
 

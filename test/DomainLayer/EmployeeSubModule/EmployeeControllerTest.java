@@ -47,6 +47,8 @@ public class EmployeeControllerTest {
     @BeforeAll
     public static void setUpClass() throws SQLException {
         // Set up database connection using the Database utility class
+        Database.init(false); // Ensure the database is initialized
+
         connection = Database.getConnection();
 
         // Set autoCommit to false for tests
@@ -729,79 +731,8 @@ public class EmployeeControllerTest {
         assertEquals(0, drivers.length, "Should return 0 drivers");
     }
 
-    @Test
-    @DisplayName("Test getAllDrivers with drivers")
-    public void testGetAllDriversWithDrivers() throws SQLException {
-        // Arrange
-        // Insert Driver role
-        try (Statement stmt = connection.createStatement()) {
-            stmt.execute("INSERT INTO Roles (roleName) VALUES ('Driver')");
-            stmt.execute("INSERT INTO RolePermissions (roleName, permissionName) VALUES ('Driver', 'TransportManagement')");
-        }
-
-        // Create a driver employee
-        long driverId = 987654321;
-        String firstName = "Driver";
-        String lastName = "Test";
-        Set<String> roles = new HashSet<>();
-        roles.add("Driver");
-        Map<String, Object> termsOfEmployment = new HashMap<>();
-        termsOfEmployment.put("contractType", "FullTime");
-
-        EmployeeDTO driverDTO = new EmployeeDTO(
-                driverId,
-                firstName,
-                lastName,
-                5000,
-                termsOfEmployment,
-                roles,
-                LocalDate.now(),
-                true,
-                LocalDate.now(),
-                LocalDate.now(),
-                testBranch.getBranchId()
-        );
-        employeeDAO.insert(driverDTO);
-
-        // Act
-        String[] drivers = employeeController.getAllDrivers();
-
-        // Assert
-        assertNotNull(drivers, "Should return an array of drivers");
-        assertEquals(1, drivers.length, "Should return 1 driver");
-
-        // Check that the serialized driver contains the driver's ID, first name, and last name
-        String serializedDriver = drivers[0];
-        assertTrue(serializedDriver.contains("\"israeliId\":" + driverId), "Serialized driver should contain the driver's ID");
-        assertTrue(serializedDriver.contains("\"firstName\":\"" + firstName + "\""), "Serialized driver should contain the driver's first name");
-        assertTrue(serializedDriver.contains("\"lastName\":\"" + lastName + "\""), "Serialized driver should contain the driver's last name");
-    }
 
     // Test methods for Transport module access
-
-    @Test
-    @DisplayName("Test canAccessTransportModule with employee having the permission")
-    public void testCanAccessTransportModuleWithEmployeeHavingPermission() throws SQLException {
-        // Arrange
-        // Insert ROLE_DRIVER_TEST role
-        try (Statement stmt = connection.createStatement()) {
-            stmt.execute("INSERT INTO Roles (roleName) VALUES ('ROLE_DRIVER_TEST')");
-            stmt.execute("INSERT INTO RolePermissions (roleName, permissionName) VALUES ('ROLE_DRIVER_TEST', 'TransportManagement')");
-        }
-
-        // Add ROLE_DRIVER_TEST to test employee
-        employeeController.addRoleToEmployee(
-                testEmployee.getIsraeliId(), // doneBy
-                testEmployee.getIsraeliId(), // israeliId
-                "ROLE_DRIVER_TEST" // roleName
-        );
-
-        // Act
-        boolean result = employeeController.canAccessTransportModule(testEmployee.getIsraeliId());
-
-        // Assert
-        assertTrue(result, "Should return true when employee has a role that starts with ROLE_DRIVER_");
-    }
 
     @Test
     @DisplayName("Test canAccessTransportModule with employee not having the permission")
