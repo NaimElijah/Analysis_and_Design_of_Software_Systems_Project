@@ -3,12 +3,11 @@
 This is a Java-based Supermarket Management System that handles employee management, transport management, site management, and inventory management.
 
 ## Group Members
-* Duo D
-   * Rotem Guetta     207878174 Guettar@post.bgu.ac.il
-   * Gabriel Rozental 211936059 rozengab@post.BGU.ac.il
-* Duo B
-  * Naim Elijah      317971752 elijahn@post.bgu.ac.il
-  * Bar Miyara       305551012 Miyara@post.bgu.ac.il
+* Sub-Team A
+   * Naim Elijah
+* Sub-Team B
+   * Rotem Guetta
+   * Gabriel Rozental
 
 ## Prerequisites
 
